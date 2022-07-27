@@ -20,9 +20,8 @@ from typing import Optional
 
 import wx
 
-import config.config as config
-import dtscore.window as dtsWindow
-import gui.window as window
+import config.config as mConfig
+import gui.window as mWindow
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -48,38 +47,41 @@ def LoadUMSAPFile(
     """
     #region --------------------------------------------> Get file from Dialog
     if fileP is None:
-        try:
-            #------------------------------>
-            dlg = dtsWindow.FileSelectDialog(
-                'openO',
-                ext    = config.elUMSAP,
-                parent = win,
-                msg    = config.mFileSelUMSAP,
-            )
-            #------------------------------>
-            if dlg.ShowModal() == wx.ID_OK:
-                tFileP = Path(dlg.GetPath())
-            else:
-                return False
-        except Exception as e:      
-            dtsWindow.NotificationDialog(
-                'errorF', 
-                msg        = config.mFileSelector,
-                tException = e,
-                parent     = win,
-            )
+        dlg = mWindow.DialogFileSelect(
+            'openO',
+            ext    = mConfig.elUMSAP,
+            parent = win,
+            msg    = mConfig.mFileSelUMSAP,
+        )
+        #------------------------------>
+        if dlg.ShowModal() == wx.ID_OK:
+            tFileP = Path(dlg.GetPath())
+        else:
             return False
     else:
         tFileP = fileP
     #endregion -----------------------------------------> Get file from Dialog
 
     #region ----------------------------> Raise window if file is already open
-    if config.winUMSAP.get(tFileP, '') != '':
-        config.winUMSAP[tFileP].UpdateFileContent()
-        config.winUMSAP[tFileP].Raise()
+    if mConfig.winUMSAP.get(tFileP, '') != '':
+        #------------------------------>
+        try:
+            mConfig.winUMSAP[tFileP].UpdateFileContent()
+        except Exception as e:
+            msg = mConfig.mFileRead.format(tFileP)
+            mWindow.DialogNotification('errorU', msg=msg, tException=e)
+            return False
+        #------------------------------>
+        mConfig.winUMSAP[tFileP].Raise()
+        #------------------------------>
         return True
     else:
-        config.winUMSAP[tFileP] = window.UMSAPControl(tFileP)
+        try:
+            mConfig.winUMSAP[tFileP] = mWindow.WindowUMSAPControl(tFileP)
+        except Exception as e:
+            msg = mConfig.mFileRead.format(tFileP)
+            mWindow.DialogNotification('errorU', msg=msg, tException=e)
+            return False
     #endregion -------------------------> Raise window if file is already open
 
     return True
@@ -109,7 +111,7 @@ def GetDisplayInfo(win: wx.Frame) -> dict[str, dict[str, int]]:
     #endregion -------------------------------------------------> Display info
 
     #region -----------------------------------------------------> Window info
-    nw = config.winNumber.get(win.cName, 0) #type: ignore
+    nw = mConfig.winNumber.get(win.cName, 0) # type: ignore
     ww, hw = win.GetSize()
     #endregion --------------------------------------------------> Window info
 

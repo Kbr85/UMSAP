@@ -17,6 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import platform
 from pathlib import Path
+from typing import Literal
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -30,23 +31,23 @@ softwareF   = 'Utilities for Mass Spectrometry Analysis of Proteins'
 dictVersion = { # dict for directly write into output files
     'Version': version,
 }
-#------------------------------> 
+# #------------------------------> 
 os = platform.system() # Current operating system
 cwd = Path(__file__)   # Config file path
-#endregion -----------------------------------------------> General parameters
+# endregion -----------------------------------------------> General parameters
 
 
 #region ---------------------------------------- Platform Dependent Parameters
-# There are some that must be defined in other sections
+# # There are some that must be defined in other sections
 if os == 'Darwin':
     #------------------------------> Root & Resources Folder
     root = cwd.parent.parent.parent
     res = root / 'Resources'  # Path to the Resources folder
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 2
-    #------------------------------> Statusbar split size
-    sbPlot2Fields = [-1, 115]
-    sbPlot3Fields = [-1, -1, 115] 
+#     #------------------------------> Statusbar split size
+#     sbPlot2Fields = [-1, 115]
+#     sbPlot3Fields = [-1, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Cmd'
     #------------------------------> Delta space between consecutive windows
@@ -63,9 +64,9 @@ elif os == 'Windows':
         res = root / 'RESOURCES/'
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 2
-    #------------------------------> Statusbar split size
-    sbPlot2Fields = [-1, 115]
-    sbPlot3Fields = [-1, -1, 115] 
+#     #------------------------------> Statusbar split size
+#     sbPlot2Fields = [-1, 115]
+#     sbPlot3Fields = [-1, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
@@ -78,9 +79,9 @@ else:
     res = root / 'Resources'
     #------------------------------> Index of the Tool Menu in the MenuBar
     toolsMenuIdx = 3
-    #------------------------------> Statusbar split size
-    sbPlot2Fields = [-1, 115]
-    sbPlot3Fields = [-1, -1, 115] 
+#     #------------------------------> Statusbar split size
+#     sbPlot2Fields = [-1, 115]
+#     sbPlot3Fields = [-1, -1, 115] 
     #------------------------------> Key for shortcuts
     copyShortCut = 'Ctrl'
     #------------------------------> Delta space between consecutive windows
@@ -91,7 +92,7 @@ else:
 
 
 #region -------------------------------------------------------------> Windows
-# #------------------------------> Reference to main window
+#------------------------------> Reference to main window
 winMain = None
 #------------------------------> Number of windows for screen positioning
 # Keys: Windows ID - Values: Total number of opened windows, except conf win
@@ -104,35 +105,38 @@ winUMSAP = {}
 
 #region ---------------------------------------------------------------> Names
 #------------------------------> Default name
-nDefName = 'Default name'
+nwDef = 'Untitled Window'
 #------------------------------> Windows
-nwMain          = 'MainW'
-nwUMSAPControl  = 'UMSAPControl'
+nwMain          = 'Analysis Setup'
+nwUMSAPControl  = 'UMSAP Control'
 nwCorrAPlot     = 'CorrAPlot'
 nwProtProf      = 'ProtProfPlot'
 nwLimProt       = 'LimProtPlot'
 nwTarProt       = 'TarProtPlot'
-nwCheckDataPrep = 'CheckDataPrep'
+nwCheckDataPrep = 'Data Preparation'
 nwAAPlot        = 'AAPlot'
 nwHistPlot      = 'HistPlot'
 nwCpRPlot       = 'CpRPlot'
 nwCEvolPlot     = 'CEvolPlot'
 nwAbout         = 'About UMSAP'
-nwPreferences   = 'Preferences'
 #------------------------------> Dialogs
-ndCheckUpdateResDialog = 'CheckUpdateResDialog'
-ndResControlExp        = 'ResControlExp'
+ndCheckUpdateResDialog = 'Check for Updates'
+ndPreferences          = 'Preferences'
+ndResControlExp        = 'Results & Control Experiments'
 ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Tab for notebook windows
-ntStart    = 'StartTab'
-ntDataPrep = "DataPrepTab"
-ntCorrA    = 'CorrATab'
-ntLimProt  = 'LimProtTab'
-ntProtProf = 'ProtProfTab'
-ntTarProt  = 'TarProtTab'
+ntDef        = 'Default Tab'
+ntStart      = 'Start'
+ntDataPrep   = "DataPrep"
+ntCorrA      = 'CorrA'
+ntLimProt    = 'LimProt'
+ntProtProf   = 'ProtProf'
+ntTarProt    = 'TarProt'
 ntPrefUpdate = 'Updates'
 #------------------------------> Individual Panes
+npDef = 'Default Pane'
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
+npNPlot                 = 'NPlot'
 npCorrA                 = 'CorrAPane'
 npDataPrep              = 'DataPrepPane'
 npLimProt               = 'LimProtPane'
@@ -157,30 +161,6 @@ nuCEvol    = 'Cleavage Evolution'
 #endregion ------------------------------------------------------------> Names
 
 
-#region --------------------------------------------------------------> Titles
-# # #------------------------------> Default names
-tdW = "Untitled Window"
-tdT = "Tab"
-tdP = 'Pane'
-#------------------------------> 
-t = {
-    #------------------------------> Windows
-    nwMain : "Analysis Setup",
-    #------------------------------> Dialogs
-    ndCheckUpdateResDialog: "Check for Updates",
-    ndResControlExp       : 'Results - Control Experiments',
-    ndFilterRemoveAny     : 'Remove Filters',
-    #------------------------------> Tabs
-    ntStart   : 'Start',
-    ntDataPrep: 'DataPrep',
-    ntCorrA   : 'CorrA',
-    ntLimProt : 'LimProt',
-    ntProtProf: 'ProtProf',
-    ntTarProt : 'TarProt',
-}
-#endregion -----------------------------------------------------------> Titles
-
-
 #region ----------------------------------------------------------- Extensions
 #------------------------------> For wx.Dialogs
 elData  = 'txt files (*.txt)|*.txt'
@@ -191,7 +171,6 @@ elSeq   = (
     "Text files (*.txt)|*.txt|"
     "Fasta files (*.fasta)|*.fasta"
 )
-
 elMatPlotSaveI = (
     "Portable Document File (*.pdf)|*.pdf|"
     "Portable Network Graphic (*.png)|*.png|"
@@ -209,47 +188,48 @@ esUMSAP = ['.umsap']
 
 #region ------------------------------------> Keywords for Menu - Method Links
 #------------------------------> Help Menu
-klHelpAbout    = 'About UMSAP'
-klHelpManual   = 'Manual'
-klHelpTutorial = 'Tutorial'
-klHelpCheckUpd = 'Check for Updates'
-klHelpPref     = 'Preferences'
+kwHelpAbout    = 'MenuHelp About UMSAP'
+kwHelpManual   = 'MenuHelp Manual'
+kwHelpTutorial = 'MenuHelp Tutorial'
+kwHelpCheckUpd = 'MenuHelp Check for Updates'
+kwHelpPref     = 'MenuHelp Preferences'
 #------------------------------> Tool Menu for UMSAPCtrl
-klToolUMSAPCtrlAddDelExp = 'AddDelExp'
-klToolUMSAPCtrlAdd       = 'Add Analysis'
-klToolUMSAPCtrlDel       = 'Delete Analysis'
-klToolUMSAPCtrlExp       = 'Export Analysis'
-klToolUMSAPCtrlReload    = 'Reload File'
+kwToolUMSAPCtrlAddDelExp = 'ToolUMSAPCtrl Add Del Export Analysis'
+kwToolUMSAPCtrlReload    = 'ToolUMSAPCtrl Reload File'
 #------------------------------> Tool Menu for Plot Window. General Items
-klToolGuiUpdate    = 'Update Result Window'
-klToolDupWin       = 'Duplicate Window'
-klToolZoomResetAll = 'Reset All Zoom'
-klToolExpData      = 'Export Data'
-klToolExpImgAll    = 'Export Image'
-klToolCheckDP      = 'Check DP'
-klToolExpSeq       = 'Export Sequences'
+kwToolWinUpdate          = 'Update Result Window'
+kwToolDupWin             = 'Duplicate Window'
+kwToolZoomResetAll       = 'Reset Zoom All'
+kwToolZoomReset          = 'Reset Zoom One'
+kwToolExpData            = 'Export Data'
+kwToolExpImgAll          = 'Export Image'
+kwToolExpImg             = 'Export Image One'
+kwToolCheckDP            = 'Check DP'
+kwToolExpSeq             = 'Export Sequence'
+kwToolExportDataFiltered = 'Export Filtered Data'
 #------------------------------> Tool Menu for CorrA
-klToolCorrASelCol  = 'Select Column'
+kwToolCorrACol  = 'ToolCorrA Select Column'
 #------------------------------> Tool Menu for LimProt
-klToolLimProtBandLane = 'Band/Lane Sel'
-klToolLimProtShowAll  = 'Show All'
+kwToolLimProtBandLane = 'Band/Lane Sel'
+kwToolLimProtShowAll  = 'Show All'
 #------------------------------> Tool Menu for AA
-klToolAAExp = 'AA'
-klToolAAPos = 'Pos'
+kwToolAAExp = 'AA'
+kwToolAAPos = 'Pos'
 #------------------------------> Volcano Plot
-klToolVolPlot              = 'Volcano Plot'
-klToolVolPlotLabelPick     = 'Vol Plot Pick Label'
-klToolVolPlotLabelProt     = 'Vol Plot Add Label'
-klToolVolPlotSaveI         = 'Volcano Plot Save Image'
-klToolVolPlotZoom          = 'Volcano Plot Zoom Reset'
-klToolVolPlotColorHypCurve = 'Hyperbolic Curve'
-klToolVolPlotColorPFC      = 'P - Log2FC'
-klToolVolPlotColorZ        = 'Z Score'
-klToolVolPlotColorConf     = 'Configure'
+kwToolVolPlot              = 'Volcano Plot CRP'
+kwToolVolPlotLabelPick     = 'Vol Plot Pick Label'
+kwToolVolPlotLabelProt     = 'Vol Plot Add Label'
+kwToolVolPlotColorScheme   = 'Vol Plot Color Scheme'
+kwToolVolPlotColorConf     = 'Vol Plot Color Configure'
+# klToolVolPlotColorHypCurve = 'Hyperbolic Curve'
+# klToolVolPlotColorPFC      = 'P - Log2FC'
+# klToolVolPlotColorZ        = 'Z Score'
+#------------------------------> Fold Change Evolution
+kwToolFCShowAll = 'FC Plot Show All'
 #------------------------------> Further Analysis
-klFACleavageEvol = 'Cleavage Evolution'
-klFACleavagePerRes = 'Cleavage per Residue'
-klFAPDBMap = 'PDB Map'
+kwToolFACleavageEvol   = 'Cleavage Evolution'
+kwToolFACleavagePerRes = 'Cleavage per Residue'
+kwToolFAPDBMap         = 'PDB Map'
 #endregion ---------------------------------> Keywords for Menu - Method Links
 
 
@@ -295,7 +275,7 @@ lnListPane = 'Data File Content'
 lBtnTypeResCtrl = 'Type Values'
 #------------------------------> wx.ListCtrl
 lLCtrlColNameI = ['#', 'Name']
-#------------------------------> wx.StaticBox
+# #------------------------------> wx.StaticBox
 lStProtProfCond = 'Conditions'
 lStProtProfRP   = 'Relevant Points'
 lStLimProtLane  = 'Lanes'
@@ -309,13 +289,13 @@ lStScoreVal    = 'Score Value'
 lStScoreCol    = 'Score'
 lStResultCtrl  = 'Results - Control experiments'
 lStResultCtrlS = 'Results - Control'
-lStExcludeRow  = 'Exclude Rows'
+# lStExcludeRow  = 'Exclude Rows'
 lStExcludeProt = 'Exclude Proteins'
 lStGeneName    = 'Gene Names'
-#------------------------------> wx.ComboBox or wx.CheckBox
+# #------------------------------> wx.ComboBox or wx.CheckBox
 lCbCorrectP    = 'P Correction'
 lCbSample      = 'Samples'
-lCbIntensity   = 'Intensities'
+# lCbIntensity   = 'Intensities'
 #------------------------------> wx.Dialog
 lPdError = 'Fatal Error'
 #------------------------------> Filters
@@ -325,8 +305,9 @@ lFilFCLog    = 'Log2FC'
 lFilPVal     = 'P Val'
 lFilZScore   = 'Z Score'
 #------------------------------> wx.Menu
-lmCorrAColNum  = 'Column Numbers (0 based)'
-lmCorrAColName = 'Column Names'
+lmToolUMSAPCtrlAdd = 'Add Analysis'
+lmToolUMSAPCtrlDel = 'Delete Analysis'
+lmToolUMSAPCtrlExp = 'Export Analysis'
 lmCorrASelCol  = 'Select Columns'
 lmCorrAAllCol  = 'All Columns'
 lmNatSeq       = 'Native Sequence'
@@ -343,15 +324,15 @@ ttStGenName = f'Set the column number containing the {lStGeneName}.\ne.g. 3'
 ttStExcludeProt = (
     "Set the column number containing the data used to exclude proteins."
     "\ne.g. 8 10-12")
-ttStExcludeRow = (
-    'Set the column numbers containing the data used to Exclude Rows.'
-    '\ne.g. 8 10-12')
+# ttStExcludeRow = (
+#     'Set the column numbers containing the data used to Exclude Rows.'
+#     '\ne.g. 8 10-12')
 ttStCorrectP = 'Select the p correction method.'
 ttStSample = (f"Specify if samples are independent or paired.\n"
     f"For example, samples are paired when the same Petri dish is "
     f"used for the control and experiment.")
-ttStIntensity = ('Specify if intensities are raw intensity values or are '
-    'already expressed as a ratio (SILAC, TMT/iTRAQ).')
+# ttStIntensity = ('Specify if intensities are raw intensity values or are '
+#     'already expressed as a ratio (SILAC, TMT/iTRAQ).')
 #------------------------------> wx.ListCtrl
 ttLCtrlCopyNoMod = (
     f"Selected rows can be copied ({copyShortCut}+C) but "
@@ -361,9 +342,8 @@ ttLCtrlPasteMod = (
     f"New rows can be pasted ({copyShortCut}+V) after the "
     f"last selected element and existing ones cut/deleted "
     f"({copyShortCut}+X) or copied "
-    f"({copyShortCut}+C)."    
+    f"({copyShortCut}+C)."
 )
-#------------------------------> dtscore
 ttSectionRightClick = (
     'The content of the Section can be deleted with a right click.')
 #endregion ---------------------------------------------------------> Tooltips
@@ -374,29 +354,28 @@ oNumType = {
     'int'  : int,
     'float': float,
 }
-
 oYesNo = {
     ''   : '',
     'Yes': True,
     'No' : False,
 }
 oTransMethod = {
-    'Empty': '',
-    'None' : 'None',
-    'Log2' : 'Log2',
+    ''    : '',
+    'None': 'None',
+    'Log2': 'Log2',
 }
 oNormMethod = {
-    'Empty' : '',
+    ''      : '',
     'None'  : 'None',
     'Median': 'Median',
 }
 oImputation = {
-    'Empty': '',
-    'None' : 'None',
-    'ND'   : 'Normal Distribution',
+    ''                   : '',
+    'None'               : 'None',
+    'Normal Distribution': 'ND',
 }
 oCorrMethod = {
-    'Empty'   : '',
+    ''        : '',
     'Pearson' : 'Pearson',
     'Kendall' : 'Kendall',
     'Spearman': 'Spearman',
@@ -430,28 +409,29 @@ oControlTypeProtProf = {
     'OCR'  : 'One Control per Row',
     'Ratio': oIntensities['RatioI'],
 }
-
 oFillLoc = ('end', 'start')
 
-oNotification = {
-    'errorF' : 'Fatal Error',
-    'errorU' : 'Unexpected Error',
-    'warning': 'Warning',
-    'success': 'Success',
-    'question':'Please answer the following question:',
-}
 
-oMsgType = ('errorF', 'errorU', 'warning', 'success')
 
-oSelectF = ('openO', 'openM', 'save')
+# oMsgType = ('errorF', 'errorU', 'warning', 'success')
+
+# oSelectF = ('openO', 'openM', 'save')
 #endregion ----------------------------------------------------------> Options
+
+
+#region --------------------------------------------------------> Literal
+litFFSelect     = Literal['openO', 'openM', 'save', 'folder']
+litFSelect      = Literal['openO', 'openM', 'save']
+litFoF          = Literal['file', 'folder']
+litNumType      = Literal['int', 'float']
+litNotification = Literal['errorF', 'errorU', 'warning', 'success', 'question']
+litComp         = Literal['lt', 'le', 'e', 'ge', 'gt']
+#endregion -----------------------------------------------------> Literal
 
 
 #region -----------------------------------------------------> DF Column names
 dfcolProtprofFirstThree = ['Gene', 'Protein', 'Score']
 dfcolProtprofCLevel = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
-dfcolDataCheck = [
-    'Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
 dfcolLimProtFirstPart = [
     'Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF', 'CtermF', 'Delta']
 dfcolLimProtCLevel = ['Ptost']
@@ -492,12 +472,12 @@ oAA3toAA = { # Three to one AA code translation
 #region ------------------------------------------------------------> Messages
 #region -------------------------------------------------------------> Other 
 #------------------------------> Unexpected Error
-mUnexpectedError = 'An unexpected error was encountered.'
+mUnexpectedError = 'UMSAP encountered an unexpected error.'
+#------------------------------> Check for Update
+mCheckUpdate = 'Check for Updates failed. Check again later.'
 #------------------------------> Sequences related errors
 mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
     "protein.")
-#------------------------------> Data
-mDataExport = 'Export Data failed.'
 #------------------------------> Optional Field
 mOptField = '\nThis field is optional.'
 #endregion ----------------------------------------------------------> Other
@@ -514,10 +494,9 @@ mNZPlusNumText = (
 
 #region ---------------------------------------------------------------> Files
 mFileSelector = 'It was not possible to show the file selecting dialog.'
-mFileRead = 'An error occurred when reading file:\n{}'
 mFileSelUMSAP = 'Select the UMSAP File'
-mReadErrorIO  = "The selected file could not be read.\nSelected file: {}"
-mWriteErrorIO = "The selected file could not be written.\nSelected file: {}"
+mFileRead = 'An error occurred when reading file:\n{}'
+# mWriteErrorIO = "The selected file could not be written.\nSelected file: {}"
 #endregion ------------------------------------------------------------> Files
 
 #region ------------------------------------------------------------> Pandas
@@ -568,51 +547,49 @@ mRepNumProtProf = ('To perform a Proteome Profiling analysis using Raw '
 mCtrlEmpty = 'None of the Control fields can be empty.'
 #endregion -------------------------------------------------> For CheckInput
 
-#region ---------------------------------------------------> dtscore
 #------------------------------> 
 mCompNYI = "Comparison method is not yet implemented: {}."
 mPDFilterByCol  = "Filtering process failed."
-mWriteFilesIO = "The selected files could not be written to: {}"
+# mWriteFilesIO = "The selected files could not be written to: {}"
 mRangeNumIE = "Invalid range or number: {}"
-mNotIterable = "{} must be iterable but the given value ({}) is not."
-mpdReplaceVal = ("It was not possible to replace {} values with {}.")
-mPDExcludeCol  = "Exclusion process failed."
+# mNotIterable = "{} must be iterable but the given value ({}) is not."
+# mpdReplaceVal = ("It was not possible to replace {} values with {}.")
+# mPDExcludeCol  = "Exclusion process failed."
 mNotImplementedFull = ('Option {} is not yet implemented. Valid options for {} '
     'are: {}.')
-mMsgTypeIE = (
-    f"Options for message mode are: {*oMsgType,}. "
-    "Option {} is unknown.")
-mwxLCtrNoCopy     = "The elements of this list cannot be copied."
-mCopyFailedW     = f"Copy operation failed. Try again."
-mwxLCtrNoChange   = "This list cannot be modified."
-mPasteFailedW    = f"Paste operation failed. Try again."
-mNothingToPasteW = f"Nothing to paste."
+# mMsgTypeIE = (
+#     f"Options for message mode are: {*oMsgType,}. "
+#     "Option {} is unknown.")
+mwxLCtrNoCopy    = "The elements of this list cannot be copied."
+mCopyFailedW     = "Copy operation failed. Try again."
+mwxLCtrNoChange  = "This list cannot be modified."
+mPasteFailedW    = "Paste operation failed. Try again."
+mNothingToPasteW = "Nothing to paste."
 mwxLCtrlNColPaste = (
     "The clipboard content cannot be pasted because the number of "
     "columns being pasted is different to the number of columns "
     "in the list."
 )
 mInvalidValue = "'{}' is an invalid value."
-mPDSelCol  = "The specified columns {} were not found in the dataframe."
-mTransMethodIE = (
-    f"Options for transformation method are: {*oTransMethod,}. "
-    "Option {} is unknown.")
-mNormMethodIE = (
-    f"Options for normalization method are: {*oNormMethod,}. "
-    "Option {} is unknown.")
-mImputationMethodIE = (
-    f"Options for imputation method are: {*oImputation,}. "
-    "Option {} is unknown.")
-mAlpha = (
-    "The significance level (alpha) must be a number between 0 and 1. "
-    "The given value ({}) it is not within this range. ")
-mPairSamplesDiffRep = (
-    'For paired samples the number of replicates in {} and {} must be equal.')
-m1IntGET = ('{} must be an integer greater/equal than/to {}.')
+# mPDSelCol  = "The specified columns {} were not found in the dataframe."
+# mTransMethodIE = (
+#     f"Options for transformation method are: {*oTransMethod,}. "
+#     "Option {} is unknown.")
+# mNormMethodIE = (
+#     f"Options for normalization method are: {*oNormMethod,}. "
+#     "Option {} is unknown.")
+# mImputationMethodIE = (
+#     f"Options for imputation method are: {*oImputation,}. "
+#     "Option {} is unknown.")
+# mAlpha = (
+#     "The significance level (alpha) must be a number between 0 and 1. "
+#     "The given value ({}) it is not within this range. ")
+# mPairSamplesDiffRep = (
+#     'For paired samples the number of replicates in {} and {} must be equal.')
+# m1IntGET = ('{} must be an integer greater/equal than/to {}.')
 mNotImplemented = 'Option {} is not yet implemented.'
-mNotSupported = "{} value ({}) is not supported."
+mNotSupported = "{} value '{}' is not supported."
 mEmpty = 'The field value cannot be empty.'
-#endregion ------------------------------------------------> dtscore
 #endregion ---------------------------------------------------------> Messages
 
 
@@ -622,7 +599,7 @@ dtFormat = '%Y%m%d-%H%M%S'
 
 
 #region ---------------------------------------------------------------> Sizes
-#------------------------------> Full Windows 
+#------------------------------> Full Windows
 sWinRegular = (990, 775)
 #------------------------------> Plot Window
 sWinPlot = (560, 560)
@@ -636,9 +613,10 @@ sLCtrlColI = [50, 150]
 
 
 #region ---------------------------------------------> CONFIGURABLE PARAMETERS
-conflist = ['general'] # Sections to save/load in the configuration file
-confUserFile = True # User configuration file was read
-confUserFileException = Exception()
+conflist = ['general']     # Sections to save/load in the configuration file
+confUserFile = True          # User configuration file was read
+confUserFileException = None # Exception thrown when reading conf file
+
 #------------------------------> These must be dictionaries to save/load from
 #------------------------------> configuration file
 #region ------------------> Fonts. Set from UMSAP.py, requires a wx.App object
@@ -659,7 +637,7 @@ general = { # General options
 #region --------------------------------------------------------------> Colors
 colorFragments = [
     '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
-    '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e', 
+    '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e',
 ]
 
 color = { # Colors for the app
@@ -669,9 +647,9 @@ color = { # Colors for the app
     nuCorrA : { # Color for plot in Correlation Analysis
         'CMAP' : { # CMAP colors and interval
             'N' : 128,
-            'c1': [255, 0, 0],
-            'c2': [255, 255, 255],
-            'c3': [0, 0, 255],
+            'c1': (255, 0, 0),
+            'c2': (255, 255, 255),
+            'c3': (0, 0, 255),
             'NA': '#90EE90',
         },
     },

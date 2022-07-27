@@ -16,16 +16,17 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
+from typing import Iterator, Union
 
 import wx
 
-import config.config as config
-import dtscore.exception as dtsException
+import config.config as mConfig
+import data.exception as mException
 #endregion ----------------------------------------------------------> Imports
 
 
 #region -------------------------------------------------------------> Methods
-def FastaSequence(fileP: Path) -> tuple[str, str]:
+def FastaSequence(fileP: Union[Path, str]) -> Iterator[tuple[str, str]]:
     """Find all sequences in a multi-FASTA file
 
         Parameters
@@ -69,7 +70,7 @@ def FastaSequence(fileP: Path) -> tuple[str, str]:
                     #--------------> Append to seq
                     seq.append(sLine)
     except Exception:
-        raise dtsException.ExecutionError(config.mReadErrorIO.format(fileP))
+        raise mException.ExecutionError(mConfig.mFileRead.format(fileP))
     #endregion -------------------------------------------------> Process file
 
     #region --------------------------------------------> Get the last protein
@@ -77,8 +78,8 @@ def FastaSequence(fileP: Path) -> tuple[str, str]:
     #endregion -----------------------------------------> Get the last protein
 #---
 
-def FindChildren(parent: wx.Window) -> wx.Window:
-    """Find all child widgets in parent
+def FindChildren(parent: wx.Window) -> Iterator[wx.Window]:
+    """Find all child widgets in parent.
 
         Parameters
         ----------

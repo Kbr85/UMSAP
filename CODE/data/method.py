@@ -16,28 +16,239 @@
 
 #region -------------------------------------------------------------> Imports
 import itertools
-from typing import Literal, Union
+import copy
+import traceback
+from operator import itemgetter
+from datetime import datetime
+from pathlib import Path
+from typing import Union, Literal
 
 import pandas as pd
 import numpy as np
+import matplotlib as mpl
+
+import wx
 
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
-import config.config as config
-import dtscore.data_method as dtsMethod
-import dtscore.statistic as dtsStatistic
+import config.config as mConfig
+import data.file as mFile
+import data.exception as mException
+import data.statistic as mStatistic
 #endregion ----------------------------------------------------------> Imports
 
 
-#region -------------------------------------------------------------> Methods
+#region ------------------------------------------------------> String methods
+def StrException(
+    tException: Exception, tStr: bool=True, tRepr: bool=True, trace: bool=True
+    ) -> str:
+    """Get a string to print information about tException
+
+        Parameters
+        ----------
+        tException: Exception
+            Exception to print
+        tStr : boolean
+            Include error message as return by str(tException). Default is True.
+        tRepr : boolean
+            Include error message as return by repr(tException). 
+            Default is True.
+        trace : boolean
+            Include the traceback. Default is True.
+
+        Returns
+        -------
+        str
+            Error message
+    """
+    # No test
+    #region -------------------------------------------------------> Variables
+    msg = ''
+    #endregion ----------------------------------------------------> Variables
+
+    #region ---------------------------------------------------------> Message
+    #------------------------------> str(e)
+    if tStr:
+        msg = f"{msg}{str(tException)}\n\n"
+    else:
+        pass
+    #------------------------------> repr(e)
+    if tRepr:
+        msg = f"{msg}{repr(tException)}\n\n"
+    else:
+        pass
+    #------------------------------> traceback
+    if trace:
+        tTrace = "".join(
+            traceback.format_exception(
+                type(tException),
+                tException,
+                tException.__traceback__,
+            )
+        )
+        msg = f"{msg}{tTrace}"
+    else:
+        pass
+    #endregion ------------------------------------------------------> Message
+
+    return msg 
+#---
+
+
+def StrNow(dtFormat: str=mConfig.dtFormat) -> str:
+    """Get a formatted datetime.now() string.
+
+        Returns
+        -------
+        str:
+            The now date time as 20210112-140137.
+    """
+    return datetime.now().strftime(dtFormat)
+#---
+
+
+def StrSetMessage(start:str, end:str, link:str='\n\nFurther details:\n') -> str:
+    """Creates a message by concatenating start and end with link.
+
+        Parameters
+        ----------
+        start: str
+            Start of the message
+        end : str
+            End of the message
+        link : str
+            Link between start and end
+
+        Returns
+        -------
+        str:
+            Full message
+
+        Examples
+        --------
+        >>> StrSetMessage('Start', 'End', link=' - ')
+        >>> 'Start - End'
+        >>> StrSetMessage('Start.', 'End.', link=None)
+        >>> 'Start. End.'
+    """
+    if link is not None:
+        return f"{start}{link}{end}"
+    else:
+        return f"{start} {end}"
+#---
+
+
+def Str2ListNumber(
+    tStr: str, 
+    numType:mConfig.litNumType='int',
+    sep: str=',',
+    unique: bool=False
+    ) -> Union[list[int], list[float]]:
+    """Turn a string into a list of numbers. Ranges are expanded as integers.
+
+        Parameters
+        ----------
+        tStr: str
+            The string containing the numbers and/or range of numbers (4-8)
+        numType : str
+            One of int, float
+        sep : str
+            The character to separate numbers in the string
+        unique : boolean
+            Return only unique values. Order is kept. Default is False.
+
+        Returns
+        -------
+        list of numbers.
+
+        Examples
+        --------
+        >>> Str2ListNumber('1, 2, 3, 6-10,  4  ,  5, 6  , 7', sep=',')
+        >>> [1, 2, 3, 6, 7, 8, 9, 10, 4, 5, 6, 7]
+        >>> Str2ListNumber('1, 2, 3, 6-10,  4  ,  5, 6  , 7', sep=',', unique=True)
+        >>> [1, 2, 3, 6, 7, 8, 9, 10, 4, 5]
+    """
+    #region -------------------------------------------------------> Variables
+    lN = []
+    values = tStr.strip().split(sep)
+    #endregion ----------------------------------------------------> Variables
+
+    #region -----------------------------------------------------> Get numbers
+    for k in values:
+        if k.strip() != '':
+            #------------------------------> Expand ranges
+            lK = ExpandRange(k, numType)
+            #------------------------------> Get list of numbers
+            lN = lN + lK
+        else:
+            pass
+    #endregion --------------------------------------------------> Get numbers
+
+    #region ----------------------------------------------------------> Unique
+    if unique:
+        lo = ListRemoveDuplicates(lN)
+    else:
+        lo = lN
+    #endregion -------------------------------------------------------> Unique
+
+    return lo
+#---
+
+
+def StrEqualLength(strL: list[str], char: str=' ', loc:str='end') -> list[str]:
+    """Return a list in which every string element has the same length.
+
+        Parameters
+        ----------
+        strL: list[str]
+            String with different length.
+        char: str
+            Fill character. Default is empty space.
+        loc: str
+            Add filling character to start or end of the strings.
+
+        Returns
+        -------
+        list[str]
+            String with the same length with the same original order.
+
+        Notes
+        -----
+        Filling characters are added at the end or start of each str.
+    """
+    #region ---------------------------------------------------> Variables
+    long = len(max(strL, key=len))
+    lOut = []
+    #endregion ------------------------------------------------> Variables
+
+    #region ---------------------------------------------------> Fill lOut
+    if loc == 'end':
+        for x in strL:
+            space = (long-len(x))*char
+            lOut.append(f'{x}{space}')
+    elif loc == 'start':
+        for x in strL:
+            space = (long-len(x))*char
+            lOut.append(f'{space}{x}')
+    else:
+        msg = mConfig.mNotImplementedFull.format(
+            loc, 'loc', mConfig.oFillLoc)
+        raise mException.ExecutionError(msg)
+    #endregion ------------------------------------------------> Fill lOut
+
+    return lOut
+#---
+
+
 def ResControl2ListNumber(
-    val: str, sep: list[str]=[' ', ',', ';'], 
-    numType: Literal['int', 'float']='int',
+    val: str, 
+    sep: list[str]=[' ', ',', ';'], 
+    numType: mConfig.litNumType='int',
     ) -> list[list[list[int]]]:
     """Return a list from a Result - Control string.
-    
+
         Parameters
         ----------
         val : str
@@ -59,21 +270,21 @@ def ResControl2ListNumber(
     """
     # Test in test.unit.test_method.Test_ResControl2ListNumber
     #region -------------------------------------------------------> Variables
-    l = []    
+    l = []
     #endregion ----------------------------------------------------> Variables
-    
+
     #region -------------------------------------------------------> Form list
     for k in val.split(sep[2]):
         #------------------------------> 
-        lrow = []
+        lRow = []
         #------------------------------> 
         for j in k.split(sep[1]):
-            colVal = dtsMethod.Str2ListNumber(j, numType=numType, sep=sep[0])
-            lrow.append(colVal)
+            colVal = Str2ListNumber(j, numType=numType, sep=sep[0])
+            lRow.append(colVal)
         #------------------------------> 
-        l.append(lrow)
+        l.append(lRow)
     #endregion ----------------------------------------------------> Form list
-    
+
     return l
 #---
 
@@ -84,13 +295,13 @@ def ResControl2Flat(val: list[list[list[int]]]) -> list[int]:
         Parameters
         ----------
         val : list of list of list of int
-            Result - Control as a list of list of list of int
+            Result - Control as a list of list of list of int.
 
         Returns
         -------
         list of int
             Flat Result - Control list
-            
+
         Examples
         --------
         >>> ResControl2Flat([[[0,1,2], [3,4,5]], [[6,7,8], [9,10,11]]])
@@ -120,12 +331,12 @@ def ResControl2DF(
         list[list[list[int]]]
             The list has the same order as the input val but the column index
             are adjusted.
-            
+
         Notes
         -----
         It is assumed columns in the DF have the same order as in val.
-        Empty list as possible to mimic empty conditions in an experiment.
-        
+        Empty list are possible to mimic empty conditions in an experiment.
+
         Examples
         --------
         >>> ResControl2DF([[[0,1,2], []], [[6,7,8], []]], 1)
@@ -136,32 +347,455 @@ def ResControl2DF(
     idx  = start
     outL = []
     #endregion ----------------------------------------------------> Variables
-    
+
     #region --------------------------------------------------> Adjust col idx
     for row in val:
-        #------------------------------> 
+        #------------------------------>
         outR = []
-        #------------------------------> 
+        #------------------------------>
         for col in row:
-            #------------------------------> 
+            #------------------------------>
             outC = []
-            #------------------------------> 
-            if len(col) > 0:
-                pass
-            else:
-                outR.append([])
-                continue
-            #------------------------------> 
-            for k in col:
+            #------------------------------>
+            for _ in col:
                 outC.append(idx)
                 idx += 1
-            #------------------------------> 
+            #------------------------------>
             outR.append(outC)
-        #------------------------------> 
-        outL.append(outR)    
+        #------------------------------>
+        outL.append(outR)
     #endregion -----------------------------------------------> Adjust col idx
-    
+
     return outL
+#---
+#endregion ---------------------------------------------------> String methods
+
+
+#region ------------------------------------------------------> Number methods
+def ExpandRange(
+    r: str, numType: mConfig.litNumType='int',
+    ) -> Union[list[int], list[float]]:
+    """Expand a range of numbers: '4-7' --> [4,5,6,7]. Only positive integers 
+        are supported.
+
+        Parameters
+        ----------
+        r : str
+            String containing the range
+        numType : str
+            One of 'int', 'float'. For the case where r is not a range
+
+        Returns
+        -------
+        list of int
+
+        Examples
+        --------
+        >>> ExpandRange('0-15', 'int')
+        >>> [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+        >>> ExpandRange('-5.4', 'float')
+        >>> [-5.4]
+    """
+    #region -------------------------------------------------> Expand & Return
+    #------------------------------> Remove flanking empty characters
+    tr = r.strip()
+    #------------------------------> Expand
+    if '-' in tr:
+        #------------------------------> Range
+        #--------------> Catch more than one - in range
+        a,b = tr.split('-')
+        #-------------->  Check a value
+        if a == '':
+            #--> Negative number
+            return [mConfig.oNumType[numType](tr)]
+        else:
+            pass
+        #-------------->  Check b
+        if b == '':
+            #--> range like 4-
+            raise mException.InputError(mConfig.mRangeNumIE.format(r))
+        else:
+            pass
+        #--------------> Expand range
+        a = int(a)
+        b = int(b)
+        #--> Expand range
+        if a < b:
+            return [x for x in range(a, b+1, 1)]
+        else:
+            raise mException.InputError(mConfig.mRangeNumIE.format(r))
+    else:
+        #------------------------------> Positive number
+        return [mConfig.oNumType[numType](tr)]
+    #endregion ----------------------------------------------> Expand & Return
+#---
+#endregion ---------------------------------------------------> Number methods
+
+
+#region ---------------------------------------------------------> wx.ListCtrl
+def LCtrlFillColNames(lc: wx.ListCtrl, fileP: Union[Path, str]) -> bool:
+    """Fill the wx.ListCtrl with the name of the columns in fileP.
+
+        Parameters
+        ----------
+        lc : wx.ListCtrl
+            wx.ListCtrl to fill info into
+        fileP : Path
+            Path to the file from which to read the column names
+
+        Notes
+        -----
+        This will delete the wx.ListCtrl before adding the new names.
+        wx.ListCtrl is assumed to have at least two columns [#, Name,]
+    """
+    #region -------------------------------------------------------> Read file
+    colNames = mFile.ReadFileFirstLine(fileP)
+    #endregion ----------------------------------------------------> Read file
+
+    #region -------------------------------------------------------> Fill List
+    #------------------------------> Del items
+    lc.DeleteAllItems()
+    #------------------------------> Fill
+    for k, v in enumerate(colNames):
+        index = lc.InsertItem(k, " " + str(k))
+        lc.SetItem(index, 1, v)
+    #endregion ----------------------------------------------------> Fill List
+
+    return True
+#---
+
+
+def ListRemoveDuplicates(l: Union[list, tuple]) -> list:
+    """Remove duplicate elements from l. Order is conserved.
+
+        Parameters
+        ----------
+        l : list or tuple
+            Contain the duplicate elements to remove
+
+        Returns
+        -------
+        list
+
+        Examples
+        --------
+        >>> ListRemoveDuplicates([1,2,3,6,4,7,5,6,10,7,8,9])
+        >>> [1, 2, 3, 6, 4, 7, 5, 10, 8, 9]
+    """
+    # Test in tests.unit.data.test_method.Test_ListRemoveDuplicates
+    return list(dict.fromkeys(l))
+#---
+#endregion ------------------------------------------------------> wx.ListCtrl
+
+
+#region ----------------------------------------------------------------> Dict
+def DictVal2Str(
+    iDict: dict, 
+    changeKey: list=[],
+    new: bool=False,
+    ) -> dict:
+    """Returns a dict with values turn to str for all keys or only those in 
+        changeKey.
+
+        Parameters
+        ----------
+        iDict: dict
+            Initial dict.
+        changeKey: list of keys
+            Only modify this keys.
+        new : boolean
+            Do not modify iDict (True) or modify in place (False). 
+            Default is False.
+
+        Returns
+        -------
+        dict :
+            with the corresponding values turned to str
+
+        Examples
+        --------
+        >>> DictVal2Str({1:Path('/k/d/c'), 'B':3})
+        >>> {1: '/k/d/c', 'B': '3'}
+        >>> DictVal2Str({1:Path('/k/d/c'), 'B':3}, changeKey=[1])
+        >>> {1: '/k/d/c', 'B': 3}
+    """
+    #region -------------------------------------------------------> Variables
+    if new:
+        oDict = copy.deepcopy(iDict)
+    else:
+        oDict = iDict
+    #endregion ----------------------------------------------------> Variables
+    
+    #region ---------------------------------------------------> Change values
+    for k in changeKey:
+        oDict[k] = str(oDict[k])
+    #endregion ------------------------------------------------> Change values
+
+    return oDict
+#---
+#endregion -------------------------------------------------------------> Dict
+
+
+#region --------------------------------------------------------> pd.DataFrame
+def DFFilterByColS(
+    df:'pd.DataFrame', 
+    col: int,
+    refStr: str,
+    comp: Literal['e', 'ne'],
+    ) -> 'pd.DataFrame':
+    """Filter rows in the pd.DataFrame based on the string values present in 
+        col.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+        col : int
+            The column index used to filter rows
+        refStr : string
+            Reference string
+        comp : str
+            Numeric comparison to use in the filter. One of:
+            'e', 'ne
+
+        Returns
+        -------
+        pd.DataFrame
+
+        Notes
+        -----
+        Rows with values in col that do not comply with c[x] comp refStr are 
+        discarded, e.g. c[x] == 'refString'
+        
+        Assumes all values in col are strings
+    """
+    #region ----------------------------------------------------------> Filter
+    #------------------------------>  Copy
+    dfo = df.copy()
+    #------------------------------> Filter
+    if comp == 'e':
+        dfo = df.loc[df.iloc[:,col] == refStr]
+    elif comp == 'ne':
+        dfo = df.loc[df.iloc[:,col] != refStr]
+    else:
+        msg = mConfig.mCompNYI.format(comp)
+        raise mException.NotYetImplementedError(msg)
+    #endregion -------------------------------------------------------> Filter
+
+    return dfo
+#---
+
+
+def DFReplace(
+    df: pd.DataFrame, 
+    oriVal: list, 
+    repVal: Union[list, str, float, int], 
+    sel: list[int]=[],
+    ) -> pd.DataFrame:
+    """Replace values in the dataframe.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Dataframe with the data.
+        oriVal: list
+            List of values to search and replace.
+        repVal: list or single value
+            List of values to use as replacement. When only one value is given
+            all oriVal are replace with the given value.
+        sel : list of int
+            Column indexes.
+
+        Returns
+        -------
+        pd.DataFrame
+            With replaced values
+
+        Raise
+        -----
+        InputError :
+            - When selection is not found in df
+            - When oriVal and repVal have different length
+        ExecutionError :
+            - When the replacement procedure does not finish correctly
+
+        Notes
+        -----
+        Column selection in the df is done by column number.
+    """
+    #region -----------------------------------------------------> Check input
+    if isinstance(repVal, (list, tuple)):
+        repValFix = repVal
+    else:
+        repValFix = len(oriVal) * [repVal]
+    #endregion --------------------------------------------------> Check input
+
+    #region ---------------------------------------------------------> Replace
+    #------------------------------> Copy
+    dfo = df.copy()
+    #------------------------------> 
+    for k, v in enumerate(oriVal):
+        #------------------------------> 
+        rep = repValFix[k]
+        #------------------------------> 
+        if sel is not None:
+            dfo.iloc[:,sel] = dfo.iloc[:,sel].replace(v, rep)
+        else:
+            dfo = dfo.replace(v, rep)
+    #endregion ------------------------------------------------------> Replace
+
+    return dfo
+#---
+
+
+def DFExclude(df:'pd.DataFrame', col: list[int]) -> 'pd.DataFrame':
+    """Exclude rows in the pd.DataFrame based on the values present in col.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+        col : list[int]
+
+        Returns
+        -------
+        pd.DataFrame
+
+        Notes
+        -----
+        Rows with at least one value other than NA in the given columns are 
+        discarded
+    """
+    #region ----------------------------------------------------------> Exclude
+    #------------------------------>  Copy
+    dfo = df.copy()
+    #------------------------------> Exclude
+    a = dfo.iloc[:,col].notna()
+    a = a.loc[(a==True).any(axis=1)] # type: ignore
+    idx = a.index
+    dfo = dfo.drop(index=idx) # type: ignore
+    #endregion -------------------------------------------------------> Exclude
+
+    return dfo
+#---
+
+
+def DFFilterByColN(
+    df:'pd.DataFrame', 
+    col: list[int], 
+    refVal: float,
+    comp: mConfig.litComp,
+    ) -> 'pd.DataFrame':
+    """Filter rows in the pd.DataFrame based on the numeric values present in 
+        col.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+        col : list of int
+            The column indexes used to filter rows
+        refVal : float
+            Reference value
+        comp : str
+            Numeric comparison to use in the filter. One of:
+            'lt', 'le', 'e', 'ge', 'gt'
+
+        Returns
+        -------
+        pd.DataFrame
+
+        Notes
+        -----
+        Rows with values in col that do not comply with c[x] comp refVal are 
+        discarded, e.g. c[x] > 3,45
+        
+        Assumes all values in col are numbers.
+    """
+    #region ----------------------------------------------------------> Filter
+    #------------------------------>  Copy
+    dfo = df.copy()
+    #------------------------------> Filter
+    if comp == 'lt':
+        dfo = df.loc[(df.iloc[:,col] < refVal).any(axis=1)] # type: ignore
+    elif comp == 'le':
+        dfo = df.loc[(df.iloc[:,col] <= refVal).any(axis=1)] # type: ignore
+    elif comp == 'e':
+        dfo = df.loc[(df.iloc[:,col] == refVal).any(axis=1)] # type: ignore
+    elif comp == 'ge':
+        dfo = df.loc[(df.iloc[:,col] >= refVal).any(axis=1)] # type: ignore
+    elif comp == 'gt':
+        dfo = df.loc[(df.iloc[:,col] > refVal).any(axis=1)] # type: ignore
+    else:
+        msg = mConfig.mCompNYI.format(comp)
+        raise mException.NotYetImplementedError(msg)
+    #endregion -------------------------------------------------------> Filter
+
+    return dfo
+#---
+#endregion -----------------------------------------------------> pd.DataFrame
+
+
+#region -------------------------------------------------------------> Methods
+def MatplotLibCmap(
+    N: int=128,
+    c1: tuple[int, int, int]=(255, 0, 0),
+    c2: tuple[int, int, int]=(255, 255, 255),
+    c3: tuple[int, int, int]=(0, 0, 255),
+    bad: Union[tuple[float, float, float], str]='',
+    ):
+    """ Generate custom matplotlib cmap c1->c2->c3.
+
+        Parameters
+        ----------
+        c1 : list of int
+            Color for lowest value. Default is red [255, 0, 0]
+        c2 : list of int
+            Color for the middle value. Default is white [255, 255, 255]
+        c3 : list of int
+            Color of the biggest value. Default is blue [0, 0, 255]
+        bad : list of int, list of float, str or None
+            Color for bad values. Default is None.
+
+        Return
+        ------
+        Matplotlib color map.
+
+        Raises
+        ------
+        InputError
+            - When N is not an integer
+            - When any of the colors is not a proper [r, g, b] color (0 to 255)
+    """
+    # No test
+    #region ----------------------------------------------------------> Colors
+    #------------------------------>  c1 -> c2
+    try:
+        vals1 = np.ones((N, 4))
+        vals1[:, 0] = np.linspace(c1[0]/255, c2[0]/255, N)
+        vals1[:, 1] = np.linspace(c1[1]/255, c2[1]/255, N)
+        vals1[:, 2] = np.linspace(c1[2]/255, c2[2]/255, N)
+    except Exception as e:
+        raise mException.InputError(str(e))
+    #------------------------------>  c2 -> c3
+    try:
+        vals2 = np.ones((N, 4))
+        vals2[:, 0] = np.linspace(c2[0]/255, c3[0]/255, N)
+        vals2[:, 1] = np.linspace(c2[1]/255, c3[1]/255, N)
+        vals2[:, 2] = np.linspace(c2[2]/255, c3[2]/255, N)
+    except Exception as e:
+        raise mException.InputError(str(e))
+    #endregion -------------------------------------------------------> Colors
+
+    #region ------------------------------------------------------------> CMAP
+    #------------------------------> 
+    vals   = np.vstack((vals1, vals2))
+    newMap = mpl.colors.ListedColormap(vals)
+    #------------------------------> 
+    if bad is not None:
+        newMap.set_bad(color=bad)
+    else:
+        pass
+    #endregion ---------------------------------------------------------> CMAP
+
+    return newMap
 #---
 
 
@@ -223,7 +857,7 @@ def Fragments(
         dictO[colK]['Nc']     = []
         dictO[colK]['NcNat']  = []
         #------------------------------> Filter df
-        dfE = dtsMethod.DFFilterByColN(df, [c], val, comp)
+        dfE = DFFilterByColN(df, [c], val, comp)
         #------------------------------> 
         n       = None
         c       = None
@@ -268,18 +902,18 @@ def Fragments(
                 cc   = dfE.iat[r,2]
                 ncf  = dfE.iat[r,3]
                 ccf  = dfE.iat[r,4]
-                seqc = dfE.iat[r,0]
+                seqC = dfE.iat[r,0]
                 if nc <= c:
-                    seq = f'{seq}\n{(nc-n)*" "}{seqc}'
-                    seqL.append(seqc)
-                    nP = nP + 1
+                    seq = f'{seq}\n{(nc-n)*" "}{seqC}'
+                    seqL.append(seqC)
+                    nP = nP + 1 # type: ignore
                     if cc > c:
                         c = cc
                         cf = ccf
                     else:
                         pass
                     if not np.isnan(ncf) and not np.isnan(ccf):
-                        npNat = npNat + 1
+                        npNat = npNat + 1 # type: ignore
                     else:
                         pass
                     if not np.isnan(ncf):
@@ -298,7 +932,7 @@ def Fragments(
                     nctL.append(cc)
                 else:
                     dictO[colK]['Coord'].append((n,c))
-                    dictO[colK]['CoordN'].append((nf,cf))
+                    dictO[colK]['CoordN'].append((nf,cf)) # type: ignore
                     dictO[colK]['Seq'].append(seq)
                     dictO[colK]['SeqL'].append(seqL)
                     dictO[colK]['Np'].append(nP)
@@ -309,8 +943,8 @@ def Fragments(
                     c    = cc
                     nf   = ncf
                     cf   = ccf
-                    seq  = seqc
-                    seqL = [seqc]
+                    seq  = seqC
+                    seqL = [seqC]
                     nP   = 1
                     if not np.isnan(nf) and not np.isnan(cf):
                         npNat = 1
@@ -335,16 +969,16 @@ def Fragments(
         #------------------------------> Catch the last line
         if n is not None:
             dictO[colK]['Coord'].append((n,c))
-            dictO[colK]['CoordN'].append((nf,cf))
+            dictO[colK]['CoordN'].append((nf,cf)) # type: ignore
             dictO[colK]['Seq'].append(seq)
             dictO[colK]['SeqL'].append(seqL)
             dictO[colK]['Np'].append(nP)
             dictO[colK]['NpNat'].append(npNat)
             dictO[colK]['Nc'].append(len(list(set(ncL))))
             dictO[colK]['NcNat'].append(len(list(set(ncLNat))))
-            
+            #------------------------------>
             dictO[colK]['NcT'] = [len(list(set(nctL))), len(list(set(nctLNat)))]
-            
+            #------------------------------>
             nFragN = [x for x in dictO[colK]['CoordN'] if not np.isnan(x[0]) or not np.isnan(x[1])]
             dictO[colK]['NFrag'] = [len(dictO[colK]['Coord']), len(nFragN)]
         else:
@@ -357,7 +991,58 @@ def Fragments(
 #---
 
 
-def HCurve(x:float, t0:float, s0:float) -> float:
+def MergeOverlappingFragments(
+    coord:list[tuple[int, int]], delta:int=0,
+    ) -> list[tuple[int, int]]:
+    """Merge overlapping fragments in a list of fragments coordinates.
+
+        Parameters
+        ----------
+        coord: list[tuple[int, int]]
+            Fragment coordinates lists
+        delta: int
+            To adjust the merging of adjacent fragments.
+
+        Returns
+        -------
+        list[tuple[int, int]]
+
+        Notes
+        -----
+        An empty list is returned if coord is empty.
+    """
+    #region ---------------------------------------------------> Variables
+    coordO = []
+    #endregion ------------------------------------------------> Variables
+
+    #region ------------------------------------------------------> Sort & Dup
+    coordS = sorted(list(set(coord)), key=itemgetter(0,1))
+    #endregion ---------------------------------------------------> Sort & Dup
+
+    #region -------------------------------------> Merge Overlapping Intervals
+    try:
+        a,b = coordS[0]
+    except IndexError:
+        return []
+    for ac,bc in coordS[1:]:
+        if ac <= b+delta:
+            if bc > b:
+                b = bc
+            else:
+                pass
+        else:
+            coordO.append((a,b))
+            a = ac
+            b = bc
+    #------------------------------> Catch the last one
+    coordO.append((a,b))
+    #endregion ----------------------------------> Merge Overlapping Intervals
+
+    return coordO
+#---
+
+
+def HCurve(x:Union[float,pd.DataFrame,pd.Series], t0:float, s0:float) -> float:
     """Calculate the hyperbolic curve values according to:
         doi: 10.1142/S0219720012310038
 
@@ -367,14 +1052,10 @@ def HCurve(x:float, t0:float, s0:float) -> float:
 
         Returns
         -------
-        
-
-        Raise
-        -----
-        
+        float
     """
     #region ---------------------------------------------------> Calculate
-    return abs((abs(x)*t0)/(abs(x)-t0*s0))
+    return abs((abs(x)*t0)/(abs(x)-t0*s0)) # type: ignore
     #endregion ------------------------------------------------> Calculate
 #---
 
@@ -417,9 +1098,13 @@ def Rec2NatCoord(
 
 
 def R2AA(
-    df:pd.DataFrame, seq: str, alpha: float, protL: int, pos: int=5,
+    df:pd.DataFrame,
+    seq: str,
+    alpha: float,
+    protL: int,
+    pos: int=5,
     ) -> pd.DataFrame:
-    """AA distribution analysis
+    """AA distribution analysis.
 
         Parameters
         ----------
@@ -430,31 +1115,38 @@ def R2AA(
             Recombinant protein sequence
         alpha: float
             Significance level
+        protL: int
+            Protein length.
         pos: int
-            Number of positions to consider
-            
+            Number of positions to consider.
+
         Returns
         -------
         pd.DataFrame
             AA Label1       LabelN
             AA -2 -1 1 2 P  -2 -1 1 2 P
     """
-    print('AA NUMBER OF POSITIONS')
-    print(pos)
-    def AddNewAA(dfO, r, pos, seq, l):
-        """
-    
+    def AddNewAA(
+        dfO: pd.DataFrame, r: int, pos: int, seq: str, l: str
+        ) -> pd.DataFrame:
+        """Add new amino acids to running total.
+
             Parameters
             ----------
-            
-    
+            dfO: pd.DataFrame
+                Running total
+            r: int
+                AA distance from cleavage site.
+            pos: int
+                Number of positions to consider.
+            seq: str
+                Amino acids sequence
+            l: str
+                Current column label
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            pd.DataFrame
         """
         #region ---------------------------------------------------> 
         if r >= pos:
@@ -484,8 +1176,8 @@ def R2AA(
         aL = aL + 2*pos*[l]
         bL = bL + [f'P{x}' for x in range(pos, 0, -1)] + [f'P{x}\'' for x in range(1, pos+1,1)]
     idx = pd.MultiIndex.from_arrays([aL[:],bL[:]])
-    dfO = pd.DataFrame(0, columns=idx, index=config.lAA1+['Chi'])
-    dfO[('AA','AA')] = config.lAA1[:]+['Chi']
+    dfO = pd.DataFrame(0, columns=idx, index=mConfig.lAA1+['Chi']) # type: ignore
+    dfO[('AA','AA')] = mConfig.lAA1[:]+['Chi']
     #endregion ------------------------------------------------> Empty
 
     #region ---------------------------------------------------> Fill
@@ -506,13 +1198,13 @@ def R2AA(
             else:
                 pass
     #endregion ------------------------------------------------> Fill
-    
+
     #region ---------------------------------------------------> Random Cleavage
     c = 'ALL_CLEAVAGES_UMSAP'
     aL = 2*pos*[c]
     bL = [f'P{x}' for x in range(pos, 0, -1)] + [f"P{x}'" for x in range(1, pos+1,1)]
     idx = pd.MultiIndex.from_arrays([aL[:],bL[:]])
-    dfT = pd.DataFrame(0, columns=idx, index=config.lAA1+['Chi'])
+    dfT = pd.DataFrame(0, columns=idx, index=mConfig.lAA1+['Chi']) # type: ignore
     dfO = pd.concat([dfO, dfT], axis=1)
     for k,_ in enumerate(seq[1:-1], start=1): # Exclude first and last residue
         dfO = AddNewAA(dfO, k, pos, seq, c)
@@ -521,14 +1213,14 @@ def R2AA(
     #region ---------------------------------------------------> Group
     idx = pd.IndexSlice
     gS = []
-    for g in config.lAAGroups:
+    for g in mConfig.lAAGroups:
         gS.append(dfO.loc[g,:].sum(axis=0))
     g = pd.concat(gS, axis=1)
     g = g.transpose()
 
     for l in df.columns.get_level_values(0)[1:]:
         for p in dfO.loc[:,idx[l,:]].columns.get_level_values(1):
-            dfO.at['Chi', idx[l,p]] = dtsStatistic.test_chi(
+            dfO.at['Chi', idx[l,p]] = mStatistic.Test_chi(
                 g.loc[:,idx[[l,c],p]], alpha)[0]
     #endregion ------------------------------------------------> Group
 
@@ -539,14 +1231,20 @@ def R2AA(
 def R2Hist(
     df: pd.DataFrame, alpha: float, win: list[int], maxL: list[int]
     ) -> pd.DataFrame:
-    """
+    """Create the cleavage histograms.
 
         Parameters
         ----------
         df: pd.DataFrame
             Nterm Cterm NtermF CtermF Exp1 .... ExpN
             Nterm Cterm NtermF CtermF P    .... P
-            
+        alpha: float
+            Alpha level.
+        win: list[int]
+            Window definition
+        maxL: list[int]
+            Protein lengths, Recombinant and Native or None
+
         Returns
         -------
         pd.DataFrame
@@ -563,7 +1261,7 @@ def R2Hist(
         bin.append(win)
         bin.append(win)
     #endregion ------------------------------------------------> Variables
-    
+
     #region --------------------------------------------------------> Empty DF
     #------------------------------> Columns
     label = df.columns.unique(level=0).tolist()[4:]
@@ -575,7 +1273,7 @@ def R2Hist(
     nR = sorted([len(x) for x in bin])[-1]
     #------------------------------> df
     col = pd.MultiIndex.from_arrays([a[:],b[:],c[:]])
-    dfO = pd.DataFrame(np.nan, index=range(0,nR), columns=col)
+    dfO = pd.DataFrame(np.nan, index=range(0,nR), columns=col) # type: ignore
     #endregion -----------------------------------------------------> Empty DF
 
     #region ---------------------------------------------------> Fill
@@ -618,13 +1316,18 @@ def R2Hist(
 
 
 def R2CpR(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
-    """
+    """Creates the Cleavage per Residue results.
+
         Parameters
         ----------
         df: pd.DataFrame
             Nterm Cterm NtermF CtermF Exp1 .... ExpN
             Nterm Cterm NtermF CtermF P    .... P
-            
+        alpha: float
+            Alpha level
+        protL: list[int]
+            Protein length, recombinant and native or None.
+
         Returns
         -------
         pd.DataFrame
@@ -637,9 +1340,9 @@ def R2CpR(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
     nR = sorted(protL, reverse=True)[0] if protL[1] is not None else protL[0]
     idx = pd.IndexSlice
     col = pd.MultiIndex.from_arrays([a[:],b[:]])
-    dfO = pd.DataFrame(0, index=range(0,nR), columns=col)   
+    dfO = pd.DataFrame(0, index=range(0,nR), columns=col) # type: ignore
     #endregion ----------------------------------------------------------> dfO
-   
+
     #region ------------------------------------------------------------> Fill
     for e in label:
         dfT = df[df[(e,'P')] < alpha]
@@ -678,15 +1381,24 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         df: pd.DataFrame
             Nterm Cterm NtermF CtermF Exp1     .... ExpN
             Nterm Cterm NtermF CtermF Int P    .... Int P
-            
+        alpha: float
+            Alpha level
+        protL: list[int]
+            Protein length, recombinant and native or None.
+
         Returns
         -------
         pd.DataFrame
     """
     def IntL2MeanI(a: list, alpha: float) -> float:
-        """
-        
-        
+        """Calculate the intensity average.
+
+            Parameters
+            ----------
+            a: list
+                List with the intensities.
+            alpha: float
+                Alpha level.
         """
         if a[-1] < alpha:
             l = list(map(float, a[0][1:-1].split(',')))
@@ -699,17 +1411,15 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
     label = df.columns.unique(level=0).tolist()[4:]
     nL = len(label)
     a = df.columns.tolist()[4:]
-    print(a)
     colN = list(range(4, len(a)+4))
-    print(colN)
     #endregion -----------------------------------------------------> 
-    
+
     #region --------------------------------------------------------> 
     a = (nL)*['Rec']+(nL)*['Nat']
     b = 2*label
     nR = sorted(protL, reverse=True)[0] if protL[1] is not None else protL[0]
     col = pd.MultiIndex.from_arrays([a[:],b[:]])
-    dfO = pd.DataFrame(0, index=range(0,nR), columns=col)
+    dfO = pd.DataFrame(0, index=range(0,nR), columns=col) # type: ignore
     #endregion -----------------------------------------------------> 
 
     #region ---------------------------------------------------> 
@@ -721,7 +1431,7 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
     resL = [x for x in resL if x > -1 and x < protL[0]]
     #------------------------------>
     for e in label:
-        dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])
+        dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha]) # type: ignore
     #------------------------------> 
     maxN = dfT.loc[:,idx[:,'Int']].max().max()
     minN = dfT.loc[:,idx[:,'Int']].min().min()
@@ -735,7 +1445,7 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         #------------------------------>
         dfG = dfT.loc[(dfT[('Nterm','Nterm')]==r) | (dfT[('Cterm','Cterm')]==r)].copy()
         #------------------------------>
-        dfG = dfG.loc[dfG.loc[:,idx[:,'Int']].any(axis=1)]
+        dfG = dfG.loc[dfG.loc[:,idx[:,'Int']].any(axis=1)] # type: ignore
         dfG.loc[:,idx[:,'Int']] = dfG.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
         #------------------------------>
         dfO.iloc[r, range(0,len(label))] = dfG.loc[:,idx[:,'Int']].sum(axis=0)
@@ -751,7 +1461,7 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         resL = [x for x in resL if x > -1 and x < protL[0]]
         #------------------------------> 
         for e in label:
-            dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])
+            dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha]) # type: ignore
         #------------------------------> 
         maxN = dfT.loc[:,idx[:,'Int']].max().max()
         minN = dfT.loc[:,idx[:,'Int']].min().min()
@@ -764,7 +1474,7 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         for r in resL:
             dfG = dfT.loc[(dfT[('NtermF','NtermF')]==r) | (dfT[('CtermF','CtermF')]==r)].copy()
             #------------------------------>
-            dfG = dfG.loc[dfG.loc[:,idx[:,'Int']].any(axis=1)]
+            dfG = dfG.loc[dfG.loc[:,idx[:,'Int']].any(axis=1)] # type: ignore
             dfG.loc[:,idx[:,'Int']] = dfG.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
             #------------------------------> 
             dfO.iloc[r, range(len(label),2*len(label))] = dfG.loc[:,idx[:,'Int']].sum(axis=0)    
@@ -777,10 +1487,14 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
 
 
 def R2SeqAlignment(
-    df: pd.DataFrame, alpha: float, seqR: str, seqN: Union[None, str],
-    fileP: 'Path', tLength: int,
-    ) -> bool:
-    """Sequence Alignment for the TarProt Module
+    df     : pd.DataFrame,
+    alpha  : float,
+    seqR   : str,
+    seqN   : Union[None, str],
+    fileP  : 'Path',
+    tLength: int,
+    ) -> bool: 
+    """Sequence Alignment for the TarProt Module.
 
         Parameters
         ----------
@@ -840,8 +1554,8 @@ def R2SeqAlignment(
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(name='Seq', fontName='Courier', fontSize=8.5))
     #endregion ------------------------------------------------> Variables
-    
-    #region ---------------------------------------------------> 
+
+    #region --------------------------------------------------->
     for e in label:
         #------------------------------> 
         Story.append(Paragraph(f'{e} Recombinant Sequence'))
@@ -899,7 +1613,7 @@ def R2SeqAlignment(
             else:
                 Story.append(Spacer(1,20))
     #endregion ------------------------------------------------> 
-    
+
     doc.build(Story)
     return True
 #---

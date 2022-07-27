@@ -108,10 +108,10 @@ class SplashWindow(wx.adv.SplashScreen):
                 Information regarding the event.
         """
         #region	-----------------------------------------------------> Imports
-        import config.config as config
-        import dtscore.file as dtsFF
-        import gui.menu as menu
-        import gui.window as window
+        import config.config as mConfig
+        import data.file as mFile
+        import gui.menu as mMenu
+        import gui.window as mWindow
         #endregion---------------------------------------------------> Imports
 
         #region -------------------------------------------------------> Fonts
@@ -148,51 +148,49 @@ class SplashWindow(wx.adv.SplashScreen):
             False,
             faceName="Courier",
         )
-        if config.os == "Darwin":
-            config.font['SeqAlign']              = fSeqAlignFont
-            config.font['TreeItem']              = fTreeItem
-            config.font['TreeItemDataFile']      = fTreeItemFileData
-            config.font['TreeItemDataFileFalse'] = fTreeItemFileDataFalse
-        elif config.os == "Windows":
-            config.font['SeqAlign']             = fSeqAlignFont.SetPointSize(12)
-            config.font['TreeItem']             = fTreeItem
-            config.font['TreeItemDataFileFalse']= fTreeItemFileDataFalse
-            config.font['TreeItemDataFile'] = fTreeItemFileData.SetPointSize(10)
+        if mConfig.os == "Darwin":
+            mConfig.font['SeqAlign']              = fSeqAlignFont
+            mConfig.font['TreeItem']              = fTreeItem
+            mConfig.font['TreeItemDataFile']      = fTreeItemFileData
+            mConfig.font['TreeItemDataFileFalse'] = fTreeItemFileDataFalse
+        elif mConfig.os == "Windows":
+            mConfig.font['SeqAlign']             = fSeqAlignFont.SetPointSize(12)
+            mConfig.font['TreeItem']             = fTreeItem
+            mConfig.font['TreeItemDataFileFalse']= fTreeItemFileDataFalse
+            mConfig.font['TreeItemDataFile'] = fTreeItemFileData.SetPointSize(10)
         else:
-            config.font['SeqAlign']             = fSeqAlignFont.SetPointSize(11)
-            config.font['TreeItem']             = fTreeItem
-            config.font['TreeItemDataFile']     = fTreeItemFileData
-            config.font['TreeItemDataFileFalse']= fTreeItemFileDataFalse
+            mConfig.font['SeqAlign']             = fSeqAlignFont.SetPointSize(11)
+            mConfig.font['TreeItem']             = fTreeItem
+            mConfig.font['TreeItemDataFile']     = fTreeItemFileData
+            mConfig.font['TreeItemDataFileFalse']= fTreeItemFileDataFalse
         #endregion ----------------------------------------------------> Fonts
 
         #region ------------------------------------------> User Configuration
-        # After fonts were created and assign to config, load user values
+        # After fonts were created and assigned to config, load user values
         try:
-            data = dtsFF.ReadJSON(config.fConfig)
-        except FileNotFoundError:
-            data = {}
+            data = mFile.ReadJSON(mConfig.fConfig)
         except Exception as e:
-            config.confUserFile = False
-            config.confUserFileException = e
+            mConfig.confUserFile = False
+            mConfig.confUserFileException = e
             data = {}
         #------------------------------>
         if data:
             #------------------------------> General
-            config.general['checkUpdate'] = data['general'].get(
-                'checkUpdate', config.general['checkUpdate'])
+            mConfig.general['checkUpdate'] = data['general'].get(
+                'checkUpdate', mConfig.general['checkUpdate'])
         else:
             pass
         #endregion ---------------------------------------> User Configuration
 
         #region --------------------------------------------------------> Menu
-        if config.os == "Darwin":
-            wx.MenuBar.MacSetCommonMenuBar(menu.MenuBarMain())
+        if mConfig.os == "Darwin":
+            wx.MenuBar.MacSetCommonMenuBar(mMenu.MenuBarMain())
         else:
             pass
         #endregion -----------------------------------------------------> Menu
 
         #region ------------------------------------------> Create main window
-        config.winMain = window.MainWindow()
+        mConfig.winMain = mWindow.WindowMain()
         #endregion ---------------------------------------> Create main window
 
         #region --------------------------------------------> Destroy & Return

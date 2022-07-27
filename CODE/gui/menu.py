@@ -16,14 +16,13 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable
 
 import wx
 
-import config.config as config
-import dtscore.window as dtsWindow
-import gui.method as method
-import gui.window as window
+import config.config as mConfig
+import gui.window as mWindow
+import gui.method as gMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -35,7 +34,7 @@ class BaseMenu(wx.Menu):
         ----------
         rIDMap: dict
             Maps menu item's ID with function in window, e.g.
-            {self.miSaveI.GetId() : config.klToolExpImgAll,}
+            {self.miSaveI.GetId() : mConfig.klToolExpImgAll,}
         rKeyMap : dict
             Maps menu items's ID with the keywords of the corresponding
             functions in the win, e.g.
@@ -76,16 +75,16 @@ class BaseMenu(wx.Menu):
             bool
         """
         #region -------------------------------------------------> Check MainW
-        if config.winMain is None:
-            config.winMain = window.MainWindow()
+        if mConfig.winMain is None:
+            mConfig.winMain = mWindow.WindowMain()
         else:
             pass
         #endregion ----------------------------------------------> Check MainW
 
         #region --------------------------------------------------> Create Tab
-        config.winMain.OnCreateTab(self.rIDMap[event.GetId()])
+        mConfig.winMain.CreateTab(self.rIDMap[event.GetId()])
         #endregion -----------------------------------------------> Create Tab
-        
+
         return True
     #---
 
@@ -102,8 +101,11 @@ class BaseMenu(wx.Menu):
             -------
             bool
         """
+        #region ---------------------------------------------------> 
         win = self.GetWindow()
         win.dKeyMethod[self.rIDMap[event.GetId()]]()
+        #endregion ------------------------------------------------> 
+
         return True
     #---
 
@@ -131,7 +133,32 @@ class BaseMenu(wx.Menu):
 
         return True
     #---
-    
+
+    def OnMethodLabelKey(self, event:wx.CommandEvent) -> bool:
+        """Call the corresponding method in the window with the value associated
+            with the menu item as argument.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        tID = event.GetId()
+        win = self.GetWindow()
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Call Method
+        win.dKeyMethod[self.rIDMap[tID]](self.rKeyMap[tID])
+        #endregion ----------------------------------------------> Call Method
+
+        return True
+    #---
+
     def OnMethodLabelBool(self, event:wx.CommandEvent) -> bool:
         """Call the corresponding method in the window with the boolean of the
             menu item as argument.
@@ -161,7 +188,7 @@ class BaseMenu(wx.Menu):
 
         return True
     #---
-    
+
     def OnMethodKey(self, event:wx.CommandEvent) -> bool:
         """Call the corresponding method in the window with a keyword argument.
 
@@ -187,7 +214,7 @@ class BaseMenu(wx.Menu):
 
         return True
     #---
-    
+
     def OnMethodKeyBool(self, event:wx.CommandEvent) -> bool:
         """Call the corresponding method in the window with a keyword argument 
             with boolean value.
@@ -200,7 +227,7 @@ class BaseMenu(wx.Menu):
             Returns
             -------
             bool
-            
+
             Notes
             -----
             Method assumes the wx.MenuItem is a radio or check item that will
@@ -258,7 +285,7 @@ class BaseMenuMainResult(BaseMenu):
         #endregion -----------------------------------------------> Menu Items
     #---
     #endregion -----------------------------------------------> Instance setup
-    
+
     #region ---------------------------------------------------> Class Methods
     def AddDateItems(self, menuDate: list[str]) -> bool:
         """Add and bind the analysis ID items. 
@@ -277,7 +304,7 @@ class BaseMenuMainResult(BaseMenu):
             #------------------------------> Item
             self.rPlotDate.append(self.AppendRadioItem(-1, k))
             #------------------------------> Add to dict
-            self.rIDMap[self.rPlotDate[-1].GetId()]  = config.klToolGuiUpdate
+            self.rIDMap[self.rPlotDate[-1].GetId()]  = mConfig.kwToolWinUpdate
             self.rKeyMap[self.rPlotDate[-1].GetId()] = 'tDate'
             #------------------------------> Bind
             self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.rPlotDate[-1])
@@ -320,11 +347,11 @@ class BaseMenuMainResult(BaseMenu):
 
         #region --------------------------------------------------> Add rIDMap
         rIDMap = {
-            self.miDupWin.GetId()  : config.klToolDupWin,
-            self.miZoomR.GetId()   : config.klToolZoomResetAll,
-            self.miSaveD.GetId()   : config.klToolExpData,
-            self.miSaveI.GetId()   : config.klToolExpImgAll,
-            self.miCheckDP.GetId() : config.klToolCheckDP,
+            self.miDupWin.GetId()  : mConfig.kwToolDupWin,
+            self.miZoomR.GetId()   : mConfig.kwToolZoomResetAll,
+            self.miSaveD.GetId()   : mConfig.kwToolExpData,
+            self.miSaveI.GetId()   : mConfig.kwToolExpImgAll,
+            self.miCheckDP.GetId() : mConfig.kwToolCheckDP,
         }
         self.rIDMap = self.rIDMap | rIDMap
         #endregion -----------------------------------------------> Add rIDMap
@@ -353,7 +380,7 @@ class BaseMenuMainResult(BaseMenu):
             Returns
             -------
             bool
-            
+
             Notes
             -----
             Menu Further Analysis, if present, is expected to be at 
@@ -377,7 +404,7 @@ class BaseMenuMainResult(BaseMenu):
         #------------------------------> Add new items
         for k in reversed(menuData['MenuDate']):
             self.rPlotDate.insert(0, self.InsertRadioItem(0,-1,k))
-            self.rIDMap[self.rPlotDate[0].GetId()] = config.klToolGuiUpdate
+            self.rIDMap[self.rPlotDate[0].GetId()] = mConfig.kwToolWinUpdate
             self.rKeyMap[self.rPlotDate[0].GetId()] = 'tDate'
             self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.rPlotDate[0])
         #------------------------------> Search for previously checked item
@@ -458,7 +485,7 @@ class BaseMenuMainResult(BaseMenu):
 
 
 class BaseMenuMainResultSubMenu(BaseMenu):
-    """Sub menu items for a plot region. 
+    """Sub menu items for a plot region.
 
         Parameters
         ----------
@@ -468,7 +495,7 @@ class BaseMenuMainResultSubMenu(BaseMenu):
     #region -----------------------------------------------------> Class setup
     rKeys = {
         'Shift': 'Main',
-        'Alt'  : 'Bottom'
+        'Alt'  : 'Sec',
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -483,17 +510,24 @@ class BaseMenuMainResultSubMenu(BaseMenu):
         self.miSaveI = self.Append(-1, f'Save Image\t{tKey}+I')
         self.miZoomR = self.Append(-1, f'Reset Zoom\t{tKey}+Z')
         #endregion -----------------------------------------------> Menu Items
-        
+
         #region ---------------------------------------------------> rKeyID
-        self.rIDMap = {
-            self.miSaveI.GetId(): f'{self.rKeys[tKey]}-Img',
-            self.miZoomR.GetId(): f'{self.rKeys[tKey]}-Zoom',
+        rIDMap = {
+            self.miSaveI.GetId(): mConfig.kwToolExpImg,
+            self.miZoomR.GetId(): mConfig.kwToolZoomReset,
         }
+        self.rIDMap = self.rIDMap | rIDMap
+        #------------------------------>
+        rKeyMap = {
+            self.miSaveI.GetId(): self.rKeys[tKey],
+            self.miZoomR.GetId(): self.rKeys[tKey],
+        }
+        self.rKeyMap = self.rKeyMap | rKeyMap
         #endregion ------------------------------------------------> rKeyID
-        
+
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miZoomR)
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabelKey, source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabelKey, source=self.miSaveI)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -540,7 +574,7 @@ class BaseMenuFurtherAnalysis(BaseMenu):
         #region ---------------------------------------------------> Add Entry
         if self.rMenuData['Nat']:
             #------------------------------> Add Item
-            self.miNat = self.Append(-1, config.lmNatSeq, kind=wx.ITEM_CHECK)
+            self.miNat = self.Append(-1, mConfig.lmNatSeq, kind=wx.ITEM_CHECK)
             self.Bind(wx.EVT_MENU, tMethod, source=self.miNat)
             #------------------------------> IDMap
             if idMap:
@@ -590,10 +624,10 @@ class BaseMenuFurtherAnalysis(BaseMenu):
         #endregion ------------------------------------------------> Add Items
 
         #region --------------------------------------------------> Add rIDMap
-        self.rIDMap[self.miDupWin.GetId()]  = config.klToolDupWin
-        self.rIDMap[self.miZoomR.GetId()]   = config.klToolZoomResetAll
-        self.rIDMap[self.miSaveD.GetId()]   = config.klToolExpData
-        self.rIDMap[self.miSaveI.GetId()]   = config.klToolExpImgAll
+        self.rIDMap[self.miDupWin.GetId()]  = mConfig.kwToolDupWin
+        self.rIDMap[self.miZoomR.GetId()]   = mConfig.kwToolZoomResetAll
+        self.rIDMap[self.miSaveD.GetId()]   = mConfig.kwToolExpData
+        self.rIDMap[self.miSaveI.GetId()]   = mConfig.kwToolExpImg
         #endregion -----------------------------------------------> Add rIDMap
 
         #region --------------------------------------------------------> Bind
@@ -700,7 +734,7 @@ class BaseMenuFurtherAnalysisEntry(BaseMenu):
 
     def Update(self, tDate: str, menuData: dict={}) -> bool:
         """Update the menu items.
-    
+
             Parameters
             ----------
             tDate: str
@@ -712,7 +746,7 @@ class BaseMenuFurtherAnalysisEntry(BaseMenu):
             -------
             bool
         """
-        #region --------------------------------------------------------> 
+        #region -------------------------------------------------------->
         for x in self.rItemList:
             self.Delete(x)
 
@@ -720,12 +754,12 @@ class BaseMenuFurtherAnalysisEntry(BaseMenu):
             self.Delete(self.rSep)
         else:
             pass
-        #endregion -----------------------------------------------------> 
+        #endregion ----------------------------------------------------->
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         self.cMenuData = menuData if menuData else self.cMenuData
         self.rItemList = self.SetItems(tDate)
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
         return True
     #---
@@ -737,6 +771,17 @@ class BaseMenuFurtherAnalysisEntry(BaseMenu):
 #region ----------------------------------------------------> Individual menus
 class MenuModule(BaseMenu):
     """Menu with module entries."""
+    #region -----------------------------------------------------> Class Setup
+    #------------------------------> Labels
+    cLLimProt  = mConfig.nmLimProt
+    cLProtProf = mConfig.nmProtProf
+    cLTarProt  = mConfig.nmTarProt
+    #------------------------------> Key - Values
+    cVLimProt  = mConfig.ntLimProt
+    cVProtProf = mConfig.ntProtProf
+    cVTarProt  = mConfig.ntTarProt
+    #endregion --------------------------------------------------> Class Setup
+
     #region --------------------------------------------------> Instance setup
     def __init__(self) -> None:
         """ """
@@ -745,16 +790,16 @@ class MenuModule(BaseMenu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu items
-        self.miLimProt  = self.Append(-1, f'{config.nmLimProt}\tAlt+Ctrl+L')
-        self.miProtProf = self.Append(-1, f'{config.nmProtProf}\tAlt+Ctrl+P')
-        self.miTarProt  = self.Append(-1, f'{config.nmTarProt}\tAlt+Ctrl+T')
+        self.miLimProt  = self.Append(-1, f'{self.cLLimProt}\tAlt+Ctrl+L')
+        self.miProtProf = self.Append(-1, f'{self.cLProtProf}\tAlt+Ctrl+P')
+        self.miTarProt  = self.Append(-1, f'{self.cLTarProt}\tAlt+Ctrl+T')
         #endregion -----------------------------------------------> Menu items
 
         #region -------------------------------------------------------> Names
         self.rIDMap = { # Associate IDs with Tab names. Avoid manual IDs
-            self.miLimProt.GetId() : config.ntLimProt,
-            self.miProtProf.GetId(): config.ntProtProf,
-            self.miTarProt.GetId() : config.ntTarProt,
+            self.miLimProt.GetId() : self.cVLimProt,
+            self.miProtProf.GetId(): self.cVProtProf,
+            self.miTarProt.GetId() : self.cVTarProt,
         }
         #endregion ----------------------------------------------------> Names
 
@@ -770,6 +815,16 @@ class MenuModule(BaseMenu):
 
 class MenuUtility(BaseMenu):
     """Menu with the utilities entries."""
+    #region -----------------------------------------------------> Class Setup
+    #------------------------------> Labels
+    cLCorrA    = mConfig.nuCorrA
+    cLDataPrep = mConfig.nuDataPrep
+    cLReadF    = mConfig.nuReadF
+    #------------------------------> Key - Values
+    cVCorrA    = mConfig.ntCorrA
+    cVDataPrep = mConfig.ntDataPrep
+    #endregion --------------------------------------------------> Class Setup
+
     #region --------------------------------------------------> Instance Setup
     def __init__(self) -> None:
         """"""
@@ -778,16 +833,16 @@ class MenuUtility(BaseMenu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu items
-        self.miCorrA    = self.Append(-1, config.nuCorrA)
-        self.miDataPrep = self.Append(-1, config.nuDataPrep)
+        self.miCorrA    = self.Append(-1, self.cLCorrA)
+        self.miDataPrep = self.Append(-1, self.cLDataPrep)
         self.AppendSeparator()
-        self.miReadFile = self.Append(-1, f'{config.nuReadF}\tCtrl+R')
+        self.miReadFile = self.Append(-1, f'{self.cLReadF}\tCtrl+R')
         #endregion -----------------------------------------------> Menu items
 
         #region -------------------------------------------------------> Names
         self.rIDMap = {
-            self.miCorrA.GetId()   : config.ntCorrA,
-            self.miDataPrep.GetId(): config.ntDataPrep,
+            self.miCorrA.GetId()   : self.cVCorrA,
+            self.miDataPrep.GetId(): self.cVDataPrep,
         }
         #endregion ----------------------------------------------------> Names
 
@@ -817,31 +872,17 @@ class MenuUtility(BaseMenu):
         #endregion ---------------------------------------------------> Window
 
         #region ---------------------------------------------------> Get fileP
-        try:
-            #------------------------------> 
-            dlg = dtsWindow.FileSelectDialog(
-                'openO', 
-                ext    = config.elUMSAP,
-                parent = win,
-                msg    = config.mFileSelUMSAP,
-            )
-            #------------------------------> 
-            if dlg.ShowModal() == wx.ID_OK:
-                fileP = Path(dlg.GetPath())
-            else:
-                return False
-        except Exception as e:
-            dtsWindow.NotificationDialog(
-                'errorF', 
-                msg        = config.mFileSelector,
-                tException = e,
-                parent     = win,
-            )
+        dlg = mWindow.DialogFileSelect(
+            'openO', ext=mConfig.elUMSAP, parent=win, msg=mConfig.mFileSelUMSAP)
+        #------------------------------>
+        if dlg.ShowModal() == wx.ID_OK:
+            fileP = Path(dlg.GetPath())
+        else:
             return False
         #endregion ------------------------------------------------> Get fileP
 
         #region ---------------------------------------------------> Load file
-        method.LoadUMSAPFile(fileP=fileP)
+        gMethod.LoadUMSAPFile(fileP=fileP)
         #endregion ------------------------------------------------> Load file
 
         dlg.Destroy()
@@ -853,6 +894,21 @@ class MenuUtility(BaseMenu):
 
 class MenuHelp(BaseMenu):
     """Menu with the help entries."""
+    #region ---------------------------------------------------> Class Setup
+    #------------------------------> Label
+    cLAbout       = 'About UMSAP'
+    cLManual      = 'Manual'
+    cLTutorial    = 'Tutorial'
+    cLCheckUpdate = 'Check for Updates'
+    cLPreference  = 'Preferences'
+    #------------------------------> Key
+    cVAbout       = mConfig.kwHelpAbout
+    cVManual      = mConfig.kwHelpManual
+    cVTutorial    = mConfig.kwHelpTutorial
+    cVCheckUpdate = mConfig.kwHelpCheckUpd
+    cVPreference  = mConfig.kwHelpPref
+    #endregion ------------------------------------------------> Class Setup
+
     #region --------------------------------------------------> Instance setup
     def __init__(self) -> None:
         """ """
@@ -861,23 +917,23 @@ class MenuHelp(BaseMenu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.miAbout    = self.Append(-1, config.klHelpAbout)
+        self.miAbout    = self.Append(-1, self.cLAbout)
         self.AppendSeparator()
-        self.miManual   = self.Append(-1, config.klHelpManual)
-        self.miTutorial = self.Append(-1, config.klHelpTutorial)
+        self.miManual   = self.Append(-1, self.cLManual)
+        self.miTutorial = self.Append(-1, self.cLTutorial)
         self.AppendSeparator()
-        self.miCheckUpd = self.Append(-1, config.klHelpCheckUpd)
+        self.miCheckUpd = self.Append(-1, self.cLCheckUpdate)
         self.AppendSeparator()
-        self.miPref     = self.Append(-1, config.klHelpPref)
+        self.miPref     = self.Append(-1, self.cLPreference)
         #endregion -----------------------------------------------> Menu Items
 
         #region ---------------------------------------------------> Links
         self.rIDMap = {
-            self.miAbout.GetId   (): config.klHelpAbout,
-            self.miManual.GetId  (): config.klHelpManual,
-            self.miTutorial.GetId(): config.klHelpTutorial,
-            self.miCheckUpd.GetId(): config.klHelpCheckUpd,
-            self.miPref.GetId    (): config.klHelpPref,
+            self.miAbout.GetId()   : self.cVAbout,
+            self.miManual.GetId()  : self.cVManual,
+            self.miTutorial.GetId(): self.cVTutorial,
+            self.miCheckUpd.GetId(): self.cVCheckUpdate,
+            self.miPref.GetId()    : self.cVPreference,
         }
         #endregion ------------------------------------------------> Links
 
@@ -895,6 +951,17 @@ class MenuHelp(BaseMenu):
 
 class MenuToolFileControl(BaseMenu):
     """Tool menu for the UMSAP file control window"""
+    #region -----------------------------------------------------> Class Setup
+    #------------------------------> Label
+    cLAdd    = mConfig.lmToolUMSAPCtrlAdd
+    cLDel    = mConfig.lmToolUMSAPCtrlDel
+    cLExp    = mConfig.lmToolUMSAPCtrlExp
+    cLUpdate = 'Reload File'
+    #------------------------------> Values
+    cVAddDelExp = mConfig.kwToolUMSAPCtrlAddDelExp
+    cVUpdate    = mConfig.kwToolUMSAPCtrlReload
+    #endregion --------------------------------------------------> Class Setup
+
     #region --------------------------------------------------> Instance setup
     def __init__(self, *args, **kwargs) -> None:
         """*args and **kwargs are needed to use this menu with ToolMenuBar.
@@ -905,21 +972,21 @@ class MenuToolFileControl(BaseMenu):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.miAddData = self.Append(-1, f'{config.klToolUMSAPCtrlAdd}\tCtrl+A')
+        self.miAddData = self.Append(-1, f'{self.cLAdd}\tCtrl+A')
         self.AppendSeparator()
-        self.miDelData = self.Append(-1, f'{config.klToolUMSAPCtrlDel}\tCtrl+X')
+        self.miDelData = self.Append(-1, f'{self.cLDel}\tCtrl+X')
         self.AppendSeparator()
-        self.miExpData = self.Append(-1, f'{config.klToolUMSAPCtrlExp}\tCtrl+E')
+        self.miExpData = self.Append(-1, f'{self.cLExp}\tCtrl+E')
         self.AppendSeparator()
-        self.miUpdateFile = self.Append(-1, 'Reload File\tCtrl+U')
+        self.miUpdateFile = self.Append(-1, f'{self.cLUpdate}\tCtrl+U')
         #endregion -----------------------------------------------> Menu Items
 
         #region -------------------------------------------------------> Links
         self.rIDMap = {
-            self.miAddData.GetId()   : config.klToolUMSAPCtrlAddDelExp,
-            self.miDelData.GetId()   : config.klToolUMSAPCtrlAddDelExp,
-            self.miExpData.GetId()   : config.klToolUMSAPCtrlAddDelExp,
-            self.miUpdateFile.GetId(): config.klToolUMSAPCtrlReload,
+            self.miAddData.GetId()   : self.cVAddDelExp,
+            self.miDelData.GetId()   : self.cVAddDelExp,
+            self.miExpData.GetId()   : self.cVAddDelExp,
+            self.miUpdateFile.GetId(): self.cVUpdate,
         }
         #endregion ----------------------------------------------------> Links
 
@@ -949,7 +1016,13 @@ class MenuToolCorrA(BaseMenuMainResult):
             'MenuDate' : ['dateA',....,'dateN'],
         }
     """
-    #region --------------------------------------------------> Instance setup
+    #region -----------------------------------------------------> Class Setup
+    cLAllCol  = mConfig.lmCorrAAllCol
+    cLSelCol  = mConfig.lmCorrASelCol
+    cLColName = 'Column Names'
+    #endregion --------------------------------------------------> Class Setup
+
+    #region --------------------------------------------------> Instance Setup
     def __init__(self, menuData: dict) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -957,14 +1030,12 @@ class MenuToolCorrA(BaseMenuMainResult):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.miColName  = self.Append(
-            -1, config.lmCorrAColName, kind=wx.ITEM_RADIO)
-        self.miColNumber = self.Append(
-            -1, config.lmCorrAColNum,kind=wx.ITEM_RADIO)
+        self.miColName   = self.Append(-1, self.cLColName, kind=wx.ITEM_CHECK)
+        self.miColName.Check(check=True)
         #------------------------------>
         self.AppendSeparator()
-        self.miAllCol = self.Append(-1, config.lmCorrAAllCol)
-        self.miSelCol = self.Append(-1, config.lmCorrASelCol)
+        self.miAllCol = self.Append(-1, self.cLAllCol)
+        self.miSelCol = self.Append(-1, self.cLSelCol)
         #------------------------------>
         self.AppendSeparator()
         self.miColBar = self.Append(-1, "Show ColorBar",kind=wx.ITEM_CHECK)
@@ -976,31 +1047,28 @@ class MenuToolCorrA(BaseMenuMainResult):
 
         #region -------------------------------------------------------> Names
         rIDMap = {
-            self.miColName.GetId()  : config.klToolGuiUpdate,
-            self.miColNumber.GetId(): config.klToolGuiUpdate,
-            self.miColBar.GetId()   : config.klToolGuiUpdate,
-            self.miSelCol.GetId()   : config.klToolCorrASelCol,
-            self.miAllCol.GetId()   : config.klToolCorrASelCol,
+            self.miColName.GetId()  : mConfig.kwToolWinUpdate,
+            self.miColBar.GetId()   : mConfig.kwToolWinUpdate,
+            self.miSelCol.GetId()   : mConfig.kwToolCorrACol,
+            self.miAllCol.GetId()   : mConfig.kwToolCorrACol,
         }
         self.rIDMap = self.rIDMap | rIDMap
         #------------------------------>
         rKeyMap = {
             self.miColName.GetId()  : 'col',
-            self.miColNumber.GetId(): 'col',
             self.miColBar.GetId()   : 'bar',
         }
         self.rKeyMap = self.rKeyMap | rKeyMap
         #endregion ----------------------------------------------------> Names
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnMethodKey,     source=self.miColName)
-        self.Bind(wx.EVT_MENU, self.OnMethodKey,     source=self.miColNumber)
+        self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miColName)
         self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miColBar)
         self.Bind(wx.EVT_MENU, self.OnMethodLabel,   source=self.miSelCol)
         self.Bind(wx.EVT_MENU, self.OnMethodLabel,   source=self.miAllCol)
         #endregion -----------------------------------------------------> Bind
     #---
-    #endregion -----------------------------------------------> Instance setup
+    #endregion -----------------------------------------------> Instance Setup
 #---
 
 
@@ -1036,7 +1104,7 @@ class MenuToolDataPrep(BaseMenuMainResult):
 #---
 
 
-class MenuFCEvolution(BaseMenu):
+class MenuToolProtProfFCEvolution(BaseMenu):
     """Menu for a log2FC evolution along relevant points."""
     #region --------------------------------------------------> Instance setup
     def __init__(self) -> None:
@@ -1056,24 +1124,30 @@ class MenuFCEvolution(BaseMenu):
 
         #region ---------------------------------------------------> rKeyID
         rIDMap = {
-            self.miSaveI.GetId()  : 'FCImage',
-            self.miZoomR.GetId()  : 'FCZoom',
-            self.miShowAll.GetId(): 'FCShowAll',
+            self.miSaveI.GetId()  : mConfig.kwToolExpImg,
+            self.miZoomR.GetId()  : mConfig.kwToolZoomReset,
+            self.miShowAll.GetId(): mConfig.kwToolFCShowAll,
         }
         self.rIDMap = self.rIDMap | rIDMap
+        #------------------------------>
+        rKeyMap = {
+            self.miSaveI.GetId()  : 'FC',
+            self.miZoomR.GetId()  : 'FC',
+        }
+        self.rKeyMap = self.rKeyMap | rKeyMap
         #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnMethodLabelBool, source=self.miShowAll)
-        self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miSaveI)
-        self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabelKey,  source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabelKey,  source=self.miZoomR)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 #---
 
 
-class MenuFiltersProtProf(BaseMenu):
+class MenuToolProtProfFilters(BaseMenu):
     """Menu for the ProtProfPlot Filters"""
     #region --------------------------------------------------> Instance setup
     def __init__(self) -> None:
@@ -1106,20 +1180,20 @@ class MenuFiltersProtProf(BaseMenu):
         
         #region ---------------------------------------------------> rKeyID
         rIDMap = {
-            self.miFcChange.GetId():  config.lFilFCEvol,
-            self.miHypCurve.GetId():  config.lFilHypCurve,
-            self.miLog2FC.GetId():    config.lFilFCLog,
-            self.miPValue.GetId():    config.lFilPVal,
-            self.miZScore.GetId():    f'{config.lFilZScore} F',
-            self.miApply.GetId():     'Apply All',
-            self.miRemoveLast.GetId():'Remove Last',
-            self.miRemoveAny.GetId(): 'Remove Any',
-            self.miRemoveAll.GetId(): 'Remove All',
-            self.miCopy.GetId():      'Copy',
-            self.miPaste.GetId():     'Paste',
-            self.miSave.GetId():      'Save Filter',
-            self.miLoad.GetId():      'Load Filter',
-            self.miUpdate.GetId():    'AutoApplyFilter',
+            self.miFcChange.GetId()  : mConfig.lFilFCEvol,
+            self.miHypCurve.GetId()  : mConfig.lFilHypCurve,
+            self.miLog2FC.GetId()    : mConfig.lFilFCLog,
+            self.miPValue.GetId()    : mConfig.lFilPVal,
+            self.miZScore.GetId()    : mConfig.lFilZScore,
+            self.miApply.GetId()     : 'Apply All',
+            self.miRemoveLast.GetId(): 'Remove Last',
+            self.miRemoveAny.GetId() : 'Remove Any',
+            self.miRemoveAll.GetId() : 'Remove All',
+            self.miCopy.GetId()      : 'Copy',
+            self.miPaste.GetId()     : 'Paste',
+            self.miSave.GetId()      : 'Save Filter',
+            self.miLoad.GetId()      : 'Load Filter',
+            self.miUpdate.GetId()    : 'AutoApplyFilter',
         }
         self.rIDMap = self.rIDMap | rIDMap
         #endregion ------------------------------------------------> rKeyID
@@ -1145,7 +1219,7 @@ class MenuFiltersProtProf(BaseMenu):
 #---
 
 
-class MenuLockPlotScale(BaseMenu):
+class MenuToolProtProfLockPlotScale(BaseMenu):
     """Lock the plots scale to the selected option."""
     #region --------------------------------------------------> Instance setup
     def __init__(self) -> None:
@@ -1187,8 +1261,8 @@ class MenuLockPlotScale(BaseMenu):
 #---
 
 
-class MenuClearSelLimProt(BaseMenu):
-    """Clear the selection in a LimProtRes Window."""
+class MenuToolLimProtClearSel(BaseMenu):
+    """Clear the selection in a LimProt Result Window."""
     #region --------------------------------------------------> Instance setup
     def __init__(self) -> None:
         """ """
@@ -1205,7 +1279,7 @@ class MenuClearSelLimProt(BaseMenu):
         self.miNoSel  = self.Append(-1, 'All\tCtrl+K')
         #endregion -----------------------------------------------> Menu Items
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         self.rIDMap = {
             self.miNoPept.GetId(): 'Peptide',
             self.miNoFrag.GetId(): 'Fragment',
@@ -1213,7 +1287,7 @@ class MenuClearSelLimProt(BaseMenu):
             self.miNoBL.GetId()  : 'Band/Lane',
             self.miNoSel.GetId() : 'All',
         }
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoPept)
@@ -1227,7 +1301,7 @@ class MenuClearSelLimProt(BaseMenu):
 #---
 
 
-class MenuClearSelTarProt(BaseMenu):
+class MenuToolTarProtClearSel(BaseMenu):
     """Clear the selection in a TarProtRes Window."""
     #region --------------------------------------------------> Instance setup
     def __init__(self) -> None:
@@ -1261,7 +1335,7 @@ class MenuClearSelTarProt(BaseMenu):
 #---
 
 
-class MenuClearSelProtProf(BaseMenu):
+class MenuToolProtProfClearSel(BaseMenu):
     """Clear the selection in a ProtProf Res Window."""
     #region --------------------------------------------------> Instance setup
     def __init__(self) -> None:
@@ -1280,8 +1354,8 @@ class MenuClearSelProtProf(BaseMenu):
         #region ---------------------------------------------------> 
         rIDMap = {
             self.miLabel.GetId(): 'Labels',
-            self.miSel.GetId(): 'Selection',
-            self.miNoSel.GetId() : 'AllClear',
+            self.miSel.GetId()  : 'Selection',
+            self.miNoSel.GetId(): 'AllClear',
         }
         self.rIDMap = self.rIDMap | rIDMap
         #endregion ------------------------------------------------> 
@@ -1323,14 +1397,14 @@ class MenuToolAA(BaseMenuFurtherAnalysis):
         for k in menuData['Label']:
             self.rItems.append(self.Append(-1, k, kind=wx.ITEM_CHECK))
             self.Bind(wx.EVT_MENU, self.OnLabel, source=self.rItems[-1])
-            rIDMap[self.rItems[-1].GetId()] = config.klToolAAExp
+            rIDMap[self.rItems[-1].GetId()] = mConfig.kwToolAAExp
         self.rItems[0].Check()
         #------------------------------> Positions
         self.AppendSeparator()
         for k in menuData['Pos']:
             self.rItems.append(self.Append(-1, k, kind=wx.ITEM_CHECK))
             self.Bind(wx.EVT_MENU, self.OnLabel, source=self.rItems[-1])
-            rIDMap[self.rItems[-1].GetId()] = config.klToolAAPos
+            rIDMap[self.rItems[-1].GetId()] = mConfig.kwToolAAPos
         #------------------------------> Last Items
         self.AppendSeparator()
         self.AddLastItems()
@@ -1393,7 +1467,7 @@ class MenuToolHist(BaseMenuFurtherAnalysis):
 
         #region --------------------------------------------------> Menu Items
         self.AddNatRecSeqEntry(
-            self.OnMethodKeyBool, idMap=config.klToolGuiUpdate, idKey='nat')
+            self.OnMethodKeyBool, idMap=mConfig.kwToolWinUpdate, idKey='nat')
         self.AppendSeparator()
         self.miUnique = self.Append(-1, 'Unique Cleavages', kind=wx.ITEM_CHECK)
         self.miUnique.Check(check=False)
@@ -1403,8 +1477,7 @@ class MenuToolHist(BaseMenuFurtherAnalysis):
 
         #region --------------------------------------------------->
         rIDMap = {
-            self.miUnique.GetId(): config.klToolGuiUpdate,
-            
+            self.miUnique.GetId(): mConfig.kwToolWinUpdate,
         }
         self.rIDMap = self.rIDMap | rIDMap
         #------------------------------> 
@@ -1444,7 +1517,7 @@ class MenuToolHist(BaseMenuFurtherAnalysis):
 
         #region --------------------------------------------------->
         win = self.GetWindow()
-        win.UpdatePlot(nat=False, allC=False)
+        win.UpdateResultWindow(nat=False, allC=False)
         #endregion ------------------------------------------------>
 
         return True
@@ -1532,7 +1605,7 @@ class MenuToolCpR(BaseMenuFurtherAnalysis):
 
         #region ---------------------------------------------------> 
         #------------------------------> Selection mode
-        if sel and self.GetLabelText(event.GetId()) != config.lmNatSeq:
+        if sel and self.GetLabelText(event.GetId()) != mConfig.lmNatSeq:
             [x.Check(False) for x in self.rItems]
             self.Check(event.GetId(), True)
         else:
@@ -1548,12 +1621,12 @@ class MenuToolCpR(BaseMenuFurtherAnalysis):
 
         #region ---------------------------------------------------> 
         win = self.GetWindow()
-        win.UpdatePlot(nat, label, show)
+        win.UpdateResultWindow(nat, label, show)
         #endregion ------------------------------------------------> 
 
         return True
     #---
-    
+
     def OnClear(self, event: wx.CommandEvent) -> bool:
         """Change between Experiments.
 
@@ -1586,7 +1659,7 @@ class MenuToolCpR(BaseMenuFurtherAnalysis):
 
         #region --------------------------------------------------->
         win = self.GetWindow()
-        win.UpdatePlot(False, [self.rItems[0].GetItemLabel()], True)
+        win.UpdateResultWindow(False, [self.rItems[0].GetItemLabel()], True)
         #endregion ------------------------------------------------>
 
         return True
@@ -1616,7 +1689,7 @@ class MenuToolCleavageEvol(BaseMenuFurtherAnalysis):
 
         #region --------------------------------------------------> Menu Items
         self.AddNatRecSeqEntry(
-            self.OnMethodKeyBool, idMap=config.klToolGuiUpdate, idKey='nat')
+            self.OnMethodKeyBool, idMap=mConfig.kwToolWinUpdate, idKey='nat')
         self.AppendSeparator()
         self.miMon = self.Append(-1, 'Monotonic', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
@@ -1625,7 +1698,7 @@ class MenuToolCleavageEvol(BaseMenuFurtherAnalysis):
 
         #region ---------------------------------------------------> 
         rIDMap = {
-            self.miMon.GetId() : config.klToolGuiUpdate,
+            self.miMon.GetId() : mConfig.kwToolWinUpdate,
         }
         self.rIDMap = self.rIDMap | rIDMap
         #------------------------------>
@@ -1648,7 +1721,7 @@ class MenuToolCleavageEvol(BaseMenuFurtherAnalysis):
             Parameters
             ----------
             event:wx.Event
-                Information about the event
+                Information about the event.
 
             Returns
             -------
@@ -1665,7 +1738,7 @@ class MenuToolCleavageEvol(BaseMenuFurtherAnalysis):
 
         #region --------------------------------------------------->
         win = self.GetWindow()
-        win.UpdatePlot(nat=False, mon=False)
+        win.UpdateResultWindow(nat=False, mon=False)
         #endregion ------------------------------------------------>
 
         return True
@@ -1674,7 +1747,7 @@ class MenuToolCleavageEvol(BaseMenuFurtherAnalysis):
 #---
 
 
-class MenuVolcanoPlotColorScheme(BaseMenu):
+class MenuToolProtProfVolcanoPlotColorScheme(BaseMenu):
     """Menu for Color Scheme in the Volcano Plot menu of ProtProf result window.
     """
     #region --------------------------------------------------> Instance setup
@@ -1686,21 +1759,21 @@ class MenuVolcanoPlotColorScheme(BaseMenu):
 
         #region --------------------------------------------------> Menu Items
         self.miHypCurve = self.Append(
-            -1, config.klToolVolPlotColorHypCurve, kind=wx.ITEM_RADIO)
+            -1, 'Hyperbolic Curve', kind=wx.ITEM_RADIO)
         self.miPLogFC   = self.Append(
-            -1, config.klToolVolPlotColorPFC, kind=wx.ITEM_RADIO)
+            -1, 'P - Log2FC', kind=wx.ITEM_RADIO)
         self.miZScore   = self.Append(
-            -1, config.klToolVolPlotColorZ, kind=wx.ITEM_RADIO)
+            -1, 'Z Score', kind=wx.ITEM_RADIO)
         self.AppendSeparator()
         self.miConfigure= self.Append(-1, 'Configure')
         #endregion -----------------------------------------------> Menu Items
         
         #region ------------------------------------------------------> rKeyID
         rIDMap = {
-            self.miHypCurve.GetId() : config.klToolVolPlotColorHypCurve,
-            self.miPLogFC.GetId  () : config.klToolVolPlotColorPFC,
-            self.miZScore.GetId  () : config.klToolVolPlotColorZ,
-            self.miConfigure.GetId(): config.klToolVolPlotColorConf,
+            self.miHypCurve.GetId() : mConfig.kwToolVolPlotColorScheme,
+            self.miPLogFC.GetId  () : mConfig.kwToolVolPlotColorScheme,
+            self.miZScore.GetId  () : mConfig.kwToolVolPlotColorScheme,
+            self.miConfigure.GetId(): mConfig.kwToolVolPlotColorConf,
         }
         self.rIDMap = self.rIDMap | rIDMap
         #endregion ---------------------------------------------------> rKeyID
@@ -1709,7 +1782,7 @@ class MenuVolcanoPlotColorScheme(BaseMenu):
         self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miHypCurve)
         self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miPLogFC)
         self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miZScore)
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miConfigure)
+        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miConfigure)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -1718,7 +1791,7 @@ class MenuVolcanoPlotColorScheme(BaseMenu):
 
 
 #region -----------------------------------------------------------> Mix menus
-class MixMenuToolLimProt(BaseMenuMainResult):
+class MenuToolLimProt(BaseMenuMainResult):
     """Tool menu for the Limited Proteolysis window.
 
         Parameters
@@ -1738,19 +1811,19 @@ class MixMenuToolLimProt(BaseMenuMainResult):
         self.miBandLane = self.Append(
             -1, 'Lane Selection Mode\tCtrl+L', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
-        #------------------------------> 
+        #------------------------------>
         self.miShowAll = self.Append(-1, 'Show All\tCtrl+A')
         self.AppendSeparator()
-        #------------------------------> 
+        #------------------------------>
         self.mFragmentMenu = BaseMenuMainResultSubMenu('Shift')
         self.AppendSubMenu(self.mFragmentMenu, 'Fragments')
         self.AppendSeparator()
-        #------------------------------> 
+        #------------------------------>
         self.mGelMenu = BaseMenuMainResultSubMenu('Alt')
         self.AppendSubMenu(self.mGelMenu, 'Gel')
         self.AppendSeparator()
-        #------------------------------> 
-        self.mClearMenu = MenuClearSelLimProt()
+        #------------------------------>
+        self.mClearMenu = MenuToolLimProtClearSel()
         self.AppendSubMenu(self.mClearMenu, 'Clear Selection')
         self.AppendSeparator()
         #------------------------------> Last Items
@@ -1762,9 +1835,9 @@ class MixMenuToolLimProt(BaseMenuMainResult):
 
         #region ---------------------------------------------------> rKeyID
         rIDMap = {
-            self.miBandLane.GetId(): config.klToolLimProtBandLane,
-            self.miShowAll.GetId() : config.klToolLimProtShowAll,
-            self.miSaveSeq.GetId() : config.klToolExpSeq,
+            self.miBandLane.GetId(): mConfig.kwToolLimProtBandLane,
+            self.miShowAll.GetId() : mConfig.kwToolLimProtShowAll,
+            self.miSaveSeq.GetId() : mConfig.kwToolExpSeq,
         }
         self.rIDMap = self.rIDMap | rIDMap
         #endregion ------------------------------------------------> rKeyID
@@ -1779,8 +1852,8 @@ class MixMenuToolLimProt(BaseMenuMainResult):
 #---
 
 
-class MixMenuToolTarProt(BaseMenuMainResult):
-    """Tool menu for the Targeted Proteolysis window
+class MenuToolTarProt(BaseMenuMainResult):
+    """Tool menu for the Targeted Proteolysis window.
 
         Parameters
         ----------
@@ -1802,22 +1875,21 @@ class MixMenuToolTarProt(BaseMenuMainResult):
         self.mFragmentMenu = BaseMenuMainResultSubMenu('Shift')
         self.AppendSubMenu(self.mFragmentMenu, 'Fragments')
         self.AppendSeparator()
-        #------------------------------> 
+        #------------------------------>
         self.mGelMenu = BaseMenuMainResultSubMenu('Alt')
         self.AppendSubMenu(self.mGelMenu, 'Intensities')
         self.AppendSeparator()
-        #------------------------------> 
-        self.mFurtherA = MixMenuFurtherAnalysisTarProt(
+        #------------------------------>
+        self.mFurtherA = MenuToolTarProtFurtherAnalysis(
             self.cMenuData['FA'], self.rPlotDate[0].GetItemLabelText())
         self.AppendSubMenu(self.mFurtherA, 'Further Analysis')
         self.AppendSeparator()
         #------------------------------> 
-        self.mClear = MenuClearSelTarProt()
+        self.mClear = MenuToolTarProtClearSel()
         self.AppendSubMenu(self.mClear, 'Clear Selection')
         self.AppendSeparator()
         #------------------------------>
         self.AddLastItems(False)
-        #------------------------------> 
         #------------------------------> Add Export Sequence
         pos = self.FindChildItem(self.miSaveD.GetId())[1]
         self.miSaveSeq = self.Insert(pos+2, -1, "Export Sequences")
@@ -1825,7 +1897,7 @@ class MixMenuToolTarProt(BaseMenuMainResult):
 
         #region ---------------------------------------------------> rKeyID
         rIDMap = {
-            self.miSaveSeq.GetId() : config.klToolExpSeq,
+            self.miSaveSeq.GetId() : mConfig.kwToolExpSeq,
         }
         self.rIDMap = self.rIDMap | rIDMap
         #endregion ------------------------------------------------> rKeyID
@@ -1835,30 +1907,30 @@ class MixMenuToolTarProt(BaseMenuMainResult):
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
-    
+
     #region ---------------------------------------------------> Class Methods
     def OnMethodKey(self, event) -> bool:
         """Call the corresponding method in the window with no arguments or
-            keyword arguments
+            keyword arguments.
 
             Parameters
             ----------
             event:wx.Event
-                Information about the event
+                Information about the event.
 
             Returns
             -------
             bool
         """
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         super().OnMethodKey(event)
-        #endregion ------------------------------------------------> 
-        
-        #region --------------------------------------------------------> 
+        #endregion ------------------------------------------------>
+
+        #region -------------------------------------------------------->
         tID      = event.GetId()
         menuItem = self.FindItem(tID)[0]
         label    = self.GetLabelText(tID)
-        #endregion -----------------------------------------------------> 
+        #endregion ----------------------------------------------------->
 
         #region --------------------------------------------------->
         if menuItem in self.rPlotDate:
@@ -1866,50 +1938,50 @@ class MixMenuToolTarProt(BaseMenuMainResult):
         else:
             pass
         #endregion ------------------------------------------------>
-        
+
         return True
     #---
 
-    def UpdateOtherItems(self, tDate: wx.MenuItem, updateGUI: bool) -> bool:
-        """Update specific items in the menu after the Analysis IDs were 
-            updated. Override as needed.
+#     def UpdateOtherItems(self, tDate: wx.MenuItem, updateGUI: bool) -> bool:
+#         """Update specific items in the menu after the Analysis IDs were 
+#             updated. Override as needed.
 
-            Parameters
-            ----------
-            tDate: wx.MenuItem
-                Currently selected Analysis ID
-            updateGUI: bool
-                Update (True) the data displayed or not (False).
+#             Parameters
+#             ----------
+#             tDate: wx.MenuItem
+#                 Currently selected Analysis ID
+#             updateGUI: bool
+#                 Update (True) the data displayed or not (False).
 
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> 
-        tDateLabel = tDate.GetItemLabelText()
-        menuData   = self.cMenuData['FA']
-        #endregion ------------------------------------------------> 
+#             Returns
+#             -------
+#             bool
+#         """
+#         #region ---------------------------------------------------> 
+#         tDateLabel = tDate.GetItemLabelText()
+#         menuData   = self.cMenuData['FA']
+#         #endregion ------------------------------------------------> 
     
-        #region -------------------------------------------------------->
-        self.mFurtherA.UpdateFurtherAnalysis(
-            tDate=tDateLabel, menuData=menuData,
-        )
-        #endregion ----------------------------------------------------->
+#         #region -------------------------------------------------------->
+#         self.mFurtherA.UpdateFurtherAnalysis(
+#             tDate=tDateLabel, menuData=menuData,
+#         )
+#         #endregion ----------------------------------------------------->
 
-        #region ---------------------------------------------------> Update GUI
-        if updateGUI:
-            self.OnMethodKey(wx.CommandEvent(id=tDate.GetId()))
-        else:
-            pass
-        #endregion ------------------------------------------------> Update GUI
+#         #region ---------------------------------------------------> Update GUI
+#         if updateGUI:
+#             self.OnMethodKey(wx.CommandEvent(id=tDate.GetId()))
+#         else:
+#             pass
+#         #endregion ------------------------------------------------> Update GUI
 
-        return True
-    #---
+#         return True
+#     #---
     #endregion ------------------------------------------------> Class Methods
 #---
 
 
-class MixMenuVolcanoPlot(BaseMenu):
+class MenuToolProtProfVolcanoPlot(BaseMenu):
     """Menu for a Volcano Plot.
 
         Parameters
@@ -1962,7 +2034,7 @@ class MixMenuVolcanoPlot(BaseMenu):
         self.miLabelPick = self.Append(
             -1, 'Pick Label\tShift+P', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
-        self.mColor = MenuVolcanoPlotColorScheme()
+        self.mColor = MenuToolProtProfVolcanoPlotColorScheme()
         self.AppendSubMenu(self.mColor, 'Color Scheme')
         self.AppendSeparator()
         self.miPCorr = self.Append(-1, 'Corrected P Values', kind=wx.ITEM_CHECK)
@@ -1974,33 +2046,36 @@ class MixMenuVolcanoPlot(BaseMenu):
 
         #region ---------------------------------------------------> rKeyID
         rIDMap = {
-            self.miLabelPick.GetId() : config.klToolVolPlotLabelPick,
-            self.miLabelProt.GetId() : config.klToolVolPlotLabelProt,
-            self.miPCorr.GetId(): config.klToolGuiUpdate,
-            self.miSaveI.GetId(): config.klToolVolPlotSaveI,
-            self.miZoomR.GetId(): config.klToolVolPlotZoom,
+            self.miLabelPick.GetId(): mConfig.kwToolVolPlotLabelPick,
+            self.miLabelProt.GetId(): mConfig.kwToolVolPlotLabelProt,
+            self.miPCorr.GetId    (): mConfig.kwToolWinUpdate,
+            self.miSaveI.GetId    (): mConfig.kwToolExpImg,
+            self.miZoomR.GetId    (): mConfig.kwToolZoomReset,
         }
         self.rIDMap = self.rIDMap | rIDMap
-        #------------------------------> 
+        #------------------------------>
         rKeyMap = {
             self.miPCorr.GetId() : 'corrP',
+            self.miSaveI.GetId() : 'Vol',
+            self.miZoomR.GetId() : 'Vol',
         }
         self.rKeyMap = self.rKeyMap | rKeyMap
         #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnMethod,        source=self.miLabelProt)
-        self.Bind(wx.EVT_MENU, self.OnMethod,        source=self.miLabelPick)
-        self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miPCorr)
-        self.Bind(wx.EVT_MENU, self.OnMethod,        source=self.miSaveI)
-        self.Bind(wx.EVT_MENU, self.OnMethod,        source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnMethod,         source=self.miLabelProt)
+        self.Bind(wx.EVT_MENU, self.OnMethod,         source=self.miLabelPick)
+        self.Bind(wx.EVT_MENU, self.OnMethodKeyBool,  source=self.miPCorr)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabelKey, source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnMethodLabelKey, source=self.miZoomR)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region --------------------------------------------------> Manage methods
     def SetCondRPMenuItems(
-        self, tDate: str
+        self,
+        tDate: str,
         ) -> tuple[list[wx.MenuItem], list[wx.MenuItem]]:
         """Set the menu items for conditions and relevant points as defined for 
             the current analysis date.
@@ -2023,37 +2098,32 @@ class MixMenuVolcanoPlot(BaseMenu):
 
         #region ------------------------------------------------> Add elements
         #------------------------------> Conditions
+        k = 0
         for c in self.rCrp[tDate]['C']:
             #------------------------------> 
-            cond.append(wx.MenuItem(None, -1, text=c, kind=wx.ITEM_RADIO))
+            cond.append(self.Insert(k, -1, item=c, kind=wx.ITEM_RADIO))
             #------------------------------> 
             self.Bind(wx.EVT_MENU, self.OnMethodKey, source=cond[-1])
             #------------------------------> 
-            self.rIDMap[cond[-1].GetId()] = config.klToolVolPlot
+            self.rIDMap[cond[-1].GetId()] = mConfig.kwToolWinUpdate
             self.rKeyMap[cond[-1].GetId()] = 'cond'
+            #------------------------------>
+            k = k + 1
+        #------------------------------>
+        self.rSep = self.Insert(k, -1, kind=wx.ITEM_SEPARATOR)
+        k = k + 1
         #------------------------------> Relevant Points
         for t in self.rCrp[tDate]['RP']:
             #------------------------------> 
-            rp.append(wx.MenuItem(None, -1, text=t, kind=wx.ITEM_RADIO))
+            rp.append(self.Insert(k, -1, item=t, kind=wx.ITEM_RADIO))
             #------------------------------> 
             self.Bind(wx.EVT_MENU, self.OnMethodKey, source=rp[-1])
-            #------------------------------> 
-            self.rIDMap[rp[-1].GetId()] = config.klToolVolPlot
+            #------------------------------>
+            self.rIDMap[rp[-1].GetId()] = mConfig.kwToolWinUpdate
             self.rKeyMap[rp[-1].GetId()] = 'rp'
+            #------------------------------>
+            k = k + 1
         #endregion ---------------------------------------------> Add elements
-
-        #region ---------------------------------------------------> Add items
-        k = 0
-        #------------------------------> Conditions
-        for k,c in enumerate(cond):
-            self.Insert(k,c)
-        #------------------------------> Separator
-        self.rSep = wx.MenuItem(None)
-        self.Insert(k+1, self.rSep)
-        #------------------------------> Relevant Points
-        for j,t in enumerate(rp, k+2):
-            self.Insert(j, t)
-        #endregion ------------------------------------------------> Add items
 
         return (cond, rp)
     #---
@@ -2101,8 +2171,8 @@ class MixMenuVolcanoPlot(BaseMenu):
 #---
 
 
-class MixMenuFurtherAnalysisTarProt(BaseMenu):
-    """Further Analysis menu for the TarProt result window
+class MenuToolTarProtFurtherAnalysis(BaseMenu):
+    """Further Analysis menu for the TarProt result window.
 
         Parameters
         ----------
@@ -2130,12 +2200,12 @@ class MixMenuFurtherAnalysisTarProt(BaseMenu):
         self.AppendSeparator()
         self.miPDB = self.Append(-1, 'PDB Mapping')
         #endregion --------------------------------------------> Initial Setup
-        
+
         #region ---------------------------------------------------> 
         rIDMap = {
-            self.miCEvol.GetId() : config.klFACleavageEvol,
-            self.miCpR.GetId()   : config.klFACleavagePerRes,
-            self.miPDB.GetId()   : config.klFAPDBMap,
+            self.miCEvol.GetId() : mConfig.kwToolFACleavageEvol,
+            self.miCpR.GetId()   : mConfig.kwToolFACleavagePerRes,
+            self.miPDB.GetId()   : mConfig.kwToolFAPDBMap,
         }
         self.rIDMap = self.rIDMap | rIDMap
         #endregion ------------------------------------------------> 
@@ -2172,9 +2242,9 @@ class MixMenuFurtherAnalysisTarProt(BaseMenu):
 #---
 
 
-class MixMenuToolProtProf(BaseMenuMainResult):
+class MenuToolProtProf(BaseMenuMainResult):
     """Tool menu for the Proteome Profiling Plot window.
-        
+
         Parameters
         ----------
         menuData: dict
@@ -2189,7 +2259,7 @@ class MixMenuToolProtProf(BaseMenuMainResult):
                     .......
                     'dateN'
                 }
-            }    
+            }
     """
     #region --------------------------------------------------> Instance setup
     def __init__(self, menuData: dict) -> None:
@@ -2199,30 +2269,44 @@ class MixMenuToolProtProf(BaseMenuMainResult):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.mVolcano =  MixMenuVolcanoPlot(
+        self.mVolcano =  MenuToolProtProfVolcanoPlot(
                 self.cMenuData['crp'], self.rPlotDate[0].GetItemLabelText()
         )
         self.AppendSubMenu(self.mVolcano, 'Volcano Plot')
         self.AppendSeparator()
         #------------------------------> Relevant Points
-        self.mFc = MenuFCEvolution()
+        self.mFc = MenuToolProtProfFCEvolution()
         self.AppendSubMenu(self.mFc, 'FC Evolution')
         self.AppendSeparator()
         #------------------------------> Filter
-        self.mFilter = MenuFiltersProtProf()
+        self.mFilter = MenuToolProtProfFilters()
         self.AppendSubMenu(self.mFilter, 'Filters')
         self.AppendSeparator()
         #------------------------------> Lock scale
-        self.mLockScale = MenuLockPlotScale()
+        self.mLockScale = MenuToolProtProfLockPlotScale()
         self.AppendSubMenu(self.mLockScale, 'Lock Plot Scale')
         self.AppendSeparator()
         #------------------------------> Clear Selection
-        self.mClearSel = MenuClearSelProtProf()
+        self.mClearSel = MenuToolProtProfClearSel()
         self.AppendSubMenu(self.mClearSel, 'Clear Selection')
         self.AppendSeparator()
-        #------------------------------> 
+        #------------------------------>
         self.AddLastItems(False)
+        pos = self.FindChildItem(self.miSaveD.GetId())[1]
+        self.miSaveDataFiltered = self.Insert(
+            pos+1, -1, 'Export Filtered Data\tShift+Ctrl+E')
         #endregion -----------------------------------------------> Menu Items
+
+        #region ---------------------------------------------------> rKeyID
+        rIDMap = {
+            self.miSaveDataFiltered.GetId() : mConfig.kwToolExportDataFiltered,
+        }
+        self.rIDMap = self.rIDMap | rIDMap
+        #endregion ------------------------------------------------> rKeyID
+
+        #region ---------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miSaveDataFiltered)
+        #endregion ------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -2233,7 +2317,7 @@ class MixMenuToolProtProf(BaseMenuMainResult):
             Parameters
             ----------
             event:wx.Event
-                Information about the event
+                Information about the event.
 
             Returns
             -------
@@ -2251,7 +2335,7 @@ class MixMenuToolProtProf(BaseMenuMainResult):
             self.mVolcano.UpdateCondRP(label)
             #------------------------------> Update Plot
             win = self.GetWindow()
-            win.UpdateDisplayedData(
+            win.UpdateResultWindow(
                 tDate = label,
                 cond  = self.mVolcano.rCond[0].GetItemLabelText(),
                 rp    = self.mVolcano.rRp[0].GetItemLabelText(),
@@ -2263,36 +2347,36 @@ class MixMenuToolProtProf(BaseMenuMainResult):
         return True
     #---
 
-    def UpdateOtherItems(self, tDate: wx.MenuItem, updateGUI: bool) -> bool:
-        """Update specific items in the menu after the Analysis IDs were 
-            updated. Override as needed.
+#     def UpdateOtherItems(self, tDate: wx.MenuItem, updateGUI: bool) -> bool:
+#         """Update specific items in the menu after the Analysis IDs were 
+#             updated. Override as needed.
 
-            Parameters
-            ----------
-            tDate: wx.MenuItem
-                Currently selected Analysis ID
-            updateGUI: bool
-                Update (True) the data displayed or not (False).
+#             Parameters
+#             ----------
+#             tDate: wx.MenuItem
+#                 Currently selected Analysis ID
+#             updateGUI: bool
+#                 Update (True) the data displayed or not (False).
 
-            Returns
-            -------
-            bool
-        """
-        #region -------------------------------------------------------->
-        self.mVolcano.UpdateCondRP(
-            tDate.GetItemLabelText(), self.cMenuData['crp'],
-        )
-        #endregion ----------------------------------------------------->
+#             Returns
+#             -------
+#             bool
+#         """
+#         #region -------------------------------------------------------->
+#         self.mVolcano.UpdateCondRP(
+#             tDate.GetItemLabelText(), self.cMenuData['crp'],
+#         )
+#         #endregion ----------------------------------------------------->
 
-        #region ---------------------------------------------------> Update GUI
-        if updateGUI:
-            self.OnMethodKey(wx.CommandEvent(id=tDate.GetId()))
-        else:
-            pass
-        #endregion ------------------------------------------------> Update GUI
+#         #region ---------------------------------------------------> Update GUI
+#         if updateGUI:
+#             self.OnMethodKey(wx.CommandEvent(id=tDate.GetId()))
+#         else:
+#             pass
+#         #endregion ------------------------------------------------> Update GUI
 
-        return True
-    #---
+#         return True
+#     #---
     #endregion ------------------------------------------------> Class Methods
 #---
 #endregion --------------------------------------------------------> Mix menus
@@ -2343,21 +2427,21 @@ class MenuBarTool(MenuBarMain):
     """
     #region -----------------------------------------------------> Class Setup
     dTool = { # Key are window name and values the corresponding tool menu
-        config.nwUMSAPControl : MenuToolFileControl,
-        config.nwCorrAPlot    : MenuToolCorrA,
-        config.nwCheckDataPrep: MenuToolDataPrep,
-        config.nwProtProf     : MixMenuToolProtProf,
-        config.nwLimProt      : MixMenuToolLimProt,
-        config.nwTarProt      : MixMenuToolTarProt,
-        config.nwAAPlot       : MenuToolAA,
-        config.nwHistPlot     : MenuToolHist,
-        config.nwCpRPlot      : MenuToolCpR,
-        config.nwCEvolPlot    : MenuToolCleavageEvol,
+        mConfig.nwUMSAPControl : MenuToolFileControl,
+        mConfig.nwCorrAPlot    : MenuToolCorrA,
+        mConfig.nwCheckDataPrep: MenuToolDataPrep,
+        mConfig.nwProtProf     : MenuToolProtProf,
+        mConfig.nwLimProt      : MenuToolLimProt,
+        mConfig.nwTarProt      : MenuToolTarProt,
+        mConfig.nwAAPlot       : MenuToolAA,
+        mConfig.nwHistPlot     : MenuToolHist,
+        mConfig.nwCpRPlot      : MenuToolCpR,
+        mConfig.nwCEvolPlot    : MenuToolCleavageEvol,
     }
     #endregion --------------------------------------------------> Class Setup
-    
+
     #region --------------------------------------------------- Instance Setup
-    def __init__(self, cName: str, cMenuData: Optional[dict]=None) -> None:
+    def __init__(self, cName: str, menuData: dict={}) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__()
@@ -2365,8 +2449,8 @@ class MenuBarTool(MenuBarMain):
 
         #region -----------------------------------------> Menu items & Append
         if cName in self.dTool:
-            self.mTool = self.dTool[cName](cMenuData)
-            self.Insert(config.toolsMenuIdx, self.mTool, 'Tools')
+            self.mTool = self.dTool[cName](menuData)
+            self.Insert(mConfig.toolsMenuIdx, self.mTool, 'Tools')
         else:
             pass
         #endregion --------------------------------------> Menu items & Append

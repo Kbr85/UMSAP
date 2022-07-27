@@ -14,19 +14,14 @@
 """Custom exceptions """
 
 
-#region -------------------------------------------------------------> Imports
-
-#endregion ----------------------------------------------------------> Imports
-
-
-#region ------------------------------------------------------------> Classess
+#region -------------------------------------------------------------> Classes
 class ExecutionError(Exception):
-    """Exception raised for errors when executing a function/process 
+    """Exception raised for errors when executing a function/process.
 
         Parameters
         ----------
         message : str
-            Explanation of the error
+            Explanation of the error.
     """
     #region --------------------------------------------------> Instance setup
     def __init__(self, message: str) -> None:
@@ -38,14 +33,13 @@ class ExecutionError(Exception):
 
 
 class UnexpectedError(Exception):
-    """Exception raised for unexpected errors when executing a function/process 
+    """Exception raised for unexpected errors when executing a function/process.
 
         Parameters
         ----------
         message : str
-            Explanation of the error
+            Explanation of the error.
     """
-
     #region --------------------------------------------------> Instance setup
     def __init__(self, message: str) -> None:
         """ """
@@ -56,14 +50,13 @@ class UnexpectedError(Exception):
 
 
 class FileIOError(Exception):
-    """Exception raised for errors when reading/saving files.
+    """Exception raised for errors when reading/writing files.
 
         Parameters
         ----------
         message : str
             Explanation of the error
     """
-
     #region --------------------------------------------------> Instance setup
     def __init__(self, message: str) -> None:
         """ """
@@ -82,7 +75,6 @@ class NotYetImplementedError(Exception):
         message : str
             Explanation of the error
     """
-
     #region --------------------------------------------------> Instance setup
     def __init__(self, message: str) -> None:
         """ """
@@ -100,7 +92,6 @@ class InputError(Exception):
         message : str
             Explanation of the error
     """
-
     #region --------------------------------------------------> Instance setup
     def __init__(self, message: str) -> None:
         """ """
@@ -111,14 +102,13 @@ class InputError(Exception):
 
 
 class PassException(Exception):
-    """To signal that the exception was already handle it can be skipped.
+    """To signal that the exception was already handled and it can be skipped.
 
         Parameters
         ----------
         message : str
             Explanation of the error
     """
-
     #region --------------------------------------------------> Instance setup
     def __init__(self, message: str='') -> None:
         """ """
@@ -126,4 +116,4 @@ class PassException(Exception):
     #----
     #endregion -----------------------------------------------> Instance setup
 #---
-#endregion ---------------------------------------------------------> Classess
+#endregion ----------------------------------------------------------> Classes

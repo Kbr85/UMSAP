@@ -23,13 +23,12 @@
 
 
 #region -------------------------------------------------------------> Imports
-from pathlib import Path
-from typing import Literal, Optional, Union
+from typing import Optional
 
 import wx
 
-import config.config as config
-import dtscore.check as dtsCheck
+import config.config as mConfig
+import data.check as mCheck
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -44,10 +43,6 @@ class InputFF(wx.Validator):
             Default is 'folder'.
         opt : Boolean
             Value is optional. Default is False.
-        ext : list of str or None
-            If fof is 'folder' then check if files with 'ext' are present inside
-            the folder. ext must be like ['.corr', '.txt', ...]. 
-            Default is None.
 
         Return by Validate method
         -------------------------
@@ -59,42 +54,23 @@ class InputFF(wx.Validator):
                 - NotFile,   Input is not valid file
                 - NotDir,    Input is not valid folder
                 - NoRead,    Input cannot be read
-                - FileExt,   Input does not have the required extension
-                - FolderExt, Input does not contain any file with the given ext
                 - (ExceptionRaised, ExceptionName): Check method raised an exception.
 
         Attributes
         ----------
-        fof : str
+        rFof : str
             One of 'file', 'folder'. Check widgets hold path to file or folder.
             Default is 'folder'.
-        opt : Boolean
+        rOpt : Boolean
             Value is optional. Default is False.
-        ext : list of str or None
-            If fof is 'folder' then check if files with 'ext' are present inside
-            the folder. ext must be like ['.corr', '.txt', ...]. 
-            Default is None.
-
-        Raises
-        ------
-        InputError
-            - When fof is not in config.oFoF
-            - When ext is not list, tuple or None
     """
-    #region -----------------------------------------------------> Class setup
-    #endregion --------------------------------------------------> Class setup
-
     #region --------------------------------------------------> Instance setup
-    def __init__(
-        self, fof: Literal['file', 'folder']='folder', opt: bool=False, 
-        ext: Optional[list[str]]=None,
-        ) -> None:
+    def __init__(self, fof: mConfig.litFoF='file', opt: bool=False) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.fof = fof
-        self.opt = opt
-        self.ext = ext
-
+        self.rFof: mConfig.litFoF = fof
+        self.rOpt = opt
+        #------------------------------>
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
     #---
@@ -104,9 +80,8 @@ class InputFF(wx.Validator):
     def Clone(self) -> wx.Validator:
         """Overridden method"""
         return InputFF(
-            fof = self.fof,
-            opt = self.opt,
-            ext = self.ext,
+            fof = self.rFof,
+            opt = self.rOpt,
         )
     #---
 
@@ -118,12 +93,12 @@ class InputFF(wx.Validator):
 
         #region ----------------------------------------------------> Validate
         try:
-            return dtsCheck.Path2FFInput(value, self.fof, self.opt, self.ext)
+            return mCheck.Path2FFInput(value, self.rFof, self.rOpt)
         except Exception as e:
             return (False, ('ExceptionRaised', type(e).__name__, str(e)))
         #endregion -------------------------------------------------> Validate
     #---
-    
+
     def TransferToWindow(self):
         """To use it with wx.Dialog"""
         return True
@@ -138,7 +113,7 @@ class InputFF(wx.Validator):
 
 
 class OutputFF(wx.Validator):
-    """Validates a widget holding the path to an output file/folder
+    """Validates a widget holding the path to an output file/folder.
 
         Parameters
         ----------
@@ -147,9 +122,6 @@ class OutputFF(wx.Validator):
             Default is 'file'.
         opt : Boolean
             Value is optional. Default is True.
-        ext : str or None
-            If fof is 'folder' then check if files with 'ext' are present inside
-            the folder. ext must be like '.corr'. Default is None.	
 
         Returns by Validate method
         --------------------------
@@ -157,40 +129,25 @@ class OutputFF(wx.Validator):
             - (True, None)
             - (False, (code, path, msg))
                 code is:
-                - NotPath,         Input is not a valid path
-                - FileExt,         Incorrect file extension
-                - NoWrite,         It is not possible to write	
+                - NotPath,         Input is not a valid path.
+                - NoWrite,         It is not possible to write.
                 - (ExceptionRaised, ExceptionName): Check method raised an exception.
                 
         Attributes
         ----------
         fof : str
             One of 'file', 'folder'. Check widgets hold path to file or folder.
-            Default is 'file'
+            Default is 'file'.
         opt : Boolean
             Value is optional. Default is True.
-        ext : str or None
-            File extension. ext must be like '.corr'. Default is None.
-            
-        Raises
-        ------
-        InputError
-            - When fof is not in config.oFoF
     """
-    #region -----------------------------------------------------> Class setup
-    #endregion --------------------------------------------------> Class setup
-
     #region --------------------------------------------------> Instance setup
-    def __init__(
-        self, fof: Literal['file', 'folder']='file', opt: bool=True, 
-        ext: Optional[str]=None
-        ) -> None:
+    def __init__(self, fof: mConfig.litFoF='file', opt: bool=False) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.fof = fof
-        self.opt = opt
-        self.ext = ext
-
+        self.rFof: mConfig.litFoF = fof
+        self.rOpt = opt
+        #------------------------------> 
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
     #---
@@ -200,38 +157,30 @@ class OutputFF(wx.Validator):
     def Clone(self) -> wx.Validator:
         """Overridden method"""
         return OutputFF(
-            fof = self.fof,
-            opt = self.opt,
-            ext = self.ext,
+            fof = self.rFof,
+            opt = self.rOpt,
         )
     #---
 
-    def Validate(
-        self, outP: Optional[Union[str, Path]]=None
-        ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
+    def Validate(self) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
         """Validate widget content.
 
-            Parameter
-            ---------
-            outP : Path or None
-                If outP is None then default to directly check the widget 
-                content
+            Returns
+            -------
+            tuple[bool, Optional[tuple[str, Optional[str], str]]]
         """
         #region ---------------------------------------------------> Get value
-        if outP is None:
-            value = self.GetWindow().GetValue()
-        else:
-            value = outP
+        value = self.GetWindow().GetValue()
         #endregion ------------------------------------------------> Get value
 
         #region ----------------------------------------------------> Validate
         try:
-            return dtsCheck.Path2FFOutput(value, self.fof, self.opt, self.ext)
+            return mCheck.Path2FFOutput(value, self.rFof, self.rOpt)
         except Exception as e:
             return (False, ('ExceptionRaised', type(e).__name__, str(e)))
         #endregion -------------------------------------------------> Validate
     #---
-    
+
     def TransferToWindow(self):
         """To use it with wx.Dialog"""
         return True
@@ -246,7 +195,7 @@ class OutputFF(wx.Validator):
 
 
 class IsNotEmpty(wx.Validator):
-    """Check wx widget has a value diferent than ''	"""
+    """Check wx widget has a value different than ''"""
     #region --------------------------------------------------> Instance Setup
     def __init__(self) -> None:
         """ """
@@ -267,15 +216,15 @@ class IsNotEmpty(wx.Validator):
         #region ---------------------------------------------------> Get value
         value = self.GetWindow().GetValue()
         #endregion ------------------------------------------------> Get value
-        
+
         #region ----------------------------------------------------> Validate
         if value != '':
             return (True, None)
         else:
-            return (False, ('Empty', str(value), config.mEmpty))
+            return (False, ('Empty', str(value), mConfig.mEmpty))
         #endregion -------------------------------------------------> Validate
     #---
-    
+
     def TransferToWindow(self):
         """To use it with wx.Dialog"""
         return True
@@ -311,9 +260,9 @@ class NumberList(wx.Validator):
         nMin : int or None
             List must contain at least nMin elements
         nN : int or None
-            List must contain exactle nN elements
+            List must contain exactly nN elements
         nMax : int or None
-            List must contain maximun nMax elements
+            List must contain maximum nMax elements
             
         Return by Validate method
         -------------------------
@@ -345,9 +294,9 @@ class NumberList(wx.Validator):
         nMin : int or None
             List must contain at least nMin elements
         nN : int or None
-            List must contain exactle nN elements
+            List must contain exactly nN elements
         nMax : int or None
-            List must contain maximun nMax elements
+            List must contain maximum nMax elements
 
         Raises
         ------
@@ -356,23 +305,29 @@ class NumberList(wx.Validator):
     """
     #region --------------------------------------------------> Instance Setup
     def __init__(
-        self, numType: Literal['int', 'float']='int', unique: bool=True, 
-        sep: str=',', opt: bool=False, vMin: Optional[float]=None, 
-        vMax: Optional[float]=None, nMin: Optional[int]=None, 
-        nN: Optional[int]=None, nMax: Optional[int]=None,
+        self,
+        numType: mConfig.litNumType='int',
+        unique: bool=True,
+        sep: str=',',
+        opt: bool=False,
+        vMin: Optional[float]=None,
+        vMax: Optional[float]=None,
+        nMin: Optional[int]=None,
+        nN: Optional[int]=None,
+        nMax: Optional[int]=None,
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.numType = numType
-        self.unique  = unique
-        self.sep     = sep
-        self.opt     = opt
-        self.vMin    = vMin
-        self.vMax    = vMax
-        self.nMin    = nMin
-        self.nN      = nN
-        self.nMax    = nMax
-        
+        self.rNumType: mConfig.litNumType = numType
+        self.rUnique  = unique
+        self.rSep     = sep
+        self.rOpt     = opt
+        self.rVMin    = vMin
+        self.rVMax    = vMax
+        self.rNMin    = nMin
+        self.rNN      = nN
+        self.rNMax    = nMax
+        #------------------------------>
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
     #---
@@ -382,26 +337,29 @@ class NumberList(wx.Validator):
     def Clone(self) -> wx.Validator:
         """ Overridden method """
         return NumberList(
-            numType = self.numType,
-            unique  = self.unique,
-            sep     = self.sep,
-            opt     = self.opt,
-            vMin    = self.vMin,
-            vMax    = self.vMax,
-            nMin    = self.nMin,
-            nN      = self.nN,
-            nMax    = self.nMax,
+            numType = self.rNumType,
+            unique  = self.rUnique,
+            sep     = self.rSep,
+            opt     = self.rOpt,
+            vMin    = self.rVMin,
+            vMax    = self.rVMax,
+            nMin    = self.rNMin,
+            nN      = self.rNN,
+            nMax    = self.rNMax,
         )
     #---
 
     def Validate(
-        self, vMin: Optional[float]=None, vMax: Optional[float]=None, 
-        nMin: Optional[int]=None, nN: Optional[int]=None, 
+        self, 
+        vMin: Optional[float]=None, 
+        vMax: Optional[float]=None, 
+        nMin: Optional[int]=None, 
+        nN: Optional[int]=None, 
         nMax: Optional[int]=None,
         ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
-        """ Validate widget value.  Parameters allow to give these values just
+        """ Validate widget value. Parameters allow to give these values just
             before validation.
-            
+
             Parameters
             ----------
             vMin : float or None
@@ -411,28 +369,28 @@ class NumberList(wx.Validator):
             nMin : int or None
                 List must contain at least nMin elements
             nN : int or None
-                List must contain exactle nN elements
+                List must contain exactly nN elements
             nMax : int or None
-                List must contain maximun nMax elements
+                List must contain maximum nMax elements
         """
         #region ---------------------------------------------------> Variables
-        tvMin = vMin if vMin is not None else self.vMin
-        tvMax = vMax if vMax is not None else self.vMax
-        tnMin = nMin if nMin is not None else self.nMin
-        tnN   = nN if nN is not None else self.nN
-        tnMax = nMax if nMax is not None else self.nMax
+        tvMin = vMin if vMin is not None else self.rVMin
+        tvMax = vMax if vMax is not None else self.rVMax
+        tnMin = nMin if nMin is not None else self.rNMin
+        tnN   = nN if nN is not None else self.rNN
+        tnMax = nMax if nMax is not None else self.rNMax
         #------------------------------> 
         value    = self.GetWindow().GetValue()
         #endregion ------------------------------------------------> Variables
-        
+
         #region ----------------------------------------------------> Validate
         try:
-            return dtsCheck.NumberList(
+            return mCheck.NumberList(
                 value,
-                numType = self.numType,
-                unique  = self.unique,
-                sep     = self.sep,
-                opt     = self.opt,
+                numType = self.rNumType,
+                unique  = self.rUnique,
+                sep     = self.rSep,
+                opt     = self.rOpt,
                 vMin    = tvMin,
                 vMax    = tvMax,
                 nMin    = tnMin,
@@ -499,30 +457,24 @@ class Comparison(wx.Validator):
                 - (NotOptional, None) : tStr cannot be an empty string.
                 - (BadElement, tStr) : Not a valid string
                 - (FalseOperand, operand) : Operand is not in the list of valid operand.
-
-        Raises
-        ------
-        InputError:
-            - When numType is not in dtsConfig.oNumType.keys()
     """
-    #region -----------------------------------------------------> Class setup
-    
-    #endregion --------------------------------------------------> Class setup
-
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, numType: Literal['int', 'float']='int', opt: bool=False, 
-        vMin: Optional[float]=None, vMax: Optional[float]=None, 
+        self, 
+        numType: mConfig.litNumType='int',
+        opt: bool=False, 
+        vMin: Optional[float]=None,
+        vMax: Optional[float]=None,
         op: list[str]=['<', '>', '<=', '>='],
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.numType = numType
-        self.opt     = opt
-        self.vMin    = vMin
-        self.vMax    = vMax
-        self.op      = op
-        
+        self.rNumType = numType
+        self.rOpt     = opt
+        self.rVMin    = vMin
+        self.rVMax    = vMax
+        self.rOp      = op
+        #------------------------------>
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
     #---
@@ -532,11 +484,11 @@ class Comparison(wx.Validator):
     def Clone(self):
         """Overridden method"""
         return Comparison(
-            numType = self.numType,
-            opt     = self.opt,
-            vMin    = self.vMin,
-            vMax    = self.vMax,
-            op      = self.op,
+            numType = self.rNumType, # type: ignore
+            opt     = self.rOpt,
+            vMin    = self.rVMin,
+            vMax    = self.rVMax,
+            op      = self.rOp,
         )
     #---
 
@@ -548,21 +500,19 @@ class Comparison(wx.Validator):
 
         #region ----------------------------------------------------> Validate
         try:
-            return dtsCheck.Comparison(
+            return mCheck.Comparison(
                 value,
-                numType = self.numType,
-                opt     = self.opt,
-                vMin    = self.vMin,
-                vMax    = self.vMax,
-                op      = self.op
+                numType = self.rNumType, # type: ignore
+                opt     = self.rOpt,
+                vMin    = self.rVMin,
+                vMax    = self.rVMax,
+                op      = self.rOp
             )
         except Exception as e:
             return (False, ('ExceptionRaised', type(e).__name__, str(e)))
         #endregion -------------------------------------------------> Validate
-
-        return (True, None)
     #---
-    
+
     def TransferToWindow(self):
         """To use it with wx.Dialog"""
         return True
