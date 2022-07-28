@@ -140,22 +140,8 @@ def Path2FFOutput(
     tempFileName = 'kbr-'+mMethod.StrNow()+'.kbr'
     #------------------------------>
     if fof == 'file':
-        if tPath.is_file():
-            pass
-        else:
-            msg = (f"The given path does not point to a file."
-                   f"\nSelected path: '{value}'")
-            return (False, ('NoFile', str(value), msg))
-        #------------------------------>
         f = tPath.parent / tempFileName 
     elif fof == 'folder':
-        if tPath.is_dir():
-            pass
-        else:
-            msg = (f"The given path does not point to a folder."
-                   f"\nSelected path: '{value}'")
-            return (False, ('NoFolder', str(value), msg))
-        #------------------------------>
         f = tPath / tempFileName
     else:
         return (False, ('Exception', fof, 'Invalid fof option.'))
@@ -618,7 +604,7 @@ def UniqueColNumbers(
         for sep in reversed(sepList):
             k = _strip_split(k, sep)
         #------------------------------>
-        values = values + k # type: ignore
+        values = values + k                                                     # type: ignore
     #------------------------------>
     values = sepList[0].join(values)
     #endregion -------------------------------------------------> Get Elements

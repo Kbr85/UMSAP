@@ -22,22 +22,21 @@ import pandas as pd
 import scipy.stats as sStats
 
 import config.config as mConfig
-import data.check as mCheck
 import data.exception as mException
 #endregion ----------------------------------------------------------> Imports
 
 
 #region ----------------------------------------------------> Data Description
 def DataRange(
-    x: Union[pd.Series,np.ndarray, list, tuple],
+    x     : Union[pd.Series,np.ndarray, list, tuple],
     margin: float=0,
     ) -> list[float]:
     """Return the range of x with an optional margin applied.
-        Usefull to set the axes limit in a matplotlib plot.
+        Useful to set the axes limit in a matplotlib plot.
 
         Parameters
         ----------
-        x : pd.Serie, np.array, list or tuple of numbers.
+        x : pd.Series, np.array, list or tuple of numbers.
         margin : float
             Expand the range by (max(x) - min(x)) * margin. Default is 0, 
             meaning that no expansion of the max(x) and min(x) is done.
@@ -47,25 +46,13 @@ def DataRange(
         list of floats
             [min value, max value]
 
-#         Returns
-#         -------
-#         list of floats
-#             [min value, max value]
-
-#         Raise
-#         -----
-#         InputError:
-#             - When x is not pd.Series or list
-#             - When elements in x cannot be cast to float.
-#             - When x is empty
-            
-#         Notes
-#         -----
-#         The return values will be calculated as:
-#             dm = (max(x) - min(x)) * margin
-#             [min(x) - dm, max(x) + dm]
-#         When margin is 0 then the return will simply be [min(x), max(x)]
-#     """
+        Notes
+        -----
+        The return values will be calculated as:
+            dm = (max(x) - min(x)) * margin
+            [min(x) - dm, max(x) + dm]
+        When margin is 0 then the return will simply be [min(x), max(x)]
+    """
     #region -------------------------------------------------------> Variables
     msg = 'x must contain only numbers.'
     #endregion ----------------------------------------------------> Variables
@@ -82,13 +69,13 @@ def DataRange(
             raise mException.InputError(msg)
     elif tType == pd.Series:
         try:
-            nL = list(map(float, x.values.tolist())) # type: ignore
+            nL = list(map(float, x.values.tolist()))                            # type: ignore
         except Exception:
             raise mException.InputError(msg)
     elif tType == np.ndarray:
-        if x.ndim == 1: # type: ignore
+        if x.ndim == 1:                                                         # type: ignore
             try:
-                nL = list(map(float, x.tolist())) # type: ignore
+                nL = list(map(float, x.tolist()))                               # type: ignore
             except Exception:
                 raise mException.InputError(msg)
         else:
@@ -167,7 +154,7 @@ def _DataTransformation_None(
 
 
 def _DataTransformation_Log2(
-    df: 'pd.DataFrame', 
+    df : 'pd.DataFrame',
     sel: list[int]=[],
     rep: Union[None, str, float, int]=None,
     ) -> 'pd.DataFrame':
@@ -211,7 +198,6 @@ def _DataTransformation_Log2(
 #---
 
 
-#------------------------------> Here to reference the module methods
 TRANS_METHOD = {
     'None' : _DataTransformation_None,
     'Log2' : _DataTransformation_Log2,
@@ -219,10 +205,10 @@ TRANS_METHOD = {
 
 
 def DataTransformation(
-    df: 'pd.DataFrame', 
-    sel: list[int]=[], 
+    df    : 'pd.DataFrame',
+    sel   : list[int]=[],
     method: Literal['Log2']='Log2',
-    rep: Union[None, str, float, int]=None,
+    rep   : Union[None, str, float, int]=None,
     ) -> 'pd.DataFrame':
     """Performs a data transformation over the selected columns in the 
         dataframe.
@@ -256,7 +242,9 @@ def DataTransformation(
 
 #region --------------------------------------------------> Data Normalization
 def _DataNormalization_None(
-    df: 'pd.DataFrame', *args, **kwargs,
+    df: 'pd.DataFrame',
+    *args,
+    **kwargs,
     ) -> 'pd.DataFrame':
     """This will just return the original df.
 
@@ -275,7 +263,7 @@ def _DataNormalization_None(
 
 
 def _DataNormalization_Median(
-    df: 'pd.DataFrame', 
+    df : 'pd.DataFrame',
     sel: list[int]=[]
     ) -> 'pd.DataFrame':
     """Performs a Median normalization of selected columns in df.
@@ -300,15 +288,11 @@ def _DataNormalization_Median(
         - NA values are skipped.
     """
     #region --------------------------------------------> Median Normalization
-    #------------------------------> Median
     if sel:
         median = df.iloc[:,sel].median(axis=0, skipna=True)
+        df.iloc[:,sel] = df.iloc[:,sel].subtract(median, axis=1)                # type: ignore
     else:
         median = df.median(axis=0, skipna=True)
-    #------------------------------> Normalization
-    if sel:
-        df.iloc[:,sel] = df.iloc[:,sel].subtract(median, axis=1)
-    else:
         df = df.subtract(median, axis=1)
     #endregion -----------------------------------------> Median Normalization
 
@@ -316,7 +300,6 @@ def _DataNormalization_Median(
 #---
 
 
-#------------------------------> Here to reference the module methods
 NORM_METHOD = {
     'None'   : _DataNormalization_None,
     'Median' : _DataNormalization_Median,
@@ -324,8 +307,8 @@ NORM_METHOD = {
 
 
 def DataNormalization(
-    df: 'pd.DataFrame', 
-    sel: list[int]=[], 
+    df    : 'pd.DataFrame',
+    sel   : list[int]=[],
     method: Literal['Median']='Median'
     ) -> 'pd.DataFrame':
     """Perform a data normalization over the selected columns in the 
@@ -375,15 +358,13 @@ def _DataImputation_None(df: 'pd.DataFrame', *args, **kwargs) -> 'pd.DataFrame':
 
 
 def _DataImputation_NormalDistribution(
-    df: 'pd.DataFrame', 
-    sel: list[int]=[],
-    shift=mConfig.values[mConfig.nwCheckDataPrep]['Shift'],
-    width=mConfig.values[mConfig.nwCheckDataPrep]['Width'],
+    df   : 'pd.DataFrame',
+    sel  : list[int]=[],
+    shift: float=float(mConfig.values[mConfig.nwCheckDataPrep]['Shift']),
+    width: float=float(mConfig.values[mConfig.nwCheckDataPrep]['Width']),
     **kwargs
     ) -> 'pd.DataFrame':
     """Performs a Normal Distribution imputation of selected columns in df. 
-    
-        See Notes below for more details.
 
         Parameters
         ----------
@@ -391,27 +372,24 @@ def _DataImputation_NormalDistribution(
             Dataframe with the data.
         sel: list of int
             List of columns to impute
+        shift: float
+            Shift for the center of the distribution.
+        width: float
+            Width of the distribution.
 
         Returns
         -------
         Dataframe
-            With imputed columns
-        
-        Raise
-        -----
-        ExecutionError
-            - When imputation fails
+            With imputed columns.
 
         Notes
         -----
-        - Input check is performed in DataImputation
         - df is expected to be a copy whose values can be changed during 
         imputation
         - The imputation is performed column wise.
-        - Data is expected to be normalized to a mean of 0.
     """
     #region ---------------------------------------------------------> Columns
-    if sel is not None:
+    if sel:
         col = df.iloc[:,sel].columns
     else:
         col = df.columns
@@ -424,15 +402,14 @@ def _DataImputation_NormalDistribution(
         median = df[c].median(skipna=True)
         tIDX = np.where(df[c].isna())[0]
         #------------------------------> 
-        df.loc[tIDX, c] = np.random.default_rng().normal(       # type: ignore
-            median-std*shift, std*width, len(tIDX))             # type: ignore
+        df.loc[tIDX, c] = np.random.default_rng().normal(                       # type: ignore
+            median-std*shift, std*width, len(tIDX))                             # type: ignore
     #endregion -------------------------------> Normal Distribution imputation
 
     return df
 #---
 
 
-#------------------------------> Here to reference the module methods
 IMPUTATION_METHOD = {
     'None'                : _DataImputation_None,
     'Normal Distribution' : _DataImputation_NormalDistribution,
@@ -440,8 +417,8 @@ IMPUTATION_METHOD = {
 
 
 def DataImputation(
-    df: 'pd.DataFrame', 
-    sel: list[int]=[], 
+    df    : 'pd.DataFrame',
+    sel   : list[int]=[],
     method: Literal['Normal Distribution']='Normal Distribution',
     **kwargs
     ) -> 'pd.DataFrame':
@@ -476,10 +453,10 @@ def DataImputation(
 
 #region -------------------------------------------------> Confidence Interval
 def _CI_Mean_Diff_DF_True(
-    df: 'pd.DataFrame',
-    col1: list[int],
-    col2: list[int],
-    alpha: float,
+    df    : 'pd.DataFrame',
+    col1  : list[int],
+    col2  : list[int],
+    alpha : float,
     fullCI: bool=True,
     roundN: Optional[int]=None,
     ) -> 'pd.DataFrame':
@@ -515,25 +492,25 @@ def _CI_Mean_Diff_DF_True(
             https://calcworkshop.com/confidence-interval/difference-in-means/
     """
     #region ----------------------------------------------------------> Values
-    #------------------------------> 
+    #------------------------------>
     diffMean21 = (
-        df.iloc[:,col2].mean(axis=1, skipna=True)
-        -df.iloc[:,col1].mean(axis=1, skipna=True)
+        df.iloc[:,col2].mean(axis=1, skipna=True)                               # type: ignore
+        -df.iloc[:,col1].mean(axis=1, skipna=True)                              # type: ignore
     )
-    var1 = df.iloc[:,col1].var(axis=1, skipna=True)
-    var2 = df.iloc[:,col2].var(axis=1, skipna=True)
+    var1 = df.iloc[:,col1].var(axis=1, skipna=True)                             # type: ignore
+    var2 = df.iloc[:,col2].var(axis=1, skipna=True)                             # type: ignore
     n1   = len(col1)
     n2   = len(col2)
     dfT  = n1 + n2 - 2
-    #------------------------------> 
+    #------------------------------>
     q    = 1-(alpha/2)
     t    = sStats.t.ppf(q, dfT)
-    F    = np.where(var2 > var1, var2/var1, var1/var2)
-    #------------------------------> 
+    F    = np.where(var2 > var1, var2/var1, var1/var2)                          # type: ignore
+    #------------------------------>
     ci = np.where(
         F > t, 
-        t*np.sqrt((var1/n1)+(var2/n2)), 
-        t*np.sqrt((1/n1)+(1/n2))*np.sqrt(((n1-1)*var1+(n2-1)*var2)/dfT),    
+        t*np.sqrt((var1/n1)+(var2/n2)),                                         # type: ignore
+        t*np.sqrt((1/n1)+(1/n2))*np.sqrt(((n1-1)*var1+(n2-1)*var2)/dfT),        # type: ignore
     )
     #endregion -------------------------------------------------------> Values
 
@@ -541,14 +518,14 @@ def _CI_Mean_Diff_DF_True(
     if fullCI:
         #------------------------------> 
         dfO = pd.DataFrame(
-            np.nan, columns=['CI_l', 'CI_u'], index=range(df.shape[0]) # type: ignore
+            np.nan, columns=['CI_l', 'CI_u'], index=range(df.shape[0])          # type: ignore
         )
         #------------------------------> 
         dfO['CI_l'] = diffMean21 - ci
         dfO['CI_u'] = diffMean21 + ci
     else:
         #------------------------------> 
-        dfO = pd.DataFrame(np.nan, columns=['CI'], index=range(df.shape[0])) # type: ignore
+        dfO = pd.DataFrame(np.nan, columns=['CI'], index=range(df.shape[0]))    # type: ignore
         #------------------------------> 
         dfO['CI'] = ci
     #endregion -----------------------------------------------------> Empty DF
@@ -565,10 +542,10 @@ def _CI_Mean_Diff_DF_True(
 
 
 def _CI_Mean_Diff_DF_False(
-    df: 'pd.DataFrame',
-    col1: list[int],
-    col2: list[int],
-    alpha: float,
+    df    : 'pd.DataFrame',
+    col1  : list[int],
+    col2  : list[int],
+    alpha : float,
     fullCI: bool=True,
     roundN: Optional[int]=None,
     ) -> 'pd.DataFrame':
@@ -607,7 +584,7 @@ def _CI_Mean_Diff_DF_False(
     """
     #region ----------------------------------------------------------> New Df
     ndf = pd.DataFrame(
-        df.iloc[:,col2].values - df.iloc[:,col1].values,
+        df.iloc[:,col2].values - df.iloc[:,col1].values,                        # type: ignore
         columns=range(len(col1))
     )
     #endregion -------------------------------------------------------> New Df
@@ -623,11 +600,11 @@ CI_MEAN_DIFF = {
 
 
 def CI_Mean_Diff_DF(
-    df: 'pd.DataFrame',
-    col1: list[int],
-    col2: list[int],
-    alpha: float,
-    ind: bool,
+    df    : 'pd.DataFrame',
+    col1  : list[int],
+    col2  : list[int],
+    alpha : float,
+    ind   : bool,
     fullCI: bool=True,
     roundN: Optional[int]=None,
     ) -> pd.DataFrame:
@@ -677,8 +654,8 @@ def CI_Mean_Diff_DF(
 
 
 def CI_Mean_DF(
-    df: 'pd.DataFrame',
-    alpha: float,
+    df    : 'pd.DataFrame',
+    alpha : float,
     fullCI: bool=True,
     roundN: Optional[int]=None,
     ) -> 'pd.DataFrame':
@@ -724,14 +701,14 @@ def CI_Mean_DF(
     if fullCI:
         #------------------------------>
         dfO = pd.DataFrame(
-            np.nan, columns=['CI_l', 'CI_u'], index=range(df.shape[0]) # type: ignore
+            np.nan, columns=['CI_l', 'CI_u'], index=range(df.shape[0])          # type: ignore
         )
         #------------------------------>
         dfO['CI_l'] = mean - ci
         dfO['CI_u'] = mean + ci
     else:
         #------------------------------>
-        dfO = pd.DataFrame(np.nan, columns=['CI'], index=range(df.shape[0])) # type: ignore
+        dfO = pd.DataFrame(np.nan, columns=['CI'], index=range(df.shape[0]))    # type: ignore
         #------------------------------> 
         dfO['CI'] = ci
     #endregion -----------------------------------------------------------> DF
@@ -750,10 +727,10 @@ def CI_Mean_DF(
 
 #region ----------------------------------------------------------------> TEST
 def Test_f_DF(
-    df: 'pd.DataFrame',
-    col1: list[int],
-    col2: list[int],
-    alpha:float=0.05,
+    df     : 'pd.DataFrame',
+    col1   : list[int],
+    col2   : list[int],
+    alpha  : float=0.05,
     roundTo: Optional[int]=None,
     ) -> 'pd.DataFrame':
     """Perform a test for equal variance.
@@ -786,25 +763,25 @@ def Test_f_DF(
     """
     #region --------------------------------------------------------> Empty DF
     dfO = pd.DataFrame(
-        np.nan, columns=['f', 'P', 'S'], index=range(df.shape[0]) # type: ignore
+        np.nan, columns=['f', 'P', 'S'], index=range(df.shape[0])               # type: ignore
     )
     F = pd.DataFrame(
-        np.nan, columns=['F', 'N', 'D'], index=range(df.shape[0]) # type: ignore
+        np.nan, columns=['F', 'N', 'D'], index=range(df.shape[0])               # type: ignore
     )
     #endregion -----------------------------------------------------> Empty DF
 
     #region ----------------------------------------------------------> Values
     N1 = len(col1)-1
     N2 = len(col2)-1
-    var1 = df.iloc[:,col1].var(axis=1, skipna=True)
-    var2 = df.iloc[:,col2].var(axis=1, skipna=True)
-    F['F'] = np.where(var2 > var1, var2/var1, var1/var2)
-    F['N'] = np.where(var2 > var1, N2, N1)
-    F['D'] = np.where(var2 > var1, N1, N2)
+    var1 = df.iloc[:,col1].var(axis=1, skipna=True)                             # type: ignore
+    var2 = df.iloc[:,col2].var(axis=1, skipna=True)                             # type: ignore
+    F['F'] = np.where(var2 > var1, var2/var1, var1/var2)                        # type: ignore
+    F['N'] = np.where(var2 > var1, N2, N1)                                      # type: ignore
+    F['D'] = np.where(var2 > var1, N1, N2)                                      # type: ignore
     #endregion -------------------------------------------------------> Values
 
     #region ---------------------------------------------------------> Fill DF
-    #------------------------------> 
+    #------------------------------>
     dfO['f'] = F['F'].to_numpy()
     dfO['P'] = 2 * sStats.f.sf(F['F'], F['N'], F['D'])
     dfO['S'] = np.where(dfO['P'] < alpha, True, False)
@@ -868,9 +845,9 @@ def Test_chi(df:pd.DataFrame, alpha:float, check5: bool=True) -> list:
 
 
 def Test_t_getP(
-    t: 'pd.DataFrame',
-    tdf: Union['pd.DataFrame', int],
-    test: Literal['ts', 's', 'l'],
+    t   : 'pd.DataFrame',
+    tdf : Union['pd.DataFrame', int],
+    test: mConfig.litTestSide,
     ) -> 'pd.DataFrame':
     """Get p value for a given t value.
 
@@ -891,9 +868,9 @@ def Test_t_getP(
     if test == 'ts':
         return 2 * sStats.t.sf(np.abs(t), tdf)
     elif test == 's':
-        return sStats.t.cdf(t, tdf) # type: ignore
+        return sStats.t.cdf(t, tdf)                                             # type: ignore
     elif test == 'l':
-        return sStats.t.sf(t, tdf) # type: ignore
+        return sStats.t.sf(t, tdf)                                              # type: ignore
     else:
         msg = mConfig.mNotImplemented.format(test)
         raise mException.ExecutionError(msg)
@@ -902,14 +879,14 @@ def Test_t_getP(
 
 
 def Test_t_PS_DF(
-    df: 'pd.DataFrame',
-    col1: list[int],
-    col2: list[int],
-    value: float=0,
-    alpha: float=0.05,
+    df     : 'pd.DataFrame',
+    col1   : list[int],
+    col2   : list[int],
+    value  : float=0,
+    alpha  : float=0.05,
     roundTo: Optional[int]=None,
-    tType: Literal['ts','l','s']='ts',
-    delta: float = 0,
+    tType  : mConfig.litTestSide='ts',
+    delta  : float = 0,
     ) -> 'pd.DataFrame':
     """Perform a t test for paired samples.
 
@@ -947,7 +924,7 @@ def Test_t_PS_DF(
     """
     #region ----------------------------------------------------------> Values
     ndf = pd.DataFrame(
-        df.iloc[:,col2].values - df.iloc[:,col1].values,
+        df.iloc[:,col2].values - df.iloc[:,col1].values,                        # type: ignore
         columns=range(len(col1)),
     )
     #------------------------------> m, s, n, t
@@ -960,7 +937,7 @@ def Test_t_PS_DF(
     #region ----------------------------------------------------------> DF out
     #------------------------------> 
     dfO = pd.DataFrame(
-        np.nan, columns=['t', 'P', 'S'], index=range(df.shape[0]) # type: ignore
+        np.nan, columns=['t', 'P', 'S'], index=range(df.shape[0])               # type: ignore
     )
     #------------------------------> 
     dfO['t'] = t.to_numpy()
@@ -981,14 +958,14 @@ def Test_t_PS_DF(
 
 
 def Test_t_IS_DF(
-    df: 'pd.DataFrame',
-    col1: list[int],
-    col2: list[int], 
-    alpha:float=0.05,
-    f:Literal[None, True, False]=None,
+    df     : 'pd.DataFrame',
+    col1   : list[int],
+    col2   : list[int],
+    alpha  : float=0.05,
+    f      : Literal[None, True, False]=None,
     roundTo: Optional[int]=None,
-    tType: Literal['ts', 'l', 's']='ts',
-    delta: float=0,
+    tType  : mConfig.litTestSide='ts',
+    delta  : float=0,
     ) -> 'pd.DataFrame':
     """Perform a t test for independent samples.
 
@@ -1027,10 +1004,10 @@ def Test_t_IS_DF(
     """
     #region ----------------------------------------------------------> Values
     #------------------------------> m, s, n
-    m1 = df.iloc[:,col1].mean(axis=1, skipna=True)
-    m2 = df.iloc[:,col2].mean(axis=1, skipna=True)
-    var1 = df.iloc[:,col1].var(axis=1, skipna=True)
-    var2 = df.iloc[:,col2].var(axis=1, skipna=True)
+    m1 = df.iloc[:,col1].mean(axis=1, skipna=True)                              # type: ignore
+    m2 = df.iloc[:,col2].mean(axis=1, skipna=True)                              # type: ignore
+    var1 = df.iloc[:,col1].var(axis=1, skipna=True)                             # type: ignore
+    var2 = df.iloc[:,col2].var(axis=1, skipna=True)                             # type: ignore
     n1 = len(col1)
     n2 = len(col2)
     dem = n1 + n2 - 2
@@ -1049,16 +1026,16 @@ def Test_t_IS_DF(
     #------------------------------> t, ndf
     tt = np.where(
         F['S'], 
-        (m2 - m1 - delta)/(np.sqrt((var1/n1)+(var2/n2))),
-        (m2 - m1 - delta)/(np.sqrt((1/n1)+(1/n2))*np.sqrt(((n1-1)*var1+(n2-1)*var2)/(dem))),
+        (m2 - m1 - delta)/(np.sqrt((var1/n1)+(var2/n2))),                                           # type: ignore
+        (m2 - m1 - delta)/(np.sqrt((1/n1)+(1/n2))*np.sqrt(((n1-1)*var1+(n2-1)*var2)/(dem))),        # type: ignore
     )
     tdf = np.where(
         F['S'],
-        np.square((var1/n1)+(var2/n2))/(((var1*var1)/(n1*n1*(n1-1)))+((var2*var2)/(n2*n2*(n2-1)))),
+        np.square((var1/n1)+(var2/n2))/(((var1*var1)/(n1*n1*(n1-1)))+((var2*var2)/(n2*n2*(n2-1)))), # type: ignore
         dfN,
     )
     #endregion -------------------------------------------------------> Values
-    
+
     #region ----------------------------------------------------------> DF Out
     #------------------------------> 
     dfO = pd.DataFrame(
@@ -1083,19 +1060,19 @@ def Test_t_IS_DF(
 
 
 def Test_tost(
-    df: 'pd.DataFrame',
-    col1: list[int],
-    col2: list[int],
-    sample: Literal['p', 'i'],
-    f:Literal[None, True, False]=None,
-    delta: Optional['pd.DataFrame']=None,
-    alpha: float=0.05,
-    beta: float=0.05,
-    gamma: float=0.80,
-    d: float=0,
+    df      : 'pd.DataFrame',
+    col1    : list[int],
+    col2    : list[int],
+    sample  : Literal['p', 'i'],
+    f       : Literal[None, True, False]=None,
+    delta   : Optional['pd.DataFrame']=None,
+    alpha   : float=0.05,
+    beta    : float=0.05,
+    gamma   : float=0.80,
+    d       : float=0,
     deltaMax: Optional[float]=None,
     ) -> 'pd.DataFrame':
-    """
+    """Perform a TOST test.
 
         Parameters
         ----------
@@ -1134,7 +1111,7 @@ def Test_tost(
     """
     #region --------------------------------------------------------> Empty df
     dfo = pd.DataFrame(
-        np.nan, # type: ignore
+        np.nan,                                                                 # type: ignore
         columns=['P','t1', 'p1', 's1', 't2', 'p2', 's2'], 
         index=range(df.shape[0])
     )
@@ -1154,15 +1131,15 @@ def Test_tost(
     #region ----------------------------------------------------------> T test
     if sample == 'p':
         dfo.loc[:,['t1', 'p1', 's1']] = Test_t_PS_DF(
-            df, col1, col2, delta=-tDelta, alpha=alpha, tType='l').to_numpy() # type: ignore
+            df, col1, col2, delta=-tDelta, alpha=alpha, tType='l').to_numpy()   # type: ignore
         dfo.loc[:,['t2', 'p2', 's2']] = Test_t_PS_DF(
-            df, col1, col2, delta=tDelta, alpha=alpha, tType='s').to_numpy() # type: ignore
+            df, col1, col2, delta=tDelta, alpha=alpha, tType='s').to_numpy()    # type: ignore
     else:
         dfo.loc[:,['t1', 'p1', 's1']] = Test_t_IS_DF(
-            df, col1, col2, delta=-tDelta, alpha=alpha, f=f, tType='l' # type: ignore
+            df, col1, col2, delta=-tDelta, alpha=alpha, f=f, tType='l'          # type: ignore
         ).to_numpy()
         dfo.loc[:,['t2', 'p2', 's2']] = Test_t_IS_DF(
-            df, col1, col2, delta=tDelta, alpha=alpha, f=f, tType='s' # type: ignore
+            df, col1, col2, delta=tDelta, alpha=alpha, f=f, tType='s'           # type: ignore
         ).to_numpy()
     #endregion -------------------------------------------------------> T test
 
@@ -1175,11 +1152,11 @@ def Test_tost(
 
 
 def Test_tost_delta(
-    df: Union['pd.DataFrame', 'pd.Series'],
-    alpha: float,
-    beta: float,
-    gamma: float,
-    d: float=0, 
+    df      : Union['pd.DataFrame', 'pd.Series'],
+    alpha   : float,
+    beta    : float,
+    gamma   : float,
+    d       : float=0,
     deltaMax: Optional[float]=None,
     ) -> pd.Series:
     """Calculate the delta values for a TOST test.
@@ -1210,7 +1187,7 @@ def Test_tost_delta(
         https://pubs.acs.org/doi/pdf/10.1021/ac053390m
     """
     #region -------------------------------------------------------> Variables
-    s = df.std(axis=1) # type: ignore
+    s = df.std(axis=1)                                                          # type: ignore
     n = df.shape[1]
     chi2 = sStats.chi2.ppf(1-gamma, (n-1))
     #------------------------------> 

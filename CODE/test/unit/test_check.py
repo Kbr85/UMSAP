@@ -81,9 +81,7 @@ class Test_Path2FFOutput(unittest.TestCase):
             ('',          'folder', False, False), #
             (list(),        'file', False, False), # Path() fails
             (self.file,     'file', False,  True), # File
-            (self.file,   'folder', False, False), #
             (self.folder, 'folder', False,  True), # Folder
-            (self.folder,   'file', False, False), #
             (self.noPerm, 'folder', False, False), # No Write Permission
         ]
         #------------------------------>

@@ -27,12 +27,12 @@ import data.exception as mException
 
 #region -------------------------------------------------------------> Methods
 def FastaSequence(fileP: Union[Path, str]) -> Iterator[tuple[str, str]]:
-    """Find all sequences in a multi-FASTA file
+    """Find all sequences in a multi-FASTA file.
 
         Parameters
         ----------
         fileP : Path
-            Location of the fasta file in the file system
+            Location of the fasta file in the file system.
 
         Yield
         -----
@@ -84,17 +84,12 @@ def FindChildren(parent: wx.Window) -> Iterator[wx.Window]:
         Parameters
         ----------
         parent : wx.Window
-            Parent of the child widgets to search for
+            Parent of the child widgets to search for.
 
         Yield
         -----
         wx.Window
-            Each child in parent
-
-        Raises
-        ------
-        InputError
-            When parent is not a wx.Window
+            Each child in parent.
     """
     #region ---------------------------------------------------------> Iterate
     for child in parent.GetChildren():

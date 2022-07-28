@@ -390,7 +390,6 @@ oControlTypeProtProf = {
     'OCR'  : 'One Control per Row',
     'Ratio': oIntensities['RatioI'],
 }
-oFillLoc = ('end', 'start')
 #endregion ----------------------------------------------------------> Options
 
 
@@ -401,6 +400,9 @@ litFoF          = Literal['file', 'folder']
 litNumType      = Literal['int', 'float']
 litNotification = Literal['errorF', 'errorU', 'warning', 'success', 'question']
 litComp         = Literal['lt', 'le', 'e', 'ge', 'gt']
+litCompEq       = Literal['e', 'ne']
+litStartEnd     = Literal['end', 'start']
+litTestSide     = Literal['ts', 's', 'l']
 #endregion -----------------------------------------------------> Literal
 
 

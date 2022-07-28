@@ -13174,6 +13174,8 @@ class DialogFABtnText(BaseDialogOkCancel):
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> 
+        print(self.wBtnTc.wTc.GetValidator().Validate())
+        print(self.wLength.wTc.GetValidator().Validate())
         if self.wBtnTc.wTc.GetValidator().Validate()[0]:
             pass
         else:
