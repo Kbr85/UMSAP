@@ -17,6 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import copy
 import itertools
+from re import S
 import traceback
 from datetime import datetime
 from operator import itemgetter
@@ -234,6 +235,7 @@ def StrEqualLength(
         -----
         Filling characters are added at the end or start of each str.
     """
+    # Test in test.unit.test_method.Test_StrEqualLength
     #region ---------------------------------------------------> Variables
     long = len(max(strL, key=len))
     lOut = []
@@ -418,6 +420,7 @@ def ExpandRange(
         >>> ExpandRange('-5.4', 'float')
         >>> [-5.4]
     """
+    # Test in test.unit.test_method.Test_ExpandRange
     #region -------------------------------------------------> Expand & Return
     #------------------------------> Remove flanking empty characters
     tr = r.strip()
@@ -560,53 +563,6 @@ def DictVal2Str(
 
 
 #region --------------------------------------------------------> pd.DataFrame
-def DFFilterByColS(
-    df    : 'pd.DataFrame',
-    col   : int,
-    refStr: str,
-    comp  : mConfig.litCompEq,
-    ) -> 'pd.DataFrame':
-    """Filter rows in the pd.DataFrame based on the string values present in 
-        col.
-
-        Parameters
-        ----------
-        df: pd.DataFrame
-        col : int
-            The column index used to filter rows.
-        refStr : string
-            Reference string.
-        comp : str
-            Numeric comparison to use in the filter. One of: 'e', 'ne
-
-        Returns
-        -------
-        pd.DataFrame
-
-        Notes
-        -----
-        - Rows with values in col that do not comply with c[x] comp refStr are 
-        discarded, e.g. c[x] == 'refString'
-        - Assumes all values in col are strings.
-    """
-    #region ----------------------------------------------------------> Filter
-    #------------------------------>  Copy
-    dfo = df.copy()
-    #------------------------------> Filter
-    if comp == 'e':
-        dfo = df.loc[df.iloc[:,col] == refStr]
-    elif comp == 'ne':
-        dfo = df.loc[df.iloc[:,col] != refStr]
-    else:
-        msg = mConfig.mNotImplementedFull.format(
-            comp, 'comp', mConfig.litCompEq)
-        raise mException.InputError(msg)
-    #endregion -------------------------------------------------------> Filter
-
-    return dfo
-#---
-
-
 def DFReplace(
     df    : pd.DataFrame,
     oriVal: list,
@@ -644,6 +600,7 @@ def DFReplace(
         -----
         Column selection in the df is done by column number.
     """
+    # Test in test.unit.test_method.Test_DFReplace
     #region -----------------------------------------------------> Check input
     if isinstance(repVal, (list, tuple)):
         repValFix = repVal
@@ -654,11 +611,11 @@ def DFReplace(
     #region ---------------------------------------------------------> Replace
     #------------------------------> Copy
     dfo = df.copy()
-    #------------------------------> 
+    #------------------------------>
     for k, v in enumerate(oriVal):
-        #------------------------------> 
+        #------------------------------>
         rep = repValFix[k]
-        #------------------------------> 
+        #------------------------------>
         if sel:
             dfo.iloc[:,sel] = dfo.iloc[:,sel].replace(v, rep)
         else:
@@ -686,6 +643,7 @@ def DFExclude(df:'pd.DataFrame', col: list[int]) -> 'pd.DataFrame':
         Rows with at least one value other than NA in the given columns are 
         discarded
     """
+    # Test in test.unit.test_method.Test_DFExclude
     #region ----------------------------------------------------------> Exclude
     #------------------------------>  Copy
     dfo = df.copy()
@@ -731,6 +689,7 @@ def DFFilterByColN(
         
         Assumes all values in col are numbers.
     """
+    # Test in test.unit.test_method.Test_DFFilterByColN
     #region ----------------------------------------------------------> Filter
     #------------------------------>  Copy
     dfo = df.copy()
@@ -747,6 +706,54 @@ def DFFilterByColN(
         dfo = df.loc[(df.iloc[:,col] > refVal).any(axis=1)] # type: ignore
     else:
         msg = mConfig.mNotImplementedFull.format(comp, 'comp', mConfig.litComp)
+        raise mException.InputError(msg)
+    #endregion -------------------------------------------------------> Filter
+
+    return dfo
+#---
+
+
+def DFFilterByColS(
+    df    : 'pd.DataFrame',
+    col   : int,
+    refStr: str,
+    comp  : mConfig.litCompEq,
+    ) -> 'pd.DataFrame':
+    """Filter rows in the pd.DataFrame based on the string values present in 
+        col.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+        col : int
+            The column index used to filter rows.
+        refStr : string
+            Reference string.
+        comp : str
+            Numeric comparison to use in the filter. One of: 'e', 'ne
+
+        Returns
+        -------
+        pd.DataFrame
+
+        Notes
+        -----
+        - Rows with values in col that do not comply with c[x] comp refStr are 
+        discarded, e.g. c[x] == 'refString'
+        - Assumes all values in col are strings.
+    """
+    # Test in test.unit.test_method.Test_DFFilterByColS
+    #region ----------------------------------------------------------> Filter
+    #------------------------------>  Copy
+    dfo = df.copy()
+    #------------------------------> Filter
+    if comp == 'e':
+        dfo = df.loc[df.iloc[:,col] == refStr]
+    elif comp == 'ne':
+        dfo = df.loc[df.iloc[:,col] != refStr]
+    else:
+        msg = mConfig.mNotImplementedFull.format(
+            comp, 'comp', mConfig.litCompEq)
         raise mException.InputError(msg)
     #endregion -------------------------------------------------------> Filter
 
@@ -801,10 +808,10 @@ def MatplotLibCmap(
     #endregion -------------------------------------------------------> Colors
 
     #region ------------------------------------------------------------> CMAP
-    #------------------------------> 
+    #------------------------------>
     vals   = np.vstack((vals1, vals2))
     newMap = mpl.colors.ListedColormap(vals)
-    #------------------------------> 
+    #------------------------------>
     if bad is not None:
         newMap.set_bad(color=bad)
     else:
@@ -816,9 +823,11 @@ def MatplotLibCmap(
 
 
 def Fragments(
-    df  : 'pd.DataFrame',
-    val : float,
-    comp: mConfig.litComp,
+    df     : 'pd.DataFrame',
+    val    : float,
+    comp   : mConfig.litComp,
+    protL  : int,
+    protLoc: list[int],
     ) -> dict:
     """Creates the dict holding the fragments identified in the analysis.
 
@@ -827,10 +836,15 @@ def Fragments(
         df: pd.DataFrame with the data from the analysis. The columns in df are
             expected to be:
             Seq Nrec Crec Nnat Cnat Exp1 Exp2 ...... ExpN
+            Seq Nrec Crec Nnat Cnat    P    P           P
         val : float
             Threshold value to filter df and identify relevant peptides
         comp : str
             One of 'lt', 'le', 'e', 'ge', 'gt'
+        protL: int
+            Length of recombinant protein.
+        protLoc: list[int]
+            Location of the native protein in the recombinant sequence
 
         Returns
         -------
@@ -856,7 +870,7 @@ def Fragments(
         - Keys Exp1,...,ExpN are variables and depend on the module calling the
         method.
     """
-    # No Test
+    # Test in test.unit.test_method.Test_Fragments
     #region -------------------------------------------------------> Variables
     dictO = {}
     #endregion ----------------------------------------------------> Variables
@@ -876,133 +890,161 @@ def Fragments(
         dictO[colK]['NcNat']  = []
         #------------------------------> Filter df
         dfE = DFFilterByColN(df, [c], val, comp)
-        #------------------------------> 
-        n       = None
-        c       = None
-        seq     = None
-        seqL    = []
-        nP      = None
-        npNat   = None
-        ncL     = []
-        ncLNat  = []
+        #------------------------------> Total cleavages for the experiment
         nctL    = []
         nctLNat = []
-        #------------------------------>
-        for r in range(0, dfE.shape[0]):
-            if n is None:
-                seq = dfE.iat[r,0]
-                seqL.append(seq)
-                nP = 1
-                n  = dfE.iat[r,1]
-                c  = dfE.iat[r,2]
-                nf = dfE.iat[r,3]
-                cf = dfE.iat[r,4]
-                if np.isnan(nf) and np.isnan(cf):
-                    npNat = 0
-                else:
-                    npNat = 1
-                if np.isnan(nf):
-                    pass
-                else:
-                    ncLNat.append(n-1)
-                    nctLNat.append(n-1)
-                if np.isnan(cf):
-                    pass
-                else:
-                    ncLNat.append(c)
-                    nctLNat.append(c)
+        #------------------------------> First row
+        if dfE.shape[0] > 0:
+            #------------------------------> Values from dfE
+            seq     = dfE.iat[0,0]
+            n       = dfE.iat[0,1]
+            c       = dfE.iat[0,2]
+            nf      = dfE.iat[0,3]
+            cf      = dfE.iat[0,4]
+            ncL     = []
+            ncLNat  = []
+            #------------------------------>
+            seqL = [seq]
+            #------------------------------> Number of peptides
+            nP = 1
+            if pd.isna(nf) and pd.isna(cf):
+                npNat = 0
+            else:
+                npNat = 1
+            #------------------------------> Cleavages Rec
+            if n != 1:
                 ncL.append(n-1)
-                ncL.append(c)
                 nctL.append(n-1)
+            else:
+                pass
+            if c != protL:
+                ncL.append(c)
                 nctL.append(c)
             else:
-                nc   = dfE.iat[r,1]
-                cc   = dfE.iat[r,2]
-                ncf  = dfE.iat[r,3]
-                ccf  = dfE.iat[r,4]
-                seqC = dfE.iat[r,0]
-                if nc <= c:
-                    seq = f'{seq}\n{(nc-n)*" "}{seqC}'
-                    seqL.append(seqC)
-                    nP = nP + 1                                                 # type: ignore
-                    if cc > c:
-                        c = cc
-                        cf = ccf
-                    else:
-                        pass
-                    if not np.isnan(ncf) and not np.isnan(ccf):
-                        npNat = npNat + 1                                       # type: ignore
-                    else:
-                        pass
-                    if not np.isnan(ncf):
-                        ncLNat.append(nc-1)
-                        nctLNat.append(nc-1)
-                    else:
-                        pass
-                    if not np.isnan(ccf):
-                        ncLNat.append(cc)
-                        nctLNat.append(cc)
-                    else:
-                        pass
-                    ncL.append(nc-1)
-                    ncL.append(cc)
-                    nctL.append(nc-1)
-                    nctL.append(cc)
-                else:
-                    dictO[colK]['Coord'].append((n,c))
-                    dictO[colK]['CoordN'].append((nf,cf))                       # type: ignore
-                    dictO[colK]['Seq'].append(seq)
-                    dictO[colK]['SeqL'].append(seqL)
-                    dictO[colK]['Np'].append(nP)
-                    dictO[colK]['NpNat'].append(npNat)
-                    dictO[colK]['Nc'].append(len(list(set(ncL))))
-                    dictO[colK]['NcNat'].append(len(list(set(ncLNat))))
-                    n    = nc
-                    c    = cc
-                    nf   = ncf
-                    cf   = ccf
-                    seq  = seqC
-                    seqL = [seqC]
-                    nP   = 1
-                    if not np.isnan(nf) and not np.isnan(cf):
-                        npNat = 1
-                    else:
-                        npNat = 0
-                    ncLNat = []
-                    if not np.isnan(nf):
-                        ncLNat.append(n-1)
-                        nctLNat.append(n-1)
-                    else:
-                        pass
-                    if not np.isnan(cf):
-                        ncLNat.append(c)
-                        nctLNat.append(c)
-                    else:
-                        pass
-                    ncL = []
-                    ncL.append(n-1)
-                    ncL.append(c)
-                    nctL.append(n-1)
-                    nctL.append(c)
-        #------------------------------> Catch the last line
-        if n is not None:
-            dictO[colK]['Coord'].append((n,c))
-            dictO[colK]['CoordN'].append((nf,cf))                               # type: ignore
-            dictO[colK]['Seq'].append(seq)
-            dictO[colK]['SeqL'].append(seqL)
-            dictO[colK]['Np'].append(nP)
-            dictO[colK]['NpNat'].append(npNat)
-            dictO[colK]['Nc'].append(len(list(set(ncL))))
-            dictO[colK]['NcNat'].append(len(list(set(ncLNat))))
-            #------------------------------>
-            dictO[colK]['NcT'] = [len(list(set(nctL))), len(list(set(nctLNat)))]
-            #------------------------------>
-            nFragN = [x for x in dictO[colK]['CoordN'] if not np.isnan(x[0]) or not np.isnan(x[1])]
-            dictO[colK]['NFrag'] = [len(dictO[colK]['Coord']), len(nFragN)]
+                pass
+            #------------------------------> Cleavages Nat
+            if pd.isna(nf) or nf == 1:
+                pass
+            else:
+                ncLNat.append(nf-1)
+                nctLNat.append(nf-1)
+            if pd.isna(cf) or cf == protL == protLoc[1]:
+                pass
+            else:
+                ncLNat.append(cf)
+                nctLNat.append(cf)
         else:
             dictO[colK]['NcT'] = []
             dictO[colK]['NFrag'] = []
-        #------------------------------> All detected peptides as a list
+            continue
+        #------------------------------> Other rows
+        for r in range(1, dfE.shape[0]):
+            #------------------------------> Values from dfE
+            seqC = dfE.iat[r,0]
+            nc   = dfE.iat[r,1]
+            cc   = dfE.iat[r,2]
+            ncf  = dfE.iat[r,3]
+            ccf  = dfE.iat[r,4]
+            if nc <= c:
+                #------------------------------> 
+                seq = f'{seq}\n{(nc-n)*" "}{seqC}'
+                seqL.append(seqC)
+                #------------------------------> Number of peptides
+                nP = nP + 1
+                if pd.isna(ncf) and pd.isna(ccf):
+                    pass
+                else:
+                    npNat = npNat + 1
+                #------------------------------> Cleavages Rec
+                if nc != 1:
+                    ncL.append(nc-1)
+                    nctL.append(nc-1)
+                else:
+                    pass
+                if cc != protL:
+                    ncL.append(cc)
+                    nctL.append(cc)
+                else:
+                    pass
+                #------------------------------> Cleavages Nat
+                if pd.isna(ncf) or ncf == 1:
+                    pass
+                else:
+                    ncLNat.append(nc-1)
+                    nctLNat.append(nc-1)
+                if pd.isna(ccf) or ccf == protL == protLoc[1]:
+                    pass
+                else:
+                    ncLNat.append(ccf)
+                    nctLNat.append(ccf)
+                #------------------------------> Update c residue
+                if cc > c:
+                    c = cc
+                    cf = ccf
+                else:
+                    pass
+            else:
+                #------------------------------> Add Fragment
+                dictO[colK]['Coord'].append((n,c))
+                dictO[colK]['CoordN'].append((nf,cf))
+                dictO[colK]['Seq'].append(seq)
+                dictO[colK]['SeqL'].append(seqL)
+                dictO[colK]['Np'].append(nP)
+                dictO[colK]['NpNat'].append(npNat)
+                dictO[colK]['Nc'].append(len(set(ncL)))
+                dictO[colK]['NcNat'].append(len(set(ncLNat)))
+                #------------------------------> Start new Fragment
+                seq     = seqC
+                n       = nc
+                c       = cc
+                nf      = ncf
+                cf      = ccf
+                ncL     = []
+                ncLNat  = []
+                #------------------------------> 
+                seqL = [seqC]
+                #------------------------------> Number of peptides
+                nP   = 1
+                if pd.isna(nf) and pd.isna(cf):
+                    npNat = 0
+                else:
+                    npNat = 1
+                #------------------------------> Cleavages Rec
+                if n != 1:
+                    ncL.append(n-1)
+                    nctL.append(n-1)
+                else:
+                    pass
+                if c != protL:
+                    ncL.append(c)
+                    nctL.append(c)
+                else:
+                    pass
+                #------------------------------> Cleavages Nat
+                if pd.isna(nf) or nf == 1:
+                    pass
+                else:
+                    ncLNat.append(nf-1)
+                    nctLNat.append(nf-1)
+                if pd.isna(cf) or cf == protL == protLoc[1]:
+                    pass
+                else:
+                    ncLNat.append(cf)
+                    nctLNat.append(cf)
+        #------------------------------> Catch the last line
+        dictO[colK]['Coord'].append((n,c))
+        dictO[colK]['CoordN'].append((nf,cf))
+        dictO[colK]['Seq'].append(seq)
+        dictO[colK]['SeqL'].append(seqL)
+        dictO[colK]['Np'].append(nP)
+        dictO[colK]['NpNat'].append(npNat)
+        dictO[colK]['Nc'].append(len(set(ncL)))
+        dictO[colK]['NcNat'].append(len(set(ncLNat)))
+        #------------------------------>
+        dictO[colK]['NcT'] = [len(set(nctL)), len(set(nctLNat))]
+        #------------------------------>
+        nFragN = [x for x in dictO[colK]['CoordN'] if not pd.isna(x[0]) or not pd.isna(x[1])]
+        dictO[colK]['NFrag'] = [len(dictO[colK]['Coord']), len(nFragN)]
     #endregion ------------------------------------------------>
 
     return dictO
