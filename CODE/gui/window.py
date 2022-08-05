@@ -5863,7 +5863,7 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         rDf: pd.DataFrame
             Copy of the data used to plot
         rFragments: dict
-            Dict with the info for the fragments. See dmethod.Fragments.
+            Dict with the info for the fragments. See mMethod.Fragments.
         rFragSelC: list[band, lane, fragment]
             Coordinates for the currently selected fragment. 0 based.
         rFragSelLine: matplotlib line
@@ -6180,8 +6180,13 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
 
         #region ---------------------------------------------------> Fragments
         self.rFragments = mMethod.Fragments(
-            self.GetDF4FragmentSearch(), self.rAlpha,'le')
-
+            self.GetDF4FragmentSearch(), 
+            self.rAlpha,
+            'le', 
+            self.rProtLength,
+            self.rProtLoc
+        )
+        #------------------------------>
         self.SetEmptyFragmentAxis()
         #endregion ------------------------------------------------> Fragments
 
@@ -7872,7 +7877,12 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 
         #region ---------------------------------------------------> Fragments
         self.rFragments = mMethod.Fragments(
-            self.GetDF4FragmentSearch(), self.rAlpha, 'le')
+            self.GetDF4FragmentSearch(),
+            self.rAlpha,
+            'le',
+            self.rProtLength,
+            self.rProtLoc,
+        )
         #------------------------------>
         self.DrawFragments()
         #endregion ------------------------------------------------> Fragments

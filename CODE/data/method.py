@@ -1072,6 +1072,7 @@ def MergeOverlappingFragments(
         -----
         An empty list is returned if coord is empty.
     """
+    # Test in test.unit.test_method.Test_MergeOverlappingFragments
     #region ---------------------------------------------------> Variables
     coordO = []
     #endregion ------------------------------------------------> Variables
@@ -1151,7 +1152,15 @@ def Rec2NatCoord(
         Notes
         -----
         Returns ['NA'] if delta is None or any of the protLoc items is None.
+
+        Examples
+        --------
+        >>> Rec2NatCoord([(1,42), (38, 50), (201, 211), (247, 263)], (10, 300)), 10)
+        >>> [(48, 60), (211, 221), (257, 273)]
+        >>> Rec2NatCoord([(1,42), (38, 50), (201, 211), (247, 263)], (100, 230)), 10)
+        >>> [(211, 221)]
     """
+    # Test in test.unit.test_method.Test_Rec2NatCoord
     #region ---------------------------------------------------> Return NA
     if delta is None or protLoc[0] is None or protLoc[1] is None:
         return ['NA']
@@ -1201,6 +1210,7 @@ def R2AA(
             AA Label1       LabelN
             AA -2 -1 1 2 P  -2 -1 1 2 P
     """
+    # Test in test.unit.test_method.Test_R2AA
     def AddNewAA(
         dfO: pd.DataFrame,
         r  : int,
@@ -1331,6 +1341,7 @@ def R2Hist(
         -------
         pd.DataFrame
     """
+    # Test in test.unit.test_method.Test_R2Hist
     #region ---------------------------------------------------> Variables
     bin = []
     if len(win) == 1:
@@ -1365,10 +1376,10 @@ def R2Hist(
         dfO.iloc[range(0,len(bin[1])), dfO.columns.get_loc(('Nat','Win','Win'))] = bin[1]
     else:
         pass
-    #------------------------------> 
+    #------------------------------>
     for e in label:
         dfT = df[df[(e,'P')] < alpha]
-        #------------------------------> 
+        #------------------------------>
         dfR = dfT[[('Nterm','Nterm'),('Cterm', 'Cterm')]].copy()
         dfR[('Nterm','Nterm')] = dfR[('Nterm','Nterm')] - 1
         l = dfR.to_numpy().flatten()
@@ -1378,12 +1389,12 @@ def R2Hist(
         l = list(set(l))
         a,_ = np.histogram(l, bins=bin[0])
         dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Rec','Unique',e))] = a
-        #------------------------------> 
+        #------------------------------>
         if bin[1][0] is not None:
             dfR = dfT[[('NtermF','NtermF'),('CtermF', 'CtermF')]].copy()
             dfR[('NtermF','NtermF')] = dfR[('NtermF','NtermF')] - 1
             l = dfR.to_numpy().flatten()
-            l = [x for x in l if x > 0 and x < maxL[0]]
+            l = [x for x in l if not pd.isna(x) and x > 0 and x < maxL[1]]
             a,_ = np.histogram(l, bins=bin[0])
             dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Nat','All',e))] = a
             l = list(set(l))
@@ -1414,6 +1425,7 @@ def R2CpR(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         -------
         pd.DataFrame
     """
+    # Test in test.unit.test_method.Test_R2CpR
     #region -------------------------------------------------------------> dfO
     label = df.columns.unique(level=0).tolist()[4:]
     nL = len(label)
@@ -1435,7 +1447,8 @@ def R2CpR(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         dfR[('Cterm','Cterm')] = dfR[('Cterm','Cterm')] - 1
         l = dfR.to_numpy().flatten()
         # No Cleavage in 1 and last residue
-        l = [x for x in l if x > -1 and x < protL[0]]
+        lastR = protL[0] - 1
+        l = [x for x in l if x > -1 and x < lastR]
         for x in l:
             dfO.at[x, idx['Rec',e]] = dfO.at[x, idx['Rec',e]] + 1
         #------------------------------> Nat
@@ -1445,7 +1458,9 @@ def R2CpR(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
             dfR[('NtermF','NtermF')] = dfR[('NtermF','NtermF')] - 2
             dfR[('CtermF','CtermF')] = dfR[('CtermF','CtermF')] - 1
             l = dfR.to_numpy().flatten()
-            l = [x for x in l if x > -1 and x < protL[0]]
+            # No Cleavage in 1 and last residue
+            lastR = protL[1] - 1
+            l = [x for x in l if not pd.isna(x) and x > -1 and x < lastR]
             for x in l:
                 dfO.at[x, idx['Nat',e]] = dfO.at[x, idx['Nat',e]] + 1
         else:
@@ -1473,6 +1488,7 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         -------
         pd.DataFrame
     """
+    # Test in test.unit.test_method.Test_R2CEvol
     def IntL2MeanI(a: list, alpha: float) -> float:
         """Calculate the intensity average.
 
@@ -1511,7 +1527,8 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
     dfT.iloc[:,0] = dfT.iloc[:,0]-2
     dfT.iloc[:,1] = dfT.iloc[:,1]-1
     resL = sorted(list(set(dfT.iloc[:,[0,1]].to_numpy().flatten())))
-    resL = [x for x in resL if x > -1 and x < protL[0]]
+    lastR = protL[0] - 1
+    resL = [x for x in resL if x > -1 and x < lastR]
     #------------------------------>
     for e in label:
         dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])       # type: ignore
@@ -1528,21 +1545,23 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         #------------------------------>
         dfG = dfT.loc[(dfT[('Nterm','Nterm')]==r) | (dfT[('Cterm','Cterm')]==r)].copy()
         #------------------------------>
-        dfG = dfG.loc[dfG.loc[:,idx[:,'Int']].any(axis=1)] # type: ignore
+        dfG = dfG.loc[dfG.loc[:,idx[:,'Int']].any(axis=1)]                                                              # type: ignore
         dfG.loc[:,idx[:,'Int']] = dfG.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
         #------------------------------>
         dfO.iloc[r, range(0,len(label))] = dfG.loc[:,idx[:,'Int']].sum(axis=0)
-    #endregion ------------------------------------------------> 
-    
-    #region ---------------------------------------------------> 
+    #endregion ------------------------------------------------>
+
+    #region --------------------------------------------------->
     if protL[1] is not None:
         dfT = df.iloc[:,[2,3]+colN].copy()
         #------------------------------> 0 range for residue number
         dfT.iloc[:,0] = dfT.iloc[:,0]-2
         dfT.iloc[:,1] = dfT.iloc[:,1]-1
-        resL = sorted(list(set(dfT.iloc[:,[0,1]].to_numpy().flatten())))
-        resL = [x for x in resL if x > -1 and x < protL[0]]
-        #------------------------------> 
+        resL = list(set(dfT.iloc[:,[0,1]].to_numpy().flatten()))
+        lastR = protL[1] - 1
+        resL = [x for x in resL if not pd.isna(x) and x > -1 and x < lastR]
+        resL = sorted(resL)
+        #------------------------------>
         for e in label:
             dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])   # type: ignore
         #------------------------------> 
@@ -1598,6 +1617,7 @@ def R2SeqAlignment(
         -------
         bool
     """
+    # No Test
     def GetString(
         df   : pd.DataFrame,
         seq  : str,
