@@ -17,7 +17,6 @@
 #region -------------------------------------------------------------> Imports
 import copy
 import itertools
-from re import S
 import traceback
 from datetime import datetime
 from operator import itemgetter
