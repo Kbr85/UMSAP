@@ -27,7 +27,8 @@ import gui.window as mWindow
 
 #region -------------------------------------------------------------> Methods
 def LoadUMSAPFile(
-    fileP: Optional[Path]=None, win: Optional[wx.Window]=None,
+    fileP: Optional[Path]      = None,
+    win  : Optional[wx.Window] = None,
     ) -> bool:
     """Load an UMSAP File either from Read UMSAP File menu, LoadResults
         method in Tab or Update File Content menu.

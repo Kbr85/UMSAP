@@ -34,13 +34,13 @@ import data.check as mCheck
 
 #region -----------------------------------------------------------> Validator
 class InputFF(wx.Validator):
-    """Check widget holds the path to an input file/folder
+    """Check widget holds the path to an input file/folder.
 
         Parameters
         ----------
         fof : str
             One of 'file', 'folder'. Check widgets hold path to file or folder.
-            Default is 'folder'.
+            Default is 'file'.
         opt : Boolean
             Value is optional. Default is False.
 
@@ -50,11 +50,11 @@ class InputFF(wx.Validator):
             - (True, None)
             - (False, (code, path, msg))
                 code is:
-                - NotPath,   Input is not valid path
-                - NotFile,   Input is not valid file
-                - NotDir,    Input is not valid folder
-                - NoRead,    Input cannot be read
-                - (ExceptionRaised, ExceptionName): Check method raised an exception.
+                - NotPath,         Input is not valid path
+                - NotFile,         Input is not valid file
+                - NotDir,          Input is not valid folder
+                - NoRead,          Input cannot be read
+                - ExceptionRaised, Check method raised an exception.
 
         Attributes
         ----------
@@ -79,10 +79,7 @@ class InputFF(wx.Validator):
     #region ------------------------------------------------> Override methods
     def Clone(self) -> wx.Validator:
         """Overridden method"""
-        return InputFF(
-            fof = self.rFof,
-            opt = self.rOpt,
-        )
+        return InputFF(fof=self.rFof, opt=self.rOpt)
     #---
 
     def Validate(self) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
@@ -131,7 +128,7 @@ class OutputFF(wx.Validator):
                 code is:
                 - NotPath,         Input is not a valid path.
                 - NoWrite,         It is not possible to write.
-                - (ExceptionRaised, ExceptionName): Check method raised an exception.
+                - ExceptionRaised, Check method raised an exception.
                 
         Attributes
         ----------
@@ -156,10 +153,7 @@ class OutputFF(wx.Validator):
     #region ------------------------------------------------> Override methods
     def Clone(self) -> wx.Validator:
         """Overridden method"""
-        return OutputFF(
-            fof = self.rFof,
-            opt = self.rOpt,
-        )
+        return OutputFF(fof=self.rFof, opt=self.rOpt)
     #---
 
     def Validate(self) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
@@ -195,7 +189,16 @@ class OutputFF(wx.Validator):
 
 
 class IsNotEmpty(wx.Validator):
-    """Check wx widget has a value different than ''"""
+    """Check wx widget has a value different than ''
+    
+        Returns by Validate method
+        --------------------------
+        tuple
+            - (True, None)
+            - (False, (code, path, msg))
+                code is:
+                - Empty, Field is empty.
+    """
     #region --------------------------------------------------> Instance Setup
     def __init__(self) -> None:
         """ """
@@ -263,7 +266,7 @@ class NumberList(wx.Validator):
             List must contain exactly nN elements
         nMax : int or None
             List must contain maximum nMax elements
-            
+
         Return by Validate method
         -------------------------
         tuple
@@ -275,7 +278,7 @@ class NumberList(wx.Validator):
                 - (ListLengthE, None) : Only x values are accepted
                 - (ListLengthR, None) : Only x to y values are accepted
                 - (NotUnique, list) : list is the list of repeated elements
-                - (ExceptionRaised, ExceptionName): Check method raised an exception.
+                - (ExceptionRaised, Name): Check method raised an exception.
 
         Attributes
         ----------
@@ -306,15 +309,15 @@ class NumberList(wx.Validator):
     #region --------------------------------------------------> Instance Setup
     def __init__(
         self,
-        numType: mConfig.litNumType='int',
-        unique: bool=True,
-        sep: str=',',
-        opt: bool=False,
-        vMin: Optional[float]=None,
-        vMax: Optional[float]=None,
-        nMin: Optional[int]=None,
-        nN: Optional[int]=None,
-        nMax: Optional[int]=None,
+        numType: mConfig.litNumType = 'int',
+        unique : bool= True,
+        sep    : str = ',',
+        opt    : bool = False,
+        vMin   : Optional[float] = None,
+        vMax   : Optional[float] = None,
+        nMin   : Optional[int] = None,
+        nN     : Optional[int] = None,
+        nMax   : Optional[int] = None,
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -354,7 +357,7 @@ class NumberList(wx.Validator):
         vMin: Optional[float]=None, 
         vMax: Optional[float]=None, 
         nMin: Optional[int]=None, 
-        nN: Optional[int]=None, 
+        nN  : Optional[int]=None, 
         nMax: Optional[int]=None,
         ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
         """ Validate widget value. Parameters allow to give these values just
@@ -380,7 +383,7 @@ class NumberList(wx.Validator):
         tnN   = nN if nN is not None else self.rNN
         tnMax = nMax if nMax is not None else self.rNMax
         #------------------------------> 
-        value    = self.GetWindow().GetValue()
+        value = self.GetWindow().GetValue()
         #endregion ------------------------------------------------> Variables
 
         #region ----------------------------------------------------> Validate
@@ -462,14 +465,14 @@ class Comparison(wx.Validator):
     def __init__(
         self, 
         numType: mConfig.litNumType='int',
-        opt: bool=False, 
-        vMin: Optional[float]=None,
-        vMax: Optional[float]=None,
-        op: list[str]=['<', '>', '<=', '>='],
+        opt    : bool=False, 
+        vMin   : Optional[float]=None,
+        vMax   : Optional[float]=None,
+        op     : list[str]=['<', '>', '<=', '>='],
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.rNumType = numType
+        self.rNumType: mConfig.litNumType=numType
         self.rOpt     = opt
         self.rVMin    = vMin
         self.rVMax    = vMax
@@ -484,7 +487,7 @@ class Comparison(wx.Validator):
     def Clone(self):
         """Overridden method"""
         return Comparison(
-            numType = self.rNumType, # type: ignore
+            numType = self.rNumType,
             opt     = self.rOpt,
             vMin    = self.rVMin,
             vMax    = self.rVMax,
@@ -502,7 +505,7 @@ class Comparison(wx.Validator):
         try:
             return mCheck.Comparison(
                 value,
-                numType = self.rNumType, # type: ignore
+                numType = self.rNumType,
                 opt     = self.rOpt,
                 vMin    = self.rVMin,
                 vMax    = self.rVMax,
