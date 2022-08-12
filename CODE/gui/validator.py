@@ -132,10 +132,10 @@ class OutputFF(wx.Validator):
                 
         Attributes
         ----------
-        fof : str
+        rFof : str
             One of 'file', 'folder'. Check widgets hold path to file or folder.
             Default is 'file'.
-        opt : Boolean
+        rOpt : Boolean
             Value is optional. Default is True.
     """
     #region --------------------------------------------------> Instance setup
@@ -282,29 +282,24 @@ class NumberList(wx.Validator):
 
         Attributes
         ----------
-        numType : str
+        rNumType : str
             One of 'int' or 'float'. Default is 'int'
-        unique : boolean
+        rUnique : boolean
             Elements must be unique (True) or not
-        sep : str
+        rSep : str
             List elements are separated by sep. Default ' '
-        opt : boolean
+        rOpt : boolean
             To allow for empty fields
-        vMin : float or None
+        rVMin : float or None
             Elements in the list must be >= vMin
-        vMax : float or None
+        rVMax : float or None
             Elements in the list must be <= vMax
-        nMin : int or None
+        rNMin : int or None
             List must contain at least nMin elements
-        nN : int or None
+        rNN : int or None
             List must contain exactly nN elements
-        nMax : int or None
+        rNMax : int or None
             List must contain maximum nMax elements
-
-        Raises
-        ------
-        InputError:
-            - When numType is not in config.oNumType.keys()
     """
     #region --------------------------------------------------> Instance Setup
     def __init__(
@@ -423,8 +418,6 @@ class Comparison(wx.Validator):
 
         Parameters
         ----------
-        tStr: str
-            String to check
         numType : One of int or float
             Number type in tStr.
         opt : bool
@@ -438,17 +431,15 @@ class Comparison(wx.Validator):
 
         Attributes
         ----------
-        tStr: str
-            String to check
-        numType : One of int or float
+        rNumType : One of int or float
             Number type in tStr.
-        opt : bool
+        rOpt : bool
             Input is optional (True) or not (False). Default is False.
-        vMin : float or None
+        rVMin : float or None
             Minimum acceptable value in tStr
-        vMax : float or None
+        rVMax : float or None
             Maximum acceptable value in tStr
-        op : list
+        rOp : list
             List of acceptable operand in front of value for tStr.
 
         Return by Validate method
