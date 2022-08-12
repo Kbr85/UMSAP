@@ -129,6 +129,8 @@ class BaseConfPanel(
             To clear all wx.ListCtrl in the Tab.
         rLLenLongest: int
             Length of longest label.
+        rMainData: str
+            Name of the file containing the main output data.
         rMsgError: Str or None
             Error message to show when analysis fails
         rNCol: int
@@ -137,37 +139,13 @@ class BaseConfPanel(
         rOFolder: Path or None
             Folder to contain the output. Set based on the umsap file path.
         rSeqFileObj: dtsFF.FastaFile
-            Object to work with the sequences of the proteins 
-
-        Notes
-        -----
-        The following attributes must be set in the child class
-        cGaugePD : int 
-            Number of steps for the wx.Gauge in the Progress Dialog shown when 
-            running analysis.
-        cName : str
-            Unique name of the pane.
-        cSection : str 
-            Section in the UMSAP file. One of the values in config.nameModules 
-            or config.nameUtilities.
-        cTitlePD : str
-            Title for the Progress Dialog shown when running analysis.
-        cURL : str 
-            URL for the Help wx.Button.
-        rCheckUserInput : dict
-            Dict to check individual fields in the user input in the correct 
-            order. See CheckInput method for more details.
-        rLLenLongest : int 
-            Length of the longest label in output dict.
-        rCopyFile : dict
-            Keys are keys in rDO and values keys in rDI. Signal input files that
-            must be copied to Data_Initial.
+            Object to work with the sequences of the proteins.
     """
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent: wx.Window, rightDelete: bool=True) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.cParent  = parent
+        self.cParent = parent
         #------------------------------> 
         self.cName    = getattr(self, 'cName', mConfig.npDef)
         self.cSection = getattr(self, 'cSection', 'Default Section')
@@ -312,13 +290,17 @@ class BaseConfPanel(
         scrolled.ScrolledPanel.__init__(self, parent, name=self.cName)
 
         mWidget.ButtonOnlineHelpClearAllRun.__init__(
-            self, self, self.cURL, 
+            self,
+            self,
+            self.cURL,
             tooltipR = self.cTTRun,
             tooltipH = self.cTTHelp,
             tooltipC = self.cTTClearAll,
         )
 
-        mWidget.StaticBoxes.__init__(self, self, 
+        mWidget.StaticBoxes.__init__(
+            self,
+            self,
             labelF      = self.cLFileBox,
             labelD      = self.cLDataBox,
             labelV      = self.cLValueBox,
@@ -328,7 +310,8 @@ class BaseConfPanel(
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.wUFile = mWidget.ButtonTextCtrlFF(self.wSbFile,
+        self.wUFile = mWidget.ButtonTextCtrlFF(
+            self.wSbFile,
             btnLabel   = self.cLuFile,
             btnTooltip = self.cTTuFile,
             tcHint     = self.cHuFile,
@@ -338,7 +321,8 @@ class BaseConfPanel(
             validator  = self.cVuFile,
             ownCopyCut = True,
         )
-        self.wIFile = mWidget.ButtonTextCtrlFF(self.wSbFile,
+        self.wIFile = mWidget.ButtonTextCtrlFF(
+            self.wSbFile,
             btnLabel   = self.cLiFile,
             btnTooltip = self.cTTiFile,
             tcHint     = self.cHiFile,
@@ -552,12 +536,12 @@ class BaseConfPanel(
 
     #region ---------------------------------------------------> Event Methods
     def OnIFileLoad(self, event: Union[wx.CommandEvent, str]) -> bool:
-        """Clear GUI elements when Data Folder is ''
+        """Clear GUI elements when Data Folder is ''.
 
             Parameters
             ----------
-            event: wx.Event
-                Information about the event
+            event: wx.CommandEvent or str
+                Information about the event.
 
             Return
             ------
@@ -599,7 +583,7 @@ class BaseConfPanel(
 
             Parameters
             ----------
-            event: wx.Event
+            event: wx.CommandEvent
                 Information about the event.
 
             Returns
@@ -773,7 +757,7 @@ class BaseConfPanel(
         """
         #region -----------------------------------------------------> Set dfI
         try:
-            self.dfI = self.rIFileObj.rDf.iloc[:,self.rDO['oc']['Column']] # type: ignore
+            self.dfI = self.rIFileObj.rDf.iloc[:,self.rDO['oc']['Column']]      # type: ignore
         except Exception as e:
             self.rMsgError = mConfig.mPDGetInitCol.format(
                 self.rDO['oc']['Column'], self.cLiFile, self.rDO['iFile'])
@@ -786,11 +770,11 @@ class BaseConfPanel(
             if self.rDO['Cero']:
                 #------------------------------> Replace 0 and ''
                 self.dfF = mMethod.DFReplace(
-                    self.dfI, [0, ''], np.nan, sel=self.rDO['df']['ColumnR']) # type: ignore
+                    self.dfI, [0, ''], np.nan, sel=self.rDO['df']['ColumnR'])   # type: ignore
             else:
                 #------------------------------> Replace only ''
                 self.dfF = mMethod.DFReplace(
-                    self.dfI, [''], np.nan, sel=self.rDO['df']['ColumnR']) # type: ignore
+                    self.dfI, [''], np.nan, sel=self.rDO['df']['ColumnR'])      # type: ignore
             #------------------------------> Float
             self.dfF.iloc[:,self.rDO['df']['ColumnF']] = self.dfF.iloc[:,self.rDO['df']['ColumnF']].astype('float')
         except Exception as e:
