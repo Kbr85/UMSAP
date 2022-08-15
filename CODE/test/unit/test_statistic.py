@@ -31,6 +31,29 @@ DF_CI_Mean = pd.DataFrame({
     'CI_u' : [16.17, 9.88, 6.10, 5.97, 7.43, 7.37, 12.40]
 })
 
+DF_DataPrep_Float = pd.DataFrame({
+    'A' : [  2,  '',  8, 16,  0, 32,  64],
+    'B' : [  4,   8, 16,  0, 32, 64, 128],
+    'C' : ['a', 'b','c','d','e','f', 'g'],
+    'D' : [  0,   2,  4,  8, 16, 32,  64],
+    'E' : [ 64,  32, 16, "",  4,  2,   0],
+    'F' : [ "", 128, 64,  0, 16,  8,   4],
+})
+
+DF_DataPrep_Float_True = pd.DataFrame({
+    'A' : [  2, nan,  8,  16, nan, 32,  64],
+    'B' : [  4,   8, 16, nan,  32, 64, 128],
+    'C' : ['a', 'b','c', 'd', 'e','f', 'g'],
+    'F' : [nan, 128, 64, nan,  16,  8,   4],
+})
+
+DF_DataPrep_Float_False = pd.DataFrame({
+    'A' : [  2, nan,  8,  16,   0, 32,  64],
+    'B' : [  4,   8, 16,   0,  32, 64, 128],
+    'C' : ['a', 'b','c', 'd', 'e','f', 'g'],
+    'F' : [nan, 128, 64,  0,  16,  8,   4],
+})
+
 DF_Log2 = pd.DataFrame({
     'A' : [  2,   4,  8, 16,  0, 32,  64],
     'B' : [  4,   8, 16,  0, 32, 64, 128],
@@ -303,6 +326,30 @@ class Test_DataRange(unittest.TestCase):
                 result = mStatistic.DataRange(a,margin=b)
                 #------------------------------>
                 self.assertEqual(result, c)
+    #---
+    #endregion ----------------------------------------------> Expected Output
+#---
+
+
+class Test_DataPrep_Float(unittest.TestCase):
+    """Test for data.statistic.DataPrep_Float"""
+    #region -------------------------------------------------> Expected Output
+    def test_expected_output(self):
+        """Test for expected output"""
+        #------------------------------>
+        tInput = [
+            (DF_DataPrep_Float,  True, [0,1,2,5], [0,1,3], [0,1,3], DF_DataPrep_Float.iloc[:,[0,1,2,5]], DF_DataPrep_Float_True),
+            (DF_DataPrep_Float, False, [0,1,2,5], [0,1,3],   [0,3], DF_DataPrep_Float.iloc[:,[0,1,2,5]], DF_DataPrep_Float_False),
+        ]
+        #------------------------------>
+        for a,b,c,d,e,f,g in tInput:
+            with self.subTest(
+                f'df={a}, cero={b}, col={c}, colCero={d}, colFloat={e}'):
+                #------------------------------>
+                dfI, dfF = mStatistic.DataPrep_Float(a, b, c, d, e)
+                #------------------------------>
+                pd._testing.assert_frame_equal(dfI, f)                          # type: ignore
+                pd._testing.assert_frame_equal(dfF, g)                          # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
 #---

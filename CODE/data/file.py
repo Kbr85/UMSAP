@@ -256,12 +256,9 @@ class CSVFile():
         -----
         It is assumed the CSV file has column names in the first row.
         """
+    # No Test
     #region --------------------------------------------------> Instance setup
-    def __init__(
-        self,
-        fileP: Union[Path, str],
-        sep  : str="\t",
-        ) -> None:
+    def __init__(self, fileP: Union[Path, str], sep: str="\t") -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.rFileP = fileP
@@ -330,6 +327,7 @@ class FastaFile():
         rSeqRec: str
             Sequence of the Recombinant sequence.
     """
+    # Test in test.unit.test_file.Test_FastaFile
     #region --------------------------------------------------> Instance setup
     def __init__(self, fileP: Union[Path, str]) -> None:
         """ """
@@ -381,6 +379,8 @@ class FastaFile():
             -----
             [-1, -1] is returned if seq is not found inside the protein 
             sequence.
+            - First match is returned if the search sequence is found more than
+            once in the protein sequence.
         """
         #region -------------------------------------------------> Check Input
         if not self.rSeqNat and not seqRec:
@@ -472,7 +472,10 @@ class FastaFile():
         """
         #region ---------------------------------------------------> Alignment
         if getattr(self, 'rAlignment', None) is None:
-            self.SetSelfAlignment()
+            try:
+                self.SetSelfAlignment()
+            except Exception as e:
+                raise e
         else:
             pass
         #endregion ------------------------------------------------> Alignment
@@ -487,9 +490,17 @@ class FastaFile():
             Returns
             -------
             int
+
+            Notes
+            -----
+            It is assumes both sequences differ only at the N or C terminal
+            region.
         """
         #region ---------------------------------------------------> Alignment
-        alignment = self.GetSelfAlignment()
+        try:
+            alignment = self.GetSelfAlignment()
+        except Exception as e:
+            raise e
         seqB = alignment[0].seqB
         #endregion ------------------------------------------------> Alignment
 
@@ -512,9 +523,17 @@ class FastaFile():
             -------
             tuple
                 First and last residue.
+
+            Notes
+            -----
+            It is assumes both sequences differ only at the N or C terminal
+            region.
         """
         #region ---------------------------------------------------> Alignment
-        alignment = self.GetSelfAlignment()
+        try:
+            alignment = self.GetSelfAlignment()
+        except Exception as e:
+            raise e
         seqB = alignment[0].seqB
         #endregion ------------------------------------------------> Alignment
 
@@ -572,6 +591,7 @@ class PDBFile():
         rFileP: Path or str
             Path to the PDB file.
     """
+    # Test in test.unit.test_file.Test_PDBFile
     #region -----------------------------------------------------> Class setup
     # Col names for the DF with the atom information in the pdb file
     cDFAtomCol = [ 
@@ -806,6 +826,7 @@ class UMSAPFile():
         SeqF: list[str]
             Sections with a sequence file.
     """
+    # No Test
     #region -----------------------------------------------------> Class setup
     SeqF = [mConfig.nmTarProt, mConfig.nmLimProt]
     #endregion --------------------------------------------------> Class setup

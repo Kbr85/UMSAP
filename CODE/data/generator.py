@@ -38,6 +38,10 @@ def FastaSequence(fileP: Union[Path, str]) -> Iterator[tuple[str, str]]:
         -----
         tuple
             (Fasta header, sequence) or ('', '') if file is empty
+
+        Notes
+        -----
+        Header line in the multi fasta file is expected to start with >.
     """
     #region -------------------------------------------------------> Variables
     first  = True # To skip yield in the first header of the fasta file

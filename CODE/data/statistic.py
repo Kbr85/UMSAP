@@ -22,6 +22,7 @@ import pandas as pd
 import scipy.stats as sStats
 
 import config.config as mConfig
+import data.method as mMethod
 import data.exception as mException
 #endregion ----------------------------------------------------------> Imports
 
@@ -131,6 +132,51 @@ def HistBin(x: pd.Series) -> tuple[float, float]:
     return (n, width)
 #---
 #endregion -------------------------------------------------> Data Description
+
+
+#region ----------------------------------------------------> Data Preparation
+def DataPrep_Float(
+    df      : pd.DataFrame,
+    cero    : bool,
+    col     : list[int],
+    colCero : list[int],
+    colFloat: list[int]
+    ) -> list:
+    """Replace cero and missing values in df and convert to float the
+        appropriate columns.
+
+        Attributes
+        ----------
+        df: pd.DataFrame
+            DataFrame with all the initial data.
+        cero: bool
+            Replace (True) or keep (False) cero values.
+        col: list[int]
+            Columns to be kept. All other columns in df are discarded.
+        colCero: list[int]
+            Columns in which '' and/or 0 will be replaced with np.nan.
+        colFloat: list[int]
+            Columns for which the float type will be enforced.
+
+        Returns
+        -------
+        list
+            [dfI, dfF]
+    """
+    # Test in test.unit.test_statistic.Test_DataPrep_Float
+    #region -------------------------------------------------------->
+    dfI = df.iloc[:,col]
+    #------------------------------>
+    if cero:
+        dfF = mMethod.DFReplace(dfI, [0, ''], np.nan, sel=colCero)
+    else:
+        dfF = mMethod.DFReplace(dfI, [''], np.nan, sel=colCero)
+    #------------------------------>
+    dfF.iloc[:,colFloat] = dfF.iloc[:,colFloat].astype('float')
+    #endregion ----------------------------------------------------->
+
+    return [dfI, dfF]
+#endregion -------------------------------------------------> Data Preparation
 
 
 #region -------------------------------------------------> Data Transformation

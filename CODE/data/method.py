@@ -563,16 +563,16 @@ def DictVal2Str(
 
 #region --------------------------------------------------------> pd.DataFrame
 def DFReplace(
-    df    : pd.DataFrame,
+    df    : Union[pd.DataFrame, pd.Series],
     oriVal: list,
-    repVal: Union[list, str, float, int],
+    repVal: Union[list, tuple, str, float, int],
     sel   : list[int]=[],
-    ) -> pd.DataFrame:
+    ) -> Union[pd.DataFrame, pd.Series]:
     """Replace values in the dataframe.
 
         Parameters
         ----------
-        df: pd.DataFrame
+        df: pd.DataFrame or pd.Series
             Dataframe with the data.
         oriVal: list
             List of values to search and replace.
@@ -584,7 +584,7 @@ def DFReplace(
 
         Returns
         -------
-        pd.DataFrame
+        pd.DataFrame or pd.Series
             With replaced values
 
         Raise
