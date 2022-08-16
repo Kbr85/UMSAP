@@ -1227,7 +1227,7 @@ class MyListCtrl(wx.ListCtrl):
         return True
     #---
 
-    def OnCopy(self, event: wx.Event) -> bool:
+    def OnCopy(self, event: Union[wx.Event, str]) -> bool:
         """Copy selected rows in the wx.ListCtrl to the clipboard.
 
             Parameters
@@ -1310,7 +1310,7 @@ class MyListCtrl(wx.ListCtrl):
         return True
     #---
 
-    def OnPaste(self, event: wx.Event) -> bool:
+    def OnPaste(self, event: Union[wx.Event, str]) -> bool:
         """Paste selected rows in the wx.ListCtrl from the clipboard.
 
             Parameters

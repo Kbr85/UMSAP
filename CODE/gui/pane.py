@@ -691,7 +691,7 @@ class BaseConfPanel(
                 self.rDO['Cero'],
                 self.rDO['oc']['Column'],
                 self.rDO['df']['ColumnR'],
-                self.rDO['oc']['ColumnF'],
+                self.rDO['df']['ColumnF'],
             )
         except Exception as e:
             self.rMsgError = 'Data Preparation failed.'
@@ -1791,12 +1791,12 @@ class BaseResControlExpConf(wx.Panel):
             Number of columns in the input file minus 1.
         rPName: str
             Name of the parent window.
-        
+
         Notes
         -----
         The panel is divided in two sections. 
         - Section Label holds information about the label for the experiments 
-        and control.
+            and control.
             The number of labels and the name are set in the child class with 
             cStLabel.
             This information is converted to rLSectWidget (name of the label e.g 
@@ -1806,7 +1806,7 @@ class BaseResControlExpConf(wx.Panel):
             The name of the experiments is shown with rFSectStDict that is populated 
             from rLSectTcDict
             The column numbers are stored in rFSectTcDict.
-        
+
         See Export2TopParent method for information about how the column numbers
         are exported to the parent panel.
     """
@@ -1817,7 +1817,7 @@ class BaseResControlExpConf(wx.Panel):
         #region -----------------------------------------------> Initial Setup
         self.cTopParent = topParent
         #------------------------------>
-        self.rPName       = self.cTopParent.cName # type: ignore
+        self.rPName       = self.cTopParent.cName                               # type: ignore
         self.rLSectWidget = []
         self.rLSectTcDict = {}
         self.rFSectTcDict = {}
@@ -1861,9 +1861,9 @@ class BaseResControlExpConf(wx.Panel):
 
         #region -----------------------------------------------------> Widgets
         #------------------------------> wx.ScrolledWindow
-        self.wSwLabel  = scrolled.ScrolledPanel(self, size=self.cSSWLabel)
+        self.wSwLabel  = scrolled.ScrolledPanel(self, size=self.cSSWLabel)      # type: ignore
         #------------------------------>
-        self.wSwMatrix = scrolled.ScrolledPanel(self, size=self.cSSWMatrix)
+        self.wSwMatrix = scrolled.ScrolledPanel(self, size=self.cSSWMatrix)     # type: ignore
         self.wSwMatrix.SetBackgroundColour('WHITE')
         #------------------------------> wx.StaticText & wx.TextCtrl
         #--------------> Experiment design
@@ -1919,12 +1919,12 @@ class BaseResControlExpConf(wx.Panel):
 
     #region ---------------------------------------------------> Event methods
     def OnCreate(self, event: Union[wx.CommandEvent, str]) -> bool:
-        """Create the fields in the white panel. Override as needed.
+        """Create the fields in the white panel.
 
             Parameters
             ----------
-            event : wx.Event
-                Information about the event
+            event : wx.CommandEvent
+                Information about the event.
 
             Returns
             -------
@@ -2086,7 +2086,7 @@ class BaseResControlExpConf(wx.Panel):
             Parameters
             ----------
             event : wx.Event
-                Information about the event
+                Information about the event.
 
             Returns
             -------
@@ -2098,7 +2098,7 @@ class BaseResControlExpConf(wx.Panel):
         #------------------------------> Control
         self.wControlN.wTc.SetValue('')
         try:
-            self.wCbControl.SetValue('') # type: ignore
+            self.wCbControl.SetValue('')                                        # type: ignore
         except Exception:
             pass
         #------------------------------> Fields
@@ -2124,7 +2124,7 @@ class BaseResControlExpConf(wx.Panel):
     #region --------------------------------------------------> Manage methods
     def Export2TopParent(self, oText) -> bool:
         """Export the data to the top parent.
-        
+
             Parameters
             ----------
             oText: str
@@ -2133,11 +2133,11 @@ class BaseResControlExpConf(wx.Panel):
             Returns
             -------
             bool
-    
+
             Notes
             -----
             Use after all checks have being done.
-            
+
             This will set the tcResult in the topParent window to a string like:
             1 2 3, 4 5 6; '', 7-10; 11-14, '' where commas separate tc fields
             in the same row and ; separate rows.
@@ -2153,27 +2153,27 @@ class BaseResControlExpConf(wx.Panel):
         """
         #region ----------------------------------------> Set parent variables
         #------------------------------> Labels
-        self.cTopParent.rLbDict = {} # type: ignore
+        self.cTopParent.rLbDict = {}                                            # type: ignore
         for k, v in self.rLSectTcDict.items():
-            self.cTopParent.rLbDict[k] = [] # type: ignore
+            self.cTopParent.rLbDict[k] = []                                     # type: ignore
             for j in v:
-                self.cTopParent.rLbDict[k].append(j.GetValue()) # type: ignore
+                self.cTopParent.rLbDict[k].append(j.GetValue())                 # type: ignore
         #------------------------------> Control Name
-        self.cTopParent.rLbDict['Control'] = [self.wControlN.wTc.GetValue()] # type: ignore
+        self.cTopParent.rLbDict['Control'] = [self.wControlN.wTc.GetValue()]    # type: ignore
         #------------------------------> Control type if needed
         if self.rPName == 'ProtProfPane' :
-            self.cTopParent.rLbDict['ControlType'] = self.rControlVal # type: ignore
+            self.cTopParent.rLbDict['ControlType'] = self.rControlVal           # type: ignore
         else:
             pass
         #endregion -------------------------------------> Set parent variables
 
         #region -----------------------------------------------> Set tcResults
-        self.cTopParent.wTcResults.SetValue(f"{oText[0:-2]}") # type: ignore
+        self.cTopParent.wTcResults.SetValue(f"{oText[0:-2]}")                   # type: ignore
         #endregion --------------------------------------------> Set tcResults
 
         return True
     #---
-    
+
     def SetInitialState(self) -> bool:
         """Set the initial state of the panel.
 
@@ -2182,7 +2182,7 @@ class BaseResControlExpConf(wx.Panel):
             bool
         """
         #region -------------------------------------------------> Check input
-        if (tcFieldsVal := self.cTopParent.wTcResults.GetValue()) != '': # type: ignore
+        if (tcFieldsVal := self.cTopParent.wTcResults.GetValue()) != '':         # type: ignore
             pass
         else:
             return False
@@ -2191,13 +2191,13 @@ class BaseResControlExpConf(wx.Panel):
         #region --------------------------------------------------> Add Labels
         #------------------------------> Check the labels
         if mConfig.development:
-            for k,v in self.cTopParent.rLbDict.items(): # type: ignore
+            for k,v in self.cTopParent.rLbDict.items():                         # type: ignore
                 print(str(k)+': '+str(v))
             print('')
         else:
             pass
         #------------------------------> Set the label numbers
-        for k, v in self.cTopParent.rLbDict.items(): # type: ignore
+        for k, v in self.cTopParent.rLbDict.items():                            # type: ignore
             if k != 'Control' and k != 'ControlType':
                 self.rLSectWidget[k].wTc.SetValue(str(len(v)))
             else:
@@ -2205,7 +2205,7 @@ class BaseResControlExpConf(wx.Panel):
         #------------------------------> Create labels fields
         self.OnLabelNumber('test')
         #------------------------------> Fill. 2 iterations needed. Improve
-        for k, v in self.cTopParent.rLbDict.items(): # type: ignore
+        for k, v in self.cTopParent.rLbDict.items():                            # type: ignore
             if k != 'Control' and k != 'ControlType':
                 for j, t in enumerate(v):
                     self.rLSectTcDict[k][j].SetValue(t)
@@ -2214,7 +2214,7 @@ class BaseResControlExpConf(wx.Panel):
             else:
                 pass
         #endregion -----------------------------------------------> Add Labels
-        
+
         #region -------------------------------------------------> Set Control
         if self.rPName == 'ProtProfPane':
             #------------------------------> 
@@ -2228,7 +2228,7 @@ class BaseResControlExpConf(wx.Panel):
         else:
             pass
         #endregion ----------------------------------------------> Set Control
-        
+
         #region ---------------------------------------------> Create tcFields
         self.OnCreate('fEvent')
         #endregion ------------------------------------------> Create tcFields
@@ -2400,18 +2400,18 @@ class PaneListCtrlSearchPlot(wx.Panel):
 
         Parameters
         ----------
-        cParent: wx.Window
+        parent: wx.Window
             Parent of the panel
-        cColLabel : list of str or None
+        colLabel : list of str or None
             Name of the columns in the wx.ListCtrl. Default is None
-        cColSize : list of int or None
+        colSize : list of int or None
             Size of the columns in the wx.ListCtrl. Default is None
-        cStyle : wx.Style
+        data : list[list]
+            Initial Data for the wx.ListCtrl.
+        style : wx.Style
             Style of the wx.ListCtrl. Default is wx.LC_REPORT.
-        cTcHint : str
+        tcHint : str
             Hint for the wx.SearchCtrl. Default is ''.
-        rData : list of list
-            Data for the wx.ListCtrl when in virtual mode. Default is []. 
     """
     #region -----------------------------------------------------> Class setup
     cName = mConfig.npListCtrlSearchPlot
@@ -2420,12 +2420,12 @@ class PaneListCtrlSearchPlot(wx.Panel):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, 
-        parent: wx.Window, 
-        colLabel: list[str]  = [],
-        colSize : list[int]  = [],
-        data    : list[list] = [],
-        style                = wx.LC_REPORT,
-        tcHint  : str        = '',
+        parent  : wx.Window, 
+        colLabel: list[str]=[],
+        colSize : list[int]=[],
+        data    : list[list]=[],
+        style   : int=wx.LC_REPORT,
+        tcHint  : str='',
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -2492,9 +2492,9 @@ class NPlots(wx.Panel):
         parent   : wx.Window,
         tKeys    : list[str],
         nCol     : int,
-        dpi      : int                    = mConfig.general['DPI'],
-        statusbar: Optional[wx.StatusBar] = None,
-        ) -> None  : 
+        dpi      : int=mConfig.general['DPI'],
+        statusbar: Optional[wx.StatusBar]=None,
+        ) -> None  :
         """ """
         #region -----------------------------------------------> Initial Setup
         self.nCol = nCol
@@ -2531,7 +2531,7 @@ class NPlots(wx.Panel):
 
 class PaneCorrA(BaseConfPanel):
     """Creates the configuration tab for Correlation Analysis.
-    
+
         Parameters
         ----------
         parent : wx Widget
@@ -2757,7 +2757,7 @@ class PaneCorrA(BaseConfPanel):
 
         #region ----------------------------------------------> checkUserInput
         rCheckUserInput = {
-            self.cLCorrMethod : [self.wCorrMethod.wCb,       mConfig.mOptionBad,    False],
+            self.cLCorrMethod : [self.wCorrMethod.wCb, mConfig.mOptionBad, False],
         }
         self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #endregion -------------------------------------------> checkUserInput
@@ -2803,14 +2803,14 @@ class PaneCorrA(BaseConfPanel):
             Parameters
             ----------
             event : wx.Event
-                Event information
+                Event information.
 
             Returns
             -------
             bool
         """
-        self.wLCtrlI.OnCopy('')
-        self.wLCtrlO.OnPaste('')
+        self.wLCtrlI.OnCopy('fEvent')
+        self.wLCtrlO.OnPaste('fEvent')
         return True
     #---
     #endregion ------------------------------------------------> Event Methods
@@ -3031,8 +3031,13 @@ class PaneCorrA(BaseConfPanel):
         return True
     #---
 
-    def WriteOutput(self):
-        """Write output. Override as needed"""
+    def WriteOutput(self) -> bool:
+        """Write output.
+
+            Returns
+            -------
+            bool
+        """
         #region --------------------------------------------------> Data Steps
         stepDict = self.SetStepDictDP()
         stepDict['Files'] = {

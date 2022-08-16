@@ -296,7 +296,7 @@ class Test_PDBFile(unittest.TestCase):
             with self.subTest(msg):
                 #------------------------------>
                 self.pdb.SetBeta(a, b)
-                pd._testing.assert_frame_equal(self.pdb.rDFAtom, c)
+                pd._testing.assert_frame_equal(self.pdb.rDFAtom, c)             # type: ignore
                 #------------------------------>
                 
     #---
