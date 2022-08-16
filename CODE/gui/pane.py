@@ -2440,12 +2440,12 @@ class PaneCorrA(BaseConfPanel):
                     'I' : self.d,
                     'CI': self.do,
                     'DP': {
-                        'dfF' : pd.DataFrame with initial data as float
-                        'dfT' : pd.DataFrame with transformed data.
-                        'dfN' : pd.DataFrame with normalized data.
-                        'dfIm': pd.DataFrame with imputed data.
+                        'dfF' : Name of file with initial data as float
+                        'dfT' : Name of file with transformed data.
+                        'dfN' : Name of file with normalized data.
+                        'dfIm': Name of file with imputed data.
                     }
-                    'R' : Path to result file
+                    'R' : Name of result file
                 }
             }
         }
@@ -2472,7 +2472,7 @@ class PaneCorrA(BaseConfPanel):
     cURL         = f"{mConfig.urlTutorial}/correlation-analysis"
     cSection     = mConfig.nuCorrA
     cTitlePD     = 'Calculating Correlation Coefficients'
-    cGaugePD     = 26
+    cGaugePD     = 21
     cTTHelp      = mConfig.ttBtnHelp.format(cURL)
     rLLenLongest = len(cLCorrMethod)
     rMainData    = '{}_{}-CorrelationCoefficients-Data.txt'
@@ -2982,12 +2982,12 @@ class PaneDataPrep(BaseConfPanel):
     cTTHelp      = mConfig.ttBtnHelp.format(cURL)
     cSection     = mConfig.nuDataPrep
     cTitlePD     = f"Running {mConfig.nuDataPrep} Analysis"
-    cGaugePD     = 24
+    cGaugePD     = 20
     rLLenLongest = len(cLColAnalysis)
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: wx.Window, dataI: dict={}):
+    def __init__(self, parent: wx.Window, dataI: dict={}) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(parent)
@@ -3050,7 +3050,7 @@ class PaneDataPrep(BaseConfPanel):
 
         #region ----------------------------------------------> checkUserInput
         rCheckUserInput = {
-            self.cLColAnalysis: [self.wColAnalysis.wTc,     mConfig.mNZPlusNumCol, True ],
+            self.cLColAnalysis: [self.wColAnalysis.wTc, mConfig.mNZPlusNumCol, True ],
         }
         self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #endregion -------------------------------------------> checkUserInput
@@ -3261,8 +3261,15 @@ class PaneDataPrep(BaseConfPanel):
         #endregion ----------------------------------------------------> Print
         
         #region --------------------------------------------> Data Preparation
-        if self.DataPreparation():
-            pass
+        msgStep = self.cLPdRun + f"Performing Data Preparation Steps"
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------>
+        dfDict, self.rMsgError, self.rException = mStatistic.DataPreparation(
+            self.rIFileObj.rDf, self.rDO)                                       # type: ignore
+        #------------------------------>
+        if dfDict:
+            for k,v in dfDict.items():
+                setattr(self, k, v)
         else:
             return False
         #endregion -----------------------------------------> Data Preparation
