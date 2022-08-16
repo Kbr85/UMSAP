@@ -135,6 +135,158 @@ def HistBin(x: pd.Series) -> tuple[float, float]:
 
 
 #region ----------------------------------------------------> Data Preparation
+def DataPreparation(
+    df        : pd.DataFrame,
+    rDO       : dict,
+    resetIndex: bool=True
+    ) -> tuple[dict, str, Union[Exception, None]]:
+    """Perform the data preparation steps.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            DataFrame read from CSV file.
+        rDO: dict
+            rDO dictionary from the PrepareRun step of the analysis.
+        resetIndex: bool
+            Reset index of dfS (True) or not (False). Default is True.
+
+        Returns
+        -------
+        tuple:
+            -   (
+                    {
+                        'dfI' : pd.DataFrame,
+                        'dfF' : pd.DataFrame,
+                        'dfT' : pd.DataFrame,
+                        'dfN' : pd.DataFrame,
+                        'dfIm': pd.DataFrame,
+                        'dfTP': pd.DataFrame,
+                        'dfE' : pd.DataFrame,
+                        'dfS' : pd.DataFrame
+                    },
+                    '',
+                    None
+                )                                  when everything went fine.
+            -   ({}, 'Error message', Exception)   when something went wrong.
+    """
+    # Test in test.unit.test_statistic.DataPreparation
+    #region ----------------------------------------> Run Data Preparation
+    #------------------------------> dfI & dfF
+    try:
+        dfI, dfF = DataPrep_Float(
+            df,
+            rDO['Cero'],
+            rDO['oc']['Column'],
+            rDO['df']['ColumnR'],
+            rDO['df']['ColumnF'],
+        )
+    except Exception as e:
+        return ({}, 'Data Preparation failed', e)
+    #------------------------------> Transformation
+    try:
+        dfT = DataTransformation(
+            dfF, 
+            rDO['df']['ResCtrlFlat'], 
+            method = rDO['TransMethod'],
+            rep    = np.nan if rDO['Cero'] else 0,
+        )
+    except Exception as e:
+        return ({}, 'Data Transformation failed.', e)
+    #------------------------------> Normalization
+    try:
+        dfN = DataNormalization(
+            dfT, rDO['df']['ResCtrlFlat'], method=rDO['NormMethod'])
+    except Exception as e:
+        return ({}, 'Data Normalization failed.', e)
+    #------------------------------> Imputation
+    try:
+        dfIm = DataImputation(
+            dfN, 
+            rDO['df']['ResCtrlFlat'],
+            method = rDO['ImpMethod'],
+            shift  = rDO['Shift'],
+            width  = rDO['Width'],
+        )
+    except Exception as e:
+        return ({}, 'Data Imputation failed.', e)
+    #------------------------------> Target Protein
+    try:
+        if rDO['df'].get('TargetProtCol', None) is not None:
+            dfTP = mMethod.DFFilterByColS(
+                dfIm, rDO['df']['TargetProtCol'], rDO['TargetProt'], 'e')
+        else:
+            dfTP = dfIm.copy()
+    except Exception as e:
+        msg = mConfig.mPDDataTargetProt.format(
+            rDO['TargetProt'], rDO['df']['TargetProtCol'])
+        return ({}, msg, e)
+    #------------------------------> Exclude
+    try:
+        if rDO['df'].get('ExcludeR', None) is not None:
+            dfE = mMethod.DFExclude(dfTP, rDO['df']['ExcludeR'])
+        else:
+            dfE = dfTP.copy()
+    except Exception as e:
+        msg = mConfig.mPDDataExclude.format(rDO['df']['ExcludeR'])
+        return ({}, msg, e)
+    #------------------------------> Score
+    #-------------->
+    try:
+        if rDO['df'].get('ScoreCol', None) is not None:
+            dfS = mMethod.DFFilterByColN(
+                dfE, [rDO['df']['ScoreCol']], rDO['ScoreVal'], 'ge')
+        else:
+            dfS = dfE.copy()
+    except Exception as e:
+        msg = mConfig.mPDDataScore.format(rDO['df']['ScoreCol'])
+        return ({}, msg, e)
+    #-------------->
+    if dfS.empty:
+        return ({}, mConfig.mNoDataLeft, None)
+    else:
+        pass
+    #endregion -------------------------------------> Run Data Preparation
+
+    #region -------------------------------------------------> Reset index
+    if resetIndex:
+        dfS.reset_index(drop=True, inplace=True)
+    else:
+        pass
+    #endregion ----------------------------------------------> Reset index
+    
+    #region -------------------------------------------------------> Print
+    if mConfig.development:
+        #------------------------------> 
+        dfList = [dfI, dfF, dfT, dfN, dfIm, dfTP, dfE, dfS]
+        dfName = ['dfI', 'dfF', 'dfT', 'dfN', 'dfIm', 'dfTP', 'dfE', 'dfS']
+        #------------------------------> 
+        print('')
+        for i, a in enumerate(dfList):
+            if a is not None:
+                print(f'{dfName[i]}: {a.shape}')
+            else:
+                print(f'{dfName[i]}: None')
+    else:
+        pass
+    #endregion ----------------------------------------------------> Print
+
+    #region ---------------------------------------------------> 
+    dictO = {
+        'dfI' : dfI,
+        'dfF' : dfF,
+        'dfT' : dfT,
+        'dfN' : dfN,
+        'dfIm': dfIm,
+        'dfTP': dfTP,
+        'dfE' : dfE,
+        'dfS' : dfS,
+    }
+    return (dictO, '', None)
+    #endregion ------------------------------------------------> 
+#---
+
+
 def DataPrep_Float(
     df      : pd.DataFrame,
     cero    : bool,

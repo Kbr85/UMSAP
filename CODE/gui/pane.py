@@ -670,160 +670,6 @@ class BaseConfPanel(
         return f"{label}{(self.rLLenLongest - len(label))*' '}" 
     #---
 
-    def DataPreparation(self, resetIndex=True) -> bool:
-        """Perform the data preparation step.
-
-            Parameters
-            ----------
-            resetIndex: bool
-                If True reset the index of self.dfS.
-
-            Returns
-            -------
-            bool
-        """
-        #region ----------------------------------------> Run Data Preparation
-        #------------------------------> dfI & dfF
-        wx.CallAfter(self.rDlg.UpdateStG, f'{self.cLPdRun} Setting Data Types')
-        try:
-            self.dfI, self.dfF = mStatistic.DataPrep_Float(
-                self.rIFileObj.rDf,                                             # type: ignore
-                self.rDO['Cero'],
-                self.rDO['oc']['Column'],
-                self.rDO['df']['ColumnR'],
-                self.rDO['df']['ColumnF'],
-            )
-        except Exception as e:
-            self.rMsgError = 'Data Preparation failed.'
-            self.rException = e
-            return False
-        #------------------------------> Transformation
-        wx.CallAfter(self.rDlg.UpdateStG, f'{self.cLPdRun} Data Transformation')
-        try:
-            self.dfT = mStatistic.DataTransformation(
-                self.dfF, 
-                self.rDO['df']['ResCtrlFlat'], 
-                method = self.rDO['TransMethod'],
-                rep    = np.nan if self.rDO['Cero'] else 0,
-            )
-        except Exception as e:
-            self.rMsgError   = 'Data Transformation failed.'
-            self.rException = e
-            return False
-        #------------------------------> Normalization
-        wx.CallAfter(self.rDlg.UpdateStG, f'{self.cLPdRun} Data Normalization')
-        try:
-            self.dfN = mStatistic.DataNormalization(
-                self.dfT, 
-                self.rDO['df']['ResCtrlFlat'], 
-                method = self.rDO['NormMethod'],
-            )
-        except Exception as e:
-            self.rMsgError  = 'Data Normalization failed.'
-            self.rException = e
-            return False
-        #------------------------------> Imputation
-        wx.CallAfter(self.rDlg.UpdateStG, f'{self.cLPdRun} Data Imputation')
-        try:
-            self.dfIm = mStatistic.DataImputation(
-                self.dfN, 
-                self.rDO['df']['ResCtrlFlat'],
-                method = self.rDO['ImpMethod'],
-                shift  = self.rDO['Shift'],
-                width  = self.rDO['Width'],
-            )
-        except Exception as e:
-            self.rMsgError   = 'Data Imputation failed.'
-            self.rException = e
-            return False
-        #------------------------------> Target Protein
-        wx.CallAfter(
-            self.rDlg.UpdateStG, f'{self.cLPdRun} Filter Data: Target Protein')
-        try:
-            if self.rDO['df'].get('TargetProtCol', None) is not None:
-                self.dfTP = mMethod.DFFilterByColS(
-                    self.dfIm, 
-                    self.rDO['df']['TargetProtCol'],
-                    self.rDO['TargetProt'], 
-                    'e',
-                )
-            else:
-                self.dfTP = self.dfIm.copy()
-        except Exception as e:
-            self.rMsgError = mConfig.mPDDataTargetProt.format(
-                self.rDO['TargetProt'], self.rDO['df']['TargetProtCol'])
-            self.rException = e
-            return False
-        #------------------------------> Exclude
-        wx.CallAfter(
-            self.rDlg.UpdateStG, f'{self.cLPdRun} Filter Data: Exclude Rows')
-        try:
-            if self.rDO['df'].get('ExcludeR', None) is not None:
-                self.dfE = mMethod.DFExclude(
-                    self.dfTP, self.rDO['df']['ExcludeR'])
-            else:
-                self.dfE = self.dfTP.copy()
-        except Exception as e:
-            self.rMsgError = mConfig.mPDDataExclude.format(
-                self.rDO['df']['ExcludeR'])
-            self.rException = e
-            return False
-        #------------------------------> Score
-        wx.CallAfter(
-            self.rDlg.UpdateStG, f'{self.cLPdRun} Filter Data: Score Value')
-        #-------------->
-        try:
-            if self.rDO['df'].get('ScoreCol', None) is not None:
-                self.dfS = mMethod.DFFilterByColN(
-                    self.dfE, 
-                    [self.rDO['df']['ScoreCol']], 
-                    self.rDO['ScoreVal'], 
-                    'ge'
-                )
-            else:
-                self.dfS = self.dfE.copy()
-        except Exception as e:
-            self.rMsgError = mConfig.mPDDataScore.format(
-                self.rDO['df']['ScoreCol'])
-            self.rException = e
-            return False
-        #-------------->
-        if self.dfS.empty:
-            self.rMsgError = mConfig.mNoDataLeft
-            return False
-        else:
-            pass
-        #endregion -------------------------------------> Run Data Preparation
-
-        #region -------------------------------------------------> Reset index
-        if resetIndex:
-            self.dfS.reset_index(drop=True, inplace=True)
-        else:
-            pass
-        #endregion ----------------------------------------------> Reset index
-
-        #region -------------------------------------------------------> Print
-        if mConfig.development:
-            #------------------------------> 
-            dfL = [
-                self.dfI, self.dfF, self.dfT, self.dfN, self.dfIm, 
-                self.dfTP, self.dfE, self.dfS, 
-            ]
-            dfN = ['dfI', 'dfF', 'dfT', 'dfN', 'dfIm', 'dfTP', 'dfEx', 'dfS']
-            #------------------------------> 
-            print('')
-            for i, df in enumerate(dfL):
-                if df is not None:
-                    print(f'{dfN[i]}: {df.shape}')
-                else:
-                    print(f'{dfN[i]}: None')
-        else:
-            pass
-        #endregion ----------------------------------------------------> Print
-
-        return True
-    #---
-
     def SetStepDictDP(self) -> dict:
         """Set the Data Processing part of the stepDict to write in the output.
 
@@ -3008,23 +2854,18 @@ class PaneCorrA(BaseConfPanel):
             pass
         #endregion ----------------------------------------------------> Print
 
-        #region --------------------------------------------> Data Preparation
-        if self.DataPreparation():
-            pass
-        else:
-            return False
-        #endregion -----------------------------------------> Data Preparation
-
         #region ------------------------------------> Correlation coefficients
         #------------------------------> Msg
-        msgStep = self.cLPdRun + f"Correlation coefficients calculation"
+        msgStep = self.cLPdRun + f"Calculating the Correlation coefficients"
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------> 
-        try:
-            self.dfR = self.dfIm.corr(method=self.rDO['CorrMethod'].lower())
-        except Exception as e:
-            self.rMsgError = str(e)
-            self.rException = e
+        #------------------------------>
+        dfDict, self.rMsgError, self.rException = mMethod.CorrA(
+            self.rIFileObj.rDf, self.rDO)                                       # type: ignore
+        #------------------------------>
+        if dfDict:
+            for k,v in dfDict.items():
+                setattr(self, k, v)
+        else:
             return False
         #endregion ---------------------------------> Correlation coefficients
 
@@ -3046,7 +2887,7 @@ class PaneCorrA(BaseConfPanel):
             mConfig.fnTrans.format(self.rDate, '03')  : self.dfT,
             mConfig.fnNorm.format(self.rDate, '04')   : self.dfN,
             mConfig.fnImp.format(self.rDate, '05')    : self.dfIm,
-            self.rMainData.format(self.rDate, '06')  : self.dfR,
+            self.rMainData.format(self.rDate, '06')   : self.dfR,
         }
         stepDict['R'] = self.rMainData.format(self.rDate, '06')
         #endregion -----------------------------------------------> Data Steps

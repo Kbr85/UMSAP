@@ -1126,6 +1126,63 @@ def HCurve(x:Union[float,pd.DataFrame,pd.Series], t0:float, s0:float) -> float:
 #---
 
 
+def CorrA(
+    df        : pd.DataFrame,
+    rDO       : dict,
+    resetIndex: bool=True,
+    ) -> tuple[dict, str, Union[Exception, None]]:
+    """Perform a Correlation Analysis.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            DataFrame read from CSV file.
+        rDO: dict
+            rDO dictionary from the PrepareRun step of the analysis.
+        resetIndex: bool
+            Reset index of dfS (True) or not (False). Default is True.
+
+        Returns
+        -------
+        tuple:
+            -   (
+                    {
+                        'dfI' : pd.DataFrame,
+                        'dfF' : pd.DataFrame,
+                        'dfT' : pd.DataFrame,
+                        'dfN' : pd.DataFrame,
+                        'dfIm': pd.DataFrame,
+                        'dfTP': pd.DataFrame,
+                        'dfE' : pd.DataFrame,
+                        'dfS' : pd.DataFrame,
+                        'dfR' : pd.DataFrame,
+                    },
+                    '',
+                    None
+                )                                  when everything went fine.
+            -   ({}, 'Error message', Exception)   when something went wrong.
+    """
+    #region ------------------------------------------------> Data Preparation
+    tOut = mStatistic.DataPreparation(df, rDO, resetIndex=resetIndex)
+    if tOut[0]:
+        pass
+    else:
+        return tOut
+    #endregion ---------------------------------------------> Data Preparation
+
+    #region -----------------------------------------------------------> CorrA
+    try:
+        dfR = tOut[0]['dfIm'].corr(method=rDO['CorrMethod'].lower())
+    except Exception as e:
+        return ({}, 'Correlation coefficients calculation failed.', e)
+    else:
+        dictO = tOut[0]
+        dictO['dfR'] = dfR
+        return (dictO, '', None)
+    #endregion --------------------------------------------------------> CorrA
+#---
+
+
 def Rec2NatCoord(
     coord  : list[tuple[int,int]],
     protLoc: tuple[int,int],

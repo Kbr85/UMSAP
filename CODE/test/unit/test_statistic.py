@@ -16,13 +16,21 @@
 
 #region -------------------------------------------------------------> Imports
 import unittest
+from pathlib import Path
 
 import pandas as pd
-from numpy import nan, inf 
+from numpy import nan, inf
 
 import data.exception as mException
 import data.statistic as mStatistic
+import data.file      as mFile
 #endregion ----------------------------------------------------------> Imports
+
+
+#region ---------------------------------------------------------------> Files
+folder = Path(__file__).parent / 'test_files'
+tarprotData = folder / 'tarprot-data-file.txt'
+#endregion ------------------------------------------------------------> Files
 
 
 #region --------------------------------------------------------> pd.DataFrame
@@ -275,6 +283,14 @@ DF_test_slope = pd.DataFrame({
     'Xh': [ 6,16, 9,19,13,14,15,18,17, 8,15,16, nan],
     'Yh': [-10,-20,-15,-40,-25,-21,-34,-30,-38,-19,-24,-21, nan],
 })
+
+DF_DataPrep_1 = pd.DataFrame({
+    'Intensity 01' : [0.000,16.694,19.152,19.221,17.323,0.000,0.000,16.440,16.691,0.000,0.000,0.000,0.000,0.000,0.000,0.000,16.571,0.000,14.962,0.000],
+    'Intensity 02' : [0.000,18.312,19.212,19.240,17.257,17.063,0.000,18.122,17.542,0.000,0.000,0.000,17.390,0.000,16.018,0.000,16.108,0.000,16.291,0.000],
+    'Intensity 03' : [0.000,0.000,19.190,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000],
+    'Intensity 04' : [0.000,0.000,20.164,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000],
+    'Intensity 05' : [0.000,16.257,19.491,20.658,18.717,17.474,0.000,17.141,17.353,0.000,0.000,0.000,16.615,0.000,0.000,0.000,17.846,0.000,17.671,19.186],
+})
 #endregion -----------------------------------------------------> pd.DataFrame
 
 
@@ -422,6 +438,54 @@ class Test_DataImputation(unittest.TestCase):
                 #------------------------------>
                 result = mStatistic.DataImputation(
                     a, sel=b, method=c)
+                #------------------------------>
+                pd._testing.assert_frame_equal(result, d)                       # type: ignore
+    #---
+    #endregion ----------------------------------------------> Expected Output
+#---
+
+
+class Test_DataPreparation(unittest.TestCase):
+    """Test for data.statistic.DataPreparation"""
+    #region -----------------------------------------------------> Class Setup
+    @classmethod
+    def setUp(cls):
+        """"""
+        cls.df = mFile.ReadCSV2DF(tarprotData)
+        cls.dict1 = {
+            'Cero' : False,
+            'TransMethod' : 'Log2',
+            'NormMethod'  : 'Median',
+            'ImpMethod'   : 'None',
+            'Shift'       : 1.8,
+            'Width'       : 0.3,
+            'oc' : {
+                'Column' : [98,99,100,101,102],
+            },
+            'df' : {
+                'ColumnR'     : [0,1,2,3,4],
+                'ColumnF'     : [0,1,2,3,4],
+                'ResCtrlFlat' : [0,1,2,3,4],
+            }
+        }
+    #---
+    #endregion --------------------------------------------------> Class Setup
+
+    #region -------------------------------------------------> Expected Output
+    def test_output(self):
+        """Test method output"""
+        #------------------------------>
+        tInput = [
+            (self.df, self.dict1, True, DF_DataPrep_1),
+        ]
+        #------------------------------>
+        for a,b,c,d in tInput:
+            with self.subTest(f"df={a}, rDO={b}, resetIndex={c}"):
+                #------------------------------>
+                result = mStatistic.DataPreparation(
+                    a, b, resetIndex=c)[0]['dfS']
+                result = result.round(3)
+                result = result.iloc[range(0,20),:]
                 #------------------------------>
                 pd._testing.assert_frame_equal(result, d)                       # type: ignore
     #---
