@@ -138,7 +138,8 @@ def HistBin(x: pd.Series) -> tuple[float, float]:
 def DataPreparation(
     df        : pd.DataFrame,
     rDO       : dict,
-    resetIndex: bool=True
+    *args,
+    resetIndex: bool=True,
     ) -> tuple[dict, str, Union[Exception, None]]:
     """Perform the data preparation steps.
 
@@ -169,6 +170,10 @@ def DataPreparation(
                     None
                 )                                  when everything went fine.
             -   ({}, 'Error message', Exception)   when something went wrong.
+
+        Notes
+        -----
+        *args are ignored. They are needed for compatibility.
     """
     # Test in test.unit.test_statistic.DataPreparation
     #region ----------------------------------------> Run Data Preparation

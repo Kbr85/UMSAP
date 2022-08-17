@@ -24,7 +24,6 @@ from typing import Union, Optional
 
 import numpy as np
 import pandas as pd
-from statsmodels.stats.multitest import multipletests
 
 import wx
 import wx.lib.scrolledpanel as scrolled
@@ -40,6 +39,15 @@ import gui.validator as mValidator
 import gui.widget as mWidget
 import gui.window as mWindow
 #endregion ----------------------------------------------------------> Imports
+
+
+#region ---------------------------------------------------> 
+AnalysisMethod = {
+    mConfig.npCorrA   : mMethod.CorrA,
+    mConfig.npDataPrep: mStatistic.DataPreparation,
+    mConfig.npProtProf: mMethod.ProtProf,
+}
+#endregion ------------------------------------------------> 
 
 
 #region --------------------------------------------------------> Base Classes
@@ -97,6 +105,8 @@ class BaseConfPanel(
             Date + Analysis ID
         rDeltaT: str
             Elapsed analysis time.
+        rDExtra: dict
+            Extra options for the Analysis methods.
         rDFile : list[Path]
             Full paths to copied input files. Needed to repeat the analysis
             directly after running.
@@ -171,6 +181,7 @@ class BaseConfPanel(
         self.cLPdCheck    = getattr(self, 'cLPdCheck',  'Checking user input: ')
         self.cLPdPrepare  = getattr(self, 'cLPdPrepare', 'Preparing analysis: ')
         self.cLPdRun      = getattr(self, 'cLPdRun',     'Running analysis: ')
+        self.cLPdRunText  = getattr(self, 'cLPdRunText', 'Main Analysis')
         self.cLPdWrite    = getattr(self, 'cLPdWrite',   'Writing output: ')
         self.cLPdLoad     = getattr(self, 'cLPdLoad',    'Loading output file')
         self.cLPdError    = getattr(self, 'cLPdError',   mConfig.lPdError)
@@ -245,6 +256,8 @@ class BaseConfPanel(
         self.rDI = {}
         #--------------> Dict with the processed user input
         self.rDO = {} 
+        #--------------> Dict with extra options for Run Analysis methods
+        self.rDExtra = getattr(self, 'rDExtra', {})
         #--------------> Error message and exception to show in self.RunEnd
         self.rMsgError  = ''
         self.rException = None
@@ -1139,6 +1152,50 @@ class BaseConfPanel(
         else:
             pass
         #endregion ------------------------------------------------> Print Dev
+
+        return True
+    #---
+
+    def RunAnalysis(self) -> bool:
+        """Run the analysis of the module.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Print
+        if mConfig.development:
+            print('RunAnalysis')
+            print('d:')
+            for k,v in self.rDI.items():
+                print(str(k)+': '+str(v))
+            print('')  
+            print('do:')
+            for k,v in self.rDO.items():
+                if k not in ['df', 'oc', 'dfo']:
+                    print(str(k)+': '+str(v))
+                else:
+                    print(k)
+                    for j,w in v.items():
+                        print(f'\t{j}: {w}')
+            print('')
+        else:
+            pass
+        #endregion ----------------------------------------------------> Print
+
+        #region ----------------------------------------------------> Analysis
+        msgStep = self.cLPdRun + self.cLPdRunText
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------>
+        dfDict, self.rMsgError, self.rException = AnalysisMethod[self.cName](
+            self.rIFileObj.rDf, self.rDO, self.rDExtra)                         # type: ignore
+        #------------------------------>
+        if dfDict:
+            for k,v in dfDict.items():
+                setattr(self, k, v)
+        else:
+            return False
+        #endregion -------------------------------------------------> Analysis
 
         return True
     #---
@@ -2463,19 +2520,20 @@ class PaneCorrA(BaseConfPanel):
     """
     #region -----------------------------------------------------> Class Setup
     #------------------------------> Label
-    cLCorrMethod = 'Correlation Method'
+    cLCorrMethod  = 'Correlation Method'
     cLColAnalysis = mConfig.lStColAnalysis
     cLNumName     = mConfig.lLCtrlColNameI
     cSNumName     = mConfig.sLCtrlColI
+    cLPdRunText   = 'Calculating the Correlation coefficients'
     #------------------------------> Needed by BaseConfPanel
-    cName        = mConfig.npCorrA
-    cURL         = f"{mConfig.urlTutorial}/correlation-analysis"
-    cSection     = mConfig.nuCorrA
-    cTitlePD     = 'Calculating Correlation Coefficients'
-    cGaugePD     = 21
-    cTTHelp      = mConfig.ttBtnHelp.format(cURL)
-    rLLenLongest = len(cLCorrMethod)
-    rMainData    = '{}_{}-CorrelationCoefficients-Data.txt'
+    cName           = mConfig.npCorrA
+    cURL            = f"{mConfig.urlTutorial}/correlation-analysis"
+    cSection        = mConfig.nuCorrA
+    cTitlePD        = 'Calculating Correlation Coefficients'
+    cGaugePD        = 21
+    cTTHelp         = mConfig.ttBtnHelp.format(cURL)
+    rLLenLongest    = len(cLCorrMethod)
+    rMainData       = '{}_{}-CorrelationCoefficients-Data.txt'
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
@@ -2828,50 +2886,6 @@ class PaneCorrA(BaseConfPanel):
         return True
     #---
 
-    def RunAnalysis(self) -> bool:
-        """Calculate coefficients.
-
-            Return
-            ------
-            bool
-        """
-        #region -------------------------------------------------------> Print
-        if mConfig.development:
-            print('d:')
-            for k,v in self.rDI.items():
-                print(str(k)+': '+str(v))
-            print('')  
-            print('do:')
-            for k,v in self.rDO.items():
-                if k not in ['df', 'oc', 'dfo']:
-                    print(str(k)+': '+str(v))
-                else:
-                    print(k)
-                    for j,w in v.items():
-                        print(f'\t{j}: {w}')
-            print('')
-        else:
-            pass
-        #endregion ----------------------------------------------------> Print
-
-        #region ------------------------------------> Correlation coefficients
-        #------------------------------> Msg
-        msgStep = self.cLPdRun + f"Calculating the Correlation coefficients"
-        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------>
-        dfDict, self.rMsgError, self.rException = mMethod.CorrA(
-            self.rIFileObj.rDf, self.rDO)                                       # type: ignore
-        #------------------------------>
-        if dfDict:
-            for k,v in dfDict.items():
-                setattr(self, k, v)
-        else:
-            return False
-        #endregion ---------------------------------> Correlation coefficients
-
-        return True
-    #---
-
     def WriteOutput(self) -> bool:
         """Write output.
 
@@ -2961,10 +2975,10 @@ class PaneDataPrep(BaseConfPanel):
                     'I' : self.d,
                     'CI': self.do,
                     'DP': {
-                        'dfF' : pd.DataFrame with initial data as float,
-                        'dfT' : pd.DataFrame with transformed data,
-                        'dfN' : pd.DataFrame with normalized data,
-                        'dfIm': pd.DataFrame with imputed data,
+                        'dfF' : Name of hte file with initial data as float,
+                        'dfT' : Name of hte file with transformed data,
+                        'dfN' : Name of hte file with normalized data,
+                        'dfIm': Name of hte file with imputed data,
                     },
                 }
             }
@@ -2973,6 +2987,7 @@ class PaneDataPrep(BaseConfPanel):
     #region -----------------------------------------------------> Class setup
     #------------------------------> Label
     cLColAnalysis = mConfig.lStColAnalysis
+    cLPdRunText   = 'Performing Data Preparation Steps'
     #------------------------------> Tooltips
     cTTColAnalysis = ('Columns on which to perform the Data Preparation.\ne.g. '
         '8 10-12')
@@ -3234,49 +3249,6 @@ class PaneDataPrep(BaseConfPanel):
         return True
     #---
 
-    def RunAnalysis(self) -> bool:
-        """Perform data preparation
-        
-            Returns
-            -------
-            bool
-        """
-        #region -------------------------------------------------------> Print
-        if mConfig.development:
-            print('d:')
-            for k,v in self.rDI.items():
-                print(str(k)+': '+str(v))
-            print('')  
-            print('do:')
-            for k,v in self.rDO.items():
-                if k not in ['df', 'oc', 'dfo']:
-                    print(str(k)+': '+str(v))
-                else:
-                    print(k)
-                    for j,w in v.items():
-                        print(f'\t{j}: {w}')
-            print('')    
-        else:
-            pass
-        #endregion ----------------------------------------------------> Print
-        
-        #region --------------------------------------------> Data Preparation
-        msgStep = self.cLPdRun + f"Performing Data Preparation Steps"
-        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------>
-        dfDict, self.rMsgError, self.rException = mStatistic.DataPreparation(
-            self.rIFileObj.rDf, self.rDO)                                       # type: ignore
-        #------------------------------>
-        if dfDict:
-            for k,v in dfDict.items():
-                setattr(self, k, v)
-        else:
-            return False
-        #endregion -----------------------------------------> Data Preparation
-
-        return True
-    #---
-
     def WriteOutput(self) -> bool:
         """Write output.
 
@@ -3406,11 +3378,10 @@ class PaneProtProf(BaseConfPanelMod):
                     'I' : self.d,
                     'CI': self.do,
                     'DP': {
-                        'dfS' : pd.DataFrame with initial data as float and
-                                after discarding values by score.
-                        'dfT' : pd.DataFrame with transformed data.
-                        'dfN' : pd.DataFrame with normalized data.
-                        'dfIm': pd.DataFrame with imputed data.
+                        'dfI' : Name of the file with initial data as float.
+                        'dfT' : Name of the file with transformed data.
+                        'dfN' : Name of the file with normalized data.
+                        'dfIm': Name of the file with imputed data.
                     }
                     'R' : Path to the file with the calculation results.
                     'F' : Dict for Filters.
@@ -3428,15 +3399,6 @@ class PaneProtProf(BaseConfPanelMod):
     """
     #region -----------------------------------------------------> Class setup
     cName = mConfig.npProtProf
-    #------------------------------> Needed by BaseConfPanel
-    cURL         = f'{mConfig.urlTutorial}/proteome-profiling'
-    cSection     = mConfig.nmProtProf
-    cTitlePD     = f"Running {mConfig.nmProtProf} Analysis"
-    cGaugePD     = 38
-    rLLenLongest = len(mConfig.lStResultCtrlS)
-    rMainData    = '{}_{}-ProteomeProfiling-Data.txt'
-    #------------------------------> Optional configuration
-    cTTHelp = mConfig.ttBtnHelp.format(cURL)
     #------------------------------> Label
     cLCorrectP     = mConfig.lCbCorrectP
     cLSample       = mConfig.lCbSample
@@ -3449,6 +3411,7 @@ class PaneProtProf(BaseConfPanelMod):
     cLCtrlName     = mConfig.lStCtrlName
     cLDFThreeCol   = mConfig.dfcolProtprofFirstThree
     cLDFThirdLevel = mConfig.dfcolProtprofCLevel
+    cLPdRunText    = 'Performing Proteome Profiling'
     #------------------------------> Choices
     cOCorrectP  = mConfig.oCorrectP
     cOSample    = mConfig.oSamples
@@ -3460,6 +3423,19 @@ class PaneProtProf(BaseConfPanelMod):
     cTTExcludeProt = f'{mConfig.ttStExcludeProt}{mConfig.mOptField}'
     #------------------------------> Control Type
     cDCtrlType = mConfig.oControlTypeProtProf
+    #------------------------------> Needed by BaseConfPanel
+    cURL         = f'{mConfig.urlTutorial}/proteome-profiling'
+    cSection     = mConfig.nmProtProf
+    cTitlePD     = f"Running {mConfig.nmProtProf} Analysis"
+    cGaugePD     = 30
+    rLLenLongest = len(mConfig.lStResultCtrlS)
+    rMainData    = '{}_{}-ProteomeProfiling-Data.txt'
+    rDExtra = {
+        'cLDFThreeCol'  : cLDFThreeCol,
+        'cLDFThirdLevel': cLDFThirdLevel
+    }
+    #------------------------------> Optional configuration
+    cTTHelp = mConfig.ttBtnHelp.format(cURL)
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -3469,12 +3445,6 @@ class PaneProtProf(BaseConfPanelMod):
         #------------------------------> Base attributes and setup
         super().__init__(parent)
         #------------------------------> Dict with methods
-        self.dColCtrlData = {
-            self.cDCtrlType['OC']   : self.ColCtrlData_OC,
-            self.cDCtrlType['OCC']  : self.ColCtrlData_OCC,
-            self.cDCtrlType['OCR']  : self.ColCtrlData_OCR,
-            self.cDCtrlType['Ratio']: self.ColCtrlData_Ratio,
-        }
         self.dCheckRepNum = {
             self.cDCtrlType['OC']   : self.CheckRepNum_OC,
             self.cDCtrlType['OCC']  : self.CheckRepNum_OCC,
@@ -3946,272 +3916,6 @@ class PaneProtProf(BaseConfPanelMod):
             return False
         #endregion ------------------------------------------------> Return
     #---
-
-    def EmptyDFR(self) -> pd.DataFrame:
-        """Creates the empty data frame for the output. This data frame contains
-            the values for Gene, Protein and Score.
-
-            Returns
-            -------
-            pd.DataFrame
-        """
-        #region -------------------------------------------------------> Index
-        #------------------------------> First Three Columns
-        aL = self.cLDFThreeCol
-        bL = self.cLDFThreeCol
-        cL = self.cLDFThreeCol
-        #------------------------------> Columns per Point
-        n = len(self.cLDFThirdLevel)
-        #------------------------------> Other columns
-        for c in self.rDO['Cond']:
-            for t in self.rDO['RP']:
-                aL = aL + n*[c]
-                bL = bL + n*[t]
-                cL = cL + self.cLDFThirdLevel
-        #------------------------------> 
-        idx = pd.MultiIndex.from_arrays([aL[:], bL[:], cL[:]])
-        #endregion ----------------------------------------------------> Index
-
-        #region ----------------------------------------------------> Empty DF
-        df = pd.DataFrame(np.nan, columns=idx, index=range(self.dfS.shape[0])) # type: ignore
-        #endregion -------------------------------------------------> Empty DF
-
-        #region -----------------------------------------> First Three Columns
-        df[(aL[0], bL[0], cL[0])] = self.dfS.iloc[:,0]
-        df[(aL[1], bL[1], cL[1])] = self.dfS.iloc[:,1]
-        df[(aL[2], bL[2], cL[2])] = self.dfS.iloc[:,2]
-        #endregion --------------------------------------> First Three Columns
-
-        return df
-    #---
-
-    def ColCtrlData_OC(self, c:int, t:int) -> list[list[int]]:
-        """Get the Ctrl and Data columns for the given condition and relevant
-            point when Control Type is: One Control.
-
-            Parameters
-            ----------
-            c: int
-                Condition index in self.do['df']['ResCtrl]
-            t: int
-                Relevant point index in self.do['df']['ResCtrl]
-
-            Returns
-            -------
-            list[list[int]]
-        """
-        #region ---------------------------------------------------> List
-        #------------------------------> 
-        colC = self.rDO['df']['ResCtrl'][0][0]
-        #------------------------------> 
-        colD = self.rDO['df']['ResCtrl'][c+1][t]
-        #endregion ------------------------------------------------> List
-
-        return [colC, colD]
-    #---
-
-    def ColCtrlData_OCC(self, c:int, t:int) -> list[list[int]]:
-        """Get the Ctrl and Data columns for the given condition and relevant
-            point when Control Type is: One Control per Column.
-
-            Parameters
-            ----------
-            c: int
-                Condition index in self.do['df']['ResCtrl]
-            t: int
-                Relevant point index in self.do['df']['ResCtrl]
-
-            Returns
-            -------
-            list[list[int]]
-        """
-        #region ---------------------------------------------------> List
-        #------------------------------> 
-        colC = self.rDO['df']['ResCtrl'][0][t]
-        #------------------------------> 
-        colD = self.rDO['df']['ResCtrl'][c+1][t]
-        #endregion ------------------------------------------------> List
-
-        return [colC, colD]
-    #---
-
-    def ColCtrlData_OCR(self, c:int, t:int) -> list[list[int]]:
-        """Get the Ctrl and Data columns for the given condition and relevant
-            point when Control Type is: One Control per Row
-
-            Parameters
-            ----------
-            c: int
-                Condition index in self.do['df']['ResCtrl]
-            t: int
-                Relevant point index in self.do['df']['ResCtrl]
-
-            Returns
-            -------
-            list[list[int]]
-        """
-        #region ---------------------------------------------------> List
-        #------------------------------> 
-        colC = self.rDO['df']['ResCtrl'][c][0]
-        #------------------------------> 
-        colD = self.rDO['df']['ResCtrl'][c][t+1]
-        #endregion ------------------------------------------------> List
-
-        return [colC, colD]
-    #---
-
-    def ColCtrlData_Ratio(self, c:int, t:int) -> list[list[int]]:
-        """Get the Ctrl and Data columns for the given condition and relevant
-            point when Control Type is: Data as Ratios.
-
-            Parameters
-            ----------
-            c: int
-                Condition index in self.do['df']['ResCtrl]
-            t: int
-                Relevant point index in self.do['df']['ResCtrl]
-
-            Returns
-            -------
-            list[list[int]]
-        """
-        #region ---------------------------------------------------> List
-        #------------------------------> 
-        colC = []
-        #------------------------------> 
-        colD = self.rDO['df']['ResCtrl'][c][t]
-        #endregion ------------------------------------------------> List
-
-        return [colC, colD]
-    #---
-
-    def CalcOutData(
-        self, cN: str, tN: str, colC: list[int], colD: list[int]
-    ) -> bool:
-        """Calculate the data for the main output dataframe.
-
-            Parameters
-            ----------
-            cN: str
-                Condition name.
-            tN: str
-                Relevant point name.
-            colC: list[int]
-                Column numbers for the control. Empty list for Ration of 
-                intensities.
-            colD: list[int]
-                Column numbers for the experiment.
-
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> Print
-        if mConfig.development:
-            print(cN, tN, colC, colD)
-        #endregion ------------------------------------------------> Print
-
-        #region ---------------------------------------------------> Ave & Std
-        if colC:
-            self.dfR.loc[:,(cN, tN, 'aveC')] = self.dfS.iloc[:,colC].mean(
-                axis=1, skipna=True).to_numpy() # type: ignore
-            self.dfR.loc[:,(cN, tN, 'stdC')] = self.dfS.iloc[:,colC].std(
-                axis=1, skipna=True).to_numpy() # type: ignore
-        else:
-            self.dfR.loc[:,(cN, tN, 'aveC')] = np.nan
-            self.dfR.loc[:,(cN, tN, 'stdC')] = np.nan
-        #------------------------------>
-        self.dfR.loc[:,(cN, tN, 'ave')] = self.dfS.iloc[:,colD].mean(
-            axis=1, skipna=True).to_numpy() # type: ignore
-        self.dfR.loc[:,(cN, tN, 'std')] = self.dfS.iloc[:,colD].std(
-            axis=1, skipna=True).to_numpy() # type: ignore
-        #endregion ------------------------------------------------> Ave & Std
-
-        #region --------------------------------------------> Log2 Intensities
-        dfLogI = self.dfS.copy() 
-        if self.rDO['TransMethod'] == 'Log2':
-            pass
-        else:
-            if colC:
-                dfLogI.iloc[:,colC+colD] = np.log2(dfLogI.iloc[:,colC+colD])
-            else:
-                dfLogI.iloc[:,colD] = np.log2(dfLogI.iloc[:,colD])
-        #endregion -----------------------------------------> Log2 Intensities
-
-        #region ----------------------------------------------------> Log2(FC)
-        if colC:
-            FC = (
-                dfLogI.iloc[:,colD].mean(axis=1, skipna=True) # type: ignore
-                - dfLogI.iloc[:,colC].mean(axis=1, skipna=True) # type: ignore
-            )
-        else:
-            FC = dfLogI.iloc[:,colD].mean(axis=1, skipna=True) # type: ignore
-        #------------------------------>
-        self.dfR.loc[:, (cN, tN, 'FC')] = FC.to_numpy() # type: ignore
-        #endregion -------------------------------------------------> Log2(FC)
-
-        #region ---------------------------------------------------> FCz
-        self.dfR.loc[:,(cN, tN, 'FCz')] = (FC - FC.mean()).div(FC.std()).to_numpy() # type: ignore
-        #endregion ------------------------------------------------> FCz
-
-        #region ---------------------------------------------------> FC CI
-        if self.rDO['RawI']:
-            self.dfR.loc[:,(cN, tN, 'CI')] = mStatistic.CI_Mean_Diff_DF(
-                dfLogI,
-                colC,
-                colD,
-                self.rDO['Alpha'],
-                self.rDO['IndS'],
-                fullCI=False,
-            ).to_numpy()
-        else:
-            self.dfR.loc[:,(cN, tN, 'CI')] = mStatistic.CI_Mean_DF(
-                dfLogI.iloc[:,colD], self.rDO['Alpha'], fullCI=False, # type: ignore
-            ).to_numpy()
-        #endregion ------------------------------------------------> FC CI
-
-        #region -----------------------------------------------------------> P
-        if self.rDO['RawI']:
-            if self.rDO['IndS']:
-                self.dfR.loc[:,(cN,tN,'P')] = mStatistic.Test_t_IS_DF(
-                    dfLogI, colC, colD, alpha=self.rDO['Alpha']
-                )['P'].to_numpy()
-            else:
-                self.dfR.loc[:,(cN,tN,'P')] = mStatistic.Test_t_PS_DF(
-                    dfLogI, colC, colD, alpha=self.rDO['Alpha']
-                )['P'].to_numpy()
-        else:
-            #------------------------------> Dummy 0 columns
-            dfLogI['TEMP_Col_Full_00'] = 0
-            dfLogI['TEMP_Col_Full_01'] = 0
-            colCF = []
-            colCF.append(dfLogI.columns.get_loc('TEMP_Col_Full_00'))
-            colCF.append(dfLogI.columns.get_loc('TEMP_Col_Full_01'))
-            #------------------------------> 
-            self.dfR.loc[:,(cN,tN,'P')] = mStatistic.Test_t_IS_DF(
-                dfLogI, colCF, colD, f=True,
-            )['P'].to_numpy()
-        #endregion --------------------------------------------------------> P
-
-        #region ----------------------------------------------------------> Pc
-        if self.rDO['CorrectP'] != 'None':
-            self.dfR.loc[:,(cN,tN,'Pc')] = multipletests(
-                self.dfR.loc[:,(cN,tN,'P')],
-                self.rDO['Alpha'], 
-                mConfig.oCorrectP[self.rDO['CorrectP']]
-            )[1]
-        else:
-            pass
-        #endregion -------------------------------------------------------> Pc
-
-        #region ------------------------------------------------> Round to .XX
-        self.dfR.loc[:,(cN,tN,self.cLDFThirdLevel)] = (
-            self.dfR.loc[:,(cN,tN,self.cLDFThirdLevel)].round(2)
-        )
-        #endregion ---------------------------------------------> Round to .XX
-
-        return True
-    #---
     #endregion ----------------------------------------------> Class Methods
 
     #region -----------------------------------------------------> Run Methods
@@ -4368,103 +4072,6 @@ class PaneProtProf(BaseConfPanelMod):
             self.rMsgError = 'Something went wrong when preparing the analysis.'
             return False
         #endregion ------------------------------------------------> Super
-
-        return True
-    #---
-
-    def RunAnalysis(self) -> bool:
-        """Calculate proteome profiling data.
-
-            Returns
-            -------
-            bool
-        """
-        #region -------------------------------------------------------> Print
-        if mConfig.development:
-            print('d:')
-            for k,v in self.rDI.items():
-                print(str(k)+': '+str(v))
-            print('')  
-            print('do:')
-            for k,v in self.rDO.items():
-                if k not in ['df', 'oc', 'dfo']:
-                    print(str(k)+': '+str(v))
-                else:
-                    print(k)
-                    for j,w in v.items():
-                        print(f'\t{j}: {w}')
-            print('')
-        else:
-            pass
-        #endregion ----------------------------------------------------> Print
-
-        #region --------------------------------------------> Data Preparation
-        if self.DataPreparation():
-            pass
-        else:
-            return False
-        #endregion -----------------------------------------> Data Preparation
-
-        #region --------------------------------------------------------> Sort
-        self.dfS.sort_values(
-            by=list(self.dfS.columns[0:2]), inplace=True, ignore_index=True,
-        )
-        #endregion -----------------------------------------------------> Sort
-
-        #region ----------------------------------------------------> Empty DF
-        #------------------------------> Msg
-        msgStep = (
-            f'{self.cLPdRun}'
-            f'Calculating output data - Creating empty dataframe'
-        )  
-        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------> 
-        self.dfR = self.EmptyDFR()
-
-        if mConfig.development:
-            print('self.dfR.shape: ', self.dfR.shape)
-            print(self.dfR.head())
-            print('')
-        else:
-            pass
-        #endregion -------------------------------------------------> Empty DF
-
-        #region --------------------------------------------> Calculate values
-        #------------------------------> Msg
-        msgStep = (
-            f'{self.cLPdRun}'
-            f'Calculating output data'
-        )  
-        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------> Calculate data
-        for c, cN in enumerate(self.rDO['Cond']):
-            for t, tN in enumerate(self.rDO['RP']):
-                #------------------------------> Message
-                msgStep = (
-                    f'{self.cLPdRun}'
-                    f'Calculating output data for {cN} - {tN}'
-                )  
-                wx.CallAfter(self.rDlg.UpdateSt, msgStep)
-                #------------------------------> Control & Data Column
-                colC, colD = self.dColCtrlData[self.rDO['ControlT']](c, t)
-                #------------------------------> Calculate data
-                try:
-                    self.CalcOutData(cN, tN, colC, colD)
-                except Exception as e:
-                    self.rMsgError = (
-                        f'Calculation of the Proteome Profiling data for '
-                        f'point {cN} - {tN} failed.'
-                    )
-                    self.rException = e
-                    return False
-        #------------------------------>
-        if mConfig.development:
-            print('self.dfR.shape: ', self.dfR.shape)
-            print(self.dfR.head())
-            print('')
-        else:
-            pass
-        #endregion -----------------------------------------> Calculate values
 
         return True
     #---

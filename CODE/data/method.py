@@ -27,11 +27,13 @@ import numpy as np
 import matplotlib as mpl
 import pandas as pd
 
-import wx
+from statsmodels.stats.multitest import multipletests
 
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+
+import wx
 
 import config.config as mConfig
 import data.exception as mException
@@ -1129,6 +1131,7 @@ def HCurve(x:Union[float,pd.DataFrame,pd.Series], t0:float, s0:float) -> float:
 def CorrA(
     df        : pd.DataFrame,
     rDO       : dict,
+    *args,
     resetIndex: bool=True,
     ) -> tuple[dict, str, Union[Exception, None]]:
     """Perform a Correlation Analysis.
@@ -1139,6 +1142,71 @@ def CorrA(
             DataFrame read from CSV file.
         rDO: dict
             rDO dictionary from the PrepareRun step of the analysis.
+        *args : These are ignores here.
+        resetIndex: bool
+            Reset index of dfS (True) or not (False). Default is True.
+
+        Returns
+        -------
+        tuple:
+            -   (
+                    {
+                        'dfI' : pd.DataFrame,
+                        'dfF' : pd.DataFrame,
+                        'dfT' : pd.DataFrame,
+                        'dfN' : pd.DataFrame,
+                        'dfIm': pd.DataFrame,
+                        'dfTP': pd.DataFrame,
+                        'dfE' : pd.DataFrame,
+                        'dfS' : pd.DataFrame,
+                        'dfR' : pd.DataFrame,
+                    },
+                    '',
+                    None
+                )                                  when everything went fine.
+            -   ({}, 'Error message', Exception)   when something went wrong.
+
+        Notes
+        -----
+        *args are ignored. They are needed for compatibility.
+    """
+    #region ------------------------------------------------> Data Preparation
+    tOut = mStatistic.DataPreparation(df, rDO, resetIndex=resetIndex)
+    if tOut[0]:
+        pass
+    else:
+        return tOut
+    #endregion ---------------------------------------------> Data Preparation
+
+    #region -----------------------------------------------------------> CorrA
+    try:
+        dfR = tOut[0]['dfIm'].corr(method=rDO['CorrMethod'].lower())
+    except Exception as e:
+        return ({}, 'Correlation coefficients calculation failed.', e)
+    else:
+        dictO = tOut[0]
+        dictO['dfR'] = dfR
+        return (dictO, '', None)
+    #endregion --------------------------------------------------------> CorrA
+#---
+
+
+def ProtProf(
+    df        : pd.DataFrame,
+    rDO       : dict,
+    rDExtra   : dict,
+    resetIndex: bool=True,
+    ) -> tuple[dict, str, Union[Exception, None]]:
+    """Perform a Proteome Profiling Analysis.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            DataFrame read from CSV file.
+        rDO: dict
+            rDO dictionary from the PrepareRun step of the analysis.
+        rDExtra: dict
+            Extra parameters.
         resetIndex: bool
             Reset index of dfS (True) or not (False). Default is True.
 
@@ -1162,24 +1230,319 @@ def CorrA(
                 )                                  when everything went fine.
             -   ({}, 'Error message', Exception)   when something went wrong.
     """
+    #region ------------------------------------------------> Helper Functions
+    def EmptyDFR() -> pd.DataFrame:
+        """Creates the empty data frame for the output. This data frame contains
+            the values for Gene, Protein and Score.
+
+            Returns
+            -------
+            pd.DataFrame
+        """
+        #region -------------------------------------------------------> Index
+        #------------------------------> First Three Columns
+        aL = rDExtra['cLDFThreeCol']
+        bL = rDExtra['cLDFThreeCol']
+        cL = rDExtra['cLDFThreeCol']
+        #------------------------------> Columns per Point
+        n = len(rDExtra['cLDFThirdLevel'])
+        #------------------------------> Other columns
+        for c in rDO['Cond']:
+            for t in rDO['RP']:
+                aL = aL + n*[c]
+                bL = bL + n*[t]
+                cL = cL + rDExtra['cLDFThirdLevel']
+        #------------------------------> 
+        idx = pd.MultiIndex.from_arrays([aL[:], bL[:], cL[:]])
+        #endregion ----------------------------------------------------> Index
+
+        #region ----------------------------------------------------> Empty DF
+        df = pd.DataFrame(np.nan, columns=idx, index=range(dfS.shape[0]))       # type: ignore
+        #endregion -------------------------------------------------> Empty DF
+
+        #region -----------------------------------------> First Three Columns
+        df[(aL[0], bL[0], cL[0])] = dfS.iloc[:,0]
+        df[(aL[1], bL[1], cL[1])] = dfS.iloc[:,1]
+        df[(aL[2], bL[2], cL[2])] = dfS.iloc[:,2]
+        #endregion --------------------------------------> First Three Columns
+
+        return df
+    #---
+
+    def ColCtrlData_OC(c:int, t:int) -> list[list[int]]:
+        """Get the Ctrl and Data columns for the given condition and relevant
+            point when Control Type is: One Control.
+
+            Parameters
+            ----------
+            c: int
+                Condition index in self.do['df']['ResCtrl]
+            t: int
+                Relevant point index in self.do['df']['ResCtrl]
+
+            Returns
+            -------
+            list[list[int]]
+        """
+        #region ---------------------------------------------------> List
+        #------------------------------> 
+        colC = rDO['df']['ResCtrl'][0][0]
+        #------------------------------> 
+        colD = rDO['df']['ResCtrl'][c+1][t]
+        #endregion ------------------------------------------------> List
+
+        return [colC, colD]
+    #---
+
+    def ColCtrlData_OCC(c:int, t:int) -> list[list[int]]:
+        """Get the Ctrl and Data columns for the given condition and relevant
+            point when Control Type is: One Control per Column.
+
+            Parameters
+            ----------
+            c: int
+                Condition index in self.do['df']['ResCtrl]
+            t: int
+                Relevant point index in self.do['df']['ResCtrl]
+
+            Returns
+            -------
+            list[list[int]]
+        """
+        #region ---------------------------------------------------> List
+        #------------------------------> 
+        colC = rDO['df']['ResCtrl'][0][t]
+        #------------------------------> 
+        colD = rDO['df']['ResCtrl'][c+1][t]
+        #endregion ------------------------------------------------> List
+
+        return [colC, colD]
+    #---
+
+    def ColCtrlData_OCR(c:int, t:int) -> list[list[int]]:
+        """Get the Ctrl and Data columns for the given condition and relevant
+            point when Control Type is: One Control per Row
+
+            Parameters
+            ----------
+            c: int
+                Condition index in self.do['df']['ResCtrl]
+            t: int
+                Relevant point index in self.do['df']['ResCtrl]
+
+            Returns
+            -------
+            list[list[int]]
+        """
+        #region ---------------------------------------------------> List
+        #------------------------------> 
+        colC = rDO['df']['ResCtrl'][c][0]
+        #------------------------------> 
+        colD = rDO['df']['ResCtrl'][c][t+1]
+        #endregion ------------------------------------------------> List
+
+        return [colC, colD]
+    #---
+
+    def ColCtrlData_Ratio(c:int, t:int) -> list[list[int]]:
+        """Get the Ctrl and Data columns for the given condition and relevant
+            point when Control Type is: Data as Ratios.
+
+            Parameters
+            ----------
+            c: int
+                Condition index in self.do['df']['ResCtrl]
+            t: int
+                Relevant point index in self.do['df']['ResCtrl]
+
+            Returns
+            -------
+            list[list[int]]
+        """
+        #region ---------------------------------------------------> List
+        #------------------------------> 
+        colC = []
+        #------------------------------> 
+        colD = rDO['df']['ResCtrl'][c][t]
+        #endregion ------------------------------------------------> List
+
+        return [colC, colD]
+    #---
+
+    def CalcOutData(cN:str, tN:str, colC:list[int], colD:list[int]) -> bool:
+        """Calculate the data for the main output dataframe.
+
+            Parameters
+            ----------
+            cN: str
+                Condition name.
+            tN: str
+                Relevant point name.
+            colC: list[int]
+                Column numbers for the control. Empty list for Ration of 
+                intensities.
+            colD: list[int]
+                Column numbers for the experiment.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Print
+        if mConfig.development:
+            print(cN, tN, colC, colD)
+        #endregion ------------------------------------------------> Print
+
+        #region ---------------------------------------------------> Ave & Std
+        if colC:
+            dfR.loc[:,(cN, tN, 'aveC')] = dfS.iloc[:,colC].mean(
+                axis=1, skipna=True).to_numpy()                                 # type: ignore
+            dfR.loc[:,(cN, tN, 'stdC')] = dfS.iloc[:,colC].std(
+                axis=1, skipna=True).to_numpy()                                 # type: ignore
+        else:
+            dfR.loc[:,(cN, tN, 'aveC')] = np.nan
+            dfR.loc[:,(cN, tN, 'stdC')] = np.nan
+        #------------------------------>
+        dfR.loc[:,(cN, tN, 'ave')] = dfS.iloc[:,colD].mean(
+            axis=1, skipna=True).to_numpy()                                     # type: ignore
+        dfR.loc[:,(cN, tN, 'std')] = dfS.iloc[:,colD].std(
+            axis=1, skipna=True).to_numpy()                                     # type: ignore
+        #endregion ------------------------------------------------> Ave & Std
+
+        #region --------------------------------------------> Log2 Intensities
+        dfLogI = dfS.copy() 
+        if rDO['TransMethod'] == 'Log2':
+            pass
+        else:
+            if colC:
+                dfLogI.iloc[:,colC+colD] = np.log2(dfLogI.iloc[:,colC+colD])
+            else:
+                dfLogI.iloc[:,colD] = np.log2(dfLogI.iloc[:,colD])
+        #endregion -----------------------------------------> Log2 Intensities
+
+        #region ----------------------------------------------------> Log2(FC)
+        if colC:
+            FC = (
+                dfLogI.iloc[:,colD].mean(axis=1, skipna=True)                   # type: ignore
+                - dfLogI.iloc[:,colC].mean(axis=1, skipna=True)                 # type: ignore
+            )
+        else:
+            FC = dfLogI.iloc[:,colD].mean(axis=1, skipna=True)                  # type: ignore
+        #------------------------------>
+        dfR.loc[:, (cN, tN, 'FC')] = FC.to_numpy()                              # type: ignore
+        #endregion -------------------------------------------------> Log2(FC)
+
+        #region ---------------------------------------------------> FCz
+        dfR.loc[:,(cN, tN, 'FCz')] = (FC - FC.mean()).div(FC.std()).to_numpy()  # type: ignore
+        #endregion ------------------------------------------------> FCz
+
+        #region ---------------------------------------------------> FC CI
+        if rDO['RawI']:
+            dfR.loc[:,(cN, tN, 'CI')] = mStatistic.CI_Mean_Diff_DF(
+                dfLogI, colC, colD, rDO['Alpha'], rDO['IndS'], fullCI=False,
+            ).to_numpy()
+        else:
+            dfR.loc[:,(cN, tN, 'CI')] = mStatistic.CI_Mean_DF(
+                dfLogI.iloc[:,colD], self.rDO['Alpha'], fullCI=False,           # type: ignore
+            ).to_numpy()
+        #endregion ------------------------------------------------> FC CI
+
+        #region -----------------------------------------------------------> P
+        if rDO['RawI']:
+            if rDO['IndS']:
+                dfR.loc[:,(cN,tN,'P')] = mStatistic.Test_t_IS_DF(
+                    dfLogI, colC, colD, alpha=rDO['Alpha']
+                )['P'].to_numpy()
+            else:
+                dfR.loc[:,(cN,tN,'P')] = mStatistic.Test_t_PS_DF(
+                    dfLogI, colC, colD, alpha=rDO['Alpha']
+                )['P'].to_numpy()
+        else:
+            #------------------------------> Dummy 0 columns
+            dfLogI['TEMP_Col_Full_00'] = 0
+            dfLogI['TEMP_Col_Full_01'] = 0
+            colCF = []
+            colCF.append(dfLogI.columns.get_loc('TEMP_Col_Full_00'))
+            colCF.append(dfLogI.columns.get_loc('TEMP_Col_Full_01'))
+            #------------------------------> 
+            dfR.loc[:,(cN,tN,'P')] = mStatistic.Test_t_IS_DF(
+                dfLogI, colCF, colD, f=True,
+            )['P'].to_numpy()
+        #endregion --------------------------------------------------------> P
+
+        #region ----------------------------------------------------------> Pc
+        if rDO['CorrectP'] != 'None':
+            dfR.loc[:,(cN,tN,'Pc')] = multipletests(
+                dfR.loc[:,(cN,tN,'P')],
+                rDO['Alpha'], 
+                mConfig.oCorrectP[rDO['CorrectP']]
+            )[1]
+        else:
+            pass
+        #endregion -------------------------------------------------------> Pc
+
+        #region ------------------------------------------------> Round to .XX
+        dfR.loc[:,(cN,tN,rDExtra['cLDFThirdLevel'])] = (
+            dfR.loc[:,(cN,tN,rDExtra['cLDFThirdLevel'])].round(2)
+        )
+        #endregion ---------------------------------------------> Round to .XX
+
+        return True
+    #---
+    #endregion ---------------------------------------------> Helper Functions
+
+    #region -------------------------------------------------------> Variables
+    dColCtrlData = {
+        mConfig.oControlTypeProtProf['OC']   : ColCtrlData_OC,
+        mConfig.oControlTypeProtProf['OCC']  : ColCtrlData_OCC,
+        mConfig.oControlTypeProtProf['OCR']  : ColCtrlData_OCR,
+        mConfig.oControlTypeProtProf['Ratio']: ColCtrlData_Ratio,
+    }
+    #endregion ----------------------------------------------------> Variables
+
     #region ------------------------------------------------> Data Preparation
     tOut = mStatistic.DataPreparation(df, rDO, resetIndex=resetIndex)
     if tOut[0]:
-        pass
+        dfS = tOut[0]['dfS']
     else:
         return tOut
     #endregion ---------------------------------------------> Data Preparation
 
-    #region -----------------------------------------------------------> CorrA
-    try:
-        dfR = tOut[0]['dfIm'].corr(method=rDO['CorrMethod'].lower())
-    except Exception as e:
-        return ({}, 'Correlation coefficients calculation failed.', e)
+    #region ------------------------------------------------------------> Sort
+    dfS.sort_values(
+        by=list(dfS.columns[0:2]), inplace=True, ignore_index=True)
+    #endregion ---------------------------------------------------------> Sort
+
+    #region -------------------------------------------------------> Calculate
+    dfR = EmptyDFR()
+    #------------------------------>
+    for c, cN in enumerate(rDO['Cond']):
+        for t, tN in enumerate(rDO['RP']):
+            #------------------------------> Control & Data Column
+            colC, colD = dColCtrlData[rDO['ControlT']](c, t)
+            #------------------------------> Calculate data
+            try:
+                CalcOutData(cN, tN, colC, colD)
+            except Exception as e:
+                msg = (f'Calculation of the Proteome Profiling data for '
+                       f'point {cN} - {tN} failed.')
+                return ({}, msg, e)
+    #endregion ----------------------------------------------------> Calculate
+
+    #region ---------------------------------------------------> 
+    if mConfig.development:
+        print('dfR.shape: ', dfR.shape)
+        print(dfR.head())
+        print('')
     else:
-        dictO = tOut[0]
-        dictO['dfR'] = dfR
-        return (dictO, '', None)
-    #endregion --------------------------------------------------------> CorrA
+        pass
+    #endregion ------------------------------------------------> 
+
+    #region ---------------------------------------------------> 
+    dictO = tOut[0]
+    dictO['dfR'] = dfR
+    return (dictO, '', None)
+    #endregion ------------------------------------------------> 
 #---
 
 
