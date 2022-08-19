@@ -71,7 +71,7 @@ class BaseConfTab(wx.Panel):
         #region -----------------------------------------------------> Widgets
         self.wConf = self.dConfPanel[self.cName](self, dataI)
         #endregion --------------------------------------------------> Widgets
-        
+
         #region -------------------------------------------------> Aui control
         #------------------------------> AUI control
         self._mgr = aui.AuiManager()
@@ -109,11 +109,11 @@ class BaseConfListTab(BaseConfTab):
         Parameters
         ----------
         parent : wx.Window
-            Parent of the tab
+            Parent of the tab.
         name: str or None
-            Unique name of the Tab
+            Unique name of the Tab.
         dataI : dict or None
-            Initial data provided by the user to performed a previous analysis
+            Initial data provided by the user to performed a previous analysis.
     """
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent: wx.Window, name: str='', dataI:dict={}) -> None:
@@ -173,16 +173,16 @@ class ResControlExp(wx.Panel):
         Parameters
         ----------
         parent : wx.Widget
-            Parent of the panel
+            Parent of the panel.
         iFile : Path
-            Path to the Data File already selected in the parent window
+            Path to the Data File already selected in the parent window.
         topParent : wx.Widget
             Window calling the dialog.
 
         Attributes
         ----------
         dWidget : dict of methods
-            Methods to create the configuration panel
+            Methods to create the configuration panel.
     """
     #region -----------------------------------------------------> Class setup
     cName = 'ResControlExpPane'
@@ -196,8 +196,9 @@ class ResControlExp(wx.Panel):
 
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, parent: 'wx.Window',
-        iFile: Union[Path, str],
+        self,
+        parent   : 'wx.Window',
+        iFile    : Union[Path, str],
         topParent: 'wx.Window',
         ) -> None:
         """ """
@@ -280,7 +281,6 @@ class TabStart(wx.Panel):
         ----------
         parent : wx.Window
             Direct parent of the widgets in the tab.
-        args : extra arguments
     """
     #region -----------------------------------------------------> Class setup
     cName = mConfig.ntStart
@@ -343,23 +343,23 @@ class TabStart(wx.Panel):
         #region --------------------------------------------------------> Bind
         self.wBtnCorrA.Bind(
             wx.EVT_BUTTON, 
-            lambda event: mConfig.winMain.CreateTab(mConfig.ntCorrA) # type: ignore
+            lambda event: mConfig.winMain.CreateTab(mConfig.ntCorrA)            # type: ignore
         )
         self.wBtnDataPrep.Bind(
             wx.EVT_BUTTON, 
-            lambda event: mConfig.winMain.CreateTab(mConfig.ntDataPrep) # type: ignore
+            lambda event: mConfig.winMain.CreateTab(mConfig.ntDataPrep)         # type: ignore
         )
         self.wBtnLimProt.Bind(
             wx.EVT_BUTTON, 
-            lambda event: mConfig.winMain.CreateTab(mConfig.ntLimProt) # type: ignore
+            lambda event: mConfig.winMain.CreateTab(mConfig.ntLimProt)          # type: ignore
         )
         self.wBtnProtProf.Bind(
             wx.EVT_BUTTON, 
-            lambda event: mConfig.winMain.CreateTab(mConfig.ntProtProf) # type: ignore
+            lambda event: mConfig.winMain.CreateTab(mConfig.ntProtProf)         # type: ignore
         )
         self.wBtnTarProt.Bind(
             wx.EVT_BUTTON, 
-            lambda event: mConfig.winMain.CreateTab(mConfig.ntTarProt) # type: ignore
+            lambda event: mConfig.winMain.CreateTab(mConfig.ntTarProt)          # type: ignore
         )
         #endregion -----------------------------------------------------> Bind
     #endregion -----------------------------------------------> Instance setup

@@ -185,7 +185,9 @@ class BaseWindow(wx.Frame):
 
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, parent: Optional[wx.Window]=None, menuData: dict={},
+        self,
+        parent  : Optional[wx.Window]=None,
+        menuData: dict={},
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -332,43 +334,6 @@ class BaseWindow(wx.Frame):
 
         return True
     #---
-
-#     def OnExportFilteredData(self) -> bool:
-#         """Export filtered data to a csv file. 
-        
-#             Returns
-#             -------
-#             bool
-        
-#             Notes
-#             -----
-#             Assumes filtered data is in self.rDf 
-#         """
-#         #region --------------------------------------------------> Dlg window
-#         dlg = dtsWindow.FileSelectDialog('save', config.elData, parent=self)
-#         #endregion -----------------------------------------------> Dlg window
-        
-#         #region ---------------------------------------------------> Get Path
-#         if dlg.ShowModal() == wx.ID_OK:
-#             #------------------------------> Variables
-#             p = Path(dlg.GetPath())
-#             #------------------------------> Export
-#             try:
-#                 dtsFF.WriteDF2CSV(p, self.rDf)
-#             except Exception as e:
-#                 dtsWindow.DialogNotification(
-#                     'errorF',
-#                     msg        = self.cMsgExportFailed,
-#                     tException = e,
-#                     parent     = self,
-#                 )
-#         else:
-#             pass
-#         #endregion ------------------------------------------------> Get Path
-     
-#         dlg.Destroy()
-#         return True	
-#     #---	
     #endregion ------------------------------------------------> Event Methods
 
     #region ---------------------------------------------------> Manage Methods
@@ -397,31 +362,6 @@ class BaseWindow(wx.Frame):
 
         return info
     #---
-
-#     def UpdateUMSAPData(self):
-#         """Update the window after the UMSAP file have been updated.
-    
-#             Parameters
-#             ----------
-            
-    
-#             Returns
-#             -------
-            
-    
-#             Raise
-#             -----
-            
-#         """
-#         self.rObj  = self.cParent.rObj
-#         self.rData = self.rObj.dConfigure[self.cSection]()
-#         self.rDate = [x for x in self.rData.keys() if x != 'Error']
-#         menuBar    = self.GetMenuBar()
-#         menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(
-#             {'MenuDate': self.rDate})
-        
-#         return True
-#     #---
     #endregion ------------------------------------------------> Manage Methods
 #---
 
@@ -431,20 +371,23 @@ class BaseWindowResult(BaseWindow):
 
         Parameters
         ----------
-        
+        parent : wx.Window or None
+            Parent of the window. Default None
+        menuData : dict
+            Data to build the Tool menu of the window. See structure in child 
+            class.
 
         Attributes
         ----------
-        
+        rData: dict
+            Keys are the elements in rDate and values the analysis data. 
+        rDate: list[str]
+            List of available dates.
+        rDateC: str
+            Current selected date.
+        rDf: pd.DataFrame
+            DataFrame with the data for the currently selected date.
 
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
-        
         Notes
         -----
         At least one plot is expected in the window.
@@ -453,7 +396,7 @@ class BaseWindowResult(BaseWindow):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, 
-        parent: Optional[wx.Window]=None, 
+        parent  : Optional[wx.Window]=None, 
         menuData: dict={},
         ) -> None:
         """ """
@@ -527,7 +470,7 @@ class BaseWindowResult(BaseWindow):
         if len(self.rData.keys()) > 1:
             pass
         else:
-            msg = (f'All {self.cSection} in file {self.rObj.rFileP.name} are ' # type: ignore
+            msg = (f'All {self.cSection} in file {self.rObj.rFileP.name} are '  # type: ignore
                 f'corrupted or were not found.')
             raise mException.InputError(msg)
         #endregion ------------------------------------------> Nothing to Plot
@@ -560,8 +503,8 @@ class BaseWindowResult(BaseWindow):
             bool
         """
         #region ---------------------------------------------------> Duplicate
-        self.cParent.rWindow[self.cSection]['Main'].append( # type: ignore
-            self.cParent.dPlotMethod[self.cSection](self.cParent) # type: ignore
+        self.cParent.rWindow[self.cSection]['Main'].append(                     # type: ignore
+            self.cParent.dPlotMethod[self.cSection](self.cParent)               # type: ignore
         )
         #endregion ------------------------------------------------> Duplicate
 
@@ -606,7 +549,7 @@ class BaseWindowResult(BaseWindow):
         dlg.Destroy()
         return True
     #---
-    
+
     def ExportDataFiltered(self, df: Optional[pd.DataFrame]=None) -> bool:
         """Export data to a csv file.
 
@@ -684,7 +627,7 @@ class BaseWindowResult(BaseWindow):
             is an UMSAPControl window
         """
         self.SetTitle(
-            f"{self.cParent.cTitle} - {self.cSection} - {self.rDateC}") # type: ignore
+            f"{self.cParent.cTitle} - {self.cSection} - {self.rDateC}")         # type: ignore
 
         return True
     #---
@@ -723,8 +666,8 @@ class BaseWindowResult(BaseWindow):
     #---
 
     def SetDateMenuDate(self) -> tuple[list, dict]:
-        """Set the self.rDate list and the menuData dict needed to build the Tool
-            menu.
+        """Set the self.rDate list and the menuData dict needed to build the 
+            Tool menu.
 
             Returns
             -------
@@ -750,27 +693,21 @@ class BaseWindowResultOnePlot(BaseWindowResult):
 
         Parameters
         ----------
-        
+        parent : wx.Window or None
+            Parent of the window. Default None
+        menuData : dict
+            Data to build the Tool menu of the window. See structure in child 
+            class.
 
-        Attributes
-        ----------
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
-        
         Notes
         -----
         At least one plot is expected in the window.
     """
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, parent: Optional[wx.Window]=None, menuData: dict={},
+        self,
+        parent  : Optional[wx.Window]=None,
+        menuData: dict={},
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -845,11 +782,15 @@ class BaseWindowResultOnePlot(BaseWindowResult):
 
 
 class BaseWindowResultOnePlotFA(BaseWindowResultOnePlot):
-    """
+    """Base Window for Further Analysis with one Plot, e.g. AA.
 
         Parameters
         ----------
-        
+        parent : wx.Window or None
+            Parent of the window. Default None
+        menuData : dict
+            Data to build the Tool menu of the window. See structure in child 
+            class.
 
         Attributes
         ----------
@@ -865,7 +806,9 @@ class BaseWindowResultOnePlotFA(BaseWindowResultOnePlot):
     """
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, parent: Optional[wx.Window]=None, menuData: dict={},
+        self,
+        parent  : Optional[wx.Window]=None,
+        menuData: dict={},
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -920,37 +863,29 @@ class BaseWindowResultOnePlotFA(BaseWindowResultOnePlot):
 
 
 class BaseWindowResultListText(BaseWindowResult):
-    """
+    """Base window for results with a wx.ListCtrl and wx.TextCtrl.
 
         Parameters
         ----------
-        
-
-        Attributes
-        ----------
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+        parent : wx.Window or None
+            Parent of the window. Default None
+        menuData : dict
+            Data to build the Tool menu of the window. See structure in child 
+            class.
     """
     #region --------------------------------------------------> Instance setup
     def __init__(
         self,
-        parent: Optional[wx.Window]=None,
+        parent  : Optional[wx.Window]=None,
         menuData: dict={},
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cLCol    = getattr(self, 'cLCol', ['#', 'Item'])
         self.cSCol    = getattr(self, 'cSCol', [45, 100])
+        self.cHSearch = getattr(self, 'cHSearch', 'Table')
         self.cLCStyle = getattr(
             self, 'cLCStyle', wx.LC_REPORT|wx.LC_SINGLE_SEL|wx.LC_VIRTUAL)
-        self.cHSearch = getattr(self, 'cHSearch', 'Table')
         self.rLCIdx   = getattr(self, 'rLCIdx', -1)
         #------------------------------>
         super().__init__(parent=parent, menuData=menuData)
@@ -1121,7 +1056,7 @@ class BaseWindowResultListText(BaseWindowResult):
             bool
         """
         #region --------------------------------------------------->
-        self.rObj  = self.cParent.rObj # type: ignore
+        self.rObj  = self.cParent.rObj                                          # type: ignore
         self.rData = self.rObj.dConfigure[self.cSection]()
         self.rDate, menuData = self.SetDateMenuDate()
         menuBar = self.GetMenuBar()
@@ -1135,27 +1070,21 @@ class BaseWindowResultListText(BaseWindowResult):
 
 
 class BaseWindowResultListTextNPlot(BaseWindowResultListText):
-    """
+    """Base window for results with a wx.ListCtrl, wx.TextCtrl and mPane.NPlots.
 
         Parameters
         ----------
-        
-
-        Attributes
-        ----------
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+        parent : wx.Window or None
+            Parent of the window. Default None
+        menuData : dict
+            Data to build the Tool menu of the window. See structure in child 
+            class.
     """
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, parent: Optional[wx.Window]=None, menuData: dict={},
+        self, 
+        parent  : Optional[wx.Window]=None,
+        menuData: dict={},
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -1317,7 +1246,9 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
     """
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, parent: Optional[wx.Window]=None, menuData: dict={},
+        self,
+        parent  : Optional[wx.Window]=None,
+        menuData: dict={},
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -1515,23 +1446,15 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
 
 
 class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
-    """
+    """Base Window for results showing a Fragments panel.
 
         Parameters
         ----------
-        
-
-        Attributes
-        ----------
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+        parent : wx.Window or None
+            Parent of the window. Default None
+        menuData : dict
+            Data to build the Tool menu of the window. See structure in child 
+            class.
     """
     #region -----------------------------------------------------> Class Setup
     cCNatProt = mConfig.color['NatProt']
@@ -1540,7 +1463,9 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
 
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, parent: Optional[wx.Window]=None, menuData: dict={},
+        self,
+        parent  : Optional[wx.Window]=None,
+        menuData: dict={},
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -1685,7 +1610,8 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
 
         #region ---------------------------------------------------> Fragments
         nc = len(self.cColor['Spot']) # type: ignore
-        #------------------------------> 
+        #------------------------------>
+        k = 1
         for k,v in enumerate(tKeyLabel, start=1):
             for j,f in enumerate(self.rFragments[v]['Coord']):
                 self.rRectsFrag.append(mpatches.Rectangle(
@@ -1738,18 +1664,10 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
 
     def SeqExport(self) -> bool:
         """Export the recombinant sequence 
-    
-            Parameters
-            ----------
-            
-    
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         return True
     #---
@@ -1875,7 +1793,7 @@ class WindowAbout(BaseWindow):
     """About UMSAP window."""
     #region -----------------------------------------------------> Class setup
     cName = mConfig.nwAbout
-    #------------------------------> 
+    #------------------------------>
     cSWindow = (600, 775)
     #endregion --------------------------------------------------> Class setup
 
@@ -1936,7 +1854,7 @@ class WindowAbout(BaseWindow):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
+    #region ---------------------------------------------------> Event Methods
     def OnButtonClose(self, event: wx.CommandEvent) -> bool:
         """Close the window
         
@@ -1952,7 +1870,7 @@ class WindowAbout(BaseWindow):
         self.Close()
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Event Methods
 #---
 
 
@@ -1968,8 +1886,6 @@ class WindowMain(BaseWindow):
         ----------
         dTab: dict
             Methods to create the tabs.
-        cTab: dict
-            Name for the tab in the notebook tab list.
     """
     #region -----------------------------------------------------> Class Setup
     cName = mConfig.nwMain
@@ -2102,7 +2018,7 @@ class WindowMain(BaseWindow):
             Parameters
             ----------
             event : wx.aui.Event
-                Information about the event
+                Information about the event.
                 
             Returns
             -------
@@ -2186,6 +2102,7 @@ class WindowResCorrA(BaseWindowResultOnePlot):
             List of dates available for plotting.
         rDateC : one of rDate
             Current selected date
+        rNorm: mpl.colors.Normalize
         rObj : parent.obj
             Pointer to the UMSAPFile object in parent.
         rSelColIdx : list[int]
@@ -2319,6 +2236,11 @@ class WindowResCorrA(BaseWindowResultOnePlot):
         """"Set the values of self.rSelColX to its default values, all values
             in the analysis.
 
+            Parameters
+            ----------
+            tDate: str
+                A date in the section e.g. '20210129-094504 - bla'
+
             Returns
             -------
             bool
@@ -2333,8 +2255,8 @@ class WindowResCorrA(BaseWindowResultOnePlot):
     def UpdateResultWindow(
         self,
         tDate: str='',
-        col: Optional[bool] = None,
-        bar: Optional[bool] = None,
+        col  : Optional[bool] = None,
+        bar  : Optional[bool] = None,
         ) -> bool:
         """Plot data from a given date.
 
@@ -2383,7 +2305,7 @@ class WindowResCorrA(BaseWindowResultOnePlot):
         #------------------------------>
         if self.rBar:
             self.wPlot[0].rFigure.colorbar(
-                mpl.cm.ScalarMappable(norm=self.rNorm, cmap=self.rCmap),  # type: ignore
+                mpl.cm.ScalarMappable(norm=self.rNorm, cmap=self.rCmap),        # type: ignore
                 orientation = 'vertical',
                 ax          = self.wPlot[0].rAxes,
             )
@@ -2406,7 +2328,7 @@ class WindowResCorrA(BaseWindowResultOnePlot):
     #---
 
     def SetAxis(self) -> bool:
-        """ General details of the plot area.
+        """General details of the plot area.
 
             Returns
             -------
@@ -2537,30 +2459,25 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
 
         Parameters
         ----------
-        cParent: wx.Window
+        parent: wx.Window
             Parent of the window
-        cTitle : str or None
+        title : str or None
             Title of the window. Default is None
-        rDpDF : dict[pd.DataFrame] or None
-            The dictionary has the following structure:
-            {
-                "dfF" : pd.DataFrame, Data after excluding and filter by Score
-                "dfT" : pd.DataFrame, Data after transformation
-                "dfN" : pd.DataFrame, Data after normalization
-                "dfIm": pd.DataFrame, Data after Imputation
-            }
-            Default is None
+        tDate: str
+            Selected Date.
+        tSection: str
+            Section of the Analysis.
 
         Attributes
         ----------
         rData : dict
             Dict with the configured data for this section from UMSAPFile.
+        rDataPlot: dict[str: pd.DataFrame]
+            DataFrames with the data.
         rDate : list of str
             List of available dates in the section.
         rDateC : str
             Date selected. Needed to export the data and images.
-        rDpDF : dict[pd.DataFrame]
-            See dpDF in Parameters
         rFromUMSAPFile : bool
             The window is invoked from an UMSAP File window (True) or not (False)
         rObj : UMSAPFile
@@ -2609,10 +2526,10 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, 
-        parent: wx.Window, 
-        title: str='',
+        parent  : wx.Window, 
+        title   : str='',
         tSection: str='', 
-        tDate: str='',
+        tDate   : str='',
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -2734,11 +2651,21 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
 
     #region --------------------------------------------------> Manage Methods
     def SetWindow(
-        self, parent:wx.Window, tSection: str='', tDate: str='') -> bool:
+        self,
+        parent  :wx.Window,
+        tSection: str='',
+        tDate   : str='',
+        ) -> bool:
         """Configure the window.
 
             Parameters
             ----------
+            parent: wx.Window
+                Parent of the window.
+            tSection: str
+                Name of the section.
+            tDate: str
+                Selected Date.
 
             Returns
             -------
@@ -2754,7 +2681,7 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
             self.rFromUMSAPFile = False
             self.rData = self.rObj.dConfigure[self.cSection](tSection, tDate)
             self.rDate = []
-            self.rDateC = parent.rDateC # type:ignore
+            self.rDateC = parent.rDateC                                         # type:ignore
         else:
             self.rFromUMSAPFile = True 
             self.rData  = self.rObj.dConfigure[self.cSection]()
@@ -2762,7 +2689,7 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
             #------------------------------>
             self.rDateC = self.rDate[0]
             self.cTitle = (
-                f"{parent.cTitle} - {self.cSection} - {self.rDateC}") # type: ignore
+                f"{parent.cTitle} - {self.cSection} - {self.rDateC}")           # type: ignore
         #endregion --------------------------------------------> Set Variables
 
         return True
@@ -2804,7 +2731,7 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
             super().DupWin()
         else:
             WindowResDataPrep(
-                self.cParent, # type: ignore
+                self.cParent,                                                   # type: ignore
                 title    = self.cTitle,
                 tSection = self.tSection,
                 tDate    = self.tDate,
@@ -2866,7 +2793,7 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
         #------------------------------>
         nBin = mStatistic.HistBin(x)[0]
         #endregion ------------------------------------------------> Variables
-        
+
         #region --------------------------------------------------------> Plot
         #------------------------------>
         self.wPlot.dPlot['Init'].rAxes.clear()
@@ -3268,6 +3195,8 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             Default is False. 
         rCI : dict
             CI dict for the current date.
+        rColor: str
+            Color mode.
         rCondC : str
             Condition currently selected.
         rCorrP : bool
@@ -3295,12 +3224,20 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         rGreenP : matplotlib object
             Reference to the green dot shown in the Volcano plot after selecting
             a protein in the wx.ListCtrl.
+        rLabelProt: list
+            List of proteins to label
+        rLCIdx: int or None
+            Selected row in the wx.ListCtrl.
         rLockScale : str
             Lock plot scale to No, Date or Project.
-        rLog10alpha : float
-            -log10(alpha) value to plot in the Volcano plot.
+        rLog2FC: float
+            Limit for the Log2FC value.
         rObj : UMSAPFile
             Reference to the UMSAPFile object.
+        rP: float
+            Limit for the P values.
+        rPickLabel: bool
+            Pick labels or show data of selected protein.
         rProtLine : matplotlib object
             Protein line drawn in the FC plot after selecting a protein in the
             wx.ListCtrl.
@@ -3313,14 +3250,14 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             Default is True.
         rT0: float
             t0 value to calculate the hyperbolic curve
+        rVolLines: list[str]
+            Lines to plot in the Volcano plot.
         rVXRange : list of float
             Min and Max values for the x axis in the Vol plot.
         rVYRange : list of float
             Min and Max values for the y axis in the Vol plot.
-        rZScore : float
-            Z score as absolute value.
-        rZScoreL : str
-            Z score value as percent.
+        rZ: float
+            Z Value for the Volcano plot.
     """
     #region -----------------------------------------------------> Class setup
     cName    = mConfig.nwProtProf
@@ -3361,11 +3298,6 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         cLFCAny : cLFCAny,
         cLFCAll : cLFCAll,
     }
-#     cLFFCMode = {
-#         'Up'  : cLFFCUp,
-#         'Down': cLFFCDown,
-#         'No'  : cLFFCNo,
-#     }
     #--------------> Id of the plots
     cLNPlot   = ['Vol', 'FC']
     #------------------------------> Title
@@ -3411,10 +3343,6 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         self.rP           = self.rData[self.rDateC]['Alpha']
         self.rLog2FC      = 0.1
         self.rColor       = 'Hyperbolic Curve Color'
-#         self.rHypCurve    = True
-#         self.rCI          = None
-#         self.rFcYMax      = None
-#         self.rFcYMin      = None
         self.rLockScale   = 'Analysis'
         self.rVXRange     = []
         self.rVYRange     = []
@@ -3438,8 +3366,6 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             'No Set'      : self.SetRangeNo,
             'Analysis Set': self.SetRangeDate,
             'Project Set' : self.SetRangeProject,
-            #------------------------------>
-#             config.klToolVolPlot   : self.OnVolChange,
             #------------------------------> Get DF for Text Intensities
             mConfig.oControlTypeProtProf['OC']   : self.GetDF4TextInt_OC,
             mConfig.oControlTypeProtProf['OCC']  : self.GetDF4TextInt_OCC,
@@ -3613,10 +3539,10 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         #endregion -----------------------------------------------> Delete old
 
         #region ----------------------------------------------------> Get Data
-        data = self.rDf.iloc[:,0:2] # type: ignore
+        data = self.rDf.iloc[:,0:2]                                             # type: ignore
         data.insert(0, 'kbr', self.rDf.index.values.tolist())
         data = data.astype(str)
-        data = data.values.tolist() # type: ignore
+        data = data.values.tolist()                                             # type: ignore
         #endregion -------------------------------------------------> Get Data
 
         #region ------------------------------------------> Set in wx.ListCtrl
@@ -3689,7 +3615,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             y = -np.log10(
                 self.rDf.loc[:,[(self.rCondC,self.rRpC,'P')]])
         #------------------------------> Color
-        color = self.dKeyMethod[self.rColor](x, y) # type: ignore
+        color = self.dKeyMethod[self.rColor](x, y)                              # type: ignore
         #endregion -----------------------------------------------------> Data
 
         #region --------------------------------------------------------> Plot
@@ -3703,7 +3629,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         )
         #------------------------------>
         for l in self.rVolLines:
-            self.dKeyMethod[l]()  # type: ignore
+            self.dKeyMethod[l]()                                                # type: ignore
         #------------------------------> Lock Scale or Set it manually
         if self.rVXRange and self.rVYRange:
             self.wPlot.dPlot['Vol'].rAxes.set_xlim(*self.rVXRange)
@@ -3801,12 +3727,15 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         return True
     #---
 
-    def AddProtLabel(self, draw=False, checkKey=False):
-        """
+    def AddProtLabel(self, draw=False, checkKey=False) -> bool:
+        """Add the protein label in the Volcano plot.
 
             Parameters
             ----------
-            
+            draw: bool
+                Update (True) or not (False) the canvas.
+            checkKey: bool
+                Avoid to draw the same key more than twice (True) or not.
 
             Returns
             -------
@@ -3986,10 +3915,10 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         for k,c in enumerate(self.rCI['Cond']):
             #------------------------------> FC values
             y = self.rDf.loc[self.rDf.index[[idxL]],idx[c,:,'FC']]
-            y = [0.0] + y.values.tolist()[0] # type: ignore
+            y = [0.0] + y.values.tolist()[0]                                    # type: ignore
             #------------------------------> Errors
             yError = self.rDf.loc[self.rDf.index[[idxL]],idx[c,:,'CI']]
-            yError = [0] + yError.values.tolist()[0] # type: ignore
+            yError = [0] + yError.values.tolist()[0]                            # type: ignore
             #------------------------------> Colors
             color = self.cColor['FCLines'][k%colorN]
             #------------------------------> Plot line
@@ -4024,7 +3953,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             bool
         """
         #region -------------------------------------------------------> Index
-        if self.rLCIdx < 0: # type: ignore
+        if self.rLCIdx < 0:                                                     # type: ignore
             #------------------------------> 
             self.wText.Freeze()
             self.wText.SetValue('')
@@ -4050,12 +3979,12 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         #------------------------------> P and FC values
         self.wText.AppendText('--> P and Log2(FC) values:\n\n')
         self.wText.AppendText(
-            self.GetDF4TextPFC(self.rLCIdx).to_string(index=False)) # type: ignore
+            self.GetDF4TextPFC(self.rLCIdx).to_string(index=False))             # type: ignore
         self.wText.AppendText('\n\n')
         #------------------------------> Ave and st for intensity values
         self.wText.AppendText(
             '--> Intensity values after data preparation:\n\n')
-        dfList = self.dKeyMethod[self.rCI['ControlT']](self.rLCIdx) # type: ignore
+        dfList = self.dKeyMethod[self.rCI['ControlT']](self.rLCIdx)             # type: ignore
         for df in dfList: # type: ignore
             self.wText.AppendText(df.to_string(index=False))
             self.wText.AppendText('\n\n')
@@ -4069,8 +3998,8 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 
     def GetDF4Text(
         self,
-        col: list[str],
-        rp: list[str],
+        col : list[str],
+        rp  : list[str],
         cond: list[str],
         ) -> pd.DataFrame:
         """Creates the empty dataframe to be used in GetDF4Text functions.
@@ -4110,7 +4039,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         #endregion -------------------------------------------------> Empty DF
 
         #region ----------------------------------------------------> Add Cond
-        dfo.loc[:,idx[:,'Conditions']] = cond # type: ignore
+        dfo.loc[:,idx[:,'Conditions']] = cond                                   # type: ignore
         #endregion -------------------------------------------------> Add Cond
 
         return dfo
@@ -4359,9 +4288,9 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             bool
         """
         #region ---------------------------------------------------> Variables
-        vXLim = 0
-        vYMin = 0
-        vYMax = 0
+        vXLim  = 0
+        vYMin  = 0
+        vYMax  = 0
         fcXMin = 0
         fcXMax = 0
         fcYMin = 0
@@ -4534,7 +4463,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
     #---
 
     def DrawLinesHypCurve(self) -> bool:
-        """
+        """Draw the Hyperbolic Curve in the Volcano Plot.
 
             Returns
             -------
@@ -4551,7 +4480,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
     #---
 
     def DrawLinesPLog2FC(self) -> bool:
-        """
+        """Draw the P - Log2FC lines in the Volcano Plot.
 
             Returns
             -------
@@ -4574,7 +4503,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
     #---
 
     def DrawLinesZScore(self) -> bool:
-        """
+        """Draw no lines. Needed for completion.
 
             Returns
             -------
@@ -4751,13 +4680,13 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 
     def UpdateResultWindow(
         self,
-        tDate: str='',
-        cond: str='', 
-        rp: str='',
-        corrP: Optional[bool]=None, 
+        tDate  : str='',
+        cond   : str='', 
+        rp     : str='',
+        corrP  : Optional[bool]=None, 
         showAll: Optional[bool]=None,
-        t0: Optional[float]=None, 
-        s0: Optional[float]=None
+        t0     : Optional[float]=None, 
+        s0     : Optional[float]=None
         ) -> bool:
         """Configure window to update Volcano and FC plots when date changes.
 
@@ -4861,7 +4790,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         #endregion ----------------------------------------------> Update Attr
 
         #region ---------------------------------------------------> Get Range
-        self.dKeyMethod[f'{mode} Set']() # type: ignore
+        self.dKeyMethod[f'{mode} Set']()                                        # type: ignore
         #endregion ------------------------------------------------> Get Range
 
         #region ---------------------------------------------------> Set Range
@@ -4963,10 +4892,10 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             bool
         """
         #region ---------------------------------------------------> 
-        data = self.rDf.iloc[:,0:2] # type: ignore
+        data = self.rDf.iloc[:,0:2]                                             # type: ignore
         data.insert(0, 'kbr', self.rDf.index.values.tolist())
         data = data.astype(str)
-        data = data.values.tolist() # type: ignore
+        data = data.values.tolist()                                             # type: ignore
         #endregion ------------------------------------------------> 
 
         #region -------------------------------------------------> Get New Sel
@@ -4979,7 +4908,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             title       = 'Select Proteins',
             tBtnLabel   = 'Add Protein',
             color       = mConfig.color['Zebra'],
-            tStLabel = [self.cLProtLAvail, self.cLProtLShow],
+            tStLabel    = [self.cLProtLAvail, self.cLProtLShow],
         )
         #------------------------------> Get the selected values
         if dlg.ShowModal():
@@ -5064,7 +4993,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
     #---
 
     def ClearSel(self) -> bool:
-        """
+        """Clear seelction.
 
             Returns
             -------
@@ -5075,7 +5004,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             self.wLC.wLCS.wLC.Select(self.rLCIdx, on=0)
             self.rLCIdx = None
             #------------------------------> 
-            self.rGreenP.remove() # type: ignore
+            self.rGreenP.remove()                                               # type: ignore
             self.rGreenP = None
             self.wPlot.dPlot['Vol'].rCanvas.draw()
             #------------------------------> 
@@ -5088,7 +5017,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
     #---
 
     def ClearLabel(self) -> bool:
-        """
+        """Clear Labels.
 
             Returns
             -------
@@ -5108,7 +5037,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
     #---
 
     def ClearAll(self) -> bool:
-        """
+        """Clear All selections.
 
             Returns
             -------
@@ -5156,40 +5085,6 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
     #endregion -----------------------------------------------> Manage Methods
 
     #region ---------------------------------------------------> Event Methods
-#     def OnVolChange(
-#         self, cond: str='', rp:str='', corrP: Optional[bool]=None) -> bool:
-#         """Update the Volcano plot.
-    
-#             Parameters
-#             ----------
-#             cond : str
-#                 Selected condition
-#             rp : str
-#                 Selected relevant point
-#             corrP : bool
-#                 Use corrected P values (True) or not (False)
-    
-#             Returns
-#             -------
-#             bool
-#         """
-#         print(cond, rp, corrP)
-#         #region --------------------------------------------> Update variables
-#         self.rCondC = cond if cond else self.rCondC
-#         self.rRpC   = rp if rp else self.rRpC
-#         self.rCorrP = corrP if corrP is not None else corrP
-#         #endregion -----------------------------------------> Update variables
-        
-#         #region ---------------------------------------------------------> Vol
-#         if self.rAutoFilter:
-#             self.UpdateDisplayedData()
-#         else:
-#             self.VolDraw()
-#         #endregion ------------------------------------------------------> Vol
-        
-#         return True
-#     #---
-
     def OnPick(self, event) -> bool:
         """Process a pick event in the volcano plot.
 
@@ -5294,35 +5189,35 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             df = self.rDf.loc[:,idx[:,:,'FC']]
         #------------------------------> 
         if choice0 == self.cLFFCUp:
-            mask = df.groupby(level=0, axis=1).apply(lambda x: (x > 0).all(axis=1)) # type: ignore
+            mask = df.groupby(level=0, axis=1).apply(lambda x: (x > 0).all(axis=1))                                                                                     # type: ignore
         elif choice0 == self.cLFFCDown:
-            mask = df.groupby(level=0, axis=1).apply(lambda x: (x < 0).all(axis=1)) # type: ignore
+            mask = df.groupby(level=0, axis=1).apply(lambda x: (x < 0).all(axis=1))                                                                                     # type: ignore
         elif choice0 == self.cLFFCNo:
-            mask = df.groupby(level=0, axis=1).apply(lambda x: ((x > -self.rT0*self.rS0) & (x < self.rT0*self.rS0)).all(axis=1)) # type: ignore
+            mask = df.groupby(level=0, axis=1).apply(lambda x: ((x > -self.rT0*self.rS0) & (x < self.rT0*self.rS0)).all(axis=1))                                        # type: ignore
         elif choice0 == self.cLFFCUpMon:
-            mask = df.groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_increasing) & (x > 0)).all(), axis=1)) # type: ignore
+            mask = df.groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_increasing) & (x > 0)).all(), axis=1))                                # type: ignore
         elif choice0 == self.cLFFCDownMon:
-            mask = df.groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_decreasing) & (x < 0)).all(), axis=1)) # type: ignore
+            mask = df.groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_decreasing) & (x < 0)).all(), axis=1))                                # type: ignore
         elif choice0 == self.cLFDiv:
-            maskUp = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_increasing) & (x > 0)).all(), axis=1)) # type: ignore
-            maskUp = maskUp.any(axis=1) # type: ignore
+            maskUp = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_increasing) & (x > 0)).all(), axis=1))   # type: ignore
+            maskUp = maskUp.any(axis=1)                                                                                                                                 # type: ignore
             maskDown = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_decreasing) & (x < 0)).all(), axis=1)) # type: ignore
-            maskDown = maskDown.any(axis=1) # type: ignore
+            maskDown = maskDown.any(axis=1)                                                                                                                             # type: ignore
         elif choice0 == self.cLFFCOpposite:
-            maskUp = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: (x > 0).all(axis=1)) # type: ignore
-            maskUp = maskUp.any(axis=1) # type: ignore
-            maskDown = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: (x < 0).all(axis=1)) # type: ignore
-            maskDown = maskDown.any(axis=1) # type: ignore
+            maskUp = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: (x > 0).all(axis=1))                                                        # type: ignore
+            maskUp = maskUp.any(axis=1)                                                                                                                                 # type: ignore
+            maskDown = self.rDf.loc[:,idx[:,:,'FC']].groupby(level=0, axis=1).apply(lambda x: (x < 0).all(axis=1))                                                      # type: ignore
+            maskDown = maskDown.any(axis=1)                                                                                                                             # type: ignore
         else:
             return False
         #------------------------------> 
         if choice0 not in [self.cLFDiv, self.cLFFCOpposite]:
             if choice1 == self.cLFCAny:
-                mask = mask.any(axis=1) # type: ignore
+                mask = mask.any(axis=1)                                         # type: ignore
             else:
-                mask = mask.all(axis=1) # type: ignore
+                mask = mask.all(axis=1)                                         # type: ignore
         else:
-            mask = pd.concat([maskUp, maskDown], axis=1).all(axis=1) # type: ignore
+            mask = pd.concat([maskUp, maskDown], axis=1).all(axis=1)            # type: ignore
         #------------------------------> 
         self.rDf = self.rDf[mask]
         #endregion -------------------------------------------------------> DF
@@ -5414,7 +5309,6 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             bool
         """
         #region ----------------------------------------------> Text Entry Dlg
-        print(gText)
         if gText:
             uText = gText
         else:
@@ -5469,8 +5363,8 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 
     def Filter_PValue(
         self,
-        gText: str='',
-        absB: Optional[bool]=None,
+        gText  : str='',
+        absB   : Optional[bool]=None,
         updateL: bool=True,
         ) -> bool:
         """Filter results by P value.
@@ -5579,11 +5473,11 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
                 )],
                 parent = self,
             )
-            #------------------------------> 
+            #------------------------------>
             if dlg.ShowModal():
                 #------------------------------>
                 uText = dlg.GetValue()[0]
-                #------------------------------> 
+                #------------------------------>
                 dlg.Destroy()
             else:
                 dlg.Destroy()
@@ -5661,7 +5555,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             bool
         """
         #region -------------------------------------------> Update Attributes
-        self.rDf = self.rData[self.rDateC]['DF'].copy()
+        self.rDf         = self.rData[self.rDateC]['DF'].copy()
         self.rFilterList = []
         self.wStatBar.SetStatusText('', 1)
         #endregion ----------------------------------------> Update Attributes
@@ -5754,7 +5648,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             -------
             bool
         """
-        self.cParent.rCopiedFilters = [x for x in self.rFilterList] # type: ignore
+        self.cParent.rCopiedFilters = [x for x in self.rFilterList]             # type: ignore
         return True
     #---
 
@@ -5766,7 +5660,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             True
         """
         #region ---------------------------------------------------> Copy
-        self.rFilterList = [x for x in self.cParent.rCopiedFilters] # type: ignore
+        self.rFilterList = [x for x in self.cParent.rCopiedFilters]             # type: ignore
         #endregion ------------------------------------------------> Copy
 
         #region ---------------------------------------------------> 
@@ -5779,11 +5673,11 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
     #---
 
     def FilterSave(self) -> bool:
-        """Save the filters
-    
+        """Save the filters.
+
             Returns
             -------
-            bool            
+            bool
         """
         #region ---------------------------------------------------> 
         filterDict = {x[0]: x[1:] for x in self.rFilterList}
@@ -5808,25 +5702,25 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             -------
             bool
         """
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         self.rFilterList = [
             [k]+v for k,v in self.rData[self.rDateC]['F'].items()]
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         autoF = self.rAutoFilter
         self.rAutoFilter = True
-        #------------------------------> 
+        #------------------------------>
         self.UpdateResultWindow()
-        #------------------------------> 
+        #------------------------------>
         self.rAutoFilter = autoF
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         self.wStatBar.SetStatusText('', 1)
         for k in self.rFilterList:
             self.StatusBarFilterText(k[2])
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
         return True
     #---
@@ -5839,8 +5733,8 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
 
         Parameters
         ----------
-        cParent: wx.Window
-            Parent of the window
+        parent: wx.Window
+            Parent of the window.
 
         Attributes
         ----------
@@ -5874,6 +5768,8 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
             Gel spot was selected (True) or not (False).
         rLanes: list[str]
             Name of the lanes.
+        rLCIdx: int
+            Row selected in the wx.ListCtrl.
         rObj: UMSAPFile
             Reference to the UMSAP file in the parent UMSAPCtrl window.
         rPeptide: str
@@ -5887,6 +5783,13 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
             Location of the Native Sequence in the Recombinant Sequence.
         rProtTarget: str
             Name of the Recombinant protein used in the analysis.
+        rRecSeq: dict
+            Keys are date and values the sequence of the recombinant protein.
+        rRecSeqC: str
+            Sequence of the recombinant protein for the current date.
+        rReqSeqColor: dict
+            Keys are color and values are sequences to highlight in the given
+            color.
         rRectsFrag: list[mpatches]
             Rectangles used in the Fragment plot.
         rRectsGel: list[mpatches]
@@ -5895,6 +5798,8 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
             Select Bands (True) or Lanes (False).
         rSpotSelLine: line
             Line to highlight the selected Gel spot.
+        rTextStyleDef: wx.TextAttr
+            Text Style for Sequence Highlight.
         rUpdateColors: bool
             Update Gel colors (True) or not (False).
     """
@@ -5924,23 +5829,14 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         self.rDateC         = self.rDate[0]
         self.rBands         = []
         self.rLanes         = []
-#         self.rRectsGel      = []
-#         self.rRectsFrag     = []
         self.rSelBands      = True
         self.rBlSelRect     = None
         self.rSpotSelLine   = None
-#         self.rFragSelLine   = None
         self.rBlSelC        = [None, None]
-#         self.rGelSelC       = [None, None]
-#         self.rFragSelC      = [None, None, None]
         self.rGelSpotPicked = False
         self.rUpdateColors  = False
         self.rAlpha         = None
-#         self.rProtDelta     = None
-#         self.rProtTarget    = None
         self.rRecSeq        = {}
-#         self.rRecSeqC       = ''
-#         self.rRecSeqColor   = {'Red':[],'Blue':{'Pept':[],'Spot':[],'Frag':[]}}
         self.rTextStyleDef  = wx.TextAttr(
             'Black', 'White', mConfig.font['SeqAlign'])
         #------------------------------> 
@@ -6074,7 +5970,7 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         #------------------------------> 
         self.SetFragmentAxis(showAll=tYLabel)
         #------------------------------> 
-        nc = len(self.cColor['Spot']) # type: ignore
+        nc = len(self.cColor['Spot'])                                           # type: ignore
         #------------------------------> 
         for k,v in enumerate(tKeys, start=1):
             for j,f in enumerate(self.rFragments[v]['Coord']):
@@ -6084,13 +5980,13 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
                     0.4,
                     picker    = True,
                     linewidth = self.cGelLineWidth,
-                    facecolor = self.cColor['Spot'][(tColor[k-1])%nc], # type: ignore
+                    facecolor = self.cColor['Spot'][(tColor[k-1])%nc],          # type: ignore
                     edgecolor = 'black',
                     label     = f'{tLabel[k-1]}.{j}',
                 ))
                 self.wPlot['Main'].rAxes.add_patch(self.rRectsFrag[-1])
         #------------------------------> 
-        self.DrawProtein(k+1) # type: ignore
+        self.DrawProtein(k+1)                                                   # type: ignore
         #------------------------------> 
         self.wPlot['Main'].ZoomResetSetValues()
         self.wPlot['Main'].rCanvas.draw()
@@ -6299,7 +6195,10 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
     #---
 
     def SetGelSpotColor(
-        self, nb: int, nl: int, showAll: bool=False,
+        self,
+        nb     : int,
+        nl     : int,
+        showAll: bool=False,
         ) -> str:
         """Get the color for each gel spot.
 
@@ -6323,7 +6222,7 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         c = (self.rDf.loc[:,(b,l,'Ptost')].isna().all() or
             not self.rFragments[f"{(b,l,'Ptost')}"]['Coord']
         )
-        nc = len(self.cColor['Spot'])
+        nc = len(self.cColor['Spot'])                                           # type: ignore
         #endregion ------------------------------------------------> Variables  
 
         #region -------------------------------------------------------> Color
@@ -6331,14 +6230,14 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
             return 'white'
         elif showAll:
             if self.rSelBands:
-                return self.cColor['Spot'][nb%nc]
+                return self.cColor['Spot'][nb%nc]                               # type: ignore
             else:
-                return self.cColor['Spot'][nl%nc]
+                return self.cColor['Spot'][nl%nc]                               # type: ignore
         else:
             if self.rSelBands:
-                return self.cColor['Spot'][nl%nc]
+                return self.cColor['Spot'][nl%nc]                               # type: ignore
             else:
-                return self.cColor['Spot'][nb%nc]
+                return self.cColor['Spot'][nb%nc]                               # type: ignore
         #endregion ----------------------------------------------------> Color
     #---
 
@@ -6463,14 +6362,14 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
             if self.rSelBands:
                 #------------------------------>
                 self.wPlot['Main'].rAxes.set_yticks(range(1, len(self.rLanes)+2))
-                self.wPlot['Main'].rAxes.set_yticklabels(self.rLanes+['Protein'])            
+                self.wPlot['Main'].rAxes.set_yticklabels(self.rLanes+['Protein'])
                 self.wPlot['Main'].rAxes.set_ylim(0.5, len(self.rLanes)+1.5)
                 #------------------------------> 
                 ymax = len(self.rLanes)+0.8
             else:
                 #------------------------------> 
                 self.wPlot['Main'].rAxes.set_yticks(range(1, len(self.rBands)+2))
-                self.wPlot['Main'].rAxes.set_yticklabels(self.rBands+['Protein'])   
+                self.wPlot['Main'].rAxes.set_yticklabels(self.rBands+['Protein'])
                 self.wPlot['Main'].rAxes.set_ylim(0.5, len(self.rBands)+1.5)
                 #------------------------------> 
                 ymax = len(self.rBands)+0.8
@@ -6623,7 +6522,7 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         #------------------------------> Keys
         tKeys = [(self.rBands[band], x, 'Ptost') for x in self.rLanes]
         #------------------------------> Info
-        infoDict = self.PrintLBGetInfo(tKeys)
+        infoDict = self.PrintLBGetInfo(tKeys)                                   # type: ignore
         #endregion -----------------------------------------------> Get Values
 
         #region -------------------------------------------------------> Clear
@@ -6669,7 +6568,7 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         #------------------------------> Keys
         tKeys = [(x, self.rLanes[lane], 'Ptost') for x in self.rBands]
         #------------------------------> Info
-        infoDict = self.PrintLBGetInfo(tKeys)
+        infoDict = self.PrintLBGetInfo(tKeys)                                   # type: ignore
         #endregion -----------------------------------------------> Get Values
 
         #region -------------------------------------------------------> Clear
@@ -6763,8 +6662,7 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         return True
     #---
 
-    def PrintFragmentText(
-        self, tKey: str, fragC: list[int]):
+    def PrintFragmentText(self, tKey: str, fragC: list[int]) -> bool:
         """Print information about a selected Fragment.
 
             Parameters
@@ -6822,7 +6720,7 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
     #---
 
     def PrintAllText(self) -> bool:
-        """
+        """Print text when the entire gel is selected.
 
             Returns
             -------
@@ -6861,13 +6759,14 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         return True
     #---
 
-    def PrintSeqPDF(self, fileP) -> bool:
-        """
-    
+    def PrintSeqPDF(self, fileP: Path) -> bool:
+        """Print sequences to a PDF.
+
             Parameters
             ----------
-            
-    
+            fileP: Path
+                Path to the PDF file.
+
             Returns
             -------
             bool
@@ -6909,7 +6808,7 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
             coord = self.SeqHighBL(bl=k)
             Story.append(Helper(coord, l, styles['Seq']))
             Story.append(Spacer(1, 18))
-        #------------------------------>     
+        #------------------------------>
         for k,b in enumerate(self.rBands):
             coord = self.SeqHighBL(bb=k)
             Story.append(Helper(coord, b, styles['Seq']))
@@ -7041,7 +6940,8 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
     #---
 
     def SeqHighSpot(
-        self, spot: Optional[list[int]]=None,
+        self,
+        spot: Optional[list[int]]=None,
         ) -> list[tuple[int, int]]:
         """Highlight the sequences in the selected Gel spot.
 
@@ -7056,7 +6956,7 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
             b,l = self.rGelSelC
         else:
             b,l = spot
-        tKey = f'{(self.rBands[b], self.rLanes[l], "Ptost")}'
+        tKey = f'{(self.rBands[b], self.rLanes[l], "Ptost")}'                   # type: ignore
         #endregion ------------------------------------------------> Variables
 
         return mMethod.MergeOverlappingFragments(
@@ -7064,7 +6964,8 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
     #---
 
     def SeqHighFrag(
-        self, frag: Optional[list[int]]=None,
+        self,
+        frag: Optional[list[int]]=None,
         ) -> list[tuple[int, int]]:
         """Highlight the sequences in the selected Fragment.
 
@@ -7079,7 +6980,7 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
             b,l,j = self.rFragSelC
         else:
             b,l,j = frag
-        tKey = f'{(self.rBands[b], self.rLanes[l], "Ptost")}' # type: ignore
+        tKey = f'{(self.rBands[b], self.rLanes[l], "Ptost")}'                   # type: ignore
         #endregion ------------------------------------------------> Variables
 
         return mMethod.MergeOverlappingFragments(
@@ -7087,7 +6988,9 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
     #---
 
     def SeqHighBL(
-        self, bb: Optional[int]=None, bl: Optional[int]=None,
+        self,
+        bb: Optional[int]=None,
+        bl: Optional[int]=None,
         ) -> list[tuple[int, int]]:
         """Highlight the sequences in the selected Band/Lane.
 
@@ -7103,9 +7006,9 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         #------------------------------> 
         if b is not None:
             bN = self.rBands[b]
-            tKey = [f'{(bN, l, "Ptost")}' for l in self.rLanes]
+            tKey = [f'{(bN, l, "Ptost")}' for l in self.rLanes]                 # type: ignore
         else:
-            lN = self.rLanes[l]
+            lN = self.rLanes[l]                                                 # type: ignore
             tKey = [f'{(b, lN, "Ptost")}' for b in self.rBands]
         #endregion ------------------------------------------------> Variables
 
@@ -7174,19 +7077,11 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
     #---
 
     def SeqExport(self) -> bool:
-        """Export the recombinant sequence 
-    
-            Parameters
-            ----------
-            
-    
+        """Export the recombinant sequence alignments.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ---------------------------------------------------> wx.Dialog
         dlg = DialogFileSelect('save', mConfig.elPDF, parent=self)
@@ -7201,23 +7096,20 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
     #---
 
     def GetPDFPrintSeq(self, region:list[tuple[int,int]]) -> str:
-        """
-    
+        """Get the correct colors for the sequence.
+
             Parameters
             ----------
-            
-    
+            region: list[tuple[int, int]]
+                Sequence regions to highlight.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            str
         """
         #region ---------------------------------------------------> Variables
         black = []
-        blue = []
+        blue  = []
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> Parts
@@ -7260,33 +7152,33 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
             ----------
             plot: bool
                 Redraw the canvas.
-    
+
             Returns
             -------
             bool
         """
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         self.rPeptide = None
-        self.rLCIdx = None
+        self.rLCIdx   = None
         self.rRecSeqColor['Blue']['Pept'] = []
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         if (rID := self.wLC.wLCS.wLC.GetFirstSelected()) > -1:
             self.wLC.wLCS.wLC.Select(rID, on=0)
         else:
             pass
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         for r in self.rRectsFrag:
             r.set_linewidth(self.cGelLineWidth)
         
         for r in self.rRectsGel:
             r.set_linewidth(self.cGelLineWidth)
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         if plot:
             self.wPlot['Main'].rCanvas.draw()
             self.wPlot['Sec'].rCanvas.draw()
@@ -7328,9 +7220,9 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
                 #------------------------------> To test for showAll
                 if any(self.rGelSelC):
                     if self.rSelBands:
-                        self.PrintBText(self.rBlSelC[0])
+                        self.PrintBText(self.rBlSelC[0])                        # type: ignore
                     else:
-                        self.PrintLText(self.rBlSelC[1])
+                        self.PrintLText(self.rBlSelC[1])                        # type: ignore
                 else:
                     pass
             else:
@@ -7377,9 +7269,9 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
                 self.wText.Clear()
                 #------------------------------> 
                 if self.rSelBands:
-                    self.PrintBText(self.rBlSelC[0])
+                    self.PrintBText(self.rBlSelC[0])                            # type: ignore
                 else:
-                    self.PrintLText(self.rBlSelC[1])
+                    self.PrintLText(self.rBlSelC[1])                            # type: ignore
             else:
                 pass
             #------------------------------>
@@ -7696,14 +7588,52 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
 class WindowResTarProt(BaseWindowResultListText2PlotFragments):
     """Plot the results of a Targeted Proteolysis analysis.
 
-#         Parameters
-#         ----------
-#         cParent: wx.Window
-#             Parent of the window
-    
-#         Attributes
-#         ----------
-#     """
+        Parameters
+        ----------
+        parent: wx.Window
+            Parent of the window.
+
+        Attributes
+        ----------
+        rAlpha: float
+            Significance level of the Analysis.
+        rCtrl:
+        rData: dict
+            Keys are dates and values the data for the plot.
+        rDate: list[str]
+            Dates for the analysis
+        rDateC: str
+            Current Date.
+        rDf: pd.DataFrame
+            Copy of the data used to plot
+        rExp: list[str]
+            Experiments in the analysis.
+        rFragments: dict
+            Dict with the info for the fragments. See mMethod.Fragments.
+        rFragSelC: list[band, lane, fragment]
+            Coordinates for the currently selected fragment. 0 based.
+        rFragSelLine: matplotlib line
+            Line to highlight the currently selected fragment.
+        rIdxP: pd.IndexSlice
+            To access the P columns in the data frame.
+        rLCIdx: int
+            Row selected in the wx.ListCtrl.
+        rNatSeqC: str
+            Sequence of the current native protein.
+        rObj: UMSAPFile
+            Reference to the UMSAP file in the parent UMSAPCtrl window.
+        rPeptide: str
+            Sequence of the selected peptide in the wx.ListCtrl.
+        rProtLength: int
+            Length of hte Recombinant Protein used in the analysis.
+        rProtLoc: list[int, int]
+            Location of the Native Sequence in the Recombinant Sequence.
+        rRecSeq: dict
+            Keys are date and values a list with the sequence of the recombinant
+            and native protein.
+        rRecSeqC: list[str]
+            Sequence of the recombinant and native protein for the current date.
+     """
     #region -----------------------------------------------------> Class setup
     cName    = mConfig.nwTarProt
     cSection = mConfig.nmTarProt
@@ -7729,20 +7659,8 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
         #------------------------------>
         self.ReportPlotDataError()
         #------------------------------>
-        self.rDateC         = self.rDate[0]
-#         self.rAlpha       = None
-#         self.rFragments   = None
-#         self.rFragSelLine = None
-#         self.rFragSelC    = [None, None, None]
-#         self.rRectsFrag   = []
-#         self.rProtLoc     = None
-#         self.rProtLength  = None
-#         self.rExp         = None
-#         self.rCtrl        = None
-#         self.rIdxP        = None
-#         self.rPeptide     = None
-        self.rRecSeq      = {}
-#         self.rRecSeqC     = ''
+        self.rDateC  = self.rDate[0]
+        self.rRecSeq = {}
         #------------------------------> 
         super().__init__(parent, menuData=menuData)
         #------------------------------> 
@@ -7922,13 +7840,8 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
         return True
     #---
 
-    def SetFragmentAxis(self, showAll=False) -> bool:
+    def SetFragmentAxis(self) -> bool:
         """Set the axis for the plot showing the fragments.
-
-            Parameters
-            ----------
-            showAll: bool
-                Show all fragments or not. Default is False.
 
             Returns
             -------
@@ -8001,8 +7914,7 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 
         #region ---------------------------------------------------> Intensity
         #------------------------------> Variables
-        nExp = len(self.rExp)
-        nc = len(self.cColor['Spot'])
+        nc = len(self.cColor['Spot'])                                           # type: ignore
         #------------------------------> Clear Plot
         self.wPlot['Sec'].rAxes.clear()
         #------------------------------> Axis
@@ -8021,11 +7933,11 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
             intN = len(intL)
             #------------------------------> Color, x & y
             if k == 1:
-                color = self.cColor['Ctrl']
+                color = self.cColor['Ctrl']                                     # type: ignore
                 x = [1]
                 y = [sum(intL)/intN]
             else:
-                color = self.cColor['Spot'][(k-2)%nc]
+                color = self.cColor['Spot'][(k-2)%nc]                           # type: ignore
             #------------------------------> Ave
             if P <= self.rAlpha:
                 x.append(k)
@@ -8079,7 +7991,10 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
     #---
 
     def PrintFragmentText(
-        self, tKey: str, fragC: list[int]):
+        self,
+        tKey : str,
+        fragC: list[int],
+        ) -> bool:
         """Print information about a selected Fragment.
 
             Parameters
@@ -8137,19 +8052,11 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
     #---
 
     def SeqExport(self) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
-    
+        """Export the sequence alignment.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ---------------------------------------------------> dlg
         dlg = DialogFABtnText(
@@ -8179,9 +8086,9 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
                 self.rDf, 
                 self.rAlpha, 
                 self.rRecSeqC, 
-                self.rNatSeqC, 
+                self.rNatSeqC,                                                  # type: ignore
                 fileP, 
-                length
+                length,                                                         # type: ignore
             )
         except Exception as e:
             msg = 'Export of Sequence Alignments failed.'
@@ -8249,7 +8156,10 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
         if self.rFragSelLine is not None:
             self.rFragSelLine[0].remove()
             self.rFragSelLine = None
-            self.wPlot['Main'].rCanvas.draw()
+            if plot:
+                self.wPlot['Main'].rCanvas.draw()
+            else:
+                pass
         #endregion ------------------------------------------------> 
 
         #region ---------------------------------------------------> 
@@ -8289,19 +8199,11 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
     #---
 
     def AANew(self) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
-    
+        """Perform a new AA analysis.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ---------------------------------------------------> dlg
         dlg = DialogUserInputText(
@@ -8343,9 +8245,9 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
         self.rObj.Save()
         #------------------------------> Refresh
         #--------------> UMSAPControl
-        self.cParent.UpdateFileContent() # type: ignore
+        self.cParent.UpdateFileContent()                                        # type: ignore
         #--------------> TarProt
-        self.rObj = self.cParent.rObj # type: ignore
+        self.rObj = self.cParent.rObj                                           # type: ignore
         self.rData = self.rObj.dConfigure[self.cSection]()
         #--------------> Menu
         _, menuData = self.SetDateMenuDate()
@@ -8360,40 +8262,34 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
     #---
 
     def AASelect(self, aa:str) -> bool:
-        """
-    
+        """Show an AA analysis.
+
             Parameters
             ----------
-            
-    
+            aa: str
+                Date for the analysis
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
-        self.cParent.rWindow[self.cSection]['FA'].append(
+        self.cParent.rWindow[self.cSection]['FA'].append(                       # type: ignore
             WindowResAA(
                 self, self.rDateC, aa, self.rData[self.rDateC]['AA'][aa]))
         return True
     #---
 
     def HistSelect(self, hist:str) -> bool:
-        """
-    
+        """Show a Histogram.
+
             Parameters
             ----------
-            
-    
+            hist: str
+                Selected date.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ---------------------------------------------------> 
         self.cParent.rWindow[self.cSection]['FA'].append(                       # type: ignore
@@ -8405,19 +8301,11 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
     #---
 
     def HistNew(self) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
-    
+        """Create a new histogram.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ---------------------------------------------------> dlg
         dlg = DialogUserInputText(
@@ -8478,19 +8366,11 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
     #---
 
     def CpR(self) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
-    
+        """Show the Cleavage per Residue results.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ---------------------------------------------------> 
         self.cParent.rWindow[self.cSection]['FA'].append(                       # type: ignore
@@ -8501,35 +8381,33 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
     #---
 
     def PDBMap(self) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
-    
+        """Map results to a PDB.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         def Helper(pdbObj, tExp, tAlign, tDF, name):
-            """
+            """Writes to file
         
                 Parameters
                 ----------
+                pdbObj: mFile.PDBFile
+                    PDB Object
+                tExp: str
+                    Current experiment
+                tAlign: BioPython alignment
+                    Sequence alignment
+                tDF: pd.DataFrame
+                    To get the beta values
+                name: str
+                    Part of the file name
                 
-        
                 Returns
                 -------
-                
-        
-                Raise
-                -----
-                
+                bool
             """
+            #region --------------------------------------------------------> 
             idx = pd.IndexSlice
             #------------------------------>
             for e in tExp:
@@ -8554,6 +8432,9 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
                 pdbObj.SetBeta(pdbObj.rChain[0], betaDict)
                 pdbObj.WritePDB(
                     pdbO/f'{name[0]} - {e} - {name[1]}.pdb', pdbObj.rChain[0])
+            #endregion -----------------------------------------------------> 
+
+            return True
         #---
         #region ---------------------------------------------------> dlg
         dlg = DialogFA2Btn(
@@ -8596,19 +8477,11 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
     #---
 
     def CEvol(self) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
-    
+        """Show the Cleavage Evolution results.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         self.cParent.rWindow[self.cSection]['FA'].append(                       # type: ignore
             WindowResCEvol(self, self.rDateC, self.rData[self.rDateC]['CEvol']))
