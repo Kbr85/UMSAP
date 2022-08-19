@@ -5401,9 +5401,6 @@ class PaneResControlExpConfProtProf(BaseResControlExpConf):
     ]
     #------------------------------> 
     cLCtrlType = mConfig.lStCtrlType
-    #------------------------------> Error messages
-    # mNoCondRP = (
-    #     f'Both {cStLabel[1][:-1]} and {cStLabel[2][:-1]} must be defined.')
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -5943,8 +5940,6 @@ class PaneResControlExpConfLimProt(BaseResControlExpConf):
         f'Set the number of {cStLabel[0]}.',
         f'Set the number of {cStLabel[1]}.',
     ]  
-    #------------------------------> Error messages
-    # mNoBL = (f"Both {cStLabel[0]} and {cStLabel[1]} must be defined.")
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -6163,8 +6158,6 @@ class PaneResControlExpConfTarProt(BaseResControlExpConf):
     cLabelText = ['Exp']
     #------------------------------> Tooltips
     cTTTotalField = [f'Set the number of {cStLabel[0]}.']
-    #------------------------------> Error messages
-    # mNoBL = f'{cStLabel[1][:-1]} must be defined.'
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
