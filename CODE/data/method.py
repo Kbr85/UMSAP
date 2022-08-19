@@ -21,7 +21,7 @@ import traceback
 from datetime import datetime
 from operator import itemgetter
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
 
 import numpy as np
 import matplotlib as mpl
@@ -1133,7 +1133,7 @@ def CorrA(
     rDO       : dict,
     *args,
     resetIndex: bool=True,
-    ) -> tuple[dict, str, Union[Exception, None]]:
+    ) -> tuple[dict, str, Optional[Exception]]:
     """Perform a Correlation Analysis.
 
         Parameters
@@ -1196,7 +1196,7 @@ def ProtProf(
     rDO       : dict,
     rDExtra   : dict,
     resetIndex: bool=True,
-    ) -> tuple[dict, str, Union[Exception, None]]:
+    ) -> tuple[dict, str, Optional[Exception]]:
     """Perform a Proteome Profiling Analysis.
 
         Parameters
@@ -1543,6 +1543,315 @@ def ProtProf(
     dictO['dfR'] = dfR
     return (dictO, '', None)
     #endregion ------------------------------------------------> 
+#---
+
+
+def NCResNumbers(
+    dfR        : pd.DataFrame,
+    rDO        : dict,
+    rSeqFileObj: 'mFile.FastaFile',
+    seqNat     : bool=True
+    ) -> tuple[pd.DataFrame, str, Optional[Exception]]:
+        """Find the residue numbers for the peptides in the sequence of the 
+            Recombinant and Native protein.
+
+            Parameters
+            ----------
+            seqNat: bool
+                Calculate N and C residue numbers also for the Native protein
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Assumes child class has the following attributes:
+            - seqFileObj: mFile.FastaFile
+                Object with the sequence of the Recombinant and Native protein.
+            - do: dict with at least the following key - values pairs
+                {
+                    'df' : {
+                        'SeqCol' : int,
+                    },
+                    'dfo' : {
+                        'NC' : list[int],
+                        'NCF': list[int],
+                    },
+                }
+        """
+        #region --------------------------------------------> Helper Functions
+        def NCTerm(
+            row    : list[str],
+            seqObj : mFile.FastaFile,
+            seqType: str,
+            ) -> tuple[int, int]:
+            """Get the N and C terminal residue numbers for a given peptide.
+
+                Parameters
+                ----------
+                row: list[str]
+                    List with two elements. The Sequence is in index 0.
+                seqObj : mFile.FastaFile
+                    Object with the protein sequence and the method to search
+                    the peptide sequence.
+                seqType : str
+                    For the error message.
+
+                Returns
+                -------
+                (Nterm, Cterm)
+            """
+            #region -----------------------------------------------> Find pept
+            nc = seqObj.FindSeq(row[0])
+            #endregion --------------------------------------------> Find pept
+
+            #region ------------------------------------------------> Check ok
+            if nc[0] != -1:
+                return nc
+            else:
+                msg = mConfig.mSeqPeptNotFound.format(row[0], seqType)
+                raise mException.ExecutionError(msg)
+            #endregion ---------------------------------------------> Check ok
+        #---
+        #endregion -----------------------------------------> Helper Functions
+
+        #region -----------------------------------------------------> Rec Seq
+        try:
+            dfR.iloc[:,rDO['dfo']['NC']] = dfR.iloc[
+                :,[rDO['df']['SeqCol'], 1]].apply(
+                    NCTerm, 
+                    axis        = 1,
+                    raw         = True,
+                    result_type = 'expand',
+                    args        = (rSeqFileObj, 'Recombinant'),
+                )
+        except mException.ExecutionError as e:
+            return (pd.DataFrame(), str(e), e)
+        except Exception as e:
+            return (pd.DataFrame(), mConfig.mUnexpectedError, e)
+        #endregion --------------------------------------------------> Rec Seq
+
+        #region -----------------------------------------------------> Nat Seq
+        #------------------------------> 
+        if seqNat and rSeqFileObj.rSeqNat:                                 # type: ignore
+            #------------------------------> 
+            delta = rSeqFileObj.GetSelfDelta()                             # type: ignore
+            #------------------------------> 
+            a = dfR.iloc[:,rDO['dfo']['NC']] + delta
+            dfR.iloc[:,rDO['dfo']['NCF']] = a
+            #------------------------------> 
+            m = dfR.iloc[:,rDO['dfo']['NCF']] > 0
+            a = dfR.iloc[:,rDO['dfo']['NCF']].where(m, np.nan)
+            a = a.astype('int')
+            dfR.iloc[:,rDO['dfo']['NCF']] = a
+        else:
+            pass
+        #endregion --------------------------------------------------> Nat Seq
+
+        return (dfR, '', None)
+    #---
+
+
+def LimProt(
+    df        : pd.DataFrame,
+    rDO       : dict,
+    rDExtra   : dict,
+    resetIndex: bool=True,
+    ) -> tuple[dict, str, Optional[Exception]]:
+    """Perform a Limited Proteolysis analysis.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            DataFrame read from CSV file.
+        rDO: dict
+            rDO dictionary from the PrepareRun step of the analysis.
+        rDExtra: dict
+            Extra parameters.
+        resetIndex: bool
+            Reset index of dfS (True) or not (False). Default is True.
+
+        Returns
+        -------
+        tuple:
+            -   (
+                    {
+                        'dfI' : pd.DataFrame,
+                        'dfF' : pd.DataFrame,
+                        'dfT' : pd.DataFrame,
+                        'dfN' : pd.DataFrame,
+                        'dfIm': pd.DataFrame,
+                        'dfTP': pd.DataFrame,
+                        'dfE' : pd.DataFrame,
+                        'dfS' : pd.DataFrame,
+                        'dfR' : pd.DataFrame,
+                    },
+                    '',
+                    None
+                )                                  when everything went fine.
+            -   ({}, 'Error message', Exception)   when something went wrong.
+    """
+    #region ------------------------------------------------> Helper Functions
+    def EmptyDFR() -> 'pd.DataFrame':
+        """Creates the empty df for the results.
+
+            Returns
+            -------
+            pd.DataFrame
+        """
+        #region -------------------------------------------------------> Index
+        #------------------------------> 
+        aL = rDExtra['cLDFFirstThree']
+        bL = rDExtra['cLDFFirstThree']
+        cL = rDExtra['cLDFFirstThree']
+        #------------------------------> 
+        n = len(rDExtra['cLDFThirdLevel'])
+        #------------------------------> 
+        for b in rDO['Band']:
+            for l in rDO['Lane']:
+                aL = aL + n*[b]
+                bL = bL + n*[l]
+                cL = cL + rDExtra['cLDFThirdLevel']
+        #------------------------------> 
+        idx = pd.MultiIndex.from_arrays([aL[:], bL[:], cL[:]])
+        #endregion ----------------------------------------------------> Index
+
+        #region ----------------------------------------------------> Empty DF
+        df = pd.DataFrame(
+            np.nan, columns=idx, index=range(dfS.shape[0]), # type: ignore
+        )
+        #endregion -------------------------------------------------> Empty DF
+
+        #region -------------------------------------------------> Seq & Score
+        df[(aL[0], bL[0], cL[0])] = dfS.iloc[:,0]
+        df[(aL[1], bL[1], cL[1])] = dfS.iloc[:,2]
+        #endregion ----------------------------------------------> Seq & Score
+
+        return df
+    #---
+
+    def CalcOutData(
+        bN  : str,
+        lN  : str,
+        colC: list[int],
+        colD: list[int],
+        ) -> bool:
+        """Performed the tost test.
+
+            Parameters
+            ----------
+            bN: str
+                Band name.
+            lN : str
+                Lane name.
+            colC : list int
+                Column numbers of the control.
+            colD : list int
+                Column numbers of the gel spot.
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------> Delta and TOST
+        a = mStatistic.Test_tost(
+            dfS, 
+            colC, 
+            colD, 
+            sample = rDO['Sample'],
+            delta  = dfR[('Delta', 'Delta', 'Delta')],
+            alpha  = rDO['Alpha'],
+        ) 
+        dfR[(bN, lN, 'Ptost')] = a['P'].to_numpy()
+        #endregion -------------------------------------------> Delta and TOST
+
+        return True
+    #---
+    #endregion ---------------------------------------------> Helper Functions
+
+    #region ------------------------------------------------> Data Preparation
+    tOut = mStatistic.DataPreparation(df, rDO, resetIndex=resetIndex)
+    if tOut[0]:
+        dfS = tOut[0]['dfS']
+    else:
+        return tOut
+    #endregion ---------------------------------------------> Data Preparation
+
+    #region --------------------------------------------------------> Analysis
+    #------------------------------> Empty dfR
+    dfR = EmptyDFR()
+    #------------------------------> N, C Res Num
+    dfR, msgError, tException = NCResNumbers(
+        dfR, rDO, rDExtra['rSeqFileObj'], seqNat=True)
+    if dfR.empty:
+        return ({}, msgError, tException)
+    else:
+        pass
+    #------------------------------> Control Columns
+    colC  = rDO['df']['ResCtrl'][0][0]
+    #------------------------------> Delta
+    if rDO['Theta'] is not None:
+        delta = rDO['Theta']
+    else:
+        delta = mStatistic.Test_tost_delta(
+            dfS.iloc[:,colC], 
+            rDO['Alpha'],
+            rDO['Beta'],
+            rDO['Gamma'], 
+            deltaMax = rDO['ThetaMax'],
+        )
+    #------------------------------>
+    dfR[('Delta', 'Delta', 'Delta')] = delta
+    #------------------------------> Calculate
+    for b, bN in enumerate(rDO['Band']):
+        for l, lN in enumerate(rDO['Lane']):
+            #------------------------------> Control & Data Column
+            colD = rDO['df']['ResCtrl'][b+1][l]
+            #------------------------------> Calculate data
+            if colD:
+                try:
+                    CalcOutData(bN, lN, colC, colD)
+                except Exception as e:
+                    msg = (f'Calculation of the Limited Proteolysis data for '
+                           f'point {bN} - {lN} failed.')
+                    return ({}, msg, e)
+            else:
+                pass
+    #endregion -----------------------------------------------------> Analysis
+
+    #region -------------------------------------------------> Check P < a
+    idx = pd.IndexSlice
+    if (dfR.loc[:,idx[:,:,'Ptost']] < rDO['Alpha']).any().any():
+        pass
+    else:
+        msg = ('There were no peptides detected in the gel '
+            'spots with intensity values equivalent to the intensity '
+            'values in the control spot. You may run the analysis again '
+            'with different values for the configuration options.')
+        return ({}, msg, None)
+    #endregion ----------------------------------------------> Check P < a
+
+    #region --------------------------------------------------------> Sort
+    dfR = dfR.sort_values(
+        by=[('Nterm', 'Nterm', 'Nterm'),('Cterm', 'Cterm', 'Cterm')]            # type: ignore
+    )
+    dfR = dfR.reset_index(drop=True)
+    #endregion -----------------------------------------------------> Sort
+
+    #region --------------------------------------------------------> Print
+    if mConfig.development:
+        print('dfR.shape: ', dfR.shape)
+        print('')
+        print(dfR.head())
+        print('')
+    else:
+        pass
+    #endregion -----------------------------------------------------> Print
+
+    dictO = tOut[0]
+    dictO['dfR'] = dfR
+    return (dictO, '', None)
 #---
 
 

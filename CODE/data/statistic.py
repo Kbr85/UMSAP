@@ -140,7 +140,7 @@ def DataPreparation(
     rDO       : dict,
     *args,
     resetIndex: bool=True,
-    ) -> tuple[dict, str, Union[Exception, None]]:
+    ) -> tuple[dict, str, Optional[Exception]]:
     """Perform the data preparation steps.
 
         Parameters

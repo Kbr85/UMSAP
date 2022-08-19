@@ -109,9 +109,9 @@ class SplashWindow(wx.adv.SplashScreen):
         """
         #region	-----------------------------------------------------> Imports
         import config.config as mConfig
-        import data.file as mFile
-        import gui.menu as mMenu
-        import gui.window as mWindow
+        import data.file     as mFile
+        import gui.menu      as mMenu
+        import gui.window    as mWindow
         #endregion---------------------------------------------------> Imports
 
         #region -------------------------------------------------------> Fonts

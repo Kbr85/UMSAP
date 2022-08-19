@@ -42,10 +42,11 @@ import gui.window as mWindow
 
 
 #region ---------------------------------------------------> 
-AnalysisMethod = {
+ANALYSIS_METHOD = {
     mConfig.npCorrA   : mMethod.CorrA,
     mConfig.npDataPrep: mStatistic.DataPreparation,
     mConfig.npProtProf: mMethod.ProtProf,
+    mConfig.npLimProt : mMethod.LimProt,
 }
 #endregion ------------------------------------------------> 
 
@@ -1187,7 +1188,7 @@ class BaseConfPanel(
         msgStep = self.cLPdRun + self.cLPdRunText
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------>
-        dfDict, self.rMsgError, self.rException = AnalysisMethod[self.cName](
+        dfDict, self.rMsgError, self.rException = ANALYSIS_METHOD[self.cName](
             self.rIFileObj.rDf, self.rDO, self.rDExtra)                         # type: ignore
         #------------------------------>
         if dfDict:
@@ -1547,119 +1548,6 @@ class BaseConfPanelMod2(BaseConfPanelMod):
         #endregion ----------------------------------------------> Check Input
     #---
     #endregion -----------------------------------------------> Instance setup
-
-    #region ---------------------------------------------------> Class methods
-    def NCResNumbers(self, seqNat: bool=True) -> bool:
-        """Find the residue numbers for the peptides in the sequence of the 
-            Recombinant and Native protein.
-
-            Parameters
-            ----------
-            seqNat: bool
-                Calculate N and C residue numbers also for the Native protein
-
-            Returns
-            -------
-            bool
-
-            Notes
-            -----
-            Assumes child class has the following attributes:
-            - seqFileObj: mFile.FastaFile
-                Object with the sequence of the Recombinant and Native protein.
-            - do: dict with at least the following key - values pairs
-                {
-                    'df' : {
-                        'SeqCol' : int,
-                    },
-                    'dfo' : {
-                        'NC' : list[int],
-                        'NCF': list[int],
-                    },
-                }
-        """
-        #region -----------------------------------------------------> Rec Seq
-        #------------------------------> 
-        msgStep = (f'{self.cLPdRun} Calculating output data - N & C terminal '
-            f'residue numbers I')
-        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------> 
-        try:
-            self.dfR.iloc[:,self.rDO['dfo']['NC']] = self.dfR.iloc[
-                :,[self.rDO['df']['SeqCol'], 1]].apply(
-                    self.NCTerm, 
-                    axis        = 1,
-                    raw         = True,
-                    result_type = 'expand',
-                    args        = (self.rSeqFileObj, 'Recombinant'),
-                )
-        except mException.ExecutionError:
-            return False
-        except Exception as e:
-            self.rMsgError  = mConfig.mUnexpectedError
-            self.rException = e
-            return False
-        #endregion --------------------------------------------------> Rec Seq
-
-        #region -----------------------------------------------------> Nat Seq
-        #------------------------------> 
-        msgStep = (f'{self.cLPdRun} Calculating output data - N & C terminal '
-            f'residue numbers II')
-        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------> 
-        if seqNat and self.rSeqFileObj.rSeqNat:                                 # type: ignore
-            #------------------------------> 
-            delta = self.rSeqFileObj.GetSelfDelta()                             # type: ignore
-            #------------------------------> 
-            a = self.dfR.iloc[:,self.rDO['dfo']['NC']] + delta
-            self.dfR.iloc[:,self.rDO['dfo']['NCF']] = a
-            #------------------------------> 
-            m = self.dfR.iloc[:,self.rDO['dfo']['NCF']] > 0
-            a = self.dfR.iloc[:,self.rDO['dfo']['NCF']].where(m, np.nan)
-            a = a.astype('int')
-            self.dfR.iloc[:,self.rDO['dfo']['NCF']] = a
-        else:
-            pass
-        #endregion --------------------------------------------------> Nat Seq
-
-        return True
-    #---
-
-    def NCTerm(
-        self,
-        row    : list[str],
-        seqObj : mFile.FastaFile,
-        seqType: str,
-        ) -> tuple[int, int]:
-        """Get the N and C terminal residue numbers for a given peptide.
-
-            Parameters
-            ----------
-            row: list[str]
-                List with two elements. The Sequence is in index 0.
-            seqObj : mFile.FastaFile
-                Object with the protein sequence and the method to search the 
-                peptide sequence.
-            seqType : str
-                For the error message.
-
-            Returns
-            -------
-            (Nterm, Cterm)
-        """
-        #region ---------------------------------------------------> Find pept
-        nc = seqObj.FindSeq(row[0])
-        #endregion ------------------------------------------------> Find pept
-
-        #region ----------------------------------------------------> Check ok
-        if nc[0] != -1:
-            return nc
-        else:
-            self.rMsgError = mConfig.mSeqPeptNotFound.format(row[0], seqType)
-            raise mException.ExecutionError(self.rMsgError)
-        #endregion -------------------------------------------------> Check ok
-    #---
-    #endregion ------------------------------------------------> Class methods
 #---
 
 
@@ -4217,6 +4105,7 @@ class PaneLimProt(BaseConfPanelMod2):
     cLCtrlName     = mConfig.lStCtrlName
     cLDFFirstThree = mConfig.dfcolLimProtFirstPart
     cLDFThirdLevel = mConfig.dfcolLimProtCLevel
+    cLPdRunText    = 'Performing Limited Proteolysis analysis' 
     #------------------------------> Choices
     cOSample = mConfig.oSamples
     #------------------------------> Hints
@@ -4240,6 +4129,10 @@ class PaneLimProt(BaseConfPanelMod2):
     cTitlePD     = f"Running {mConfig.nmLimProt} Analysis"
     cGaugePD     = 44
     rMainData    = '{}_{}-LimitedProteolysis-Data.txt'
+    rDExtra: dict = {
+        'cLDFFirstThree' : cLDFFirstThree,
+        'cLDFThirdLevel' : cLDFThirdLevel,
+    }
     #------------------------------> Optional configuration
     cTTHelp = mConfig.ttBtnHelp.format(cURL)
     #endregion --------------------------------------------------> Class setup
@@ -4541,79 +4434,6 @@ class PaneLimProt(BaseConfPanelMod2):
 
         return True
     #---
-
-    def EmptyDFR(self) -> 'pd.DataFrame':
-        """Creates the empty df for the results.
-
-            Returns
-            -------
-            pd.DataFrame
-        """
-        #region -------------------------------------------------------> Index
-        #------------------------------> 
-        aL = self.cLDFFirstThree
-        bL = self.cLDFFirstThree
-        cL = self.cLDFFirstThree
-        #------------------------------> 
-        n = len(self.cLDFThirdLevel)
-        #------------------------------> 
-        for b in self.rDO['Band']:
-            for l in self.rDO['Lane']:
-                aL = aL + n*[b]
-                bL = bL + n*[l]
-                cL = cL + self.cLDFThirdLevel
-        #------------------------------> 
-        idx = pd.MultiIndex.from_arrays([aL[:], bL[:], cL[:]])
-        #endregion ----------------------------------------------------> Index
-
-        #region ----------------------------------------------------> Empty DF
-        df = pd.DataFrame(
-            np.nan, columns=idx, index=range(self.dfS.shape[0]), # type: ignore
-        )
-        #endregion -------------------------------------------------> Empty DF
-
-        #region -------------------------------------------------> Seq & Score
-        df[(aL[0], bL[0], cL[0])] = self.dfS.iloc[:,0]
-        df[(aL[1], bL[1], cL[1])] = self.dfS.iloc[:,2]
-        #endregion ----------------------------------------------> Seq & Score
-
-        return df
-    #---
-
-    def CalcOutData(
-        self, bN: str,  lN: str, colC: list[int], colD: list[int],
-        ) -> bool:
-        """Performed the tost test
-    
-            Parameters
-            ----------
-            bN: str
-                Band name
-            lN : str
-                Lane name
-            colC : list int
-                Column numbers of the control
-            colD : list int
-                Column numbers of the gel spot
-
-            Returns
-            -------
-            bool
-        """
-        #region ----------------------------------------------> Delta and TOST
-        a = mStatistic.Test_tost(
-            self.dfS, 
-            colC, 
-            colD, 
-            sample = self.rDO['Sample'],
-            delta  = self.dfR[('Delta', 'Delta', 'Delta')],
-            alpha  = self.rDO['Alpha'],
-        ) 
-        self.dfR[(bN, lN, 'Ptost')] = a['P'].to_numpy()
-        #endregion -------------------------------------------> Delta and TOST
-
-        return True
-    #---
     #endregion ------------------------------------------------> Class Event
 
     #region ---------------------------------------------------> Run Method
@@ -4810,129 +4630,21 @@ class PaneLimProt(BaseConfPanelMod2):
 
         return True
     #---
-
+    
     def RunAnalysis(self) -> bool:
-        """Performs the equivalence tests.
+        """Run the analysis.
 
             Returns
             -------
             bool
         """
-        #region -------------------------------------------------> Print d, do
-        if mConfig.development:
-            print('')
-            print('self.d:')
-            for k,v in self.rDI.items():
-                print(str(k)+': '+str(v))
-            print('')
-            print('self.do')
-            for k,v in self.rDO.items():
-                if k in ['oc', 'df', 'dfo']:
-                    print(k)
-                    for j,w in v.items():
-                        print(f'\t{j}: {w}')
-                else:
-                    print(str(k)+': '+str(v))
-            print('')
-        else:
-            pass
-        #endregion ----------------------------------------------> Print d, do
+        #region -----------------------------------------------------> rDExtra
+        self.rDExtra['rSeqFileObj'] = self.rSeqFileObj
+        #endregion --------------------------------------------------> rDExtra
 
-        #region --------------------------------------------> Data Preparation
-        if self.DataPreparation():
-            pass
-        else:
-            return False
-        #endregion -----------------------------------------> Data Preparation
-
-        #region ----------------------------------------------------> Empty DF
-        #------------------------------> Msg
-        msgStep = f'{self.cLPdRun} Creating empty dataframe'
-        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------> 
-        self.dfR = self.EmptyDFR()
-        #endregion -------------------------------------------------> Empty DF
-
-        #region ------------------------------------------------> N, C Res Num
-        if self.NCResNumbers(seqNat=True):
-            pass
-        else:
-            return False
-        #endregion ---------------------------------------------> N, C Res Num
-
-        #region -------------------------------------------------------> Delta
-        #------------------------------> Msg
-        msgStep = f'{self.cLPdRun} Delta values'
-        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------> 
-        colC = self.rDO['df']['ResCtrl'][0][0]
-        #------------------------------> 
-        if self.rDO['Theta'] is not None:
-            delta = self.rDO['Theta']
-        else:
-            delta = mStatistic.Test_tost_delta(
-                self.dfS.iloc[:,colC], 
-                self.rDO['Alpha'],
-                self.rDO['Beta'],
-                self.rDO['Gamma'], 
-                deltaMax=self.rDO['ThetaMax'],
-            )
-        #------------------------------>
-        self.dfR[('Delta', 'Delta', 'Delta')] = delta
-        #endregion ----------------------------------------------------> Delta
-
-        #region ---------------------------------------------------> Calculate
-        for b, bN in enumerate(self.rDO['Band']):
-            for l, lN in enumerate(self.rDO['Lane']):
-                #------------------------------> Message
-                msgStep = (
-                    f'{self.cLPdRun}'
-                    f'Gel spot {bN} - {lN}'
-                )  
-                wx.CallAfter(self.rDlg.UpdateSt, msgStep)
-                #------------------------------> Control & Data Column
-                colD = self.rDO['df']['ResCtrl'][b+1][l]
-                #------------------------------> Calculate data
-                if colD:
-                    try:
-                        self.CalcOutData(bN, lN, colC, colD)
-                    except Exception as e:
-                        self.rMsgError = (
-                            f'Calculation of the Limited Proteolysis data for '
-                            f'point {bN} - {lN} failed.'
-                        )
-                        self.rException = e
-                        return False
-                else:
-                    pass
-        #endregion ------------------------------------------------> Calculate
-
-        #region -------------------------------------------------> Check P < a
-        idx = pd.IndexSlice
-        if (self.dfR.loc[:,idx[:,:,'Ptost']] < self.rDO['Alpha']).any().any():
-            pass
-        else:
-            self.rMsgError = ('There were no peptides detected in the gel '
-                'spots with intensity values equivalent to the intensity '
-                'values in the control spot. You may run the analysis again '
-                'with different values for the configuration options.')
-            return False
-        #endregion ----------------------------------------------> Check P < a
-
-        #region --------------------------------------------------------> Sort
-        self.dfR = self.dfR.sort_values(
-            by=[('Nterm', 'Nterm', 'Nterm'),('Cterm', 'Cterm', 'Cterm')] # type: ignore
-        )
-        self.dfR = self.dfR.reset_index(drop=True)
-        #endregion -----------------------------------------------------> Sort
-
-        if mConfig.development:
-            print('self.dfR.shape: ', self.dfR.shape)
-            print('')
-            print(self.dfR)
-            print('')
-
-        return True
+        #region ---------------------------------------------------> Run Super
+        return super().RunAnalysis()
+        #endregion ------------------------------------------------> Run Super
     #---
 
     def WriteOutput(self):
