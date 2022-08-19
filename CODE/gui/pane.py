@@ -17,7 +17,6 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 import shutil
-from collections import namedtuple
 from math import ceil
 from pathlib import Path
 from typing import Union, Optional
@@ -47,6 +46,7 @@ ANALYSIS_METHOD = {
     mConfig.npDataPrep: mStatistic.DataPreparation,
     mConfig.npProtProf: mMethod.ProtProf,
     mConfig.npLimProt : mMethod.LimProt,
+    mConfig.npTarProt : mMethod.TarProt,
 }
 #endregion ------------------------------------------------> 
 
@@ -4127,7 +4127,7 @@ class PaneLimProt(BaseConfPanelMod2):
     cURL         = f"{mConfig.urlTutorial}/limited-proteolysis"
     cSection     = mConfig.nmLimProt
     cTitlePD     = f"Running {mConfig.nmLimProt} Analysis"
-    cGaugePD     = 44
+    cGaugePD     = 35
     rMainData    = '{}_{}-LimitedProteolysis-Data.txt'
     rDExtra: dict = {
         'cLDFFirstThree' : cLDFFirstThree,
@@ -4809,6 +4809,7 @@ class PaneTarProt(BaseConfPanelMod2):
     cLCtrlName = mConfig.lStCtrlName
     cLDFFirst  = mConfig.dfcolTarProtFirstPart
     cLDFSecond = mConfig.dfcolTarProtBLevel
+    cLPdRunText = 'Targeted Proteolysis Analysis'
     #------------------------------> Hint
     cHAAPos = 'e.g. 5'
     cHHist  = 'e.g. 50 or 50 100 200'
@@ -4822,8 +4823,12 @@ class PaneTarProt(BaseConfPanelMod2):
     cURL         = f"{mConfig.urlTutorial}/targeted-proteolysis"
     cSection     = mConfig.nmTarProt
     cTitlePD     = f"Running {mConfig.nmTarProt} Analysis"
-    cGaugePD     = 60
+    cGaugePD     = 35
     rMainData    = '{}_{}-TargetedProteolysis-Data.txt'
+    rDExtra: dict= {
+        'cLDFFirst' : cLDFFirst,
+        'cLDFSecond': cLDFSecond,
+    }
     #------------------------------> Optional configuration
     cTTHelp = mConfig.ttBtnHelp.format(cURL)
     #endregion --------------------------------------------------> Class setup
@@ -5061,113 +5066,6 @@ class PaneTarProt(BaseConfPanelMod2):
 
         return True
     #---
-
-    def EmptyDFR(self) -> 'pd.DataFrame':
-        """Creates the empty df for the results.
-
-            Returns
-            -------
-            pd.DataFrame
-        """
-        #region -------------------------------------------------------> Index
-        aL = self.cLDFFirst
-        bL = self.cLDFFirst
-        n = len(self.cLDFSecond)
-        #------------------------------> Ctrl
-        aL = aL + n*self.rDO['ControlL']
-        bL = bL + self.cLDFSecond
-        #------------------------------> Exp
-        for exp in self.rDO['Exp']:
-            aL = aL + n*[exp]
-            bL = bL + self.cLDFSecond
-        #------------------------------> 
-        idx = pd.MultiIndex.from_arrays([aL[:], bL[:]])
-        #endregion ----------------------------------------------------> Index
-
-        #region ----------------------------------------------------> Empty DF
-        df = pd.DataFrame(
-            np.nan, columns=idx, index=range(self.dfS.shape[0]), # type: ignore
-        )
-        idx = pd.IndexSlice
-        df.loc[:,idx[:,'Int']] = df.loc[:,idx[:,'Int']].astype('object')
-        #endregion -------------------------------------------------> Empty DF
-
-        #region -------------------------------------------------> Seq & Score
-        df[aL[0]] = self.dfS.iloc[:,0]
-        df[aL[1]] = self.dfS.iloc[:,2]
-        df[(self.rDO['ControlL'][0], 'P')] = np.nan
-        #endregion ----------------------------------------------> Seq & Score
-
-        return df
-    #---
-
-    def PrepareAncova(
-        self, rowC: int, row: 'namedtuple', rowN: int # type: ignore
-        ) -> 'pd.DataFrame':
-        """Prepare the dataframe used to perform the ANCOVA test and add the
-            intensity to self.dfR.
-
-            Parameters
-            ----------
-            rowC: int
-                Current row index in self.dfR.
-            row: namedtuple
-                Row from self.dfS.
-            rowN: int
-                Maximum number of rows in the output pd.df.
-
-            Returns
-            -------
-            pd.DataFrame
-                Dataframe to use in the ANCOVA test
-                Xc1, Yc1, Xe1, Ye1,....,XcN, YcN, XeN, YeN
-        """
-        #region ---------------------------------------------------> Variables
-        dfAncova = pd.DataFrame(index=range(0,rowN))
-        xC  = []
-        xCt = []
-        yC  = []
-        #endregion ------------------------------------------------> Variables
-
-        #region ---------------------------------------------------> 
-        #------------------------------> Control
-        #--------------> List
-        for r in self.rDO['df']['ResCtrl'][0][0]:
-            if np.isfinite(row[r]):
-                xC.append(1)
-                xCt.append(5)
-                yC.append(row[r])
-            else:
-                pass
-        #--------------> Add to self.dfR
-        self.dfR.at[rowC,(self.rDO['ControlL'],'Int')] = str(yC)
-        #------------------------------> Points
-        for k,r in enumerate(self.rDO['df']['ResCtrl'][1:], start=1):
-            #------------------------------> 
-            xE = []
-            yE = []
-            #------------------------------> 
-            for rE in r[0]:
-                if np.isfinite(row[rE]):
-                    xE.append(5)
-                    yE.append(row[rE])
-                else:
-                    pass
-            #------------------------------> 
-            self.dfR.at[rowC,(self.rDO['Exp'][k-1], 'Int')] = str(yE)
-            #------------------------------> 
-            a = xC + xCt
-            b = yC + yC
-            c = xC + xE
-            d = yC + yE
-            #------------------------------> 
-            dfAncova.loc[range(0, len(a)),f'Xc{k}'] = a # type: ignore
-            dfAncova.loc[range(0, len(b)),f'Yc{k}'] = b # type: ignore
-            dfAncova.loc[range(0, len(c)),f'Xe{k}'] = c # type: ignore
-            dfAncova.loc[range(0, len(d)),f'Ye{k}'] = d # type: ignore
-        #endregion ------------------------------------------------> 
-        return dfAncova
-    #---
     #endregion ------------------------------------------------> Class Event
 
     #region ---------------------------------------------------> Run methods
@@ -5306,99 +5204,20 @@ class PaneTarProt(BaseConfPanelMod2):
             -------
             bool
         """
-        #region -------------------------------------------------> Print d, do
-        if mConfig.development:
-            print('')
-            print('self.d:')
-            for k,v in self.rDI.items():
-                print(str(k)+': '+str(v))
-            print('')
-            print('self.do')
-            for k,v in self.rDO.items():
-                if k in ['oc', 'df', 'dfo']:
-                    print(k)
-                    for j,w in v.items():
-                        print(f'\t{j}: {w}')
-                else:
-                    print(str(k)+': '+str(v))
-            print('')
-        else:
-            pass
-        #endregion ----------------------------------------------> Print d, do
+        #region -----------------------------------------------------> rDExtra
+        self.rDExtra['rSeqFileObj'] = self.rSeqFileObj
+        #endregion --------------------------------------------------> rDExtra
 
-        #region --------------------------------------------> Data Preparation
-        if self.DataPreparation():
+        #region -----------------------------------------------------> TarProt
+        if super().RunAnalysis():
             pass
         else:
             return False
-        #endregion -----------------------------------------> Data Preparation
-
-        #region ----------------------------------------------------> Empty DF
-        #------------------------------> Msg
-        msgStep = f'{self.cLPdRun} Creating empty dataframe'
-        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------> 
-        self.dfR = self.EmptyDFR()
-        #endregion -------------------------------------------------> Empty DF
-
-        #region ------------------------------------------------> N, C Res Num
-        if self.NCResNumbers(seqNat=True):
-            pass
-        else:
-            return False
-        #endregion ---------------------------------------------> N, C Res Num
-
-        #region ----------------------------------------------------> P values
-        #------------------------------> 
-        totalPeptide = len(self.dfS)
-        totalRowAncovaDF = 2*max([len(x[0]) for x in self.rDO['df']['ResCtrl']])
-        nGroups = [2 for x in self.rDO['df']['ResCtrl']]
-        nGroups = nGroups[1:]
-        idx = pd.IndexSlice
-        idx = idx[self.rDO['Exp'], 'P']
-        #------------------------------> 
-        k = 0
-        for row in self.dfS.itertuples(index=False):
-            #------------------------------> Msg
-            msgStep = (f'{self.cLPdRun} Calculating P values for peptide '
-                f'{k+1} ({totalPeptide})')
-            wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-            #------------------------------> 
-            try:
-                #------------------------------> Ancova df & Int
-                dfAncova = self.PrepareAncova(k, row, totalRowAncovaDF)
-                #------------------------------> P value
-                self.dfR.loc[k,idx] = mStatistic.Test_slope( # type: ignore
-                    dfAncova, nGroups)
-            except Exception as e:
-                self.rMsgError = (f'P value calculation failed for peptide '
-                    f'{row[0]}.')
-                self.rException = e
-                return False
-            #------------------------------> 
-            k = k + 1
-        #endregion -------------------------------------------------> P values
-
-        #region -------------------------------------------------> Check P < a
-        idx = pd.IndexSlice
-        if (self.dfR.loc[:,idx[:,'P']] < self.rDO['Alpha']).any().any():
-            pass
-        else:
-            self.rMsgError = ('There were no peptides detected with intensity '
-                'values significantly higher to the intensity values in the '
-                'controls. You may run the analysis again with different '
-                'values for the configuration options.')
-            return False
-        #endregion ----------------------------------------------> Check P < a
-
-        #region --------------------------------------------------------> Sort
-        self.dfR = self.dfR.sort_values(
-            by=[('Nterm', 'Nterm'),('Cterm', 'Cterm')] # type: ignore
-        )
-        self.dfR = self.dfR.reset_index(drop=True)
-        #endregion -----------------------------------------------------> Sort
+        #endregion --------------------------------------------------> TarProt
 
         # Further Analysis
+        idx = pd.IndexSlice
+
         #region ----------------------------------------------------> Cleavage
         msgStep = (f'{self.cLPdRun} Cleavage per Residue')
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
@@ -5482,13 +5301,6 @@ class PaneTarProt(BaseConfPanelMod2):
         else:
             pass
         #endregion -----------------------------------------------------> Hist
-
-        if mConfig.development:
-            print('self.dfR.shape: ', self.dfR.shape)
-            print('')
-            print(self.dfR)
-        else:
-            pass
 
         return True
     #---

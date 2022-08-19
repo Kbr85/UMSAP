@@ -18,6 +18,7 @@
 import copy
 import itertools
 import traceback
+from collections import namedtuple
 from datetime import datetime
 from operator import itemgetter
 from pathlib import Path
@@ -1848,6 +1849,219 @@ def LimProt(
     else:
         pass
     #endregion -----------------------------------------------------> Print
+
+    dictO = tOut[0]
+    dictO['dfR'] = dfR
+    return (dictO, '', None)
+#---
+
+
+def TarProt(
+    df        : pd.DataFrame,
+    rDO       : dict,
+    rDExtra   : dict,
+    resetIndex: bool=True,
+    ) -> tuple[dict, str, Optional[Exception]]:
+    """Perform a Limited Proteolysis analysis.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            DataFrame read from CSV file.
+        rDO: dict
+            rDO dictionary from the PrepareRun step of the analysis.
+        rDExtra: dict
+            Extra parameters.
+        resetIndex: bool
+            Reset index of dfS (True) or not (False). Default is True.
+
+        Returns
+        -------
+        tuple:
+            -   (
+                    {
+                        'dfI' : pd.DataFrame,
+                        'dfF' : pd.DataFrame,
+                        'dfT' : pd.DataFrame,
+                        'dfN' : pd.DataFrame,
+                        'dfIm': pd.DataFrame,
+                        'dfTP': pd.DataFrame,
+                        'dfE' : pd.DataFrame,
+                        'dfS' : pd.DataFrame,
+                        'dfR' : pd.DataFrame,
+                    },
+                    '',
+                    None
+                )                                  when everything went fine.
+            -   ({}, 'Error message', Exception)   when something went wrong.
+    """
+    #region ------------------------------------------------> Helper Functions
+    def EmptyDFR() -> pd.DataFrame:
+        """Creates the empty df for the results.
+
+            Returns
+            -------
+            pd.DataFrame
+        """
+        #region -------------------------------------------------------> Index
+        aL = rDExtra['cLDFFirst']
+        bL = rDExtra['cLDFFirst']
+        n = len(rDExtra['cLDFSecond'])
+        #------------------------------> Ctrl
+        aL = aL + n*rDO['ControlL']
+        bL = bL + rDExtra['cLDFSecond']
+        #------------------------------> Exp
+        for exp in rDO['Exp']:
+            aL = aL + n*[exp]
+            bL = bL + rDExtra['cLDFSecond']
+        #------------------------------> 
+        idx = pd.MultiIndex.from_arrays([aL[:], bL[:]])
+        #endregion ----------------------------------------------------> Index
+
+        #region ----------------------------------------------------> Empty DF
+        df = pd.DataFrame(
+            np.nan, columns=idx, index=range(dfS.shape[0]),                     # type: ignore
+        )
+        idx = pd.IndexSlice
+        df.loc[:,idx[:,'Int']] = df.loc[:,idx[:,'Int']].astype('object')
+        #endregion -------------------------------------------------> Empty DF
+
+        #region -------------------------------------------------> Seq & Score
+        df[aL[0]] = dfS.iloc[:,0]
+        df[aL[1]] = dfS.iloc[:,2]
+        df[(rDO['ControlL'][0], 'P')] = np.nan
+        #endregion ----------------------------------------------> Seq & Score
+
+        return df
+    #---
+
+    def PrepareAncova(
+        rowC: int,
+        row : namedtuple,                                                       # type: ignore
+        rowN: int
+        ) -> pd.DataFrame:
+        """Prepare the dataframe used to perform the ANCOVA test and add the
+            intensity to self.dfR.
+
+            Parameters
+            ----------
+            rowC: int
+                Current row index in self.dfR.
+            row: namedtuple
+                Row from self.dfS.
+            rowN: int
+                Maximum number of rows in the output pd.df.
+
+            Returns
+            -------
+            pd.DataFrame
+                Dataframe to use in the ANCOVA test
+                Xc1, Yc1, Xe1, Ye1,....,XcN, YcN, XeN, YeN
+        """
+        #region ---------------------------------------------------> Variables
+        dfAncova = pd.DataFrame(index=range(0,rowN))
+        xC  = []
+        xCt = []
+        yC  = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> 
+        #------------------------------> Control
+        #--------------> List
+        for r in rDO['df']['ResCtrl'][0][0]:
+            if np.isfinite(row[r]):
+                xC.append(1)
+                xCt.append(5)
+                yC.append(row[r])
+            else:
+                pass
+        #--------------> Add to self.dfR
+        dfR.at[rowC,(rDO['ControlL'],'Int')] = str(yC)
+        #------------------------------> Points
+        for k,r in enumerate(rDO['df']['ResCtrl'][1:], start=1):
+            #------------------------------> 
+            xE = []
+            yE = []
+            #------------------------------> 
+            for rE in r[0]:
+                if np.isfinite(row[rE]):
+                    xE.append(5)
+                    yE.append(row[rE])
+                else:
+                    pass
+            #------------------------------> 
+            dfR.at[rowC,(rDO['Exp'][k-1], 'Int')] = str(yE)
+            #------------------------------> 
+            a = xC + xCt
+            b = yC + yC
+            c = xC + xE
+            d = yC + yE
+            #------------------------------> 
+            dfAncova.loc[range(0, len(a)),f'Xc{k}'] = a                         # type: ignore
+            dfAncova.loc[range(0, len(b)),f'Yc{k}'] = b                         # type: ignore
+            dfAncova.loc[range(0, len(c)),f'Xe{k}'] = c                         # type: ignore
+            dfAncova.loc[range(0, len(d)),f'Ye{k}'] = d                         # type: ignore
+        #endregion ------------------------------------------------> 
+        return dfAncova
+    #---
+    #endregion ---------------------------------------------> Helper Functions
+
+    #region ------------------------------------------------> Data Preparation
+    tOut = mStatistic.DataPreparation(df, rDO, resetIndex=resetIndex)
+    if tOut[0]:
+        dfS = tOut[0]['dfS']
+    else:
+        return tOut
+    #endregion ---------------------------------------------> Data Preparation
+
+    #region --------------------------------------------------------> Analysis
+    #------------------------------> Empty dfR
+    dfR = EmptyDFR()
+    #------------------------------> N, C Res Num
+    dfR, msgError, tException = NCResNumbers(
+        dfR, rDO, rDExtra['rSeqFileObj'], seqNat=True)
+    if dfR.empty:
+        return ({}, msgError, tException)
+    else:
+        pass
+    #------------------------------> P values
+    totalPeptide = len(dfS)
+    totalRowAncovaDF = 2*max([len(x[0]) for x in rDO['df']['ResCtrl']])
+    nGroups = [2 for x in rDO['df']['ResCtrl']]
+    nGroups = nGroups[1:]
+    idx = pd.IndexSlice
+    idx = idx[rDO['Exp'], 'P']
+    #-------------->
+    k = 0
+    for row in dfS.itertuples(index=False):
+        try:
+            #------------------------------> Ancova df & Int
+            dfAncova = PrepareAncova(k, row, totalRowAncovaDF)
+            #------------------------------> P value
+            dfR.loc[k,idx] = mStatistic.Test_slope(dfAncova, nGroups)           # type: ignore
+        except Exception as e:
+            msg = (f'P value calculation failed for peptide {row[0]}.')
+            return ({}, msg, e)
+        #------------------------------> 
+        k = k + 1
+    #endregion -----------------------------------------------------> Analysis
+
+    #region -------------------------------------------------> Check P < a
+    idx = pd.IndexSlice
+    if (dfR.loc[:,idx[:,'P']] < rDO['Alpha']).any().any():
+        pass
+    else:
+        msg = ('There were no peptides detected with intensity '
+            'values significantly higher to the intensity values in the '
+            'controls. You may run the analysis again with different '
+            'values for the configuration options.')
+        return ({}, msg, None)
+    #endregion ----------------------------------------------> Check P < a
+
+    #region --------------------------------------------------------> Sort
+    dfR = dfR.sort_values(by=[('Nterm', 'Nterm'),('Cterm', 'Cterm')])           # type: ignore
+    dfR = dfR.reset_index(drop=True)
+    #endregion -----------------------------------------------------> Sort
 
     dictO = tOut[0]
     dictO['dfR'] = dfR
