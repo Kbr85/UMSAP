@@ -4993,7 +4993,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
     #---
 
     def ClearSel(self) -> bool:
-        """Clear seelction.
+        """Clear selection.
 
             Returns
             -------
@@ -8542,23 +8542,40 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
 
 
 class WindowResAA(BaseWindowResultOnePlotFA):
-    """
+    """Show the results of an AA analysis.
 
         Parameters
         ----------
-        
+        parent: WindowResTarProt
+            Parent of the window.
+        dateC: str
+            Current date
+        key: str
+        fileN: str
+            Name of the file with the analysis result.
 
         Attributes
         ----------
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+        rBandStart: float
+            Start x coordinates for the bands.
+        rBandWidth: float
+            Width of the bands.
+        rData: pd.DataFrame
+            Data with the results.
+        rExp: bool
+            Show experiments (True) or Positions (False).
+        rLabel: list[str]
+            Experiment names.
+        rLabelC: str
+            Currently selected experiment.
+        rObj: UMSAPFile
+            Reference to the UMSAP file in the parent UMSAPCtrl window.
+        rPos: list[str]
+            Positions in the results.
+        rRecSeq: str
+            Sequence of the recombinant protein.
+        rUMSAP: UMSAPCtrl
+            Pointer to the UMSAPCtrl window.
     """
     #region -----------------------------------------------------> Class setup
     cName    = mConfig.nwAAPlot
@@ -8571,17 +8588,21 @@ class WindowResAA(BaseWindowResultOnePlotFA):
 
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, parent: WindowResTarProt, dateC: str, key: str, fileN: str,
+        self,
+        parent: WindowResTarProt,
+        dateC : str,
+        key   : str,
+        fileN : str,
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cTitle  = f"{parent.cTitle} - {dateC} - {self.cSection} - {key}"
         self.cDateC  = dateC
         self.cKey    = key
-        self.cFileN   = fileN
+        self.cFileN  = fileN
         self.rUMSAP  = parent.cParent
         self.rObj    = parent.rObj
-        self.rData  = self.rObj.GetFAData(
+        self.rData   = self.rObj.GetFAData(
             parent.cSection, parent.rDateC, fileN, [0,1])
         self.rRecSeq = self.rObj.GetRecSeq(parent.cSection, dateC)
         menuData     = self.SetMenuDate()
@@ -8611,20 +8632,12 @@ class WindowResAA(BaseWindowResultOnePlotFA):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def SetMenuDate(self):
-        """
-    
-            Parameters
-            ----------
-            
-    
+    def SetMenuDate(self) -> dict:
+        """Set the menu data.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            dict
         """
         menuData = {}
         menuData['Label'] = [k for k in self.rData.columns.unique(level=0)[1:-1]]
@@ -8633,7 +8646,7 @@ class WindowResAA(BaseWindowResultOnePlotFA):
     #---
 
     def SetAxisExp(self) -> bool:
-        """ General details of the plot area.
+        """General details of the plot area.
 
             Returns
             -------
@@ -8656,11 +8669,12 @@ class WindowResAA(BaseWindowResultOnePlotFA):
     #---
 
     def PlotExp(self, label: str) -> bool:
-        """
+        """Plot the results for the selected experiment.
 
             Parameters
             ----------
-            
+            label: str
+                Name of the experiment.
 
             Returns
             -------
@@ -8764,19 +8778,16 @@ class WindowResAA(BaseWindowResultOnePlotFA):
     #---
 
     def PlotPos(self, label: str) -> bool:
-        """
-    
+        """Plot the results for a position.
+
             Parameters
             ----------
-            
-    
+            label: str
+                Name of the position.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region --------------------------------------------------------> 
         self.rExp = False
@@ -8834,20 +8845,19 @@ class WindowResAA(BaseWindowResultOnePlotFA):
         return True
     #---
 
-    def UpdateStatusBarExp(self, x: int, y: float) -> bool:
-        """
+    def UpdateStatusBarExp(self, x: float, y: float) -> bool:
+        """Update the wx.StatusBar text when plotting an experiment.
     
             Parameters
             ----------
-            
-    
+            x: float
+                Mouse x coordinate.
+            y: float
+                Mouse y coordinate.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ---------------------------------------------------> 
         if 1 <= (xf := round(x)) <= len(self.rPos):
@@ -8862,7 +8872,7 @@ class WindowResAA(BaseWindowResultOnePlotFA):
         df = self.rData.loc[:,[('AA', 'AA'),(self.rLabelC, pos)]].iloc[0:-1,:]
         df['Pc'] = 100*(df.iloc[:,1]/df.iloc[:,1].sum(axis=0))
         df = df.sort_values(
-            by=[(self.rLabelC, pos),('AA','AA')], ascending=False) # type: ignore
+            by=[(self.rLabelC, pos),('AA','AA')], ascending=False)              # type: ignore
         df['Sum'] = df['Pc'].cumsum()
         df = df.reset_index(drop=True)
         #endregion ------------------------------------------------> 
@@ -8887,20 +8897,19 @@ class WindowResAA(BaseWindowResultOnePlotFA):
         return True
     #---
 
-    def UpdateStatusBarPos(self, x: int, y: int) -> bool:
-        """
+    def UpdateStatusBarPos(self, x: float, y: float) -> bool:
+        """Update the wx.StatusBar text when plotting a positions.
     
             Parameters
             ----------
-            
-    
+            x: float
+                Mouse x coordinate.
+            y: float
+                Mouse y coordinate.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region --------------------------------------------------->
         if 1 <= (xf := round(x)) <= len(mConfig.lAA1):
@@ -8928,7 +8937,7 @@ class WindowResAA(BaseWindowResultOnePlotFA):
         df = self.rData.loc[:,[('AA', 'AA'),(exp, self.rLabelC)]].iloc[0:-1,:]
         df['Pc'] = 100*(df.iloc[:,1]/df.iloc[:,1].sum(axis=0))
         df = df.sort_values(
-            by=[(exp, self.rLabelC),('AA','AA')], ascending=False) # type: ignore
+            by=[(exp, self.rLabelC),('AA','AA')], ascending=False)              # type: ignore
         df['Sum'] = df['Pc'].cumsum()
         df = df.reset_index(drop=True)
         row = df.loc[df[('AA', 'AA')] == aa].index[0]
@@ -8995,23 +9004,38 @@ class WindowResAA(BaseWindowResultOnePlotFA):
 
 
 class WindowResHist(BaseWindowResultOnePlotFA):
-    """
+    """Plot hte results for a cleavage histogram.
 
         Parameters
         ----------
-        
+        parent: WindowResTarProt
+            Parent of the window.
+        dateC: str
+            Current date
+        key: str
+        fileN: str
+            Name of the file with the analysis result.
 
         Attributes
         ----------
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+        rAllC: str
+            Show all cleavage or not.
+        rBandStart: float
+            Start x coordinates for the bands.
+        rBandWidth: float
+            Width of the bands.
+        rData: pd.DataFrame
+            Data with the results.
+        rLabel: list[str]
+            List of experiment labels.
+        rNat: str
+            Plot recombinant or native sequence.
+        rObj: UMSAPFile
+            Reference to the UMSAP file in the parent UMSAPCtrl window.
+        rProtLength: list[int]
+            Length of the recombinant and native protein.
+        rUMSAP: UMSAPCtrl
+            Pointer to the UMSAPCtrl window.
     """
     #region -----------------------------------------------------> Class setup
     cName    = mConfig.nwHistPlot
@@ -9036,7 +9060,11 @@ class WindowResHist(BaseWindowResultOnePlotFA):
 
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, parent: WindowResTarProt, dateC: str, key: str, fileN: str,
+        self, 
+        parent: WindowResTarProt,
+        dateC : str,
+        key   : str,
+        fileN : str,
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -9069,20 +9097,12 @@ class WindowResHist(BaseWindowResultOnePlotFA):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def SetMenuDate(self):
-        """
+    def SetMenuDate(self) -> dict:
+        """Set the data for the menu.
 
-            Parameters
-            ----------
-            
-    
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            dict
         """
         #region --------------------------------------------------->
         menuData = {}
@@ -9101,20 +9121,22 @@ class WindowResHist(BaseWindowResultOnePlotFA):
     #---
 
     def UpdateResultWindow(
-        self, nat:Optional[bool]=None, allC: Optional[bool]=None) -> bool:
-        """
-    
+        self,
+        nat : Optional[bool]=None,
+        allC: Optional[bool]=None,
+        ) -> bool:
+        """Update the window.
+
             Parameters
             ----------
-            
-    
+            nat: bool or None
+                Show native or recombinant sequence.
+            allC: bool or None
+                Show all cleavages or not.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ---------------------------------------------------> Variables
         self.rNat  = self.cRec[nat] if nat is not None else self.rNat
@@ -9132,7 +9154,7 @@ class WindowResHist(BaseWindowResultOnePlotFA):
         n = len(self.rLabel)
         w = self.rBandWidth / n
         df = df.iloc[:,range(1,n+1,1)]
-        df = df[(df.notna()).all(axis=1)]
+        df = df[(df.notna()).all(axis=1)]                                       # type: ignore
         for row in df.itertuples():
             s = row[0]+1-self.rBandStart
             for x in range(0,n,1):
@@ -9170,20 +9192,17 @@ class WindowResHist(BaseWindowResultOnePlotFA):
         return True
     #---
 
-    def SetAxis(self, win: pd.Series):
-        """
-    
+    def SetAxis(self, win: pd.Series) -> bool:
+        """Set the axis of the plot.
+
             Parameters
             ----------
-            
-    
+            win: pd.Series
+                Windows of the histograms.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ---------------------------------------------------> 
         self.wPlot[0].rAxes.clear()
@@ -9285,23 +9304,37 @@ class WindowResHist(BaseWindowResultOnePlotFA):
 
 
 class WindowResCEvol(BaseWindowResultListTextNPlot):
-    """
+    """Show the results for a Cleavage Evolution analysis.
 
         Parameters
         ----------
-        
+        parent: WindowResTarProt
+            Parent of the window.
+        dateC: str
+            Current date
+        fileN: str
+            Name of the file with the analysis result.
 
         Attributes
         ----------
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+        rData: dict
+            Keys are dates and values is the data to create the plot.
+        rDf: pd.DataFrame
+            Results for the current selected options.
+        rIdx: dict
+            Information about selected rows in the wx.ListCtrl.
+        rLabel: list[str]
+            Experiment names.
+        rMon: bool
+            Plot monotonic results (True) or all results (False)
+        rObj: UMSAPFile
+            Reference to the UMSAP file in the parent UMSAPCtrl window.
+        rProtLength: list[int]
+            Length of the recombinant and native protein.
+        rRec: bool
+            Plot data for recombinant or native sequence.
+        rUMSAP: UMSAPCtrl
+            Pointer to the UMSAPCtrl window.
     """
     #region -----------------------------------------------------> Class setup
     cName    = mConfig.nwCEvolPlot
@@ -9311,12 +9344,9 @@ class WindowResCEvol(BaseWindowResultListTextNPlot):
     cTPlot   = 'Plot'
     cLNPlot  = ['M']
     cLCol    = ['Residue']
-    #------------------------------> 
+    #------------------------------>
     cHSearch = 'Residue Number'
-#     #------------------------------> 
-#     cSCol    = (100, 100)
-#     cSWindow = (670,560)
-#     #------------------------------> 
+    #------------------------------>
     cRec = {
         True : 'Nat',
         False: 'Rec',
@@ -9327,7 +9357,11 @@ class WindowResCEvol(BaseWindowResultListTextNPlot):
 
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, parent: WindowResTarProt, dateC: str, fileN: str) -> None:
+        self,
+        parent: WindowResTarProt,
+        dateC : str,
+        fileN : str,
+        ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cTitle = f"{parent.cTitle} - {dateC} - {self.cSection}"
@@ -9338,7 +9372,7 @@ class WindowResCEvol(BaseWindowResultListTextNPlot):
         self.rData  = self.rObj.GetFAData(
             parent.cSection, parent.rDateC, fileN, [0,1])
         self.rLabel = self.rData.columns.unique(level=1).tolist()
-        self.rIdx = {}
+        self.rIdx   = {}
         self.rProtLength = parent.rData[self.cDateC]['PI']['ProtLength']
         menuData         = self.SetMenuDate()
         #------------------------------>
@@ -9363,20 +9397,12 @@ class WindowResCEvol(BaseWindowResultListTextNPlot):
     #endregion -----------------------------------------------> Instance setup
 
     #region --------------------------------------------------> Manage Methods
-    def SetMenuDate(self):
-        """
+    def SetMenuDate(self) -> dict:
+        """Set the menu data.
 
-            Parameters
-            ----------
-            
-    
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            dict
         """
         #region --------------------------------------------------->
         menuData = {}
@@ -9395,20 +9421,22 @@ class WindowResCEvol(BaseWindowResultListTextNPlot):
     #---
 
     def UpdateResultWindow(
-        self, nat: Optional[bool]=None, mon: Optional[bool]=None) -> bool:
-        """
-    
+        self, 
+        nat: Optional[bool]=None, 
+        mon: Optional[bool]=None,
+        ) -> bool:
+        """Update the plot.
+
             Parameters
             ----------
-            
-    
+            nat: bool or None
+                Plot results for the recombinant or native protein.
+            mon: bool or None
+                Plot monotonic or all results.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region --------------------------------------------------->
         #------------------------------>
@@ -9452,48 +9480,37 @@ class WindowResCEvol(BaseWindowResultListTextNPlot):
     #---
 
     def FillListCtrl(self, tRes: list[int]) -> bool:
-        """
-    
+        """Fill the wx.ListCtrl.
+
             Parameters
             ----------
-            
-    
+            tRes: list[int]
+                List of residue numbers.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         self.wLC.wLCS.wLC.DeleteAllItems()
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
     
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         data = []
         for k in tRes:
             data.append([str(k+1)])
         self.wLC.wLCS.wLC.SetNewData(data)
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
         return True
     #---
 
     def SetAxis(self) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
-    
+        """Set the axis.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ---------------------------------------------------> 
         self.wPlot.dPlot['M'].rAxes.clear()
@@ -9513,25 +9530,17 @@ class WindowResCEvol(BaseWindowResultListTextNPlot):
     #---
 
     def Plot(self) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
-    
+        """Plot the data.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         self.SetAxis()
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         for idx,v in self.rIdx.items():
             x = range(1,len(self.rLabel)+1)
             y = self.rDF.iloc[idx,:]
@@ -9544,14 +9553,14 @@ class WindowResCEvol(BaseWindowResultListTextNPlot):
         #------------------------------>
         self.wPlot.dPlot['M'].ZoomResetSetValues()
         self.wPlot.dPlot['M'].rCanvas.draw()
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
         return True
     #---
 
     def DupWin(self) -> bool:
-        """ Export data to a csv file 
-        
+        """Export data to a csv file.
+
             Returns
             -------
             bool
@@ -9564,8 +9573,8 @@ class WindowResCEvol(BaseWindowResultListTextNPlot):
     #---
 
     def ExportData(self) -> bool:
-        """ Export data to a csv file.
-        
+        """Export data to a csv file.
+
             Returns
             -------
             bool
@@ -9575,7 +9584,7 @@ class WindowResCEvol(BaseWindowResultListTextNPlot):
 
     def ExportImg(self) -> bool:
         """Save an image of the plot.
-    
+
             Returns
             -------
             bool
@@ -9616,13 +9625,12 @@ class WindowResCEvol(BaseWindowResultListTextNPlot):
 
     def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:
         """What to do after selecting a row in the wx.ListCtrl. 
-            Override as needed
-    
+
             Parameters
             ----------
             event : wx.Event
-                Information about the event
-    
+                Information about the event.
+
             Returns
             -------
             bool
@@ -9643,23 +9651,36 @@ class WindowResCEvol(BaseWindowResultListTextNPlot):
 
 
 class WindowResCpR(BaseWindowResultOnePlotFA):
-    """
+    """Plot the Cleavage per Residue for an analysis.
 
         Parameters
         ----------
-        
+        parent: WindowResTarProt
+            Parent of the window.
+        dateC: str
+            Current date.
+        fileN: str
+            Name of the file with the analysis result.
 
         Attributes
         ----------
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+        rData: dict
+            Keys are dates and values is the data to create the plot.
+        rLabel: list[str]
+            Label of the experiment.
+        rLabelC: str
+            Currently selected label. 
+        rNat: str
+            Plot results for the native or recombinant protein.
+        rObj: UMSAPFile
+            Reference to the UMSAP file in the parent UMSAPCtrl window.
+        rProtLength: list[int]
+            Length of the recombinant and native protein.
+        rProtLoc: list[int]
+            Location of the native protein in the sequence of the recombinant
+            protein.
+        rUMSAP: UMSAPCtrl
+            Pointer to the UMSAPCtrl window.
     """
     #region -----------------------------------------------------> Class setup
     cName    = mConfig.nwCpRPlot
@@ -9676,7 +9697,11 @@ class WindowResCpR(BaseWindowResultOnePlotFA):
 
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, parent: WindowResTarProt, dateC: str, fileN: str) -> None:
+        self, 
+        parent: WindowResTarProt,
+        dateC : str,
+        fileN : str
+        ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cTitle = f"{parent.cTitle} - {dateC} - {self.cSection}"
@@ -9689,13 +9714,13 @@ class WindowResCpR(BaseWindowResultOnePlotFA):
         self.rLabel = self.rData.columns.unique(level=1).tolist()
         self.rProtLength = parent.rData[self.cDateC]['PI']['ProtLength']
         self.rProtLoc    = parent.rData[self.cDateC]['PI']['ProtLoc']
-        menuData     = self.SetMenuDate()
+        menuData         = self.SetMenuDate()
         #------------------------------> 
         super().__init__(parent, menuData)
         #endregion --------------------------------------------> Initial Setup
 
         #region ---------------------------------------------------> Plot
-        self.UpdateResultWindow(nat=False, label=[menuData['Label'][0]])
+        self.UpdateResultWindow(nat=False, label=[menuData['Label'][0]])        # type: ignore
         #endregion ------------------------------------------------> Plot
 
         #region ---------------------------------------------> Window position
@@ -9706,20 +9731,12 @@ class WindowResCpR(BaseWindowResultOnePlotFA):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def SetMenuDate(self):
-        """
+    def SetMenuDate(self) -> dict:
+        """Set the data to build the Tool menu.
 
-            Parameters
-            ----------
-            
-    
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            dict
         """
         #region --------------------------------------------------->
         menuData = {}
@@ -9738,21 +9755,26 @@ class WindowResCpR(BaseWindowResultOnePlotFA):
     #---
 
     def UpdateResultWindow(
-        self, nat:bool, label: list[str], protLoc: bool=True
-        ) -> bool:
-        """
-    
+        self, 
+        nat    : bool,
+        label  : str,
+        protLoc: bool=True
+        ) -> bool: 
+        """Update the results shown in the window.
+
             Parameters
             ----------
-            
-    
+            nat: bool
+                Plot results for the native (True) or recombinant (False)
+                protein.
+            label: str
+                Plot results for this experiment.
+            protLoc: bool
+                Show native protein location (True) or not (False).
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region ---------------------------------------------------> Variables
         self.rNat  = self.cNat[nat]
@@ -9823,19 +9845,11 @@ class WindowResCpR(BaseWindowResultOnePlotFA):
     #---
 
     def SetAxis(self) -> bool:
-        """
-    
-            Parameters
-            ----------
-            
-    
+        """Set the axis of the plot.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            bool
         """
         #region --------------------------------------------------->
         self.wPlot[0].rAxes.clear()
@@ -9851,8 +9865,8 @@ class WindowResCpR(BaseWindowResultOnePlotFA):
     #---
 
     def DupWin(self) -> bool:
-        """ Export data to a csv file 
-        
+        """Export data to a csv file.
+
             Returns
             -------
             bool
@@ -9864,16 +9878,16 @@ class WindowResCpR(BaseWindowResultOnePlotFA):
         return True
     #---
     #endregion ------------------------------------------------> Class methods
-    
+
     #region ---------------------------------------------------> Event Methods
     def OnUpdateStatusBar(self, event) -> bool:
         """Update the statusbar info
-    
+
             Parameters
             ----------
             event: matplotlib event
-                Information about the event
-                
+                Information about the event.
+
             Returns
             -------
             bool
@@ -9910,13 +9924,13 @@ class WindowResCpR(BaseWindowResultOnePlotFA):
 
 
 class WindowUMSAPControl(BaseWindow):
-    """Control for an umsap file. 
+    """Window to show and control the content of an umsap file. 
 
         Parameters
         ----------
         fileP : Path
             Path to the UMSAP file
-        cParent : wx.Window or None
+        parent : wx.Window or None
             Parent of the window.
 
         Attributes
@@ -9925,6 +9939,12 @@ class WindowUMSAPControl(BaseWindow):
             Keys are section names and values the Window to plot the results
         dSectionTab : dict
             Keys are section names and values the corresponding config.name
+        rCopiedFilter: list
+            Copy of the List of applied filters in a ProtProfPlot Window
+        rDataInitPath: Path
+            Path to the folder with the Initial files.
+        rDataStepPath: Path
+            Path to the folder with the step by step results.
         rObj : file.UMSAPFile
             Object to handle UMSAP files
         rSection : dict
@@ -9932,8 +9952,7 @@ class WindowUMSAPControl(BaseWindow):
             tree control.
         rWindow : list[wx.Window]
             List of plot windows associated with this window.
-        rCopiedFilter: list
-            Copy of the List of applied filters in a ProtProfPlot Window
+        
     """
     #region -----------------------------------------------------> Class setup
     cName = mConfig.nwUMSAPControl
@@ -10040,7 +10059,7 @@ class WindowUMSAPControl(BaseWindow):
         else:
             pass
         #------------------------------> 
-        mConfig.winMain.CreateTab(self.dSectionTab[section], dataI) # type: ignore
+        mConfig.winMain.CreateTab(self.dSectionTab[section], dataI)             # type: ignore
         #endregion -----------------------------------------------> Create Tab
 
         return True
@@ -10052,7 +10071,7 @@ class WindowUMSAPControl(BaseWindow):
             Parameters
             ----------
             event : wxCT.Event
-                Information about the event
+                Information about the event.
 
             Returns
             -------
@@ -10064,7 +10083,7 @@ class WindowUMSAPControl(BaseWindow):
         #endregion ---------------------------------------> Get Item & Section
 
         #region ----------------------------------------------> Destroy window
-        #------------------------------> Event trigers before checkbox changes
+        #------------------------------> Event triggers before checkbox changes
         if self.wTrc.IsItemChecked(item):
             #------------------------------>
             for v in self.rWindow[section].values():
@@ -10175,7 +10194,7 @@ class WindowUMSAPControl(BaseWindow):
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
-        return self.dKeyMethod[mode](selItem, objAdd) # type: ignore
+        return self.dKeyMethod[mode](selItem, objAdd)                           # type: ignore
         #endregion ------------------------------------------------>
     #---
 
@@ -10275,20 +10294,20 @@ class WindowUMSAPControl(BaseWindow):
                         fileD[initStep/dataFile] = folderInit/dataFile
                 else:
                     pass
-        #endregion ------------------------------------------------> 
-        
-        #region ---------------------------------------------------> 
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
         for k,v in folderD.items():
             shutil.copytree(k,v)
-        #------------------------------> 
+        #------------------------------>
         for k,v in fileD.items():
             shutil.copyfile(k,v)
-        #------------------------------> 
+        #------------------------------>
         self.rObj.Save()
-        #------------------------------> 
+        #------------------------------>
         self.UpdateFileContent()
-        #endregion ------------------------------------------------> 
-    
+        #endregion ------------------------------------------------>
+
         return True
     #---
 
@@ -10383,12 +10402,12 @@ class WindowUMSAPControl(BaseWindow):
             -------
             bool
         """
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         inputF = []
         folder = []
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         for k,v in selItems.items():
             #------------------------------> Analysis
             for item in v:
@@ -10616,8 +10635,16 @@ class WindowUMSAPControl(BaseWindow):
     #---
 
     def GetFolderFile(
-        self, sec, run, valI, folderD, fileD, dataStep, folderData, 
-        initStep, folderInit,
+        self, 
+        sec: str, 
+        run: str, 
+        valI: dict, 
+        folderD: dict, 
+        fileD: dict, 
+        dataStep: Path, 
+        folderData: Path, 
+        initStep: Path, 
+        folderInit: Path,
         ) -> tuple[dict, dict]:
         """Get path to folders and files.
 
@@ -10625,22 +10652,22 @@ class WindowUMSAPControl(BaseWindow):
             ----------
             sec: str
                 Analysis name.
-            run: dict
-                Data dict
+            run: str
+                Analysis ID.
             valI: dict
-            
-            folderD:
-            
-            fileD:
-            
-            dataStep:
-            
-            folderData:
-            
-            initStep:
-            
-            folderInit:
-
+                Initial Data for the analysis.
+            folderD: dict
+                Folder paths.
+            fileD: dict
+                File paths.
+            dataStep: Path
+                Data Steps path
+            folderData: Path
+                Folder Path
+            initStep: Path
+                Path to the Initial files.
+            folderInit: Path
+                Path to the Initial files.
             Returns
             -------
             bool
@@ -10689,7 +10716,7 @@ class BaseDialogOkCancel(wx.Dialog):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self,
-        title: str='',
+        title : str='',
         parent: Optional[wx.Window]=None,
         ) -> None:
         """ """
@@ -10724,7 +10751,7 @@ class BaseDialogOkCancel(wx.Dialog):
             Parameters
             ----------
             event:wx.Event
-                Information about the event
+                Information about the event.
             
             Returns
             -------
@@ -10746,7 +10773,7 @@ class BaseDialogOkCancel(wx.Dialog):
             Parameters
             ----------
             event:wx.Event
-                Information about the event
+                Information about the event.
 
             Returns
             -------
@@ -10763,7 +10790,7 @@ class BaseDialogOkCancel(wx.Dialog):
 
 #region -----------------------------------------------------------> wx.Dialog
 class DialogFileSelect(wx.FileDialog):
-    """Creates a dialog to select a file to read/save content from/into
+    """Creates a dialog to select a file to read/save content from/into.
 
         Parameters
         ----------
@@ -10803,10 +10830,10 @@ class DialogFileSelect(wx.FileDialog):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, 
-        mode: mConfig.litFSelect, 
-        ext: str, 
-        parent: Optional['wx.Window']=None, 
-        msg: str='', 
+        mode   : mConfig.litFSelect, 
+        ext    : str, 
+        parent : Optional['wx.Window']=None, 
+        msg    : str='', 
         defPath: Union[Path, str, None]=None,
         ) -> None:
         """ """
@@ -10840,7 +10867,7 @@ class DialogDirSelect(wx.DirDialog):
         message : str
             Message to show in the window.
         defPath: Path or str
-            Default value for opnening wx.DirDialog.
+            Default value for opening wx.DirDialog.
     """
     #region -----------------------------------------------------> Class setup
     title = 'Select a folder'
@@ -10848,7 +10875,9 @@ class DialogDirSelect(wx.DirDialog):
 
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, parent: Optional[wx.Window]=None, message: str='',
+        self, 
+        parent : Optional[wx.Window]=None, 
+        message: str='',
         defPath: Union[str,Path]='',
         ) -> None:
         """ """
@@ -10911,12 +10940,12 @@ class DialogNotification(wx.Dialog):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, 
-        mode: mConfig.litNotification,
-        msg: str='', 
+        mode      : mConfig.litNotification,
+        msg       : str='', 
         tException: Union[Exception, str]='', 
-        parent: Optional[wx.Window]=None, 
-        button: int=1, 
-        setText: bool=False,
+        parent    : Optional[wx.Window]=None, 
+        button    : int=1, 
+        setText   : bool=False,
         ) -> None:
         """ """
         #region -------------------------------------------------> Check Input
@@ -11029,14 +11058,16 @@ class DialogNotification(wx.Dialog):
 
     #region ---------------------------------------------------> Class methods
     def SetErrorText(
-        self, msg: str='', tException: Union[Exception, str]='',
+        self, 
+        msg       : str='', 
+        tException: Union[Exception, str]='',
         ) -> bool:
-        """Set the error text in the wx.TextCtrl
+        """Set the error text in the wx.TextCtrl.
 
             Parameters
             ----------
             msg : str
-                Error message
+                Error message.
             tException : Exception, str
                 To display full traceback or a custom further details message.
         """
@@ -11046,7 +11077,7 @@ class DialogNotification(wx.Dialog):
         else:
             pass
         #endregion --------------------------------------------------> Message
-        
+
         #region ---------------------------------------------------> Exception  
         if tException:
             if msg:
@@ -11060,9 +11091,8 @@ class DialogNotification(wx.Dialog):
         else:
             pass
         #endregion ------------------------------------------------> Exception  
-        
+
         self.wError.SetInsertionPoint(0)
-        
         return True
     #---
     #endregion ------------------------------------------------> Class methods
@@ -11180,7 +11210,7 @@ class DialogPreference(wx.Dialog):
         self.EndModal(0)
         return True
     #---
-    
+
     def OnDefault(self, event: Union[wx.CommandEvent, str]) -> bool:
         """Set default options.
 
@@ -11290,7 +11320,7 @@ class DialogCheckUpdateResult(wx.Dialog):
         parent : wx widget or None
             To center the dialog in parent. Default None.
         checkRes : str or None
-            Internet lastest version. Default None.
+            Internet latest version. Default None.
     """
     #region -----------------------------------------------------> Class setup
     cName = mConfig.ndCheckUpdateResDialog
@@ -11300,7 +11330,9 @@ class DialogCheckUpdateResult(wx.Dialog):
 
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, parent: Optional[wx.Window]=None, checkRes: str='',
+        self,
+        parent  : Optional[wx.Window]=None,
+        checkRes: str='',
         ) -> None:
         """"""
         #region -----------------------------------------------> Initial setup
@@ -11367,22 +11399,25 @@ class DialogCheckUpdateResult(wx.Dialog):
         #endregion ------------------------------------------> Position & Show
     #---
     #endregion -----------------------------------------------> Instance setup
-    
-    #------------------------------> Class Methods
+
     #region ---------------------------------------------------> Event Methods
-    def OnLink(self, event: wx.Event) -> Literal[True]:
+    def OnLink(self, event: wx.Event) -> bool:
         """Process the link event.
         
             Parameters
             ----------
             event : wx.adv.HyperlinkEvent
-                Information about the event
+                Information about the event.
+            
+            Returns
+            -------
+            bool
         """
-        #------------------------------> 
+        #------------------------------>
         event.Skip()
         self.EndModal(1)
         self.Destroy()
-        #------------------------------> 
+        #------------------------------>
         return True
     #endregion ------------------------------------------------> Event Methods
 #---
@@ -11408,10 +11443,10 @@ class DialogProgress(wx.Dialog):
     def __init__(
         self,
         parent: Optional[wx.Window],
-        title: str,
-        count: int,
-        img: Path=mConfig.fImgIcon,
-        style=wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER,
+        title : str,
+        count : int,
+        img   : Path=mConfig.fImgIcon,
+        style : int=wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER,
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -11569,7 +11604,7 @@ class DialogProgress(wx.Dialog):
             label : str
                 All done message.
             eTime : str
-                Secondary mensage to display below the gauge. e.g. Elapsed time.
+                Secondary message to display below the gauge. e.g. Elapsed time.
         """
         #region ------------------------------------------------------> Labels
         self.wSt.SetLabel(label)
@@ -11597,8 +11632,8 @@ class DialogProgress(wx.Dialog):
 
     def ErrorMessage(
         self,
-        label: str,
-        error: str='',
+        label     : str,
+        error     : str='',
         tException: Optional[Exception]=None,
         ) -> bool:
         """Show error message.
@@ -11716,7 +11751,6 @@ class DialogResControlExp(BaseDialogOkCancel):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #------------------------------> Class Methods
     #region ---------------------------------------------------> Event methods
     def OnOK(self, event: wx.CommandEvent) -> bool:
         """Validate user information and close the window.
@@ -11821,7 +11855,7 @@ class DialogUMSAPAddDelExport(BaseDialogOkCancel):
             bool
         """
         #region ---------------------------------------------------> 
-        item     = event.GetItem() # type: ignore
+        item     = event.GetItem()                                              # type: ignore
         checked  = self.wTrc.IsItemChecked(item)
         #endregion ------------------------------------------------> 
 
@@ -11892,7 +11926,7 @@ class DialogUMSAPAddDelExport(BaseDialogOkCancel):
         #endregion ------------------------------------------------> 
 
         #region --------------------------------------------------->
-        for child in root.GetChildren(): # type: ignore
+        for child in root.GetChildren():                                        # type: ignore
             #------------------------------> 
             childN = child.GetText()
             gchildL = child.GetChildren()
@@ -11995,17 +12029,17 @@ class DialogListSelect(BaseDialogOkCancel):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, 
-        tOptions: list[list[str]],
-        tColLabel: list[str],
-        tColSize: list[int],
+        tOptions   : list[list[str]],
+        tColLabel  : list[str],
+        tColSize   : list[int],
         tSelOptions: list[list[str]]= [],
-        title: str='',
-        tStLabel:list[str]=[],
-        tBtnLabel: str='',
-        parent: Optional[wx.Window]=None,
-        color: str=mConfig.color['Zebra'],
+        title      : str='',
+        tStLabel   :list[str]=[],
+        tBtnLabel  : str='',
+        parent     : Optional[wx.Window]=None,
+        color      : str=mConfig.color['Zebra'],
         rightDelete: bool=True, 
-        style=wx.LC_REPORT|wx.LC_VIRTUAL,
+        style      : int=wx.LC_REPORT|wx.LC_VIRTUAL,
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -12046,7 +12080,6 @@ class DialogListSelect(BaseDialogOkCancel):
             canPaste        = True,
             canCut          = True,
             copyFullContent = True,
-            # style           = style,
         )
         for r in tSelOptions:
             self.wLCtrlO.Append(r)
@@ -12129,7 +12162,7 @@ class DialogListSelect(BaseDialogOkCancel):
     #---
 
     def OnAdd(self, event: Union[wx.Event, str]) -> bool:
-        """Add columns to analyse using the button.
+        """Add columns to analyze using the button.
 
             Parameters
             ----------
@@ -12212,12 +12245,12 @@ class DialogMultipleCheckBox(BaseDialogOkCancel):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self,
-        title: str,
-        items: list[dict[str, str]],
-        nCol: list[int], 
-        label: list[str]=['Options'],
+        title      : str,
+        items      : list[dict[str, str]],
+        nCol       : list[int], 
+        label      : list[str]=['Options'],
         multiChoice: list[bool]=[False],
-        parent: Optional[wx.Window]=None
+        parent     : Optional[wx.Window]=None
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -12282,7 +12315,7 @@ class DialogMultipleCheckBox(BaseDialogOkCancel):
 
     #region ---------------------------------------------------> Class methods
     def OnCheck(self, event:wx.CommandEvent) -> bool:
-        """Deselect all other seleced options.
+        """Deselect all other selected options.
 
             Parameters
             ----------
@@ -12388,12 +12421,12 @@ class DialogUserInputText(BaseDialogOkCancel):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self,
-        title: str,
-        label: list[str],
-        hint: list[str],
+        title    : str,
+        label    : list[str],
+        hint     : list[str],
         validator: list[wx.Validator],
-        parent: Union[wx.Window, None]=None,
-        values: list[str]=[],
+        parent   : Union[wx.Window, None]=None,
+        values   : list[str]=[],
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -12442,7 +12475,7 @@ class DialogUserInputText(BaseDialogOkCancel):
             Parameters
             ----------
             event:wx.Event
-                Information about the event
+                Information about the event.
 
             Returns
             -------
@@ -12496,10 +12529,10 @@ class DialogFilterRemoveAny(BaseDialogOkCancel):
 
         Parameters
         ----------
-        cFilterList : list
+        filterList : list
             List of already applied filter, e.g.:
             [['Text', {kwargs} ], ...]
-        cParent : wx.Window
+        parent : wx.Window
             Parent of the window.
 
         Attributes
@@ -12519,7 +12552,9 @@ class DialogFilterRemoveAny(BaseDialogOkCancel):
 
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, filterList: list, parent: Optional[wx.Window]=None) -> None:
+        self, 
+        filterList: list,
+        parent    : Optional[wx.Window]=None) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.rCheckB = []
@@ -12608,12 +12643,11 @@ class DialogFilterPValue(DialogUserInputText):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self, 
-        title: str,
-        label: str,
-        hint: str,
-        parent: Union[wx.Window, None]=None,
+        title    : str,
+        label    : str,
+        hint     : str,
+        parent   : Union[wx.Window, None]=None,
         validator: wx.Validator=wx.DefaultValidator,
-        # cSize: tuple[int, int]=(420, 170),
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -12655,7 +12689,7 @@ class DialogFilterPValue(DialogUserInputText):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event methods
-    def OnTextChange(self, event) -> bool:
+    def OnTextChange(self, event: wx.Event) -> bool:
         """Select -log10P if the given value is > 1.
 
             Parameters
@@ -12747,19 +12781,11 @@ class DialogFilterPValue(DialogUserInputText):
     #---
 
     def GetValue(self) -> tuple[str, bool]:
-        """
-    
-            Parameters
-            ----------
-            
-    
+        """Get user values.
+
             Returns
             -------
-            
-    
-            Raise
-            -----
-            
+            tuple(str, bool)
         """
         uText = self.rInput[0].wTc.GetValue()
         absB  = self.wCbAbs.IsChecked()
@@ -12789,11 +12815,11 @@ class DialogVolColorScheme(BaseDialogOkCancel):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self,
-        t0:float,
-        s0:float,
-        z:float,
-        p:float,
-        fc:float,
+        t0    : float,
+        s0    : float,
+        z     : float,
+        p     : float,
+        fc    : float,
         parent: Optional[wx.Window]=None,
         ) -> None:
         """ """
@@ -12942,20 +12968,20 @@ class DialogVolColorScheme(BaseDialogOkCancel):
                 res.append(False)
         #endregion -------------------------------------------------> Validate
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         if all(res):
             self.EndModal(1)
             self.Close()
         else:
             pass
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
         return True
     #---
 
     def GetVal(self):
-        """Get the selected values
-        
+        """Get the selected values.
+
             Returns
             -------
             bool
@@ -12973,29 +12999,38 @@ class DialogVolColorScheme(BaseDialogOkCancel):
 
 
 class DialogFABtnText(BaseDialogOkCancel):
-    """
+    """Further Analysis Dialog with a wx.Button and wx.TextCtrl.
 
         Parameters
         ----------
-        
-
-        Attributes
-        ----------
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+        btnLabel: str
+            Label for the wx.Button.
+        btnHint: str
+            Hint for the wx.Button.
+        ext: str 
+            Extension for selecting file.
+        btnValidator: wx.Validator
+            Validator for user input.
+        stLabel: str 
+            Label for the wx.StaticText.
+        stHint: str
+            Hint for the wx.StaticText.
+        stValidator: wx.Validator
+            Validator for the wx.TextCtrl.
+        parent: wx.Window or None
+            Parent for the wx.Dialog.
     """
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, btnLabel: str, btnHint: str, ext: str, btnValidator: wx.Validator,
-        stLabel: str, stHint: str, stValidator: wx.Validator,
-        parent: Optional[wx.Window]=None):
+        self, 
+        btnLabel    : str, 
+        btnHint     : str, 
+        ext         : str, 
+        btnValidator: wx.Validator,
+        stLabel     : str, 
+        stHint      : str, 
+        stValidator : wx.Validator,
+        parent      : Optional[wx.Window]=None):
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(title='Export Sequence Alignments', parent=parent)
@@ -13087,28 +13122,30 @@ class DialogFABtnText(BaseDialogOkCancel):
 
 
 class DialogFA2Btn(BaseDialogOkCancel):
-    """
+    """Further Analysis Dialog with two wx.Buttons.
 
         Parameters
         ----------
-        
-
-        Attributes
-        ----------
-        
-
-        Raises
-        ------
-        
-
-        Methods
-        -------
-        
+        btnLabel: list[str]
+            Label for the wx.Buttons.
+        btnHint: list[str]
+            Hints for the wx.Buttons.
+        ext: list[str]
+            Extensions for the files.
+        btnValidator: list[wx.Validator]
+            User input validators
+        parent: wx.Window or None
+            Parent of the wx.Dialog.
     """
     #region --------------------------------------------------> Instance setup
     def __init__(
-        self, btnLabel: list[str], btnHint: list[str], ext: list[str], 
-        btnValidator: list[wx.Validator], parent: Optional[wx.Window]=None):
+        self,
+        btnLabel    : list[str],
+        btnHint     : list[str],
+        ext         : list[str],
+        btnValidator: list[wx.Validator],
+        parent      : Optional[wx.Window]=None
+        ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(title='PDB Mapping', parent=parent)
@@ -13242,7 +13279,7 @@ Upon execution of this Agreement by the party identified below (”Licensee”),
 2. Licensee may, at its own expense, create and freely distribute complimentary works that inter-operate with the Software, directing others to the Utilities for Mass Spectrometry Analysis of Proteins web page to license and obtain the Software itself. Licensee may, at its own expense, modify the Software to make derivative works. Except as explicitly provided below, this License shall apply to any derivative work as it does to the original Software distributed by KBR. Any derivative work should be clearly marked and renamed to notify users that it is a modified version and not the original Software distributed by KBR. Licensee agrees to reproduce the copyright notice and other proprietary markings on any derivative work and to include in the documentation of such work the acknowledgment: ”This software includes code developed by Kenny Bravo Rodriguez for the Utilities for Mass Spectrometry Analysis of Proteins software”.
 Licensee may not sell any derivative work based on the Software under any circumstance. For commercial distribution of the Software or any derivative work based on the Software a separate license is required. Licensee may contact KBR to negotiate an appropriate license for such distribution.
 
-3. Except as expressly set forth in this Agreement, THIS SOFTWARE IS PROVIDED ”AS IS” AND KBR MAKES NO REPRESENTATIONS AND EXTENDS NO WAR- RANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OR MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, OR THAT THE USE OF THE SOFTWARE WILL NOT INFRINGE ANY PATENT, TRADEMARK, OR OTHER RIGHTS. LICENSEE AS- SUMES THE ENTIRE RISK AS TO THE RESULTS AND PERFORMANCE OF THE SOFTWARE AND/OR ASSOCIATED MATERIALS. LICENSEE AGREES THAT KBR SHALL NOT BE HELD LIABLE FOR ANY DIRECT, INDIRECT, CONSE- QUENTIAL, OR INCIDENTAL DAMAGES WITH RESPECT TO ANY CLAIM BY LICENSEE OR ANY THIRD PARTY ON ACCOUNT OF OR ARISING FROM THIS AGREEMENT OR USE OF THE SOFTWARE AND/OR ASSOCIATED MATERIALS.
+3. Except as expressly set forth in this Agreement, THIS SOFTWARE IS PROVIDED ”AS IS” AND KBR MAKES NO REPRESENTATIONS AND EXTENDS NO WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OR MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, OR THAT THE USE OF THE SOFTWARE WILL NOT INFRINGE ANY PATENT, TRADEMARK, OR OTHER RIGHTS. LICENSEE ASSUMES THE ENTIRE RISK AS TO THE RESULTS AND PERFORMANCE OF THE SOFTWARE AND/OR ASSOCIATED MATERIALS. LICENSEE AGREES THAT KBR SHALL NOT BE HELD LIABLE FOR ANY DIRECT, INDIRECT, CONSEQUENTIAL, OR INCIDENTAL DAMAGES WITH RESPECT TO ANY CLAIM BY LICENSEE OR ANY THIRD PARTY ON ACCOUNT OF OR ARISING FROM THIS AGREEMENT OR USE OF THE SOFTWARE AND/OR ASSOCIATED MATERIALS.
 
 4. Licensee understands the Software is proprietary to KBR. Licensee agrees to take all reasonable steps to insure that the Software is protected and secured from unauthorized disclosure, use, or release and will treat it with at least the same level of care as Licensee would use to protect and secure its own proprietary computer programs and/or information, but using no less than a reasonable standard of care. Licensee agrees to provide the Software only to any other person or entity who has registered with KBR. If Licensee is not registering as an individual but as an institution or corporation each member of the institution or corporation who has access to or uses Software must agree to and abide by the terms of this license. If Licensee becomes aware of any unauthorized licensing, copying or use of the Software, Licensee shall promptly notify KBR in writing. Licensee expressly agrees to use the Software only in the manner and for the specific uses authorized in this Agreement.
 
@@ -13252,7 +13289,7 @@ Licensee may not sell any derivative work based on the Software under any circum
 ”Utilities for Mass Spectrometry Analysis of Proteins was created by Kenny Bravo Rodriguez at the University of Duisburg-Essen and is currently developed at the Max Planck Institute of Molecular Physiology.”
 Any published work, which utilizes Utilities for Mass Spectrometry Analysis of Proteins, shall include the following reference:
 Kenny Bravo-Rodriguez, Birte Hagemeier, Lea Drescher, Marian Lorenz, Michael Meltzer, Farnusch Kaschani, Markus Kaiser and Michael Ehrmann. (2018). Utilities for Mass Spectrometry Analysis of Proteins (UMSAP): Fast post-processing of mass spectrometry data. Rapid Communications in Mass Spectrometry, 32(19), 1659–1667.
-Electronic documents will include a direct link to the official Utilities for Mass Spec- trometry Analysis of Proteins page at: www.umsap.nl
+Electronic documents will include a direct link to the official Utilities for Mass Spectrometry Analysis of Proteins page at: www.umsap.nl
 
 7. Commercial use of the Software, or derivative works based thereon, REQUIRES A COMMERCIAL LICENSE. Should Licensee wish to make commercial use of the Software, Licensee will contact KBR to negotiate an appropriate license for such use. Commercial use includes: (1) integration of all or part of the Software into a product for sale, lease or license by or on behalf of Licensee to third parties, or (2) distribution of the Software to third parties that need it to commercialize product sold or licensed by or on behalf of Licensee.
 
