@@ -29,8 +29,14 @@ import data.file as mFile
 
 
 #region ---------------------------------------------------------------> Files
-folder = Path(__file__).parent / 'test_files'
-tarprotData = folder / 'tarprot-data-file.txt'
+folder      = Path(__file__).parent / 'test_files'
+#------------------------------> Input Files
+tarprotData = folder / 'tarprot-data-file.txt' # For TarProt and CorrA
+#------------------------------> Result Files
+corrA_1     = folder / 'res-corrA-1.txt'
+corrA_2     = folder / 'res-corrA-2.txt'
+corrA_3     = folder / 'res-corrA-3.txt'
+corrA_4     = folder / 'res-corrA-4.txt'
 #endregion ------------------------------------------------------------> Files
 
 
@@ -113,17 +119,6 @@ DF_DFFilterByColS = pd.DataFrame({
     'A' : [1,2,3,4,5],
     'B' : ['1','2','1','2','1'],
 })
-
-DF_CorrA_1 = pd.DataFrame(
-    {
-        'Intensity 01' : [1.000, 0.772,  0.162, 0.136,  0.566],
-        'Intensity 02' : [0.772, 1.000,  0.190, 0.111,  0.589],
-        'Intensity 03' : [0.162, 0.190,  1.000, 0.775, -0.010],
-        'Intensity 04' : [0.136, 0.111,  0.775, 1.000,  0.010],
-        'Intensity 05' : [0.566, 0.589, -0.010, 0.010,  1.000],
-    },
-    index = ['Intensity 01','Intensity 02','Intensity 03','Intensity 04','Intensity 05']
-)
 #endregion ----------------------------------------------------> pd.DataFrames
 
 
@@ -642,6 +637,57 @@ class Test_CorrA(unittest.TestCase):
                 'ResCtrlFlat' : [0,1,2,3,4],
             }
         }
+        cls.dict2 = {
+            'Cero' : False,
+            'TransMethod' : 'None',
+            'NormMethod'  : 'None',
+            'ImpMethod'   : 'None',
+            'Shift'       : 1.8,
+            'Width'       : 0.3,
+            'CorrMethod'  : 'Pearson',
+            'oc' : {
+                'Column' : [98,99,100,101,102],
+            },
+            'df' : {
+                'ColumnR'     : [0,1,2,3,4],
+                'ColumnF'     : [0,1,2,3,4],
+                'ResCtrlFlat' : [0,1,2,3,4],
+            }
+        }
+        cls.dict3 = {
+            'Cero' : True,
+            'TransMethod' : 'Log2',
+            'NormMethod'  : 'Median',
+            'ImpMethod'   : 'None',
+            'Shift'       : 1.8,
+            'Width'       : 0.3,
+            'CorrMethod'  : 'Pearson',
+            'oc' : {
+                'Column' : [98,99,100,101,102],
+            },
+            'df' : {
+                'ColumnR'     : [0,1,2,3,4],
+                'ColumnF'     : [0,1,2,3,4],
+                'ResCtrlFlat' : [0,1,2,3,4],
+            }
+        }
+        cls.dict4 = {
+            'Cero' : True,
+            'TransMethod' : 'Log2',
+            'NormMethod'  : 'Median',
+            'ImpMethod'   : 'None',
+            'Shift'       : 1.8,
+            'Width'       : 0.3,
+            'CorrMethod'  : 'Kendall',
+            'oc' : {
+                'Column' : [98,99,100,101,102],
+            },
+            'df' : {
+                'ColumnR'     : [0,1,2,3,4],
+                'ColumnF'     : [0,1,2,3,4],
+                'ResCtrlFlat' : [0,1,2,3,4],
+            }
+        }
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -650,7 +696,10 @@ class Test_CorrA(unittest.TestCase):
         """Test method output"""
         #------------------------------>
         tInput = [
-            (self.df, self.dict1, True, DF_CorrA_1),
+            (self.df, self.dict1, True, corrA_1),
+            (self.df, self.dict2, True, corrA_2),
+            (self.df, self.dict3, True, corrA_3),
+            (self.df, self.dict4, True, corrA_4),
         ]
         #------------------------------>
         for a,b,c,d in tInput:
@@ -660,7 +709,9 @@ class Test_CorrA(unittest.TestCase):
                     a, b, resetIndex=c)[0]['dfR']
                 result = result.round(3)
                 #------------------------------>
-                pd._testing.assert_frame_equal(result, d)                       # type: ignore
+                dfF = pd.read_csv(d, sep='\t',index_col=0).round(3)
+                #------------------------------>
+                pd._testing.assert_frame_equal(result, dfF)                     # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
 #---
