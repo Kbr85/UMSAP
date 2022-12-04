@@ -1838,7 +1838,7 @@ class BaseResControlExpConf(wx.Panel):
                     e = mException.ExecutionError(b[2])
                     mWindow.DialogNotification(
                         'errorF', msg=msg, parent=self, tException=e)
-                    j.SetFocus(),
+                    j.SetFocus()
                     return (False,'')
             #--------------> Add row delimiter
             oText = f"{oText[0:-2]}; "
@@ -3934,7 +3934,7 @@ class PaneProtProf(BaseConfPanelMod):
                 'DetectedP' : detectedProt,
                 'GeneName'  : geneName,
                 'ScoreCol'  : scoreCol,
-                'ExcludeP'  : excludeProt,
+                'ExcludeR'  : excludeProt,
                 'ResCtrl'   : resCtrl,
                 'ColumnF'   : [scoreCol] + resCtrlFlat,
                 'Column'    : (
@@ -3944,7 +3944,7 @@ class PaneProtProf(BaseConfPanelMod):
                 'DetectedP'  : 0,
                 'GeneName'   : 1,
                 'ScoreCol'   : 2,
-                'ExcludeP'   : [2+x for x in range(1, len(excludeProt)+1)],
+                'ExcludeR'   : [2+x for x in range(1, len(excludeProt)+1)],
                 'ResCtrl'    : resCtrlDF,
                 'ResCtrlFlat': resCtrlDFFlat,
                 'ColumnR'    : resCtrlDFFlat,

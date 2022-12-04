@@ -812,7 +812,7 @@ def MatplotLibCmap(
     #region ------------------------------------------------------------> CMAP
     #------------------------------>
     vals   = np.vstack((vals1, vals2))
-    newMap = mpl.colors.ListedColormap(vals)
+    newMap = mpl.colors.ListedColormap(vals)                                    # type: ignore
     #------------------------------>
     if bad is not None:
         newMap.set_bad(color=bad)
@@ -1171,6 +1171,7 @@ def CorrA(
         -----
         *args are ignored. They are needed for compatibility.
     """
+    # Test in test.unit.test_method.Test_CorrA
     #region ------------------------------------------------> Data Preparation
     tOut = mStatistic.DataPreparation(df, rDO, resetIndex=resetIndex)
     if tOut[0]:
@@ -1231,6 +1232,7 @@ def ProtProf(
                 )                                  when everything went fine.
             -   ({}, 'Error message', Exception)   when something went wrong.
     """
+    # Test in test.unit.test_method.Test_ProtProf
     #region ------------------------------------------------> Helper Functions
     def EmptyDFR() -> pd.DataFrame:
         """Creates the empty data frame for the output. This data frame contains
@@ -1473,7 +1475,7 @@ def ProtProf(
 
         #region ----------------------------------------------------------> Pc
         if rDO['CorrectP'] != 'None':
-            dfR.loc[:,(cN,tN,'Pc')] = multipletests(
+            dfR.loc[:,(cN,tN,'Pc')] = multipletests(                            # type: ignore
                 dfR.loc[:,(cN,tN,'P')],
                 rDO['Alpha'], 
                 mConfig.oCorrectP[rDO['CorrectP']]
@@ -1635,9 +1637,9 @@ def NCResNumbers(
 
         #region -----------------------------------------------------> Nat Seq
         #------------------------------> 
-        if seqNat and rSeqFileObj.rSeqNat:                                 # type: ignore
+        if seqNat and rSeqFileObj.rSeqNat:                                      # type: ignore
             #------------------------------> 
-            delta = rSeqFileObj.GetSelfDelta()                             # type: ignore
+            delta = rSeqFileObj.GetSelfDelta()                                  # type: ignore
             #------------------------------> 
             a = dfR.iloc[:,rDO['dfo']['NC']] + delta
             dfR.iloc[:,rDO['dfo']['NCF']] = a
