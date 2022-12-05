@@ -17,17 +17,17 @@
 #region -------------------------------------------------------------> Imports
 import json
 from pathlib import Path
-from typing import Union, Optional, Literal
+from typing  import Union, Optional, Literal
 
-import numpy as np
+import numpy  as np
 import pandas as pd
-from Bio import pairwise2
+from Bio       import pairwise2
 from Bio.Align import substitution_matrices
 
-import config.config as mConfig
+import config.config  as mConfig
 import data.exception as mException
 import data.generator as mGenerator
-import data.method as mMethod
+import data.method    as mMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -46,7 +46,7 @@ def ReadJSON(fileP: Union[Path, str]) -> dict:
             Data in the file
     """
     #region -------------------------------------------------------> Read file
-    with open(fileP, 'r') as file:
+    with open(fileP, 'r', encoding="utf-8") as file:
         data = json.load(file)
     #endregion ----------------------------------------------------> Read file
 
@@ -66,7 +66,7 @@ def ReadFileFirstLine(
         fileP : path or str
             File path of the file to be read.
         char : str
-            each line in the file is splitted using the value of char or not if 
+            each line in the file is splitted using the value of char or not if
             char is empty.
         empty : boolean
             Return first non-empty line (False) or first line (True).
@@ -79,14 +79,14 @@ def ReadFileFirstLine(
 
         Notes
         -----
-        - The method returns a list containing the first line in the file. 
-        - The line is splitted using char. 
+        - The method returns a list containing the first line in the file.
+        - The line is splitted using char.
         - The first non-empty line is returned if empty is False, otherwise the
           first line is returned independently of the line content.
         - If the file is empty an empty line is returned.
     """
     #region --------------------------------------------> Read and split lines
-    with open(fileP, 'r') as file:
+    with open(fileP, 'r', encoding="utf-8") as file:
         for line in file:
             #--> To remove ' ', \n, \t & \r from start/end of line
             l = line.strip()
@@ -142,7 +142,7 @@ def WriteJSON(fileP: Union[Path, str], data: dict) -> bool:
 
         Parameters
         ----------
-        fileP : str or Path 
+        fileP : str or Path
             Path to the file.
         data: dict
             Data to be written.
@@ -152,7 +152,7 @@ def WriteJSON(fileP: Union[Path, str], data: dict) -> bool:
         bool
     """
     #region ---------------------------------------------------> Write to file
-    with open(fileP, 'w') as file:
+    with open(fileP, 'w', encoding="utf-8") as file:
         json.dump(data, file, indent=4)
     #endregion ------------------------------------------------> Write to file
 
@@ -171,7 +171,7 @@ def WriteDF2CSV(
 
         Parameters
         ----------
-        fileP: str or Path 
+        fileP: str or Path
             Path to the file.
         df: pd.DataFrame
             Data frame to be written.
@@ -179,7 +179,7 @@ def WriteDF2CSV(
             Character to separate columns in the CSV file.
         na_rep : str
             Character to represent NA values.
-        index: boolean 
+        index: boolean
             Write index columns
     """
     #region ---------------------------------------------------> Write to file
@@ -196,7 +196,7 @@ def WriteDFs2CSV(
     na_rep: str='NA',
     index : bool=False
     ) -> bool:
-    """Write several pd.DataFrames to baseP as CSV files. 
+    """Write several pd.DataFrames to baseP as CSV files.
 
         Parameters
         ----------
@@ -208,7 +208,7 @@ def WriteDFs2CSV(
             Character to separate columns in the csv file.
         na_rep : str
             Character to represent NA values.
-        index: boolean 
+        index: boolean
             Write index columns.
 
         Notes
@@ -240,14 +240,14 @@ class CSVFile():
         Attributes
         ----------
         rData : pd.DataFrame
-            This is the initial data and will not be modified. It is just to 
+            This is the initial data and will not be modified. It is just to
             read from if needed.
         rDf : pd.DataFrame
             Copy of the df in the file that can be modified.
         rFileP : str or Path
             Path to the CSV file.
         rHeader : list
-            List with the names of the columns in the CSV file. It is assumed 
+            List with the names of the columns in the CSV file. It is assumed
             the names are in the first row of the file.
         rNRow, rNCol : int
             Number of rows and columns in self.rData
@@ -339,15 +339,16 @@ class FastaFile():
         #------------------------------>
         self.rHeaderRec, self.rSeqRec = next(gen)
         self.rSeqLengthRec = len(self.rSeqRec)
+        self.rAlignment    = []
         #------------------------------>
         try:
             self.rHeaderNat, self.rSeqNat = next(gen)
         except StopIteration:
             self.rHeaderNat, self.rSeqNat, self.rSeqLengthNat = ('', '', None)
-        except Exception:
+        except Exception as e:
             msg = (f'There was an unexpected error when parsing the fasta '
                 f'file.\n{fileP}')
-            raise mException.UnexpectedError(msg)
+            raise mException.UnexpectedError(msg) from e
         else:
             self.rSeqLengthNat = len(self.rSeqNat)
         #endregion --------------------------------------------> Initial Setup
@@ -377,7 +378,7 @@ class FastaFile():
 
             Notes
             -----
-            [-1, -1] is returned if seq is not found inside the protein 
+            [-1, -1] is returned if seq is not found inside the protein
             sequence.
             - First match is returned if the search sequence is found more than
             once in the protein sequence.
@@ -444,14 +445,14 @@ class FastaFile():
             -----
             InputError if self.rSeqNat is empty.
         """
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         if not self.rSeqNat:
-            msg = (f'It is not possible to calculate the sequence alignment '
-                f'because the Fasta file contains only one sequence.')
+            msg = ('It is not possible to calculate the sequence alignment '
+                   'because the Fasta file contains only one sequence.')
             raise mException.ExecutionError(msg)
         else:
             pass
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
         #region ---------------------------------------------------> Alignment
         if getattr(self, 'rAlignment', None) is None:
@@ -539,27 +540,27 @@ class FastaFile():
 
         #region -------------------------------------------> Get Left Position
         ll = None
-        #------------------------------> 
+        #------------------------------>
         for k,l in enumerate(seqB, start=1):
             if l == '-':
                 pass
             else:
-                ll = k 
+                ll = k
                 break
-        #------------------------------> 
+        #------------------------------>
         ll = 1 if ll is None else ll
         #endregion ----------------------------------------> Get Left Position
 
         #region ------------------------------------------> Get Right Position
         lr = None
-        #------------------------------> 
+        #------------------------------>
         for k,l in reversed(list(enumerate(seqB, start=1))):
             if l == '-':
                 pass
             else:
                 lr = k
                 break
-        #------------------------------> 
+        #------------------------------>
         lr = self.rSeqLengthRec if lr is None else lr
         #endregion ---------------------------------------> Get Right Position
 
@@ -594,26 +595,26 @@ class PDBFile():
     # Test in test.unit.test_file.Test_PDBFile
     #region -----------------------------------------------------> Class setup
     # Col names for the DF with the atom information in the pdb file
-    cDFAtomCol = [ 
-        'ATOM', 
-        'ANumber', 
-        'AName', 
-        'AltLoc', 
-        'ResName', 
+    cDFAtomCol = [
+        'ATOM',
+        'ANumber',
+        'AName',
+        'AltLoc',
+        'ResName',
         'Chain',
-        'ResNum', 
-        'CodeResIns', 
-        'X', 
-        'Y', 
-        'Z', 
-        'Occupancy', 
-        'Beta', 
-        'Segment', 
+        'ResNum',
+        'CodeResIns',
+        'X',
+        'Y',
+        'Z',
+        'Occupancy',
+        'Beta',
+        'Segment',
         'Element',
     ]
     #------------------------------>
     cPDBformat = ("{:6s}{:5d} {:^4s}{:1s}{:3s} {:1s}{:4d}{:1s}   {:8.3f}{:8.3f}"
-	    "{:8.3f}{:6.2f}{:6.2f}      {:4s}{:2s}")
+        "{:8.3f}{:6.2f}{:6.2f}      {:4s}{:2s}")
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance Setup
@@ -638,12 +639,12 @@ class PDBFile():
             -----
             The created DataFrame contains only the ATOM section of the PDB.
         """
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         ldf = []
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
-        #region ---------------------------------------------------> 
-        with open(self.rFileP, 'r') as file:
+        #region --------------------------------------------------->
+        with open(self.rFileP, 'r', encoding="utf-8") as file:
             for l in file:
                 if l[0:4] == 'ATOM':
                     lo = []
@@ -663,12 +664,12 @@ class PDBFile():
                     lo.append(l[72:76].strip())
                     lo.append(l[76:78].strip())
                     ldf.append(lo)
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         self.rDFAtom = pd.DataFrame(ldf, columns=self.cDFAtomCol)
         self.rChain = self.rDFAtom['Chain'].unique()
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
         return True
     #---
@@ -690,7 +691,7 @@ class PDBFile():
         def Line2PDBFormat(row: np.ndarray, buff):
             """Apply the correct format to the row in the DataFrame and write
                 the line to the buffer.
-        
+
                 Parameters
                 ----------
                 row: np.ndarray
@@ -710,8 +711,8 @@ class PDBFile():
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
-        buff = open(fileP, 'w')
-        df.apply(Line2PDBFormat, raw=True, axis=1, args=[buff])
+        buff = open(fileP, 'w', encoding="utf-8")
+        df.apply(Line2PDBFormat, raw=True, axis=1, args=[buff])                 # type: ignore
         buff.write('END')
         buff.close()
         #endregion ------------------------------------------------>
@@ -726,21 +727,21 @@ class PDBFile():
             ----------
             chain: str
                 Selected chain.
-    
+
             Returns
             -------
             str
-                One letter AA sequence in the selected Chain. 
+                One letter AA sequence in the selected Chain.
         """
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         dfd = self.rDFAtom[self.rDFAtom['Chain']==chain]
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         dfd  = dfd.drop_duplicates(subset='ResNum', keep='first', inplace=False)
         dfd  = dfd.loc[dfd.loc[:,'ResName'].isin(mConfig.oAA3toAA)]
         seq = dfd['ResName'].tolist()
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
         return "".join([mConfig.oAA3toAA[x] for x in seq])
     #---
@@ -784,18 +785,18 @@ class PDBFile():
             -------
             bool
         """
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         mask = (
             (self.rDFAtom['Chain']==chain)&(self.rDFAtom['ResNum'].isin(beta)))
         idxR  = self.rDFAtom[mask].index.tolist()
         idxCB = self.rDFAtom.columns.get_loc('Beta')
         idxCR = self.rDFAtom.columns.get_loc('ResNum')
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         self.rDFAtom.iloc[idxR, idxCB] = (
             self.rDFAtom.iloc[idxR, idxCR].apply(lambda x: beta[x]))
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
         return True
     #---
@@ -838,7 +839,7 @@ class UMSAPFile():
         data = ReadJSON(fileP)
         #------------------------------> Sort Keys
         dataKey = sorted([x for x in data.keys()])
-        #------------------------------> 
+        #------------------------------>
         self.rData = {}
         for k in dataKey:
             self.rData[k] = data[k]
@@ -907,7 +908,7 @@ class UMSAPFile():
         plotData['Error'] = []
         #------------------------------> Fill
         for k, v in self.rData[mConfig.nuCorrA].items():
-            #------------------------------> 
+            #------------------------------>
             tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{mConfig.nuCorrA.replace(" ", "-")}'
             #------------------------------>
             try:
@@ -1023,11 +1024,13 @@ class UMSAPFile():
         plotData['Error'] = []
         #endregion ------------------------------------------------> Variables
 
-        #region -------------------------------------------------> Plot & Menu        
+        #region -------------------------------------------------> Plot & Menu
         for k,v in self.rData[mConfig.nuDataPrep].items():
             try:
-                #------------------------------> 
-                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{mConfig.nuDataPrep.replace(" ", "-")}'
+                #------------------------------>
+                a = k.split(" - ")[0]
+                b = mConfig.nuDataPrep.replace(" ", "-")
+                tPath = self.rStepDataP / f'{a}_{b}'
                 #------------------------------> Add to dict
                 plotData[k] = {
                     'DP' : {j:ReadCSV2DF(tPath/w) for j,w in v['DP'].items()},
@@ -1064,15 +1067,17 @@ class UMSAPFile():
         #------------------------------> Fill
         for k,v in self.rData[mConfig.nmProtProf].items():
             try:
-                #------------------------------> 
-                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{mConfig.nmProtProf.replace(" ", "-")}'
+                #------------------------------>
+                a = k.split(" - ")[0]
+                b = mConfig.nmProtProf.replace(" ", "-")
+                tPath = self.rStepDataP / f'{a}_{b}'
                 #------------------------------> Create data
                 df = ReadCSV2DF(tPath/v['R'], header=[0,1,2])
-                df.loc[:,colStr] = df.loc[:,colStr].astype('str')
+                df.loc[:,colStr] = df.loc[:,colStr].astype('str')               # type: ignore
                 #------------------------------> Add to dict if no error
                 plotData[k] = {
-                    'DF': df,
-                    'F' : v['F'],
+                    'DF'   : df,
+                    'F'    : v['F'],
                     'Alpha': v['CI']['Alpha'],
                 }
             except Exception:
@@ -1113,8 +1118,10 @@ class UMSAPFile():
         #------------------------------> Fill
         for k,v in self.rData[mConfig.nmLimProt].items():
             try:
-                #------------------------------> 
-                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{mConfig.nmLimProt.replace(" ", "-")}'
+                #------------------------------>
+                a = k.split(" - ")[0]
+                b = mConfig.nmLimProt.replace(" ", "-")
+                tPath = self.rStepDataP / f'{a}_{b}'
                 #------------------------------> Create data
                 df = ReadCSV2DF(tPath/v['R'], header=[0,1,2])
                 #------------------------------> Plot Info
@@ -1180,8 +1187,10 @@ class UMSAPFile():
         #------------------------------> Fill
         for k,v in self.rData[mConfig.nmTarProt].items():
             try:
-                #------------------------------> 
-                tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{mConfig.nmTarProt.replace(" ", "-")}'
+                #------------------------------>
+                a = k.split(" - ")[0]
+                b = mConfig.nmTarProt.replace(" ", "-")
+                tPath = self.rStepDataP / f'{a}_{b}'
                 #------------------------------> Create data
                 df  = ReadCSV2DF(tPath/v['R'], header=[0,1])
                 #------------------------------> Plot Info
@@ -1220,7 +1229,7 @@ class UMSAPFile():
             tSection: str
                 Analysis performed, e.g. 'Correlation Analysis'
             tDate : str
-                The date plus user-given Analysis ID 
+                The date plus user-given Analysis ID
                 e.g. '20210325-112056 - bla'
 
             Returns
@@ -1233,9 +1242,9 @@ class UMSAPFile():
                 }
         """
         #region ------------------------------------------------> Strip I keys
-        #------------------------------> 
+        #------------------------------>
         i = {}
-        #------------------------------> 
+        #------------------------------>
         for k,v in self.rData[tSection][tDate]['I'].items():
             i[k.strip()] = v
         #endregion ---------------------------------------------> Strip I keys
@@ -1255,7 +1264,7 @@ class UMSAPFile():
             tSection: str
                 Analysis performed, e.g. 'Correlation Analysis'
             tDate : str
-                The date plus user-given Analysis ID 
+                The date plus user-given Analysis ID
                 e.g. '20210325-112056 - bla'
 
             Returns
@@ -1288,7 +1297,7 @@ class UMSAPFile():
             tSection: str
                 Analysis performed, e.g. 'Correlation Analysis'
             tDate : str
-                The date plus user-given Analysis ID 
+                The date plus user-given Analysis ID
                 e.g. '20210325-112056 - bla'
 
             Returns
@@ -1309,11 +1318,11 @@ class UMSAPFile():
         seqObj = FastaFile(self.rInputFileP/fileN)
         #endregion ------------------------------------------------>
 
-        return (seqObj.rSeqRec, seqObj.rSeqNat) 
+        return (seqObj.rSeqRec, seqObj.rSeqNat)
     #---
 
     def GetFAData(
-        self, 
+        self,
         tSection: str,
         tDate   : str,
         fileN   : str,
@@ -1413,13 +1422,10 @@ class UMSAPFile():
                     inputF.append(next(iVal))
                 else:
                     pass
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
         return inputF
     #---
     #endregion --------------------------------------------------> Get Methods
 #---
 #endregion ----------------------------------------------------------> Classes
-
-
-

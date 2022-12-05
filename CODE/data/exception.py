@@ -67,7 +67,7 @@ class FileIOError(Exception):
 
 
 class NotYetImplementedError(Exception):
-    """Exception raised when input option is valid but not implemented in 
+    """Exception raised when input option is valid but not implemented in
         method.
 
         Parameters

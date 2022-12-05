@@ -17,12 +17,12 @@
 #region -------------------------------------------------------------> Imports
 import os
 from pathlib import Path
-from typing import Optional, Union
+from typing  import Optional, Union
 
 import wx
 
 import config.config as mConfig
-import data.method as mMethod
+import data.method   as mMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -140,7 +140,7 @@ def Path2FFOutput(
     tempFileName = 'kbr-'+mMethod.StrNow()+'.kbr'
     #------------------------------>
     if fof == 'file':
-        f = tPath.parent / tempFileName 
+        f = tPath.parent / tempFileName
     elif fof == 'folder':
         f = tPath / tempFileName
     else:
@@ -163,7 +163,7 @@ def Path2FFInput(
     fof  : mConfig.litFoF='folder',
     opt  : bool=False,
     ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
-    """Check that value is a valid path to a file or folder. 
+    """Check that value is a valid path to a file or folder.
 
         Parameters
         ----------
@@ -336,13 +336,13 @@ def NumberList(
             numbers = numbers + rN
         else:
             for tN in rN:
-                #------------------------------> 
+                #------------------------------>
                 if AInRange(tN, refMin=vMin, refMax=vMax)[0]:
                     pass
                 else:
                     msg = mConfig.mInvalidValue.format(n)
                     return (False, ('BadElement', n, msg))
-                #------------------------------> 
+                #------------------------------>
                 numbers.append(tN)
     #endregion -------------------------------------> numType, refMin & refMax
 
@@ -431,7 +431,7 @@ def AInRange(
     b = float(refMin) if refMin is not None else float('-inf')
     c = float(refMax) if refMax is not None else float('inf')
     #endregion ----------------------------------------------------> Variables
-    
+
     #region ---------------------------------------------------------> Compare
     if b <= a <= c:
         return (True, None)
@@ -482,7 +482,7 @@ def ListUnique(
         if opt:
             return (True, None)
         else:
-            return (False, ('NotOptional', '', f"tList cannot be empty."))
+            return (False, ('NotOptional', '', "tList cannot be empty."))
     else:
         pass
     #endregion -----------------------------------------------------> Optional
@@ -500,10 +500,10 @@ def ListUnique(
 
     #region ----------------------------------------------------------> Return
     if dup:
-        #------------------------------> 
+        #------------------------------>
         dupE = ', '.join(map(str, dup))
         msg = f"List contains duplicated elements ({dupE})."
-        #------------------------------> 
+        #------------------------------>
         return (False, ('NotUnique', dupE, msg))
     else:
         return (True, None)
@@ -511,7 +511,7 @@ def ListUnique(
 #---
 
 
-def UniqueColNumbers(
+def UniqueColNumbers(                                                           # pylint: disable=dangerous-default-value
     value  : list[str],
     sepList: list[str]=[' ', ',', ';'],
     ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
@@ -551,14 +551,14 @@ def UniqueColNumbers(
     # Test in test.unit.test_check.Test_UniqueColNumbers
     def _strip_split(tEle: Union[str, list[str]], sep: str) -> list[str]:
         """Strip individual elements in the given list/str
-        
+
             Parameters
             ----------
             tEle: str or list
                 Input to strip elements.
             sep: str
                 String to split elements.
-            
+
             Returns
             -------
             list[str]
@@ -578,20 +578,19 @@ def UniqueColNumbers(
         return [x.strip() for x in out]
     #---
     #region -----------------------------------------------------> Check input
-    #------------------------------> 
+    #------------------------------>
     try:
         value = list(map(str, value))
-    except Exception as e:
+    except Exception:
         msg = ('value must be a list of strings.')
         return (False, ('NotString', None, msg))
-    #------------------------------> 
+    #------------------------------>
     try:
         sepList = list(map(str, sepList))
+        #------------------------------>
         if len(sepList) != 3:
             return (False, ('Exception', str(sepList), 'Invalid sepList value'))
-        else:
-            pass
-    except Exception as e:
+    except Exception:
         return (False, ('Exception', str(sepList), 'Invalid sepList value'))
     #endregion --------------------------------------------------> Check input
 
@@ -624,7 +623,7 @@ def UniqueColNumbers(
 #---
 
 
-def TcUniqueColNumbers(
+def TcUniqueColNumbers(                                                         # pylint: disable=dangerous-default-value
     tcList : list[wx.TextCtrl],
     sepList: list[str]=[' ', ',', ';'],
     ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
@@ -633,11 +632,11 @@ def TcUniqueColNumbers(
         Parameters
         ----------
         tcList : list of wx.TextCtrl
-            List of wx.TextCtrl. Individual elements in each wx.TextCtrl value 
+            List of wx.TextCtrl. Individual elements in each wx.TextCtrl value
             are separated by sepList[0]. e.g. '1 2 3' if sepList[0] is ' '.
         sepList: list of str
             Separator used in tcList and resCtrl. Individual elements in tcList
-            are separated by sepList[0] while elements in resCtrl are separated 
+            are separated by sepList[0] while elements in resCtrl are separated
             by:
             sepList[0] : internal element separator
             sepList[1] : intra row separator
@@ -727,7 +726,7 @@ def AllTcEmpty(
     #endregion --------------------------------------------------> Check empty
 #---
 
-def Comparison(
+def Comparison(                                                                 # pylint: disable=dangerous-default-value
     tStr   : str,
     numType: mConfig.litNumType='int',
     opt    : bool=False,
@@ -764,7 +763,9 @@ def Comparison(
 
         Examples
         --------
-        >>> Comparison('< 1.4', numType='float', opt=False, vMin=0, vMax=100, op=['<', '>', '<=', '>='])
+        >>> Comparison(
+            '< 1.4', numType='float', opt=False, vMin=0, vMax=100, op=['<', '>', '<=', '>=']
+        )
         >>> (True, None)
     """
     # Test in test.unit.test_check.Test_Comparison
@@ -828,4 +829,3 @@ def Comparison(
     return (True, None)
 #---
 #endregion ----------------------------------------------------------> Methods
-

@@ -17,14 +17,18 @@
 #region -------------------------------------------------------------> Imports
 from typing import Literal, Union, Optional
 
-import numpy as np
-import pandas as pd
+import numpy       as np
+import pandas      as pd
 import scipy.stats as sStats
 
-import config.config as mConfig
-import data.method as mMethod
+import config.config  as mConfig
+import data.method    as mMethod
 import data.exception as mException
 #endregion ----------------------------------------------------------> Imports
+
+
+# Pandas lead to long lines, so this check will be disabled for this module
+# pylint: disable=line-too-long
 
 
 #region ----------------------------------------------------> Data Description
@@ -39,7 +43,7 @@ def DataRange(
         ----------
         x : pd.Series, np.array, list or tuple of numbers.
         margin : float
-            Expand the range by (max(x) - min(x)) * margin. Default is 0, 
+            Expand the range by (max(x) - min(x)) * margin. Default is 0,
             meaning that no expansion of the max(x) and min(x) is done.
 
         Returns
@@ -67,19 +71,19 @@ def DataRange(
     if tType == list or tType == tuple:
         try:
             nL = list(map(float, x))
-        except Exception:
-            raise mException.InputError(msg)
+        except Exception as e:
+            raise mException.InputError(msg) from e
     elif tType == pd.Series:
         try:
             nL = list(map(float, x.values.tolist()))                            # type: ignore
-        except Exception:
-            raise mException.InputError(msg)
+        except Exception as e:
+            raise mException.InputError(msg) from e
     elif tType == np.ndarray:
         if x.ndim == 1:                                                         # type: ignore
             try:
                 nL = list(map(float, x.tolist()))                               # type: ignore
-            except Exception:
-                raise mException.InputError(msg)
+            except Exception as e:
+                raise mException.InputError(msg) from e
         else:
             msg = 'A one dimensional np.array is expected here.'
             raise mException.InputError(msg)
@@ -136,7 +140,7 @@ def HistBin(x: pd.Series) -> tuple[float, float]:
 
 #region ----------------------------------------------------> Data Preparation
 def DataPreparation(
-    df        : pd.DataFrame,
+    df        : pd.DataFrame,                                                   # pylint: disable=unused-argument
     rDO       : dict,
     *args,
     resetIndex: bool=True,
@@ -191,8 +195,8 @@ def DataPreparation(
     #------------------------------> Transformation
     try:
         dfT = DataTransformation(
-            dfF, 
-            rDO['df']['ResCtrlFlat'], 
+            dfF,
+            rDO['df']['ResCtrlFlat'],
             method = rDO['TransMethod'],
             rep    = np.nan if rDO['Cero'] else 0,
         )
@@ -207,7 +211,7 @@ def DataPreparation(
     #------------------------------> Imputation
     try:
         dfIm = DataImputation(
-            dfN, 
+            dfN,
             rDO['df']['ResCtrlFlat'],
             method = rDO['ImpMethod'],
             shift  = rDO['Shift'],
@@ -259,13 +263,13 @@ def DataPreparation(
     else:
         pass
     #endregion ----------------------------------------------> Reset index
-    
+
     #region -------------------------------------------------------> Print
     if mConfig.development:
-        #------------------------------> 
+        #------------------------------>
         dfList = [dfI, dfF, dfT, dfN, dfIm, dfTP, dfE, dfS]
         dfName = ['dfI', 'dfF', 'dfT', 'dfN', 'dfIm', 'dfTP', 'dfE', 'dfS']
-        #------------------------------> 
+        #------------------------------>
         print('')
         for i, a in enumerate(dfList):
             if a is not None:
@@ -276,7 +280,7 @@ def DataPreparation(
         pass
     #endregion ----------------------------------------------------> Print
 
-    #region ---------------------------------------------------> 
+    #region --------------------------------------------------->
     dictO = {
         'dfI' : dfI,
         'dfF' : dfF,
@@ -288,7 +292,7 @@ def DataPreparation(
         'dfS' : dfS,
     }
     return (dictO, '', None)
-    #endregion ------------------------------------------------> 
+    #endregion ------------------------------------------------>
 #---
 
 
@@ -329,7 +333,7 @@ def DataPrep_Float(
     else:
         dfF = mMethod.DFReplace(dfI, [''], np.nan, sel=colCero)
     #------------------------------>
-    dfF.iloc[:,colFloat] = dfF.iloc[:,colFloat].astype('float')
+    dfF.iloc[:,colFloat] = dfF.iloc[:,colFloat].astype('float')                 # type: ignore
     #endregion ----------------------------------------------------->
 
     return [dfI, dfF]
@@ -338,8 +342,8 @@ def DataPrep_Float(
 
 #region -------------------------------------------------> Data Transformation
 def _DataTransformation_None(
-    df: 'pd.DataFrame', 
-    *args, 
+    df: 'pd.DataFrame',                                                         # pylint: disable=unused-argument
+    *args,
     **kwargs,
     ) -> 'pd.DataFrame':
     """This will just return the original df.
@@ -359,7 +363,7 @@ def _DataTransformation_None(
 #---
 
 
-def _DataTransformation_Log2(
+def _DataTransformation_Log2(                                                   # pylint: disable=dangerous-default-value
     df : 'pd.DataFrame',
     sel: list[int]=[],
     rep: Union[None, str, float, int]=None,
@@ -384,7 +388,7 @@ def _DataTransformation_Log2(
 
         Notes
         -----
-        - df is expected to be a copy whose values can be changed during 
+        - df is expected to be a copy whose values can be changed during
         transformation.
     """
     # Test in test.unit.test_statistic.Test_DataTransformation
@@ -393,13 +397,13 @@ def _DataTransformation_Log2(
     if sel:
         df.iloc[:,sel] = np.log2(df.iloc[:,sel])
     else:
-        df = np.log2(df)
+        df = np.log2(df)                                                        # type: ignore
     #------------------------------> Replace inf values
     if rep is not None:
         df = df.replace(-np.inf, rep)
     else:
         pass
-    #endregion ------------------------------------------> Log2 transformation 
+    #endregion ------------------------------------------> Log2 transformation
 
     return df
 #---
@@ -411,13 +415,13 @@ TRANS_METHOD = {
 }
 
 
-def DataTransformation(
+def DataTransformation(                                                         # pylint: disable=dangerous-default-value
     df    : 'pd.DataFrame',
     sel   : list[int]=[],
     method: Literal['Log2', 'None']='Log2',
     rep   : Union[None, str, float, int]=None,
     ) -> 'pd.DataFrame':
-    """Performs a data transformation over the selected columns in the 
+    """Performs a data transformation over the selected columns in the
         dataframe.
 
         Parameters
@@ -450,7 +454,7 @@ def DataTransformation(
 
 #region --------------------------------------------------> Data Normalization
 def _DataNormalization_None(
-    df: 'pd.DataFrame',
+    df: 'pd.DataFrame',                                                         # pylint: disable=unused-argument
     *args,
     **kwargs,
     ) -> 'pd.DataFrame':
@@ -460,7 +464,7 @@ def _DataNormalization_None(
         ----------
         df: pd.DataFrame
             Dataframe with the data.
-        
+
         Returns
         -------
         Dataframe
@@ -471,7 +475,7 @@ def _DataNormalization_None(
 #---
 
 
-def _DataNormalization_Median(
+def _DataNormalization_Median(                                                  # pylint: disable=dangerous-default-value
     df : 'pd.DataFrame',
     sel: list[int]=[]
     ) -> 'pd.DataFrame':
@@ -491,9 +495,9 @@ def _DataNormalization_Median(
 
         Notes
         -----
-        - df is expected to be a copy whose values can be changed during 
+        - df is expected to be a copy whose values can be changed during
         normalization.
-        - The median normalization is performed column wise. 
+        - The median normalization is performed column wise.
         - NA values are skipped.
     """
     # Test in test.unit.test_statistic.Test_DataNormalization
@@ -516,12 +520,12 @@ NORM_METHOD = {
 }
 
 
-def DataNormalization(
+def DataNormalization(                                                          # pylint: disable=dangerous-default-value
     df    : 'pd.DataFrame',
     sel   : list[int]=[],
     method: Literal['Median', 'None']='Median'
     ) -> 'pd.DataFrame':
-    """Perform a data normalization over the selected columns in the 
+    """Perform a data normalization over the selected columns in the
         dataframe.
 
         Parameters
@@ -544,14 +548,14 @@ def DataNormalization(
     """
     # Test in test.unit.test_statistic.Test_DataNormalization
     #region ---------------------------------------------------> Normalization
-    return NORM_METHOD[method](df.copy(), sel=sel) 
+    return NORM_METHOD[method](df.copy(), sel=sel)
     #endregion ------------------------------------------------> Normalization
 #---
 #endregion -----------------------------------------------> Data Normalization
 
 
 #region -----------------------------------------------------> Data Imputation
-def _DataImputation_None(df: 'pd.DataFrame', *args, **kwargs) -> 'pd.DataFrame':
+def _DataImputation_None(df: 'pd.DataFrame', *args, **kwargs) -> 'pd.DataFrame':# pylint: disable=unused-argument
     """This will just return the original df.
 
         Parameters
@@ -569,14 +573,14 @@ def _DataImputation_None(df: 'pd.DataFrame', *args, **kwargs) -> 'pd.DataFrame':
 #---
 
 
-def _DataImputation_NormalDistribution(
-    df   : 'pd.DataFrame',
+def _DataImputation_NormalDistribution(                                         # pylint: disable=dangerous-default-value
+    df   : 'pd.DataFrame',                                                      # pylint: disable=unused-argument
     sel  : list[int]=[],
     shift: float=float(mConfig.values[mConfig.nwCheckDataPrep]['Shift']),
     width: float=float(mConfig.values[mConfig.nwCheckDataPrep]['Width']),
     **kwargs
     ) -> 'pd.DataFrame':
-    """Performs a Normal Distribution imputation of selected columns in df. 
+    """Performs a Normal Distribution imputation of selected columns in df.
 
         Parameters
         ----------
@@ -596,7 +600,7 @@ def _DataImputation_NormalDistribution(
 
         Notes
         -----
-        - df is expected to be a copy whose values can be changed during 
+        - df is expected to be a copy whose values can be changed during
         imputation
         - The imputation is performed column wise.
     """
@@ -610,11 +614,11 @@ def _DataImputation_NormalDistribution(
 
     #region ----------------------------------> Normal Distribution imputation
     for c in col:
-        #------------------------------> 
+        #------------------------------>
         std = df[c].std(skipna=True)
         median = df[c].median(skipna=True)
         tIDX = np.where(df[c].isna())[0]
-        #------------------------------> 
+        #------------------------------>
         df.loc[tIDX, c] = np.random.default_rng().normal(                       # type: ignore
             median-std*shift, std*width, len(tIDX))                             # type: ignore
     #endregion -------------------------------> Normal Distribution imputation
@@ -629,13 +633,13 @@ IMPUTATION_METHOD = {
 }
 
 
-def DataImputation(
+def DataImputation(                                                             # pylint: disable=dangerous-default-value
     df    : 'pd.DataFrame',
     sel   : list[int]=[],
     method: Literal['Normal Distribution', 'None']='Normal Distribution',
     **kwargs
     ) -> 'pd.DataFrame':
-    """Perform a data imputation over the selected columns in the 
+    """Perform a data imputation over the selected columns in the
         dataframe.
 
         Parameters
@@ -651,7 +655,7 @@ def DataImputation(
         -------
         pd.DataFrame
             With transformed values
-       
+
         Notes
         -----
         Correct data types in df are expected.
@@ -691,8 +695,8 @@ def _CI_Mean_Diff_DF_True(
             Return full interval (True) or just (False) the CI value. Default is
             to return full interval.
         roundN : int or None
-            Round numbers to the given number of decimal places. 
-            Default is None. 
+            Round numbers to the given number of decimal places.
+            Default is None.
 
         Returns
         -------
@@ -723,7 +727,7 @@ def _CI_Mean_Diff_DF_True(
     F    = np.where(var2 > var1, var2/var1, var1/var2)                          # type: ignore
     #------------------------------>
     ci = np.where(
-        F > t, 
+        F > t,
         t*np.sqrt((var1/n1)+(var2/n2)),                                         # type: ignore
         t*np.sqrt((1/n1)+(1/n2))*np.sqrt(((n1-1)*var1+(n2-1)*var2)/dfT),        # type: ignore
     )
@@ -731,17 +735,17 @@ def _CI_Mean_Diff_DF_True(
 
     #region --------------------------------------------------------> Empty DF
     if fullCI:
-        #------------------------------> 
+        #------------------------------>
         dfO = pd.DataFrame(
             np.nan, columns=['CI_l', 'CI_u'], index=range(df.shape[0])          # type: ignore
         )
-        #------------------------------> 
+        #------------------------------>
         dfO['CI_l'] = diffMean21 - ci
         dfO['CI_u'] = diffMean21 + ci
     else:
-        #------------------------------> 
+        #------------------------------>
         dfO = pd.DataFrame(np.nan, columns=['CI'], index=range(df.shape[0]))    # type: ignore
-        #------------------------------> 
+        #------------------------------>
         dfO['CI'] = ci
     #endregion -----------------------------------------------------> Empty DF
 
@@ -781,8 +785,8 @@ def _CI_Mean_Diff_DF_False(
             Return full interval (True) or just (False) the CI value. Default is
             to return full interval.
         roundN : int or None
-            Round numbers to the given number of decimal places. 
-            Default is None. 
+            Round numbers to the given number of decimal places.
+            Default is None.
 
         Returns
         -------
@@ -842,8 +846,8 @@ def CI_Mean_Diff_DF(
             Return full interval (True) or just (False) the CI value. Default is
             to return full interval.
         roundN : int or None
-            Round numbers to the given number of decimal places. 
-            Default is None. 
+            Round numbers to the given number of decimal places.
+            Default is None.
 
         Returns
         -------
@@ -853,7 +857,7 @@ def CI_Mean_Diff_DF(
         Notes
         -----
         - The mean difference is calculated as ave(col2) - ave(col1)
-        - For paired samples it is expected that samples are paired in col1 and 
+        - For paired samples it is expected that samples are paired in col1 and
             col2 like: col1 = (C1, C2, C3) and col2 = (E1, E2, E3)
         - See also the _CI_Mean_Diff_DF_True and _CI_Mean_Diff_DF_False
         - Further details:
@@ -872,7 +876,7 @@ def CI_Mean_DF(
     fullCI: bool=True,
     roundN: Optional[int]=None,
     ) -> 'pd.DataFrame':
-    """Calculate the confidence interval for the mean. 
+    """Calculate the confidence interval for the mean.
 
         Parameters
         ----------
@@ -885,7 +889,7 @@ def CI_Mean_DF(
             Return full interval (True) or just (False) the CI value. Default is
             to return full interval.
         roundN : int or None
-            Round numbers to the given number of decimal places. 
+            Round numbers to the given number of decimal places.
             Default is None.
 
         Returns
@@ -923,7 +927,7 @@ def CI_Mean_DF(
     else:
         #------------------------------>
         dfO = pd.DataFrame(np.nan, columns=['CI'], index=range(df.shape[0]))    # type: ignore
-        #------------------------------> 
+        #------------------------------>
         dfO['CI'] = ci
     #endregion -----------------------------------------------------------> DF
 
@@ -972,8 +976,8 @@ def Test_f_DF(
         -----
         - The test is conducted taking the greater variance in the numerator of
             F and P as the two tail value.
-        - Invalid values in the input for roundTo are silently ignored and the 
-            df with full length values is returned. 
+        - Invalid values in the input for roundTo are silently ignored and the
+            df with full length values is returned.
     """
     # Test in test.unit.test_statistic.Test_f_DF
     #region --------------------------------------------------------> Empty DF
@@ -1033,7 +1037,7 @@ def Test_chi(df:pd.DataFrame, alpha:float, check5: bool=True) -> list:
         Notes
         -----
         Threshold of number of cells with values less than 5 from:
-        D. Yates, D. Moore, G. McCabe, The practice of Statistics 
+        D. Yates, D. Moore, G. McCabe, The practice of Statistics
         (Freeman, New York, 1999), p. 734.
     """
     # Test in test.unit.test_statistic.Test_chi
@@ -1065,8 +1069,8 @@ def Test_chi(df:pd.DataFrame, alpha:float, check5: bool=True) -> list:
 
 
 def Test_t_getP(
-    t   : 'pd.DataFrame',
-    tdf : Union['pd.DataFrame', int],
+    t   : Union['pd.DataFrame', 'np.ndarray'],
+    tdf : Union['pd.DataFrame', 'np.ndarray', 'int'],
     test: mConfig.litTestSide,
     ) -> 'pd.DataFrame':
     """Get p value for a given t value.
@@ -1087,7 +1091,7 @@ def Test_t_getP(
     # No Test
     #region -----------------------------------------------------> Get P value
     if test == 'ts':
-        return 2 * sStats.t.sf(np.abs(t), tdf)
+        return 2 * sStats.t.sf(np.abs(t), tdf)                                  # type: ignore
     elif test == 's':
         return sStats.t.cdf(t, tdf)                                             # type: ignore
     elif test == 'l':
@@ -1138,8 +1142,8 @@ def Test_t_PS_DF(
 
         Notes
         -----
-        - Invalid values in the input for roundTo are silently ignored and the 
-            df with full length values is returned. 
+        - Invalid values in the input for roundTo are silently ignored and the
+            df with full length values is returned.
         https://www.reneshbedre.com/blog/ttest.html
         https://www.datanovia.com/en/lessons/t-test-formula/
     """
@@ -1157,15 +1161,15 @@ def Test_t_PS_DF(
     #endregion -------------------------------------------------------> Values
 
     #region ----------------------------------------------------------> DF out
-    #------------------------------> 
+    #------------------------------>
     dfO = pd.DataFrame(
         np.nan, columns=['t', 'P', 'S'], index=range(df.shape[0])               # type: ignore
     )
-    #------------------------------> 
+    #------------------------------>
     dfO['t'] = t.to_numpy()
     dfO['P'] = Test_t_getP(t, n-1, tType)
     dfO['S'] = np.where(dfO["P"] < alpha, True, False)
-    #------------------------------> 
+    #------------------------------>
     if roundTo is not None:
         try:
             dfO[['t', 'P']] = dfO[['t', 'P']].round(int(roundTo))
@@ -1218,8 +1222,8 @@ def Test_t_IS_DF(
 
         Notes
         -----
-        - Invalid values in the input for roundTo are silently ignored and the 
-            df with full length values is returned. 
+        - Invalid values in the input for roundTo are silently ignored and the
+            df with full length values is returned.
         - Further details
             https://www.reneshbedre.com/blog/ttest.html
             https://www.datanovia.com/en/lessons/t-test-formula/
@@ -1248,11 +1252,11 @@ def Test_t_IS_DF(
         )
     #------------------------------> t, ndf
     tt = np.where(
-        F['S'], 
+        F['S'],
         (m2 - m1 - delta)/(np.sqrt((var1/n1)+(var2/n2))),                                           # type: ignore
         (m2 - m1 - delta)/(np.sqrt((1/n1)+(1/n2))*np.sqrt(((n1-1)*var1+(n2-1)*var2)/(dem))),        # type: ignore
     )
-    
+
     tdf = np.where(
         F['S'],
         np.square((var1/n1)+(var2/n2))/(((var1*var1)/(n1*n1*(n1-1)))+((var2*var2)/(n2*n2*(n2-1)))), # type: ignore
@@ -1338,7 +1342,7 @@ def Test_tost(
     #region --------------------------------------------------------> Empty df
     dfo = pd.DataFrame(
         np.nan,                                                                 # type: ignore
-        columns=['P','t1', 'p1', 's1', 't2', 'p2', 's2'], 
+        columns=['P','t1', 'p1', 's1', 't2', 'p2', 's2'],
         index=range(df.shape[0])
     )
     #endregion -----------------------------------------------------> Empty df
@@ -1357,11 +1361,13 @@ def Test_tost(
     #region ----------------------------------------------------------> T test
     if sample == 'p':
         dfo.loc[:,['t1', 'p1', 's1']] = Test_t_PS_DF(
+            # pylint: disable-next=invalid-unary-operand-type
             df, col1, col2, delta=-tDelta, alpha=alpha, tType='l').to_numpy()   # type: ignore
         dfo.loc[:,['t2', 'p2', 's2']] = Test_t_PS_DF(
             df, col1, col2, delta=tDelta, alpha=alpha, tType='s').to_numpy()    # type: ignore
     else:
         dfo.loc[:,['t1', 'p1', 's1']] = Test_t_IS_DF(
+            # pylint: disable-next=invalid-unary-operand-type
             df, col1, col2, delta=-tDelta, alpha=alpha, f=f, tType='l'          # type: ignore
         ).to_numpy()
         dfo.loc[:,['t2', 'p2', 's2']] = Test_t_IS_DF(
@@ -1384,7 +1390,7 @@ def Test_tost_delta(
     gamma   : float,
     d       : float=0,
     deltaMax: Optional[float]=None,
-    ) -> pd.Series:
+    ) -> Union[pd.Series, 'np.ndarray']:
     """Calculate the delta values for a TOST test.
 
         Parameters
@@ -1417,12 +1423,12 @@ def Test_tost_delta(
     s = df.std(axis=1)                                                          # type: ignore
     n = df.shape[1]
     chi2 = sStats.chi2.ppf(1-gamma, (n-1))
-    #------------------------------> 
+    #------------------------------>
     sCorr = s * np.sqrt((n-1)/chi2)
-    #------------------------------> 
+    #------------------------------>
     ta1 = sStats.t.ppf(1 - alpha, 2*n - 2)
     tb1 = sStats.t.ppf(1 - beta/2, 2*n -2)
-    #------------------------------> 
+    #------------------------------>
     delta = d + sCorr * (ta1 + tb1) * np.sqrt(2/n)
     #endregion ----------------------------------------------------> Variables
 
@@ -1437,7 +1443,7 @@ def Test_tost_delta(
 #---
 
 
-def Test_slope(df: 'pd.DataFrame', nL: list[int]=[]) -> list[float]:
+def Test_slope(df: 'pd.DataFrame', nL: list[int]=[]) -> list[float]:            # pylint: disable=dangerous-default-value
     """Perform a Test for Homogeneity of Regression.
 
         Parameters
@@ -1449,7 +1455,7 @@ def Test_slope(df: 'pd.DataFrame', nL: list[int]=[]) -> list[float]:
             Columns in df will be grouped with the size of each group given by
             the elements in n and the total number of groups being equal to the
             number of elements in n. If None only one group is created.
-        
+
         Returns
         -------
         list[float]
@@ -1461,10 +1467,10 @@ def Test_slope(df: 'pd.DataFrame', nL: list[int]=[]) -> list[float]:
         http://vassarstats.net/textbook/index.html Chapter 17.
 
         If df has columns X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5 and n is [3,2]
-        then two P values will be returned one for test performed with 
+        then two P values will be returned one for test performed with
         X1,Y1,X2,Y2,X3,Y3 and one for X4,Y4,X5,Y5.
 
-        X,Y pairs in a group can be of different length but X and Y must have 
+        X,Y pairs in a group can be of different length but X and Y must have
         the same number of elements.
     """
     # Test in test.unit.test_statistic.Test_test_slope
@@ -1475,7 +1481,7 @@ def Test_slope(df: 'pd.DataFrame', nL: list[int]=[]) -> list[float]:
 
     #region --------------------------------------------------------> Run
     #------------------------------> Number of points in each column N
-    n = df.notna().sum() 
+    n = df.notna().sum()
     #------------------------------> SUM(X)
     sumCol = df.sum(axis=0)
     #------------------------------> SUM(X^2)
@@ -1491,7 +1497,7 @@ def Test_slope(df: 'pd.DataFrame', nL: list[int]=[]) -> list[float]:
     sc = pd.Series(index=sumXY.index)
     for k in range(0, df.shape[1], 2):
         sc[k] = sumXY[k] - ((sumCol[k]*sumCol[k+1])/n.iloc[k])
-    #------------------------------> 
+    #------------------------------>
     k = 0
     j = 0
     for nG in nL:
@@ -1505,16 +1511,16 @@ def Test_slope(df: 'pd.DataFrame', nL: list[int]=[]) -> list[float]:
             a = sc.iloc[j:j+nG].pow(2)
             b = ss.iloc[range(k,k+2*nG,2)].set_axis(a.index.values) # type: ignore
             ssb_reg = (a/b).sum() - ((scwg*scwg)/sswgx)
-            #------------------------------> 
+            #------------------------------>
             ssy_rem = sswgy - ((scwg*scwg)/sswgx) - ssb_reg
-            #------------------------------> 
+            #------------------------------>
             dfb_reg = nG-1
             dfy_rem = n.iloc[range(k,k+2*nG,2)].sum() - 2*nG # type: ignore
             #------------------------------> F value
             f = (ssb_reg/dfb_reg)/(ssy_rem/dfy_rem)
             #------------------------------> P value
             p.append(sStats.f.sf(f, dfb_reg, dfy_rem))
-        except Exception as e:
+        except Exception:
             p.append(np.nan)
         #------------------------------> Next Group
         k = k + 2*nG
@@ -1524,4 +1530,3 @@ def Test_slope(df: 'pd.DataFrame', nL: list[int]=[]) -> list[float]:
     return p
 #---
 #endregion -------------------------------------------------------------> TEST
-

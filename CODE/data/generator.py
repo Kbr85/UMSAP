@@ -16,11 +16,11 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from typing import Iterator, Union
+from typing  import Iterator, Union
 
 import wx
 
-import config.config as mConfig
+import config.config  as mConfig
 import data.exception as mException
 #endregion ----------------------------------------------------------> Imports
 
@@ -51,7 +51,7 @@ def FastaSequence(fileP: Union[Path, str]) -> Iterator[tuple[str, str]]:
 
     #region ----------------------------------------------------> Process file
     try:
-        with open(fileP, 'r') as file:
+        with open(fileP, 'r', encoding='utf-8') as file:
             for line in file:
                 #-------> Remove empty characters and \n \r \t from line
                 sLine = line.strip()
@@ -73,8 +73,8 @@ def FastaSequence(fileP: Union[Path, str]) -> Iterator[tuple[str, str]]:
                 else:
                     #--------------> Append to seq
                     seq.append(sLine)
-    except Exception:
-        raise mException.ExecutionError(mConfig.mFileRead.format(fileP))
+    except Exception as e:
+        raise mException.ExecutionError(mConfig.mFileRead.format(fileP)) from e
     #endregion -------------------------------------------------> Process file
 
     #region --------------------------------------------> Get the last protein

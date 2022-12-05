@@ -19,28 +19,32 @@ import copy
 import itertools
 import traceback
 from collections import namedtuple
-from datetime import datetime
-from operator import itemgetter
-from pathlib import Path
-from typing import Union, Optional
+from datetime    import datetime
+from operator    import itemgetter
+from pathlib     import Path
+from typing      import Union, Optional
 
-import numpy as np
+import numpy      as np
 import matplotlib as mpl
-import pandas as pd
+import pandas     as pd
 
 from statsmodels.stats.multitest import multipletests
 
 from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus      import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles    import getSampleStyleSheet, ParagraphStyle
 
 import wx
 
-import config.config as mConfig
+import config.config  as mConfig
 import data.exception as mException
-import data.file as mFile
+import data.file      as mFile
 import data.statistic as mStatistic
 #endregion ----------------------------------------------------------> Imports
+
+
+# Pandas lead to long lines, so this check will be disabled for this module
+# pylint: disable=line-too-long
 
 
 #region ------------------------------------------------------> String methods
@@ -59,7 +63,7 @@ def StrException(
         tStr : boolean
             Include error message as return by str(tException). Default is True.
         tRepr : boolean
-            Include error message as return by repr(tException). 
+            Include error message as return by repr(tException).
             Default is True.
         trace : boolean
             Include the traceback. Default is True.
@@ -262,7 +266,7 @@ def StrEqualLength(
 #---
 
 
-def ResControl2ListNumber(
+def ResControl2ListNumber(                                                      # pylint: disable=dangerous-default-value
     val    : str,
     sep    : list[str]=[' ', ',', ';'],
     numType: mConfig.litNumType='int',
@@ -281,11 +285,12 @@ def ResControl2ListNumber(
         Returns
         -------
         list of list of list of str
-        [[[0 1 2 3 4], [7 8 9]], [[10 13 14 15], []], ...]   
-        
+        [[[0 1 2 3 4], [7 8 9]], [[10 13 14 15], []], ...]
+
         Examples
         --------
-        >>> ResControl2ListNumber('0 1 2, 3 4 5; 6 7 8, 9 10 11', sep=[' ', ',', ';'], numType='int')
+        >>> ResControl2ListNumber(
+            '0 1 2, 3 4 5; 6 7 8, 9 10 11', sep=[' ', ',', ';'], numType='int')
         >>> [[[0,1,2], [3,4,5]], [[6,7,8], [9,10,11]]]
     """
     # Test in test.unit.test_method.Test_ResControl2ListNumber
@@ -295,13 +300,13 @@ def ResControl2ListNumber(
 
     #region -------------------------------------------------------> Form list
     for k in val.split(sep[2]):
-        #------------------------------> 
+        #------------------------------>
         lRow = []
-        #------------------------------> 
+        #------------------------------>
         for j in k.split(sep[1]):
             colVal = Str2ListNumber(j, numType=numType, sep=sep[0])
             lRow.append(colVal)
-        #------------------------------> 
+        #------------------------------>
         l.append(lRow)
     #endregion ----------------------------------------------------> Form list
 
@@ -337,7 +342,7 @@ def ResControl2DF(
     start: int,
     ) -> list[list[list[int]]]:
     """Convert the Result - Control column numbers in the original file to the
-        column numbers of the initial dataframe used in the analysis. 
+        column numbers of the initial dataframe used in the analysis.
 
         Parameters
         ----------
@@ -345,7 +350,7 @@ def ResControl2DF(
             Result - Control as a list of list of list of int
         start : int
             Column index start of the Result - Control columns in the initial
-            dataframe 
+            dataframe
 
         Returns
         -------
@@ -396,8 +401,8 @@ def ResControl2DF(
 def ExpandRange(
     r      : str,
     numType: mConfig.litNumType='int',
-    ) -> Union[list[int], list[float]]: 
-    """Expand a range of numbers: '4-7' --> [4,5,6,7]. Only positive integers 
+    ) -> Union[list[int], list[float]]:
+    """Expand a range of numbers: '4-7' --> [4,5,6,7]. Only positive integers
         are supported.
 
         Parameters
@@ -410,7 +415,7 @@ def ExpandRange(
         Returns
         -------
         list of int
-        
+
         Notes
         -----
         Ranges are interpreted as closed ranges.
@@ -516,12 +521,12 @@ def ListRemoveDuplicates(l: Union[list, tuple]) -> list:
 
 
 #region ----------------------------------------------------------------> Dict
-def DictVal2Str(
+def DictVal2Str(                                                                # pylint: disable=dangerous-default-value
     iDict    : dict,
     changeKey: list=[],
     new      : bool=False,
     ) -> dict:
-    """Returns a dict with values turn to str for all keys or only those in 
+    """Returns a dict with values turn to str for all keys or only those in
         changeKey.
 
         Parameters
@@ -531,7 +536,7 @@ def DictVal2Str(
         changeKey: list of keys
             Only modify this keys.
         new : boolean
-            Do not modify iDict (True) or modify in place (False). 
+            Do not modify iDict (True) or modify in place (False).
             Default is False.
 
         Returns
@@ -553,7 +558,7 @@ def DictVal2Str(
     else:
         oDict = iDict
     #endregion ----------------------------------------------------> Variables
-    
+
     #region ---------------------------------------------------> Change values
     for k in changeKey:
         oDict[k] = str(oDict[k])
@@ -565,7 +570,7 @@ def DictVal2Str(
 
 
 #region --------------------------------------------------------> pd.DataFrame
-def DFReplace(
+def DFReplace(                                                                  # pylint: disable=dangerous-default-value
     df    : Union[pd.DataFrame, pd.Series],
     oriVal: list,
     repVal: Union[list, tuple, str, float, int],
@@ -619,7 +624,7 @@ def DFReplace(
         rep = repValFix[k]
         #------------------------------>
         if sel:
-            dfo.iloc[:,sel] = dfo.iloc[:,sel].replace(v, rep)
+            dfo.iloc[:,sel] = dfo.iloc[:,sel].replace(v, rep)                   # type: ignore
         else:
             dfo = dfo.replace(v, rep)
     #endregion ------------------------------------------------------> Replace
@@ -642,7 +647,7 @@ def DFExclude(df:'pd.DataFrame', col: list[int]) -> 'pd.DataFrame':
 
         Notes
         -----
-        Rows with at least one value other than NA in the given columns are 
+        Rows with at least one value other than NA in the given columns are
         discarded
     """
     # Test in test.unit.test_method.Test_DFExclude
@@ -651,7 +656,7 @@ def DFExclude(df:'pd.DataFrame', col: list[int]) -> 'pd.DataFrame':
     dfo = df.copy()
     #------------------------------> Exclude
     a = dfo.iloc[:,col].notna()
-    a = a.loc[(a==True).any(axis=1)]                                            # type: ignore
+    a = a.loc[(a==True).any(axis=1)]                                            # pylint: disable=singleton-comparison
     idx = a.index
     dfo = dfo.drop(index=idx)                                                   # type: ignore
     #endregion -------------------------------------------------------> Exclude
@@ -666,7 +671,7 @@ def DFFilterByColN(
     refVal: float,
     comp  : mConfig.litComp,
     ) -> 'pd.DataFrame':
-    """Filter rows in the pd.DataFrame based on the numeric values present in 
+    """Filter rows in the pd.DataFrame based on the numeric values present in
         col.
 
         Parameters
@@ -686,9 +691,9 @@ def DFFilterByColN(
 
         Notes
         -----
-        Rows with values in col that do not comply with c[x] comp refVal are 
+        Rows with values in col that do not comply with c[x] comp refVal are
         discarded, e.g. c[x] > 3,45
-        
+
         Assumes all values in col are numbers.
     """
     # Test in test.unit.test_method.Test_DFFilterByColN
@@ -721,7 +726,7 @@ def DFFilterByColS(
     refStr: str,
     comp  : mConfig.litCompEq,
     ) -> 'pd.DataFrame':
-    """Filter rows in the pd.DataFrame based on the string values present in 
+    """Filter rows in the pd.DataFrame based on the string values present in
         col.
 
         Parameters
@@ -740,7 +745,7 @@ def DFFilterByColS(
 
         Notes
         -----
-        - Rows with values in col that do not comply with c[x] comp refStr are 
+        - Rows with values in col that do not comply with c[x] comp refStr are
         discarded, e.g. c[x] == 'refString'
         - Assumes all values in col are strings.
     """
@@ -862,7 +867,7 @@ def Fragments(
                     'Nc'    : [Number of cleavages1, ...., NcN],
                     'NcNat' : [Number of native cleavages1, ....., NcNatN],
                     'NFrag' : (Number of fragments, Number of fragments Nat),
-                    'NcT'   : (Number of cleavages for the Exp as a whole, 
+                    'NcT'   : (Number of cleavages for the Exp as a whole,
                                Number of cleavages for the Exp as a whole Nat),
                 },
                 'ExpN' : {},
@@ -948,7 +953,7 @@ def Fragments(
             ncf  = dfE.iat[r,3]
             ccf  = dfE.iat[r,4]
             if nc <= c:
-                #------------------------------> 
+                #------------------------------>
                 seq = f'{seq}\n{(nc-n)*" "}{seqC}'
                 seqL.append(seqC)
                 #------------------------------> Number of peptides
@@ -1003,7 +1008,7 @@ def Fragments(
                 cf      = ccf
                 ncL     = []
                 ncLNat  = []
-                #------------------------------> 
+                #------------------------------>
                 seqL = [seqC]
                 #------------------------------> Number of peptides
                 nP   = 1
@@ -1130,7 +1135,7 @@ def HCurve(x:Union[float,pd.DataFrame,pd.Series], t0:float, s0:float) -> float:
 
 
 def CorrA(
-    df        : pd.DataFrame,
+    df        : pd.DataFrame,                                                   # pylint: disable=unused-argument
     rDO       : dict,
     *args,
     resetIndex: bool=True,
@@ -1255,7 +1260,7 @@ def ProtProf(
                 aL = aL + n*[c]
                 bL = bL + n*[t]
                 cL = cL + rDExtra['cLDFThirdLevel']
-        #------------------------------> 
+        #------------------------------>
         idx = pd.MultiIndex.from_arrays([aL[:], bL[:], cL[:]])
         #endregion ----------------------------------------------------> Index
 
@@ -1288,9 +1293,9 @@ def ProtProf(
             list[list[int]]
         """
         #region ---------------------------------------------------> List
-        #------------------------------> 
+        #------------------------------>
         colC = rDO['df']['ResCtrl'][0][0]
-        #------------------------------> 
+        #------------------------------>
         colD = rDO['df']['ResCtrl'][c+1][t]
         #endregion ------------------------------------------------> List
 
@@ -1313,9 +1318,9 @@ def ProtProf(
             list[list[int]]
         """
         #region ---------------------------------------------------> List
-        #------------------------------> 
+        #------------------------------>
         colC = rDO['df']['ResCtrl'][0][t]
-        #------------------------------> 
+        #------------------------------>
         colD = rDO['df']['ResCtrl'][c+1][t]
         #endregion ------------------------------------------------> List
 
@@ -1338,9 +1343,9 @@ def ProtProf(
             list[list[int]]
         """
         #region ---------------------------------------------------> List
-        #------------------------------> 
+        #------------------------------>
         colC = rDO['df']['ResCtrl'][c][0]
-        #------------------------------> 
+        #------------------------------>
         colD = rDO['df']['ResCtrl'][c][t+1]
         #endregion ------------------------------------------------> List
 
@@ -1363,9 +1368,9 @@ def ProtProf(
             list[list[int]]
         """
         #region ---------------------------------------------------> List
-        #------------------------------> 
+        #------------------------------>
         colC = []
-        #------------------------------> 
+        #------------------------------>
         colD = rDO['df']['ResCtrl'][c][t]
         #endregion ------------------------------------------------> List
 
@@ -1382,7 +1387,7 @@ def ProtProf(
             tN: str
                 Relevant point name.
             colC: list[int]
-                Column numbers for the control. Empty list for Ration of 
+                Column numbers for the control. Empty list for Ration of
                 intensities.
             colD: list[int]
                 Column numbers for the experiment.
@@ -1398,22 +1403,22 @@ def ProtProf(
 
         #region ---------------------------------------------------> Ave & Std
         if colC:
-            dfR.loc[:,(cN, tN, 'aveC')] = dfS.iloc[:,colC].mean(
-                axis=1, skipna=True).to_numpy()                                 # type: ignore
-            dfR.loc[:,(cN, tN, 'stdC')] = dfS.iloc[:,colC].std(
-                axis=1, skipna=True).to_numpy()                                 # type: ignore
+            dfR.loc[:,(cN, tN, 'aveC')] = dfS.iloc[:,colC].mean(                # type: ignore
+                axis=1, skipna=True).to_numpy()
+            dfR.loc[:,(cN, tN, 'stdC')] = dfS.iloc[:,colC].std(                 # type: ignore
+                axis=1, skipna=True).to_numpy()
         else:
-            dfR.loc[:,(cN, tN, 'aveC')] = np.nan
-            dfR.loc[:,(cN, tN, 'stdC')] = np.nan
+            dfR.loc[:,(cN, tN, 'aveC')] = np.nan                                # type: ignore
+            dfR.loc[:,(cN, tN, 'stdC')] = np.nan                                # type: ignore
         #------------------------------>
-        dfR.loc[:,(cN, tN, 'ave')] = dfS.iloc[:,colD].mean(
-            axis=1, skipna=True).to_numpy()                                     # type: ignore
-        dfR.loc[:,(cN, tN, 'std')] = dfS.iloc[:,colD].std(
-            axis=1, skipna=True).to_numpy()                                     # type: ignore
+        dfR.loc[:,(cN, tN, 'ave')] = dfS.iloc[:,colD].mean(                     # type: ignore
+            axis=1, skipna=True).to_numpy()
+        dfR.loc[:,(cN, tN, 'std')] = dfS.iloc[:,colD].std(                      # type: ignore
+            axis=1, skipna=True).to_numpy()
         #endregion ------------------------------------------------> Ave & Std
 
         #region --------------------------------------------> Log2 Intensities
-        dfLogI = dfS.copy() 
+        dfLogI = dfS.copy()
         if rDO['TransMethod'] == 'Log2':
             pass
         else:
@@ -1441,23 +1446,23 @@ def ProtProf(
 
         #region ---------------------------------------------------> FC CI
         if rDO['RawI']:
-            dfR.loc[:,(cN, tN, 'CI')] = mStatistic.CI_Mean_Diff_DF(
+            dfR.loc[:,(cN, tN, 'CI')] = mStatistic.CI_Mean_Diff_DF(             # type: ignore
                 dfLogI, colC, colD, rDO['Alpha'], rDO['IndS'], fullCI=False,
             ).to_numpy()
         else:
-            dfR.loc[:,(cN, tN, 'CI')] = mStatistic.CI_Mean_DF(
-                dfLogI.iloc[:,colD], self.rDO['Alpha'], fullCI=False,           # type: ignore
+            dfR.loc[:,(cN, tN, 'CI')] = mStatistic.CI_Mean_DF(                  # type: ignore
+                dfLogI.iloc[:,colD], rDO['Alpha'], fullCI=False,
             ).to_numpy()
         #endregion ------------------------------------------------> FC CI
 
         #region -----------------------------------------------------------> P
         if rDO['RawI']:
             if rDO['IndS']:
-                dfR.loc[:,(cN,tN,'P')] = mStatistic.Test_t_IS_DF(
+                dfR.loc[:,(cN,tN,'P')] = mStatistic.Test_t_IS_DF(               # type: ignore
                     dfLogI, colC, colD, alpha=rDO['Alpha']
                 )['P'].to_numpy()
             else:
-                dfR.loc[:,(cN,tN,'P')] = mStatistic.Test_t_PS_DF(
+                dfR.loc[:,(cN,tN,'P')] = mStatistic.Test_t_PS_DF(               # type: ignore
                     dfLogI, colC, colD, alpha=rDO['Alpha']
                 )['P'].to_numpy()
         else:
@@ -1467,8 +1472,8 @@ def ProtProf(
             colCF = []
             colCF.append(dfLogI.columns.get_loc('TEMP_Col_Full_00'))
             colCF.append(dfLogI.columns.get_loc('TEMP_Col_Full_01'))
-            #------------------------------> 
-            dfR.loc[:,(cN,tN,'P')] = mStatistic.Test_t_IS_DF(
+            #------------------------------>
+            dfR.loc[:,(cN,tN,'P')] = mStatistic.Test_t_IS_DF(                   # type: ignore
                 dfLogI, colCF, colD, f=True,
             )['P'].to_numpy()
         #endregion --------------------------------------------------------> P
@@ -1476,8 +1481,8 @@ def ProtProf(
         #region ----------------------------------------------------------> Pc
         if rDO['CorrectP'] != 'None':
             dfR.loc[:,(cN,tN,'Pc')] = multipletests(                            # type: ignore
-                dfR.loc[:,(cN,tN,'P')],
-                rDO['Alpha'], 
+                dfR.loc[:,(cN,tN,'P')],                                         # type: ignore
+                rDO['Alpha'],
                 mConfig.oCorrectP[rDO['CorrectP']]
             )[1]
         else:
@@ -1485,8 +1490,8 @@ def ProtProf(
         #endregion -------------------------------------------------------> Pc
 
         #region ------------------------------------------------> Round to .XX
-        dfR.loc[:,(cN,tN,rDExtra['cLDFThirdLevel'])] = (
-            dfR.loc[:,(cN,tN,rDExtra['cLDFThirdLevel'])].round(2)
+        dfR.loc[:,(cN,tN,rDExtra['cLDFThirdLevel'])] = (                        # type: ignore
+            dfR.loc[:,(cN,tN,rDExtra['cLDFThirdLevel'])].round(2)               # type: ignore
         )
         #endregion ---------------------------------------------> Round to .XX
 
@@ -1532,20 +1537,20 @@ def ProtProf(
                 return ({}, msg, e)
     #endregion ----------------------------------------------------> Calculate
 
-    #region ---------------------------------------------------> 
+    #region --------------------------------------------------->
     if mConfig.development:
         print('dfR.shape: ', dfR.shape)
         print(dfR.head())
         print('')
     else:
         pass
-    #endregion ------------------------------------------------> 
+    #endregion ------------------------------------------------>
 
-    #region ---------------------------------------------------> 
+    #region --------------------------------------------------->
     dictO = tOut[0]
     dictO['dfR'] = dfR
     return (dictO, '', None)
-    #endregion ------------------------------------------------> 
+    #endregion ------------------------------------------------>
 #---
 
 
@@ -1555,105 +1560,98 @@ def NCResNumbers(
     rSeqFileObj: 'mFile.FastaFile',
     seqNat     : bool=True
     ) -> tuple[pd.DataFrame, str, Optional[Exception]]:
-        """Find the residue numbers for the peptides in the sequence of the 
-            Recombinant and Native protein.
-
+    """Find the residue numbers for the peptides in the sequence of the
+        Recombinant and Native protein.
+        Parameters
+        ----------
+        seqNat: bool
+            Calculate N and C residue numbers also for the Native protein
+        Returns
+        -------
+        bool
+        Notes
+        -----
+        Assumes child class has the following attributes:
+        - seqFileObj: mFile.FastaFile
+            Object with the sequence of the Recombinant and Native protein.
+        - do: dict with at least the following key - values pairs
+            {
+                'df' : {
+                    'SeqCol' : int,
+                },
+                'dfo' : {
+                    'NC' : list[int],
+                    'NCF': list[int],
+                },
+            }
+    """
+    #region --------------------------------------------> Helper Functions
+    def NCTerm(
+        row    : list[str],
+        seqObj : mFile.FastaFile,
+        seqType: str,
+        ) -> tuple[int, int]:
+        """Get the N and C terminal residue numbers for a given peptide.
             Parameters
             ----------
-            seqNat: bool
-                Calculate N and C residue numbers also for the Native protein
-
+            row: list[str]
+                List with two elements. The Sequence is in index 0.
+            seqObj : mFile.FastaFile
+                Object with the protein sequence and the method to search
+                the peptide sequence.
+            seqType : str
+                For the error message.
             Returns
             -------
-            bool
-
-            Notes
-            -----
-            Assumes child class has the following attributes:
-            - seqFileObj: mFile.FastaFile
-                Object with the sequence of the Recombinant and Native protein.
-            - do: dict with at least the following key - values pairs
-                {
-                    'df' : {
-                        'SeqCol' : int,
-                    },
-                    'dfo' : {
-                        'NC' : list[int],
-                        'NCF': list[int],
-                    },
-                }
+            (Nterm, Cterm)
         """
-        #region --------------------------------------------> Helper Functions
-        def NCTerm(
-            row    : list[str],
-            seqObj : mFile.FastaFile,
-            seqType: str,
-            ) -> tuple[int, int]:
-            """Get the N and C terminal residue numbers for a given peptide.
+        #region -----------------------------------------------> Find pept
+        nc = seqObj.FindSeq(row[0])
+        #endregion --------------------------------------------> Find pept
 
-                Parameters
-                ----------
-                row: list[str]
-                    List with two elements. The Sequence is in index 0.
-                seqObj : mFile.FastaFile
-                    Object with the protein sequence and the method to search
-                    the peptide sequence.
-                seqType : str
-                    For the error message.
-
-                Returns
-                -------
-                (Nterm, Cterm)
-            """
-            #region -----------------------------------------------> Find pept
-            nc = seqObj.FindSeq(row[0])
-            #endregion --------------------------------------------> Find pept
-
-            #region ------------------------------------------------> Check ok
-            if nc[0] != -1:
-                return nc
-            else:
-                msg = mConfig.mSeqPeptNotFound.format(row[0], seqType)
-                raise mException.ExecutionError(msg)
-            #endregion ---------------------------------------------> Check ok
-        #---
-        #endregion -----------------------------------------> Helper Functions
-
-        #region -----------------------------------------------------> Rec Seq
-        try:
-            dfR.iloc[:,rDO['dfo']['NC']] = dfR.iloc[
-                :,[rDO['df']['SeqCol'], 1]].apply(
-                    NCTerm, 
-                    axis        = 1,
-                    raw         = True,
-                    result_type = 'expand',
-                    args        = (rSeqFileObj, 'Recombinant'),
-                )
-        except mException.ExecutionError as e:
-            return (pd.DataFrame(), str(e), e)
-        except Exception as e:
-            return (pd.DataFrame(), mConfig.mUnexpectedError, e)
-        #endregion --------------------------------------------------> Rec Seq
-
-        #region -----------------------------------------------------> Nat Seq
-        #------------------------------> 
-        if seqNat and rSeqFileObj.rSeqNat:                                      # type: ignore
-            #------------------------------> 
-            delta = rSeqFileObj.GetSelfDelta()                                  # type: ignore
-            #------------------------------> 
-            a = dfR.iloc[:,rDO['dfo']['NC']] + delta
-            dfR.iloc[:,rDO['dfo']['NCF']] = a
-            #------------------------------> 
-            m = dfR.iloc[:,rDO['dfo']['NCF']] > 0
-            a = dfR.iloc[:,rDO['dfo']['NCF']].where(m, np.nan)
-            a = a.astype('int')
-            dfR.iloc[:,rDO['dfo']['NCF']] = a
+        #region ------------------------------------------------> Check ok
+        if nc[0] != -1:
+            return nc
         else:
-            pass
-        #endregion --------------------------------------------------> Nat Seq
-
-        return (dfR, '', None)
+            msg = mConfig.mSeqPeptNotFound.format(row[0], seqType)
+            raise mException.ExecutionError(msg)
+        #endregion ---------------------------------------------> Check ok
     #---
+    #endregion -----------------------------------------> Helper Functions
+
+    #region -----------------------------------------------------> Rec Seq
+    try:
+        dfR.iloc[:,rDO['dfo']['NC']] = dfR.iloc[
+            :,[rDO['df']['SeqCol'], 1]].apply(
+                NCTerm,                                                     # type: ignore
+                axis        = 1,
+                raw         = True,
+                result_type = 'expand',                                     # type: ignore
+                args        = (rSeqFileObj, 'Recombinant'),
+            )
+    except mException.ExecutionError as e:
+        return (pd.DataFrame(), str(e), e)
+    except Exception as e:
+        return (pd.DataFrame(), mConfig.mUnexpectedError, e)
+    #endregion --------------------------------------------------> Rec Seq
+
+    #region -----------------------------------------------------> Nat Seq
+    #------------------------------>
+    if seqNat and rSeqFileObj.rSeqNat:                                          # type: ignore
+        #------------------------------>
+        delta = rSeqFileObj.GetSelfDelta()                                      # type: ignore
+        #------------------------------>
+        a = dfR.iloc[:,rDO['dfo']['NC']] + delta
+        dfR.iloc[:,rDO['dfo']['NCF']] = a
+        #------------------------------>
+        m = dfR.iloc[:,rDO['dfo']['NCF']] > 0
+        a = dfR.iloc[:,rDO['dfo']['NCF']].where(m, np.nan)
+        a = a.astype('int')
+        dfR.iloc[:,rDO['dfo']['NCF']] = a
+    #endregion --------------------------------------------------> Nat Seq
+
+    return (dfR, '', None)
+#---
 
 
 def LimProt(
@@ -1704,19 +1702,19 @@ def LimProt(
             pd.DataFrame
         """
         #region -------------------------------------------------------> Index
-        #------------------------------> 
+        #------------------------------>
         aL = rDExtra['cLDFFirstThree']
         bL = rDExtra['cLDFFirstThree']
         cL = rDExtra['cLDFFirstThree']
-        #------------------------------> 
+        #------------------------------>
         n = len(rDExtra['cLDFThirdLevel'])
-        #------------------------------> 
+        #------------------------------>
         for b in rDO['Band']:
             for l in rDO['Lane']:
                 aL = aL + n*[b]
                 bL = bL + n*[l]
                 cL = cL + rDExtra['cLDFThirdLevel']
-        #------------------------------> 
+        #------------------------------>
         idx = pd.MultiIndex.from_arrays([aL[:], bL[:], cL[:]])
         #endregion ----------------------------------------------------> Index
 
@@ -1759,13 +1757,13 @@ def LimProt(
         """
         #region ----------------------------------------------> Delta and TOST
         a = mStatistic.Test_tost(
-            dfS, 
-            colC, 
-            colD, 
+            dfS,
+            colC,
+            colD,
             sample = rDO['Sample'],
             delta  = dfR[('Delta', 'Delta', 'Delta')],
             alpha  = rDO['Alpha'],
-        ) 
+        )
         dfR[(bN, lN, 'Ptost')] = a['P'].to_numpy()
         #endregion -------------------------------------------> Delta and TOST
 
@@ -1798,10 +1796,10 @@ def LimProt(
         delta = rDO['Theta']
     else:
         delta = mStatistic.Test_tost_delta(
-            dfS.iloc[:,colC], 
+            dfS.iloc[:,colC],
             rDO['Alpha'],
             rDO['Beta'],
-            rDO['Gamma'], 
+            rDO['Gamma'],
             deltaMax = rDO['ThetaMax'],
         )
     #------------------------------>
@@ -1825,7 +1823,7 @@ def LimProt(
 
     #region -------------------------------------------------> Check P < a
     idx = pd.IndexSlice
-    if (dfR.loc[:,idx[:,:,'Ptost']] < rDO['Alpha']).any().any():
+    if (dfR.loc[:,idx[:,:,'Ptost']] < rDO['Alpha']).any().any():                # type: ignore
         pass
     else:
         msg = ('There were no peptides detected in the gel '
@@ -1916,7 +1914,7 @@ def TarProt(
         for exp in rDO['Exp']:
             aL = aL + n*[exp]
             bL = bL + rDExtra['cLDFSecond']
-        #------------------------------> 
+        #------------------------------>
         idx = pd.MultiIndex.from_arrays([aL[:], bL[:]])
         #endregion ----------------------------------------------------> Index
 
@@ -1925,7 +1923,7 @@ def TarProt(
             np.nan, columns=idx, index=range(dfS.shape[0]),                     # type: ignore
         )
         idx = pd.IndexSlice
-        df.loc[:,idx[:,'Int']] = df.loc[:,idx[:,'Int']].astype('object')
+        df.loc[:,idx[:,'Int']] = df.loc[:,idx[:,'Int']].astype('object')        # type: ignore
         #endregion -------------------------------------------------> Empty DF
 
         #region -------------------------------------------------> Seq & Score
@@ -1967,7 +1965,7 @@ def TarProt(
         yC  = []
         #endregion ------------------------------------------------> Variables
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         #------------------------------> Control
         #--------------> List
         for r in rDO['df']['ResCtrl'][0][0]:
@@ -1981,29 +1979,29 @@ def TarProt(
         dfR.at[rowC,(rDO['ControlL'],'Int')] = str(yC)
         #------------------------------> Points
         for k,r in enumerate(rDO['df']['ResCtrl'][1:], start=1):
-            #------------------------------> 
+            #------------------------------>
             xE = []
             yE = []
-            #------------------------------> 
+            #------------------------------>
             for rE in r[0]:
                 if np.isfinite(row[rE]):
                     xE.append(5)
                     yE.append(row[rE])
                 else:
                     pass
-            #------------------------------> 
+            #------------------------------>
             dfR.at[rowC,(rDO['Exp'][k-1], 'Int')] = str(yE)
-            #------------------------------> 
+            #------------------------------>
             a = xC + xCt
             b = yC + yC
             c = xC + xE
             d = yC + yE
-            #------------------------------> 
+            #------------------------------>
             dfAncova.loc[range(0, len(a)),f'Xc{k}'] = a                         # type: ignore
             dfAncova.loc[range(0, len(b)),f'Yc{k}'] = b                         # type: ignore
             dfAncova.loc[range(0, len(c)),f'Xe{k}'] = c                         # type: ignore
             dfAncova.loc[range(0, len(d)),f'Ye{k}'] = d                         # type: ignore
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
         return dfAncova
     #---
     #endregion ---------------------------------------------> Helper Functions
@@ -2027,7 +2025,7 @@ def TarProt(
     else:
         pass
     #------------------------------> P values
-    totalPeptide = len(dfS)
+    # totalPeptide = len(dfS)
     totalRowAncovaDF = 2*max([len(x[0]) for x in rDO['df']['ResCtrl']])
     nGroups = [2 for x in rDO['df']['ResCtrl']]
     nGroups = nGroups[1:]
@@ -2044,13 +2042,13 @@ def TarProt(
         except Exception as e:
             msg = (f'P value calculation failed for peptide {row[0]}.')
             return ({}, msg, e)
-        #------------------------------> 
+        #------------------------------>
         k = k + 1
     #endregion -----------------------------------------------------> Analysis
 
     #region -------------------------------------------------> Check P < a
     idx = pd.IndexSlice
-    if (dfR.loc[:,idx[:,'P']] < rDO['Alpha']).any().any():
+    if (dfR.loc[:,idx[:,'P']] < rDO['Alpha']).any().any():                      # type: ignore
         pass
     else:
         msg = ('There were no peptides detected with intensity '
@@ -2076,7 +2074,7 @@ def Rec2NatCoord(
     protLoc: tuple[int,int],
     delta  : int,
     ) -> Union[list[tuple[int,int]], list[str]]:
-    """Translate residue numbers from the recombinant sequence to the native 
+    """Translate residue numbers from the recombinant sequence to the native
         sequence.
 
         Parameters
@@ -2181,16 +2179,16 @@ def R2AA(
             -------
             pd.DataFrame
         """
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         if r >= pos:
             col = pos
             start = r - pos
         else:
             col = r
             start = 0
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         for a in seq[start:r]:
             dfO.at[a,(l,f'P{col}')] = dfO.at[a,(l,f'P{col}')] + 1
             col -= 1
@@ -2198,7 +2196,7 @@ def R2AA(
         for a in seq[r:r+pos]:
             dfO.at[a,(l,f"P{col}'")] = dfO.at[a,(l,f"P{col}'")] + 1
             col += 1
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
 
         return dfO
     #---
@@ -2218,13 +2216,13 @@ def R2AA(
     for l in df.columns.get_level_values(0)[1:]:
         seqDF = df[df[idx[l,'P']] < alpha].iloc[:,0].to_list()
         for s in seqDF:
-            #------------------------------> 
+            #------------------------------>
             n = seq.find(s)
             if n > 0:
                 dfO = AddNewAA(dfO, n, pos, seq, l)
             else:
                 pass
-            #------------------------------> 
+            #------------------------------>
             c = n+len(s)
             if c < protL:
                 dfO = AddNewAA(dfO, c, pos, seq, l)
@@ -2252,9 +2250,9 @@ def R2AA(
     g = g.transpose()
 
     for l in df.columns.get_level_values(0)[1:]:
-        for p in dfO.loc[:,idx[l,:]].columns.get_level_values(1):
+        for p in dfO.loc[:,idx[l,:]].columns.get_level_values(1):               # type: ignore
             dfO.at['Chi', idx[l,p]] = mStatistic.Test_chi(
-                g.loc[:,idx[[l,c],p]], alpha)[0]
+                g.loc[:,idx[[l,c],p]], alpha)[0]                                # type: ignore
     #endregion ------------------------------------------------> Group
 
     return dfO
@@ -2287,16 +2285,16 @@ def R2Hist(
     """
     # Test in test.unit.test_method.Test_R2Hist
     #region ---------------------------------------------------> Variables
-    bin = []
+    tBin = []
     if len(win) == 1:
-        bin.append([x for x in range(0, maxL[0]+win[0], win[0])])
+        tBin.append([x for x in range(0, maxL[0]+win[0], win[0])])
         if maxL[1] is not None:
-            bin.append([x for x in range(0, maxL[1]+win[0], win[0])])
+            tBin.append([x for x in range(0, maxL[1]+win[0], win[0])])
         else:
-            bin.append([None])
+            tBin.append([None])
     else:
-        bin.append(win)
-        bin.append(win)
+        tBin.append(win)
+        tBin.append(win)
     #endregion ------------------------------------------------> Variables
 
     #region --------------------------------------------------------> Empty DF
@@ -2307,7 +2305,7 @@ def R2Hist(
     b = ['Win']+nL*['All']+nL*['Unique']+['Win']+nL*['All']+nL*['Unique']
     c = 2*(['Win']+2*label)
     #------------------------------> Rows
-    nR = sorted([len(x) for x in bin])[-1]
+    nR = sorted([len(x) for x in tBin])[-1]
     #------------------------------> df
     col = pd.MultiIndex.from_arrays([a[:],b[:],c[:]])
     dfO = pd.DataFrame(np.nan, index=range(0,nR), columns=col)                  # type: ignore
@@ -2315,9 +2313,9 @@ def R2Hist(
 
     #region ---------------------------------------------------> Fill
     #------------------------------> Windows
-    dfO.iloc[range(0,len(bin[0])), dfO.columns.get_loc(('Rec','Win','Win'))] = bin[0]
-    if bin[1][0] is not None:
-        dfO.iloc[range(0,len(bin[1])), dfO.columns.get_loc(('Nat','Win','Win'))] = bin[1]
+    dfO.iloc[range(0,len(tBin[0])), dfO.columns.get_loc(('Rec','Win','Win'))] = tBin[0]             # type: ignore
+    if tBin[1][0] is not None:
+        dfO.iloc[range(0,len(tBin[1])), dfO.columns.get_loc(('Nat','Win','Win'))] = tBin[1]         # type: ignore
     else:
         pass
     #------------------------------>
@@ -2328,22 +2326,22 @@ def R2Hist(
         dfR[('Nterm','Nterm')] = dfR[('Nterm','Nterm')] - 1
         l = dfR.to_numpy().flatten()
         l = [x for x in l if x > 0 and x < maxL[0]]
-        a,_ = np.histogram(l, bins=bin[0])
-        dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Rec','All',e))] = a
+        a,_ = np.histogram(l, bins=tBin[0])
+        dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Rec','All',e))] = a      # type: ignore
         l = list(set(l))
-        a,_ = np.histogram(l, bins=bin[0])
-        dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Rec','Unique',e))] = a
+        a,_ = np.histogram(l, bins=tBin[0])
+        dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Rec','Unique',e))] = a   # type: ignore
         #------------------------------>
-        if bin[1][0] is not None:
+        if tBin[1][0] is not None:
             dfR = dfT[[('NtermF','NtermF'),('CtermF', 'CtermF')]].copy()
             dfR[('NtermF','NtermF')] = dfR[('NtermF','NtermF')] - 1
             l = dfR.to_numpy().flatten()
             l = [x for x in l if not pd.isna(x) and x > 0 and x < maxL[1]]
-            a,_ = np.histogram(l, bins=bin[0])
-            dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Nat','All',e))] = a
+            a,_ = np.histogram(l, bins=tBin[0])
+            dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Nat','All',e))] = a  # type: ignore
             l = list(set(l))
-            a,_ = np.histogram(l, bins=bin[0])
-            dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Nat','Unique',e))] = a
+            a,_ = np.histogram(l, bins=tBin[0])
+            dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Nat','Unique',e))] = a                   # type: ignore
         else:
             pass
     #endregion ------------------------------------------------> Fill
@@ -2449,23 +2447,23 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         else:
             return np.nan
     #---
-    #region --------------------------------------------------------> 
+    #region -------------------------------------------------------->
     idx = pd.IndexSlice
     label = df.columns.unique(level=0).tolist()[4:]
     nL = len(label)
     a = df.columns.tolist()[4:]
     colN = list(range(4, len(a)+4))
-    #endregion -----------------------------------------------------> 
+    #endregion ----------------------------------------------------->
 
-    #region --------------------------------------------------------> 
+    #region -------------------------------------------------------->
     a = (nL)*['Rec']+(nL)*['Nat']
     b = 2*label
     nR = sorted(protL, reverse=True)[0] if protL[1] is not None else protL[0]
     col = pd.MultiIndex.from_arrays([a[:],b[:]])
     dfO = pd.DataFrame(0, index=range(0,nR), columns=col)                                                               # type: ignore
-    #endregion -----------------------------------------------------> 
+    #endregion ----------------------------------------------------->
 
-    #region ---------------------------------------------------> 
+    #region --------------------------------------------------->
     dfT = df.iloc[:,[0,1]+colN].copy()
     #------------------------------> 0 range for residue numbers
     dfT.iloc[:,0] = dfT.iloc[:,0]-2
@@ -2476,23 +2474,23 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
     #------------------------------>
     for e in label:
         dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])       # type: ignore
-    #------------------------------> 
-    maxN = dfT.loc[:,idx[:,'Int']].max().max()
-    minN = dfT.loc[:,idx[:,'Int']].min().min()
+    #------------------------------>
+    maxN = dfT.loc[:,idx[:,'Int']].max().max()                                                                          # type: ignore
+    minN = dfT.loc[:,idx[:,'Int']].min().min()                                                                          # type: ignore
     if maxN != minN:
-        dfT.loc[:,idx[:,'Int']] = 1 + (((dfT.loc[:,idx[:,'Int']] - minN)*(9))/(maxN - minN))
-        dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].replace(np.nan, 0)
+        dfT.loc[:,idx[:,'Int']] = 1 + (((dfT.loc[:,idx[:,'Int']] - minN)*(9))/(maxN - minN))                            # type: ignore
+        dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].replace(np.nan, 0)                                            # type: ignore
     else:
-        dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].notnull().astype('int')
+        dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].notnull().astype('int')                                       # type: ignore
     #------------------------------>
     for r in resL:
         #------------------------------>
         dfG = dfT.loc[(dfT[('Nterm','Nterm')]==r) | (dfT[('Cterm','Cterm')]==r)].copy()
         #------------------------------>
         dfG = dfG.loc[dfG.loc[:,idx[:,'Int']].any(axis=1)]                                                              # type: ignore
-        dfG.loc[:,idx[:,'Int']] = dfG.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
+        dfG.loc[:,idx[:,'Int']] = dfG.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)            # type: ignore
         #------------------------------>
-        dfO.iloc[r, range(0,len(label))] = dfG.loc[:,idx[:,'Int']].sum(axis=0)
+        dfO.iloc[r, range(0,len(label))] = dfG.loc[:,idx[:,'Int']].sum(axis=0)                                          # type: ignore
     #endregion ------------------------------------------------>
 
     #region --------------------------------------------------->
@@ -2508,25 +2506,25 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         #------------------------------>
         for e in label:
             dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])   # type: ignore
-        #------------------------------> 
-        maxN = dfT.loc[:,idx[:,'Int']].max().max()
-        minN = dfT.loc[:,idx[:,'Int']].min().min()
+        #------------------------------>
+        maxN = dfT.loc[:,idx[:,'Int']].max().max()                                                                      # type: ignore
+        minN = dfT.loc[:,idx[:,'Int']].min().min()                                                                      # type: ignore
         if maxN != minN:
-            dfT.loc[:,idx[:,'Int']] = 1 + (((dfT.loc[:,idx[:,'Int']] - minN)*(9))/(maxN - minN))
-            dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].replace(np.nan, 0)
+            dfT.loc[:,idx[:,'Int']] = 1 + (((dfT.loc[:,idx[:,'Int']] - minN)*(9))/(maxN - minN))                        # type: ignore
+            dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].replace(np.nan, 0)                                        # type: ignore
         else:
-            dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].notnull().astype('int')    
-        #------------------------------> 
+            dfT.loc[:,idx[:,'Int']] = dfT.loc[:,idx[:,'Int']].notnull().astype('int')                                   # type: ignore
+        #------------------------------>
         for r in resL:
             dfG = dfT.loc[(dfT[('NtermF','NtermF')]==r) | (dfT[('CtermF','CtermF')]==r)].copy()
             #------------------------------>
             dfG = dfG.loc[dfG.loc[:,idx[:,'Int']].any(axis=1)]                                                          # type: ignore
-            dfG.loc[:,idx[:,'Int']] = dfG.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)
-            #------------------------------> 
-            dfO.iloc[r, range(len(label),2*len(label))] = dfG.loc[:,idx[:,'Int']].sum(axis=0)    
+            dfG.loc[:,idx[:,'Int']] = dfG.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)        # type: ignore
+            #------------------------------>
+            dfO.iloc[r, range(len(label),2*len(label))] = dfG.loc[:,idx[:,'Int']].sum(axis=0)                           # type: ignore
     else:
         pass
-    #endregion ------------------------------------------------> 
+    #endregion ------------------------------------------------>
 
     return dfO
 #---
@@ -2539,7 +2537,7 @@ def R2SeqAlignment(
     fileP  : 'Path',
     tLength: int,
     seqN   : str='',
-    ) -> bool: 
+    ) -> bool:
     """Sequence Alignment for the TarProt Module.
 
         Parameters
@@ -2591,23 +2589,23 @@ def R2SeqAlignment(
             -------
             tuple(int, list[str])
         """
-        #region --------------------------------------------------------> 
+        #region -------------------------------------------------------->
         idx = pd.IndexSlice
-        df = df[df.loc[:,idx[label,'P']] <= alpha].copy()
+        df = df[df.loc[:,idx[label,'P']] <= alpha].copy()                       # type: ignore
         df = df.reset_index(drop=True)
         nCero = len(str(df.shape[0]+1))
         tString = [seq]
-        #endregion -----------------------------------------------------> 
+        #endregion ----------------------------------------------------->
 
-        #region ---------------------------------------------------> 
+        #region --------------------------------------------------->
         for r in df.itertuples():
-            n = r[3] if rec else r[5]  
+            n = r[3] if rec else r[5]
             tString.append((n-1)*' '+r[1]+(lSeq-n+1-len(r[1]))*' ')
-        #endregion ------------------------------------------------> 
+        #endregion ------------------------------------------------>
         return (nCero, tString)
     #---
     #region ---------------------------------------------------> Variables
-    #------------------------------> 
+    #------------------------------>
     label = df.columns.unique(level=0)[7:].tolist()
     lenSeqR = len(seqR)
     lenSeqN = len(seqN) if seqN else 0
@@ -2622,14 +2620,14 @@ def R2SeqAlignment(
 
     #region --------------------------------------------------->
     for e in label:
-        #------------------------------> 
+        #------------------------------>
         Story.append(Paragraph(f'{e} Recombinant Sequence'))
         Story.append(Spacer(1,20))
         nCero, tString = GetString(df, seqR, True, alpha, e, lenSeqR)
         for s in range(0, lenSeqR, tLength):
-            #------------------------------> 
+            #------------------------------>
             printString = ''
-            #------------------------------> 
+            #------------------------------>
             for k,v in enumerate(tString):
                 a = v[s:s+tLength]
                 if a.strip():
@@ -2637,7 +2635,7 @@ def R2SeqAlignment(
                     printString = f"{printString}{str(k).zfill(nCero)}-{a.replace(' ', '&nbsp;')}<br />"
                 else:
                     pass
-            #------------------------------> 
+            #------------------------------>
             Story.append(Paragraph(printString, style=styles['Seq']))
             if end:
                 Story.append(Spacer(1,10))
@@ -2647,19 +2645,19 @@ def R2SeqAlignment(
             Story.append(Spacer(1,10))
         else:
             Story.append(Spacer(1,20))
-    #endregion ------------------------------------------------> 
+    #endregion ------------------------------------------------>
 
-    #region ---------------------------------------------------> 
+    #region --------------------------------------------------->
     if seqN:
         for e in label:
-            #------------------------------> 
+            #------------------------------>
             Story.append(Paragraph(f'{e} Native Sequence'))
             Story.append(Spacer(1,20))
             nCero, tString = GetString(df, seqN, False, alpha, e, lenSeqN)
             for s in range(0, lenSeqN, tLength):
-                #------------------------------> 
+                #------------------------------>
                 printString = ''
-                #------------------------------> 
+                #------------------------------>
                 for k,v in enumerate(tString):
                     a = v[s:s+tLength]
                     if a.strip():
@@ -2667,7 +2665,7 @@ def R2SeqAlignment(
                         printString = f"{printString}{str(k).zfill(nCero)}-{a.replace(' ', '&nbsp;')}<br />"
                     else:
                         pass
-                #------------------------------> 
+                #------------------------------>
                 Story.append(Paragraph(printString, style=styles['Seq']))
                 if end:
                     Story.append(Spacer(1,10))
@@ -2677,7 +2675,7 @@ def R2SeqAlignment(
                 Story.append(Spacer(1,10))
             else:
                 Story.append(Spacer(1,20))
-    #endregion ------------------------------------------------> 
+    #endregion ------------------------------------------------>
 
     doc.build(Story)
     return True

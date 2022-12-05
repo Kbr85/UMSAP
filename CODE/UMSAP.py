@@ -42,18 +42,18 @@ class UmsapApp(wx.App):
         #region ---------------------------------------------------> Variables
         os = platform.system()
         #------------------------------> image_loc
+        imgPath = '/RESOURCES/IMAGES/SPLASHSCREEN/splash.png'
+        if os == 'Darwin':
+            fileRoot = Path(__file__).parent.parent
+        elif os == 'Windows':
+            fileRoot = Path(__file__).parent
+        else:
+            fileRoot = Path(__file__).parent
+        imgFullPath = f'{fileRoot}{imgPath}'
+        #------------------------------> DEVELOPMENT
         if DEVELOPMENT:
             imgPath     = '/Resources/IMAGES/SPLASHSCREEN/splash.png'
             fileRoot    = Path(__file__).parent.parent
-            imgFullPath = f'{fileRoot}{imgPath}'
-        else:
-            imgPath = '/RESOURCES/IMAGES/SPLASHSCREEN/splash.png'
-            if os == 'Darwin':
-                fileRoot = Path(__file__).parent.parent
-            elif os == 'Windows':
-                fileRoot = Path(__file__).parent
-            else:
-                fileRoot = Path(__file__).parent
             imgFullPath = f'{fileRoot}{imgPath}'
         #endregion ------------------------------------------------> Variables
 
@@ -98,7 +98,7 @@ class SplashWindow(wx.adv.SplashScreen):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event methods
-    def OnClose(self, event: wx.CloseEvent) -> bool:
+    def OnClose(self, event: wx.CloseEvent) -> bool:                            # pylint: disable=unused-argument
         """Finish app configuration (parameters that need a running wx.App) &
             launch main window.
 
@@ -108,10 +108,10 @@ class SplashWindow(wx.adv.SplashScreen):
                 Information regarding the event.
         """
         #region	-----------------------------------------------------> Imports
-        import config.config as mConfig
-        import data.file     as mFile
-        import gui.menu      as mMenu
-        import gui.window    as mWindow
+        import config.config as mConfig                                         # pylint: disable=import-outside-toplevel
+        import data.file     as mFile                                           # pylint: disable=import-outside-toplevel
+        import gui.menu      as mMenu                                           # pylint: disable=import-outside-toplevel
+        import gui.window    as mWindow                                         # pylint: disable=import-outside-toplevel
         #endregion---------------------------------------------------> Imports
 
         #region -------------------------------------------------------> Fonts
@@ -208,4 +208,3 @@ if __name__ == "__main__":
     app.MainLoop()
 else:
     pass
-
