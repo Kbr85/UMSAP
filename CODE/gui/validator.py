@@ -11,12 +11,12 @@
 # ------------------------------------------------------------------------------
 
 
-"""Field validators for wxPython widgets. 
-    The validators and methods return a tuple like: 
+"""Field validators for wxPython widgets.
+    The validators and methods return a tuple like:
     (True, None)
     (False, None) when there is no single offending value or this makes no sense
         like in IsNotEmpty
-    (False, (code, value/None, msg)) code indicates the section of the 
+    (False, (code, value/None, msg)) code indicates the section of the
         validation that failed, value is the value raising the error and msg
         is a general msg about the error.
 """
@@ -28,7 +28,7 @@ from typing import Optional
 import wx
 
 import config.config as mConfig
-import data.check as mCheck
+import data.check    as mCheck
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -129,7 +129,7 @@ class OutputFF(wx.Validator):
                 - NotPath,         Input is not a valid path.
                 - NoWrite,         It is not possible to write.
                 - ExceptionRaised, Check method raised an exception.
-                
+
         Attributes
         ----------
         rFof : str
@@ -144,7 +144,7 @@ class OutputFF(wx.Validator):
         #region -----------------------------------------------> Initial Setup
         self.rFof: mConfig.litFoF = fof
         self.rOpt = opt
-        #------------------------------> 
+        #------------------------------>
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
     #---
@@ -190,7 +190,7 @@ class OutputFF(wx.Validator):
 
 class IsNotEmpty(wx.Validator):
     """Check wx widget has a value different than ''
-    
+
         Returns by Validate method
         --------------------------
         tuple
@@ -199,15 +199,6 @@ class IsNotEmpty(wx.Validator):
                 code is:
                 - Empty, Field is empty.
     """
-    #region --------------------------------------------------> Instance Setup
-    def __init__(self) -> None:
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        super().__init__()
-        #endregion --------------------------------------------> Initial Setup
-    #---
-    #endregion -----------------------------------------------> Instance Setup
-
     #region ------------------------------------------------> Override Methods
     def Clone(self) -> wx.Validator:
         """ Overridden method """
@@ -242,7 +233,7 @@ class IsNotEmpty(wx.Validator):
 
 
 class NumberList(wx.Validator):
-    """Checks window holds a list of numbers or just one. Ranges (5-9) are 
+    """Checks window holds a list of numbers or just one. Ranges (5-9) are
         supported. Number of elements in the final list are checked after ranges
         are expanded.
 
@@ -348,11 +339,11 @@ class NumberList(wx.Validator):
     #---
 
     def Validate(
-        self, 
-        vMin: Optional[float]=None, 
-        vMax: Optional[float]=None, 
-        nMin: Optional[int]=None, 
-        nN  : Optional[int]=None, 
+        self,
+        vMin: Optional[float]=None,
+        vMax: Optional[float]=None,
+        nMin: Optional[int]=None,
+        nN  : Optional[int]=None,
         nMax: Optional[int]=None,
         ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
         """ Validate widget value. Parameters allow to give these values just
@@ -377,7 +368,7 @@ class NumberList(wx.Validator):
         tnMin = nMin if nMin is not None else self.rNMin
         tnN   = nN if nN is not None else self.rNN
         tnMax = nMax if nMax is not None else self.rNMax
-        #------------------------------> 
+        #------------------------------>
         value = self.GetWindow().GetValue()
         #endregion ------------------------------------------------> Variables
 
@@ -453,10 +444,10 @@ class Comparison(wx.Validator):
                 - (FalseOperand, operand) : Operand is not in the list of valid operand.
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(
-        self, 
+    def __init__(                                                               # pylint: disable=dangerous-default-value
+        self,
         numType: mConfig.litNumType='int',
-        opt    : bool=False, 
+        opt    : bool=False,
         vMin   : Optional[float]=None,
         vMax   : Optional[float]=None,
         op     : list[str]=['<', '>', '<=', '>='],

@@ -16,21 +16,21 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from typing import Union
+from typing  import Union
 
 import wx
 import wx.lib.agw.aui as aui
 
 import config.config as mConfig
-import data.method as mMethod
-import gui.pane as mPane
-import gui.widget as mWidget
+import data.method   as mMethod
+import gui.pane      as mPane
+import gui.widget    as mWidget
 #endregion ----------------------------------------------------------> Imports
 
 
 #region --------------------------------------------------------> Base Classes
 class BaseConfTab(wx.Panel):
-    """Base class for a Tab containing only a configuration panel. 
+    """Base class for a Tab containing only a configuration panel.
 
         Parameters
         ----------
@@ -58,13 +58,13 @@ class BaseConfTab(wx.Panel):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: wx.Window, name: str='', dataI: dict={}) -> None:
+    def __init__(self, parent: wx.Window, name: str='', dataI: dict={}) -> None:# pylint: disable=dangerous-default-value
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cParent    = parent
         self.cName      = name
         self.clPaneConf = getattr(self, 'clPaneConf', mConfig.lnPaneConf)
-        #------------------------------> 
+        #------------------------------>
         super().__init__(parent, name=self.cName)
         #endregion --------------------------------------------> Initial Setup
 
@@ -78,8 +78,8 @@ class BaseConfTab(wx.Panel):
         #------------------------------> AUI which frame to use
         self._mgr.SetManagedWindow(self)
         #------------------------------> Add Configuration panel
-        self._mgr.AddPane( 
-            self.wConf, 
+        self._mgr.AddPane(
+            self.wConf,
             aui.AuiPaneInfo(
                 ).Center(
                 ).Caption(
@@ -94,7 +94,7 @@ class BaseConfTab(wx.Panel):
                     visible=True,
             ),
         )
-        #------------------------------> 
+        #------------------------------>
         self._mgr.Update()
         #endregion ----------------------------------------------> Aui control
     #---
@@ -104,7 +104,7 @@ class BaseConfTab(wx.Panel):
 
 class BaseConfListTab(BaseConfTab):
     """Base class for a Tab containing a configuration panel and a right list
-        panel. 
+        panel.
 
         Parameters
         ----------
@@ -116,13 +116,13 @@ class BaseConfListTab(BaseConfTab):
             Initial data provided by the user to performed a previous analysis.
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: wx.Window, name: str='', dataI:dict={}) -> None:
+    def __init__(self, parent: wx.Window, name: str='', dataI:dict={}) -> None: # pylint: disable=dangerous-default-value
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cLCColLabel  = getattr(self, 'cLCColLabel', mConfig.lLCtrlColNameI)
         self.cSColSize    = getattr(self, 'cLCColSize',  mConfig.sLCtrlColI)
         self.cLCPaneTitle = getattr(self, 'cLCPaneTitle',mConfig.lnListPane)
-        
+
         super().__init__(parent, name=name, dataI=dataI)
         #endregion --------------------------------------------> Initial Setup
 
@@ -136,7 +136,7 @@ class BaseConfListTab(BaseConfTab):
 
         #region -------------------------------------------------> Aui control
         self._mgr.AddPane(
-            self.wLCtrl, 
+            self.wLCtrl,
             aui.AuiPaneInfo(
                 ).Right(
                 ).Caption(
@@ -210,14 +210,14 @@ class ResControlExp(wx.Panel):
         self.cLPaneList = getattr(self, 'cLPaneList', mConfig.lnListPane)
         #------------------------------> Size
         self.cSLCTrlCol = getattr(self, 'cSLCTrlCol', mConfig.sLCtrlColI)
-        #------------------------------> 
+        #------------------------------>
         super().__init__(parent, name=self.cName)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
         #------------------------------> ListCtrl and fill it
         self.wLCtrl = mWidget.MyListCtrlZebraMaxWidth(
-            self, 
+            self,
             colLabel = self.cLLCtrlColName,
             colSize  = self.cSLCTrlCol,
         )
@@ -233,8 +233,8 @@ class ResControlExp(wx.Panel):
         #------------------------------> AUI which frame to use
         self._mgr.SetManagedWindow(self)
         #------------------------------> Add Configuration panel
-        self._mgr.AddPane( 
-            self.wConf, 
+        self._mgr.AddPane(
+            self.wConf,
             aui.AuiPaneInfo(
                 ).Center(
                 ).Caption(
@@ -250,7 +250,7 @@ class ResControlExp(wx.Panel):
             ),
         )
         self._mgr.AddPane(
-            self.wLCtrl, 
+            self.wLCtrl,
             aui.AuiPaneInfo(
                 ).Right(
                 ).Caption(
@@ -289,7 +289,7 @@ class TabStart(wx.Panel):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: wx.Window, *args, **kwargs) -> None:
+    def __init__(self, parent: wx.Window, *args, **kwargs) -> None:             # pylint: disable=unused-argument
         """"""
         #region -----------------------------------------------> Initial setup
         self.cParent = parent
@@ -342,23 +342,23 @@ class TabStart(wx.Panel):
 
         #region --------------------------------------------------------> Bind
         self.wBtnCorrA.Bind(
-            wx.EVT_BUTTON, 
+            wx.EVT_BUTTON,
             lambda event: mConfig.winMain.CreateTab(mConfig.ntCorrA)            # type: ignore
         )
         self.wBtnDataPrep.Bind(
-            wx.EVT_BUTTON, 
+            wx.EVT_BUTTON,
             lambda event: mConfig.winMain.CreateTab(mConfig.ntDataPrep)         # type: ignore
         )
         self.wBtnLimProt.Bind(
-            wx.EVT_BUTTON, 
+            wx.EVT_BUTTON,
             lambda event: mConfig.winMain.CreateTab(mConfig.ntLimProt)          # type: ignore
         )
         self.wBtnProtProf.Bind(
-            wx.EVT_BUTTON, 
+            wx.EVT_BUTTON,
             lambda event: mConfig.winMain.CreateTab(mConfig.ntProtProf)         # type: ignore
         )
         self.wBtnTarProt.Bind(
-            wx.EVT_BUTTON, 
+            wx.EVT_BUTTON,
             lambda event: mConfig.winMain.CreateTab(mConfig.ntTarProt)          # type: ignore
         )
         #endregion -----------------------------------------------------> Bind

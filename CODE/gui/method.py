@@ -16,12 +16,12 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from typing import Optional
+from typing  import Optional
 
 import wx
 
 import config.config as mConfig
-import gui.window as mWindow
+import gui.window    as mWindow
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -91,7 +91,7 @@ def LoadUMSAPFile(
 
 def GetDisplayInfo(win: wx.Frame) -> dict[str, dict[str, int]]:
     """This will get the information needed to set the position of a window.
-        Should be called after Fitting sizers for accurate window size 
+        Should be called after Fitting sizers for accurate window size
         information.
 
         Parameters
