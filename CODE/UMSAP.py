@@ -50,12 +50,14 @@ class UmsapApp(wx.App):
         else:
             fileRoot = Path(__file__).parent
         imgFullPath = f'{fileRoot}{imgPath}'
-        #------------------------------> DEVELOPMENT
+        #endregion ------------------------------------------------> Variables
+
+        #region --------------------------------------------------->
         if DEVELOPMENT:
             imgPath     = '/Resources/IMAGES/SPLASHSCREEN/splash.png'
             fileRoot    = Path(__file__).parent.parent
             imgFullPath = f'{fileRoot}{imgPath}'
-        #endregion ------------------------------------------------> Variables
+        #endregion ------------------------------------------------>
 
         #region ------------------------------------------------> SplashScreen
         SplashWindow(str(imgFullPath))
@@ -108,14 +110,16 @@ class SplashWindow(wx.adv.SplashScreen):
                 Information regarding the event.
         """
         #region	-----------------------------------------------------> Imports
-        import config.config as mConfig                                         # pylint: disable=import-outside-toplevel
-        import data.file     as mFile                                           # pylint: disable=import-outside-toplevel
-        import gui.menu      as mMenu                                           # pylint: disable=import-outside-toplevel
-        import gui.window    as mWindow                                         # pylint: disable=import-outside-toplevel
+        # Import here to speed up the creation of the splash window
+        # pylint: disable=import-outside-toplevel
+        import config.config as mConfig
+        import data.method   as mMethod
+        import gui.menu      as mMenu
+        import gui.window    as mWindow
         #endregion---------------------------------------------------> Imports
 
         #region -------------------------------------------------------> Fonts
-        #------------------------------> Sequence alignments in a panel
+        #------------------------------> Fonts
         fSeqAlignFont = wx.Font(
             14,
             wx.FONTFAMILY_ROMAN,
@@ -148,45 +152,31 @@ class SplashWindow(wx.adv.SplashScreen):
             False,
             faceName="Courier",
         )
-        if mConfig.os == "Darwin":
-            mConfig.font['SeqAlign']              = fSeqAlignFont
-            mConfig.font['TreeItem']              = fTreeItem
-            mConfig.font['TreeItemDataFile']      = fTreeItemFileData
-            mConfig.font['TreeItemDataFileFalse'] = fTreeItemFileDataFalse
-        elif mConfig.os == "Windows":
-            mConfig.font['SeqAlign']             = fSeqAlignFont.SetPointSize(12)
-            mConfig.font['TreeItem']             = fTreeItem
-            mConfig.font['TreeItemDataFileFalse']= fTreeItemFileDataFalse
-            mConfig.font['TreeItemDataFile'] = fTreeItemFileData.SetPointSize(10)
-        else:
-            mConfig.font['SeqAlign']             = fSeqAlignFont.SetPointSize(11)
-            mConfig.font['TreeItem']             = fTreeItem
-            mConfig.font['TreeItemDataFile']     = fTreeItemFileData
-            mConfig.font['TreeItemDataFileFalse']= fTreeItemFileDataFalse
+        #------------------------------> Adapt to Win/Linux
+        if mConfig.os == "Windows":
+            mConfig.confFont['SeqAlign']         = fSeqAlignFont.SetPointSize(12)
+            mConfig.confFont['TreeItemDataFile'] = fTreeItemFileData.SetPointSize(10)
+        if mConfig.os not in ['Windows', 'Darwin']:
+            mConfig.confFont['SeqAlign'] = fSeqAlignFont.SetPointSize(11)
+        #------------------------------> Add to config
+        mConfig.confFont['SeqAlign']              = fSeqAlignFont
+        mConfig.confFont['TreeItem']              = fTreeItem
+        mConfig.confFont['TreeItemDataFile']      = fTreeItemFileData
+        mConfig.confFont['TreeItemDataFileFalse'] = fTreeItemFileDataFalse
         #endregion ----------------------------------------------------> Fonts
 
         #region ------------------------------------------> User Configuration
         # After fonts were created and assigned to config, load user values
-        try:
-            data = mFile.ReadJSON(mConfig.fConfig)
-        except Exception as e:
-            mConfig.confUserFile = False
-            mConfig.confUserFileException = e
-            data = {}
-        #------------------------------>
-        if data:
-            #------------------------------> General
-            mConfig.general['checkUpdate'] = data['general'].get(
-                'checkUpdate', mConfig.general['checkUpdate'])
-        else:
-            pass
+        res = mMethod.LoadUserConfig(mConfig.fConfig, mConfig.confGeneral)
+        mConfig.confUserFile          = res['confUserFile']
+        mConfig.confUserFileException = res['confUserFileException']
+        mConfig.confUserWrongOptions  = res['confUserWrongOptions']
+        mConfig.confGeneral           = res['confGeneral']
         #endregion ---------------------------------------> User Configuration
 
         #region --------------------------------------------------------> Menu
         if mConfig.os == "Darwin":
             wx.MenuBar.MacSetCommonMenuBar(mMenu.MenuBarMain())
-        else:
-            pass
         #endregion -----------------------------------------------------> Menu
 
         #region ------------------------------------------> Create main window

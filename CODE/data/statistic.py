@@ -576,8 +576,8 @@ def _DataImputation_None(df: 'pd.DataFrame', *args, **kwargs) -> 'pd.DataFrame':
 def _DataImputation_NormalDistribution(                                         # pylint: disable=dangerous-default-value
     df   : 'pd.DataFrame',                                                      # pylint: disable=unused-argument
     sel  : list[int]=[],
-    shift: float=float(mConfig.values[mConfig.nwCheckDataPrep]['Shift']),
-    width: float=float(mConfig.values[mConfig.nwCheckDataPrep]['Width']),
+    shift: float=float(mConfig.confValues[mConfig.nwCheckDataPrep]['Shift']),
+    width: float=float(mConfig.confValues[mConfig.nwCheckDataPrep]['Width']),
     **kwargs
     ) -> 'pd.DataFrame':
     """Performs a Normal Distribution imputation of selected columns in df.

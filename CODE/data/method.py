@@ -770,6 +770,75 @@ def DFFilterByColS(
 
 
 #region -------------------------------------------------------------> Methods
+def LoadUserConfig(fileP: Path, confGen: dict) -> dict:
+    """Load and validate user configuration file.
+
+        Parameters
+        ----------
+        fileP: Path
+            Path to the user configuration file.
+        confGen: dict
+            Default general configuration parameters.
+
+        Returns
+        -------
+        dict
+
+        Notes
+        -----
+        Method handle any exception raise since this will be reported by
+        mWindow.MainWindow
+    """
+    # Test in test.unit.test_method.Test_LoadUserConfig
+    #region -------------------------------------------------------> Read File
+    try:
+        data = mFile.ReadJSON(fileP)
+    except FileNotFoundError:
+        # Config file has not been created or was deleted by user
+        return {
+            'confUserFile'         : True,
+            'confUserFileException': None,
+            'confUserWrongOptions' : [],
+            'confGeneral'          : confGen,
+        }
+    except Exception as e:
+        # Config file exists but cannot be read
+        return {
+            'confUserFile'         : False,
+            'confUserFileException': e,
+            'confUserWrongOptions' : [],
+            'confGeneral'          : confGen,
+        }
+    #endregion ----------------------------------------------------> Read File
+
+    #region -------------------------------------------------------> Variables
+    badOpt = []
+    #endregion ----------------------------------------------------> Variables
+
+    #region -----------------------------------------------------> Load Config
+    #------------------------------> General
+    if (genData := data.get('confGeneral', {})):
+        #------------------------------>
+        genDataFix = dict(confGen.items())
+        #------------------------------>
+        try:
+            genDataFix['checkUpdate'] = bool(genData['checkUpdate'])
+        except Exception:
+            badOpt.append('Check for Update')
+            genDataFix['checkUpdate'] = confGen['checkUpdate']
+    else:
+        genDataFix = confGen
+    #endregion --------------------------------------------------> Load Config
+
+    return {
+        'confUserFile'         : True,
+        'confUserFileException': None,
+        'confUserWrongOptions' : badOpt,
+        'confGeneral'          : genDataFix,
+    }
+#---
+
+
 def MatplotLibCmap(
     N  : int                                    = 128,
     c1 : tuple[int, int, int]                   = (255, 0, 0),

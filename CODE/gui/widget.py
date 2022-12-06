@@ -1128,7 +1128,7 @@ class MyListCtrl(wx.ListCtrl):
         selAll         : bool=True,
         style          : int= wx.LC_REPORT,
         data           : list[list]=[],
-        color          : str=mConfig.color['Zebra'],
+        color          : str=mConfig.confColor['Zebra'],
         **kwargs,
         ) -> None:
         """ """
@@ -1829,7 +1829,7 @@ class MyListCtrlZebra(MyListCtrl, listmix.ListRowHighlighter):
     def __init__(                                                               # pylint: disable=dangerous-default-value
         self,
         parent         : wx.Window,
-        color          : str=mConfig.color['Zebra'],
+        color          : str=mConfig.confColor['Zebra'],
         colLabel       : list[str]=[],
         colSize        : list[int]=[],
         canCopy        : bool=True,
@@ -1918,7 +1918,7 @@ class MyListCtrlZebraMaxWidth(MyListCtrlZebra, listmix.ListCtrlAutoWidthMixin):
     def __init__(                                                               # pylint: disable=dangerous-default-value
         self,
         parent         : wx.Window,
-        color          : str=mConfig.color['Zebra'],
+        color          : str=mConfig.confColor['Zebra'],
         colLabel       : list[str]=[],
         colSize        : list[int]=[],
         canCopy        : bool=True,
@@ -2116,7 +2116,7 @@ class MatPlotPanel(wx.Panel):
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.rDPI          = mConfig.general['DPI'] if dpi is None else dpi
+        self.rDPI          = mConfig.confGeneral['DPI'] if dpi is None else dpi
         self.wStatBar      = statusbar
         self.rStatusMethod = statusMethod
         self.rInitY        = None
@@ -2708,7 +2708,7 @@ class ListCtrlSearch():
         parent         : wx.Window,
         listT          : int=1,
         setSizer       : bool=True,
-        color          : str=mConfig.color['Zebra'],
+        color          : str=mConfig.confColor['Zebra'],
         colLabel       : list[str]=[],
         colSize        : list[int]=[],
         canCopy        : bool=True,

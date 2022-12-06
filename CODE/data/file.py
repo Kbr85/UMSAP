@@ -43,8 +43,9 @@ def ReadJSON(fileP: Union[Path, str]) -> dict:
         Return
         ------
         dict:
-            Data in the file
+            Data in the file.
     """
+    # No test needed.
     #region -------------------------------------------------------> Read file
     with open(fileP, 'r', encoding="utf-8") as file:
         data = json.load(file)

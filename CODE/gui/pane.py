@@ -242,8 +242,8 @@ class BaseConfPanel(
         self.cVuFile = getattr(self, 'cVuFile', mValidator.OutputFF(fof='file'))
         self.cViFile = getattr(self, 'cViFile', mValidator.InputFF(fof='file'))
         #------------------------------> Values
-        self.cValShift = mConfig.values[mConfig.nwCheckDataPrep]['Shift']
-        self.cValWidth = mConfig.values[mConfig.nwCheckDataPrep]['Width']
+        self.cValShift = mConfig.confValues[mConfig.nwCheckDataPrep]['Shift']
+        self.cValWidth = mConfig.confValues[mConfig.nwCheckDataPrep]['Width']
         #------------------------------> This is needed to handle Data File
         # content load to the wx.ListCtrl in Tabs with multiple panels
         #--------------> Default wx.ListCtrl to load data file content
@@ -2286,7 +2286,7 @@ class NPlots(wx.Panel):
         parent   : wx.Window,
         tKeys    : list[str],
         nCol     : int,
-        dpi      : int=mConfig.general['DPI'],
+        dpi      : int=mConfig.confGeneral['DPI'],
         statusbar: Optional[wx.StatusBar]=None,
         ) -> None  :
         """ """

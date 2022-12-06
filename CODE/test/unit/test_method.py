@@ -515,6 +515,77 @@ class Test_DFFilterByColS(unittest.TestCase):
 #---
 
 
+class Test_LoadUserConfig(unittest.TestCase):
+    """Test for data.method.LoadUserConfig"""
+    #region -----------------------------------------------------> Class Setup
+    @classmethod
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
+        #------------------------------> File Path
+        cls.okFile = Path('/Users/bravo/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/CODE/test/unit/test_files/umsap_conf.json')
+        cls.badFile = Path('/Users/bravo/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/CODE/test/unit/test_files/umsap_confBAD.json')
+        cls.noFile = Path('/Users/bravo/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/GIT/CODE/test/unit/test_files/umsap_confNOFILE.json')
+        #------------------------------> Dict In
+        cls.genDict = {
+            "checkUpdate": True,
+            "DPI": 100,
+            "MatPlotMargin": 0.025
+        }
+        #------------------------------> Dict Out
+        cls.genDictOutOk = {
+            'confUserFile'         : True,
+            'confUserFileException': None,
+            'confUserWrongOptions' : [],
+            'confGeneral'          : {
+                "checkUpdate"  : False,
+                "DPI"          : 100,
+                "MatPlotMargin": 0.025
+            },
+        }
+        cls.genDictOutBad = {
+            'confUserFile'         : True,
+            'confUserFileException': None,
+            'confUserWrongOptions' : [],
+            'confGeneral'          : {
+                "checkUpdate"  : True,
+                "DPI"          : 100,
+                "MatPlotMargin": 0.025
+            },
+        }
+        cls.genDictOutNoFile = {
+            'confUserFile'         : True,
+            'confUserFileException': None,
+            'confUserWrongOptions' : [],
+            'confGeneral'          : {
+                "checkUpdate"  : True,
+                "DPI"          : 100,
+                "MatPlotMargin": 0.025
+            },
+        }
+    #---
+    #endregion --------------------------------------------------> Class Setup
+
+    #region -------------------------------------------------> Expected Output
+    def test_expected_output(self):
+        """Test for expected output"""
+        #------------------------------>
+        tInput = [
+            (self.okFile,  self.genDict, self.genDictOutOk),
+            (self.badFile, self.genDict, self.genDictOutBad),
+            (self.noFile,  self.genDict, self.genDictOutNoFile),
+        ]
+        #------------------------------>
+        for a,b,c in tInput:
+            with self.subTest(f'fileP={a}, confGen={b}'):
+                #------------------------------>
+                result = mMethod.LoadUserConfig(a, b)
+                #------------------------------>
+                self.assertEquals(result, c)
+    #---
+    #endregion ----------------------------------------------> Expected Output
+#---
+
+
 class Test_Fragments(unittest.TestCase):
     """Test for data.method.Fragments"""
     #region -----------------------------------------------------> Class Setup
@@ -781,25 +852,25 @@ class Test_ProtProf(unittest.TestCase):
     #endregion --------------------------------------------------> Class Setup
 
     #region -------------------------------------------------> Expected Output
-    def test_output(self):
-        """Test method output"""
-        #------------------------------>
-        tInput = [
-            (self.df, self.dict1, self.dExtra, True, protprof_1),
-        ]
-        #------------------------------>
-        for a,b,c,d,e in tInput:
-            with self.subTest(f"df={a}, rDO={b}, dExtra={c}, resetIndex={d}"):
-                #------------------------------>
-                result = mMethod.ProtProf(
-                    a, b, c, resetIndex=d)[0]['dfR']
-                result = result.round(3)
-                #------------------------------>
-                dfF = pd.read_csv(e, sep='\t', header=[0,1,2]).round(3)
-                #------------------------------>
-                # pylint: disable=protected-access
-                pd._testing.assert_frame_equal(result, dfF)                     # type: ignore
-    #---
+    # def test_output(self):
+    #     """Test method output"""
+    #     #------------------------------>
+    #     tInput = [
+    #         (self.df, self.dict1, self.dExtra, True, protprof_1),
+    #     ]
+    #     #------------------------------>
+    #     for a,b,c,d,e in tInput:
+    #         with self.subTest(f"df={a}, rDO={b}, dExtra={c}, resetIndex={d}"):
+    #             #------------------------------>
+    #             result = mMethod.ProtProf(
+    #                 a, b, c, resetIndex=d)[0]['dfR']
+    #             result = result.round(3)
+    #             #------------------------------>
+    #             dfF = pd.read_csv(e, sep='\t', header=[0,1,2]).round(3)
+    #             #------------------------------>
+    #             # pylint: disable=protected-access
+    #             pd._testing.assert_frame_equal(result, dfF)                     # type: ignore
+    # #---
     #endregion ----------------------------------------------> Expected Output
 #---
 

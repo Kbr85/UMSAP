@@ -901,7 +901,7 @@ class BaseWindowResultListText(BaseWindowResult):
         #region -----------------------------------------------------> Widgets
         self.wText = wx.TextCtrl(
             self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
-        self.wText.SetFont(mConfig.font['SeqAlign'])
+        self.wText.SetFont(mConfig.confFont['SeqAlign'])
         #------------------------------> wx.ListCtrl
         self.wLC = mPane.PaneListCtrlSearchPlot(
             self,
@@ -1464,8 +1464,8 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
             class.
     """
     #region -----------------------------------------------------> Class Setup
-    cCNatProt = mConfig.color['NatProt']
-    cCRecProt = mConfig.color['RecProt']
+    cCNatProt = mConfig.confColor['NatProt']
+    cCRecProt = mConfig.confColor['RecProt']
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
@@ -1476,7 +1476,7 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.cColor = getattr(self, 'cColor', mConfig.color[self.cName])
+        self.cColor = getattr(self, 'cColor', mConfig.confColor[self.cName])
         #------------------------------>
         self.rIdxP = getattr(self, 'rIdxP', pd.IndexSlice[:,:,'Ptost'])
         self.rIdxSeqNC = getattr(
@@ -1945,7 +1945,7 @@ class WindowMain(BaseWindow):
         #endregion -----------------------------------------------------> Bind
 
         #region	------------------------------------------------------> Update
-        if mConfig.general["checkUpdate"]:
+        if mConfig.confGeneral["checkUpdate"]:
             _thread.start_new_thread(UpdateCheck, ("main", self))
         else:
             pass
@@ -2148,11 +2148,11 @@ class WindowResCorrA(BaseWindowResultOnePlot):
         self.rCol     = True
         self.rNorm    = mpl.colors.Normalize(vmin=-1, vmax=1)
         self.rCmap    = mMethod.MatplotLibCmap(
-            N   = mConfig.color[self.cSection]['CMAP']['N'],
-            c1  = mConfig.color[self.cSection]['CMAP']['c1'],
-            c2  = mConfig.color[self.cSection]['CMAP']['c2'],
-            c3  = mConfig.color[self.cSection]['CMAP']['c3'],
-            bad = mConfig.color[self.cSection]['CMAP']['NA'],
+            N   = mConfig.confColor[self.cSection]['CMAP']['N'],
+            c1  = mConfig.confColor[self.cSection]['CMAP']['c1'],
+            c2  = mConfig.confColor[self.cSection]['CMAP']['c2'],
+            c3  = mConfig.confColor[self.cSection]['CMAP']['c3'],
+            bad = mConfig.confColor[self.cSection]['CMAP']['NA'],
         )
         self.rSelColNum  = []
         self.rSelColIdx  = []
@@ -2814,7 +2814,7 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
         a = self.wPlot.dPlot['Init'].rAxes.hist(x, bins=nBin, density=False)
         #------------------------------>
         self.wPlot.dPlot['Init'].rAxes.set_xlim(*mStatistic.DataRange(
-            a[1], margin=mConfig.general['MatPlotMargin']))
+            a[1], margin=mConfig.confGeneral['MatPlotMargin']))
         self.wPlot.dPlot['Init'].ZoomResetSetValues()
         #------------------------------>
         self.wPlot.dPlot['Init'].rCanvas.draw()
@@ -2852,10 +2852,10 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
         a = self.wPlot.dPlot['Transf'].rAxes.hist(x, bins=nBin, density=False)
         #------------------------------>
         xRange = mStatistic.DataRange(
-            a[1], margin=mConfig.general['MatPlotMargin'])
+            a[1], margin=mConfig.confGeneral['MatPlotMargin'])
         self.wPlot.dPlot['Transf'].rAxes.set_xlim(*xRange)
         self.wPlot.dPlot['Transf'].rAxes.set_ylim(*mStatistic.DataRange(
-            a[0], margin=mConfig.general['MatPlotMargin']))
+            a[0], margin=mConfig.confGeneral['MatPlotMargin']))
         self.wPlot.dPlot['Transf'].ZoomResetSetValues()
         #------------------------------>
         gausX = np.linspace(xRange[0], xRange[1], 300)
@@ -2901,10 +2901,10 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
         a = self.wPlot.dPlot['Norm'].rAxes.hist(x, bins=nBin, density=False)
         #------------------------------>
         xRange = mStatistic.DataRange(
-            a[1], margin=mConfig.general['MatPlotMargin'])
+            a[1], margin=mConfig.confGeneral['MatPlotMargin'])
         self.wPlot.dPlot['Norm'].rAxes.set_xlim(*xRange)
         self.wPlot.dPlot['Norm'].rAxes.set_ylim(*mStatistic.DataRange(
-            a[0], margin=mConfig.general['MatPlotMargin']))
+            a[0], margin=mConfig.confGeneral['MatPlotMargin']))
         self.wPlot.dPlot['Norm'].ZoomResetSetValues()
         #------------------------------>
         gausX = np.linspace(xRange[0], xRange[1], 300)
@@ -2950,10 +2950,10 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
         a = self.wPlot.dPlot['Imp'].rAxes.hist(x, bins=nBin, density=False)
         #------------------------------>
         xRange = mStatistic.DataRange(
-            a[1], margin=mConfig.general['MatPlotMargin'])
+            a[1], margin=mConfig.confGeneral['MatPlotMargin'])
         self.wPlot.dPlot['Imp'].rAxes.set_xlim(*xRange)
         self.wPlot.dPlot['Imp'].rAxes.set_ylim(*mStatistic.DataRange(
-            a[0], margin=mConfig.general['MatPlotMargin']))
+            a[0], margin=mConfig.confGeneral['MatPlotMargin']))
         self.wPlot.dPlot['Imp'].ZoomResetSetValues()
         #------------------------------>
         idx = np.where(self.rDataPlot['dfF'].iloc[:,col].isna())[0]
@@ -3326,7 +3326,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         'FC' : '{}-Evol-{}.pdf',
     }
     #------------------------------> Color
-    cColor = mConfig.color[cName]
+    cColor = mConfig.confColor[cName]
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -4373,14 +4373,14 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         else:
             lim = xmax
         #-------------->
-        dm = 2 * lim * mConfig.general['MatPlotMargin']
+        dm = 2 * lim * mConfig.confGeneral['MatPlotMargin']
         #-------------->
         xRange.append(-lim - dm)
         xRange.append(lim + dm)
         #------------------------------> Y
         ymax = y.max().max()
         #-------------->
-        dm = 2 * ymax * mConfig.general['MatPlotMargin']
+        dm = 2 * ymax * mConfig.confGeneral['MatPlotMargin']
         #-------------->
         yRange.append(0 - dm)
         yRange.append(ymax + dm)
@@ -4411,7 +4411,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
 
         #region ---------------------------------------------------> Get Range
         #------------------------------> X
-        dm = len(self.rCI['RP']) * mConfig.general['MatPlotMargin']
+        dm = len(self.rCI['RP']) * mConfig.confGeneral['MatPlotMargin']
         #-------------->
         xRange = [-dm, len(self.rCI['RP'])+dm]
         #------------------------------> Y
@@ -4423,7 +4423,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         yminLim = yMin - ciMax
         ymaxLim = yMax + ciMax
         #-------------->
-        dm = (ymaxLim - yminLim) * mConfig.general['MatPlotMargin']
+        dm = (ymaxLim - yminLim) * mConfig.confGeneral['MatPlotMargin']
         #-------------->
         yRange = [yminLim - dm, ymaxLim + dm]
         #endregion ------------------------------------------------> Get Range
@@ -4461,8 +4461,8 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         #endregion ----------------------------------------------> Check input
 
         #region ---------------------------------------------------> Get Range
-        xR = mStatistic.DataRange(x, margin=mConfig.general['MatPlotMargin'])
-        yR = mStatistic.DataRange(y, margin=mConfig.general['MatPlotMargin'])
+        xR = mStatistic.DataRange(x, margin=mConfig.confGeneral['MatPlotMargin'])
+        yR = mStatistic.DataRange(y, margin=mConfig.confGeneral['MatPlotMargin'])
         #endregion ------------------------------------------------> Get Range
 
         #region ---------------------------------------------------> Set Range
@@ -4918,7 +4918,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             tSelOptions = self.rLabelProt,
             title       = 'Select Proteins',
             tBtnLabel   = 'Add Protein',
-            color       = mConfig.color['Zebra'],
+            color       = mConfig.confColor['Zebra'],
             tStLabel    = [self.cLProtLAvail, self.cLProtLShow],
         )
         #------------------------------> Get the selected values
@@ -5850,7 +5850,7 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         self.rAlpha         = None
         self.rRecSeq        = {}
         self.rTextStyleDef  = wx.TextAttr(
-            'Black', 'White', mConfig.font['SeqAlign'])
+            'Black', 'White', mConfig.confFont['SeqAlign'])
         self.rGelSelC       = [None, None]
         #------------------------------>
         super().__init__(parent, menuData=menuData)
@@ -5871,7 +5871,7 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         #region -----------------------------------------------------> Widgets
         self.wTextSeq = wx.richtext.RichTextCtrl(
             self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
-        self.wTextSeq.SetFont(mConfig.font['SeqAlign'])
+        self.wTextSeq.SetFont(mConfig.confFont['SeqAlign'])
         #endregion --------------------------------------------------> Widgets
 
         #region ---------------------------------------------------------> AUI
@@ -8593,7 +8593,7 @@ class WindowResAA(BaseWindowResultOnePlotFA):
     #region -----------------------------------------------------> Class setup
     cName    = mConfig.nwAAPlot
     cSection = mConfig.nuAA
-    cColor   = mConfig.color[cName]
+    cColor   = mConfig.confColor[cName]
     #------------------------------>
     rBandWidth = 0.8
     rBandStart = 0.4
@@ -9053,7 +9053,7 @@ class WindowResHist(BaseWindowResultOnePlotFA):
     #region -----------------------------------------------------> Class setup
     cName    = mConfig.nwHistPlot
     cSection = mConfig.nuHist
-    cColor   = mConfig.color[cName]
+    cColor   = mConfig.confColor[cName]
     cRec = {
         True : 'Nat',
         False: 'Rec',
@@ -9698,7 +9698,7 @@ class WindowResCpR(BaseWindowResultOnePlotFA):
     #region -----------------------------------------------------> Class setup
     cName    = mConfig.nwCpRPlot
     cSection = mConfig.nuCpR
-    cColor   = mConfig.color[cName]
+    cColor   = mConfig.confColor[cName]
     #------------------------------>
     cNat = {
         True : 'Nat',
@@ -10022,7 +10022,7 @@ class WindowUMSAPControl(BaseWindow):
 
         #region -----------------------------------------------------> Widgets
         self.wTrc = wxCT.CustomTreeCtrl(self)
-        self.wTrc.SetFont(mConfig.font['TreeItem'])
+        self.wTrc.SetFont(mConfig.confFont['TreeItem'])
         self.SetTree()
         #endregion --------------------------------------------------> Widgets
 
@@ -10539,13 +10539,13 @@ class WindowUMSAPControl(BaseWindow):
                         fileP = self.rDataInitPath/f
                         if fileP.exists():
                             self.wTrc.SetItemFont(
-                                childc, mConfig.font['TreeItemDataFile'])
+                                childc, mConfig.confFont['TreeItemDataFile'])
                         else:
                             self.wTrc.SetItemFont(
-                                childc, mConfig.font['TreeItemDataFileFalse'])
+                                childc, mConfig.confFont['TreeItemDataFileFalse'])
                     else:
                         self.wTrc.SetItemFont(
-                            childc, mConfig.font['TreeItemDataFile'])
+                            childc, mConfig.confFont['TreeItemDataFile'])
         #endregion ---------------------------------------------> Add elements
 
         #region -------------------------------------------------> Expand root
@@ -11186,7 +11186,7 @@ class DialogPreference(wx.Dialog):
         """
         #region ---------------------------------------------------> Set
         #------------------------------> Update
-        mConfig.general['checkUpdate'] = not bool(
+        mConfig.confGeneral['checkUpdate'] = not bool(
             self.wUpdate.wRBox.GetSelection())
         #endregion ------------------------------------------------>
 
@@ -11310,7 +11310,7 @@ class DialogPreference(wx.Dialog):
         #region --------------------------------------------------->
         try:
             #------------------------------> Update
-            val = 0 if data['general']['checkUpdate'] else 1
+            val = 0 if data['confGeneral']['checkUpdate'] else 1
             self.wUpdate.wRBox.SetSelection(val)
         except Exception as e:
             msg = 'Something went wrong when loading the configuration options.'
@@ -11833,7 +11833,7 @@ class DialogUMSAPAddDelExport(BaseDialogOkCancel):
 
         #region -----------------------------------------------------> Widgets
         self.wTrc = wxCT.CustomTreeCtrl(self)
-        self.wTrc.SetFont(mConfig.font['TreeItem'])
+        self.wTrc.SetFont(mConfig.confFont['TreeItem'])
         self.SetTree()
         #endregion --------------------------------------------------> Widgets
 
@@ -11996,7 +11996,7 @@ class DialogUMSAPAddDelExport(BaseDialogOkCancel):
                     #------------------------------> Add date items
                     childc = self.wTrc.AppendItem(childb, f"{e}: {f}")
                     self.wTrc.SetItemFont(
-                        childc, mConfig.font['TreeItemDataFile'])
+                        childc, mConfig.confFont['TreeItemDataFile'])
         #endregion ---------------------------------------------> Add elements
 
         #region -------------------------------------------------> Expand root
@@ -12049,7 +12049,7 @@ class DialogListSelect(BaseDialogOkCancel):
         tStLabel   :list[str]=[],
         tBtnLabel  : str='',
         parent     : Optional[wx.Window]=None,
-        color      : str=mConfig.color['Zebra'],
+        color      : str=mConfig.confColor['Zebra'],
         rightDelete: bool=True,
         style      : int=wx.LC_REPORT|wx.LC_VIRTUAL,
         ) -> None:

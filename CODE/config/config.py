@@ -556,20 +556,21 @@ sLCtrlColI  = [50, 150]
 
 
 #region ---------------------------------------------> CONFIGURABLE PARAMETERS
-conflist              = ['general'] # Sections to save/load in config file
-confUserFile          = True        # User configuration file was read
+conflist              = ['confGeneral'] # Sections to save/load in config file
+confUserFile          = True        # User configuration file is Ok
 confUserFileException = None        # Exception thrown when reading conf file
+confUserWrongOptions  = []          # List of wrong options in the file
 
 #------------------------------> These must be dictionaries to save/load from
 #------------------------------> configuration file
 #region ------------------> Fonts. Set from UMSAP.py, requires a wx.App object
-font = {
+confFont = {
 }
 #endregion ---------------> Fonts. Set from UMSAP.py, requires a wx.App object
 
 
 #region -----------------------------------------------------> General options
-general = { # General options
+confGeneral = { # General options
     'checkUpdate'  : True, # True Check, False No check
     'DPI'          : 100,  # DPI for plot images
     'MatPlotMargin': 0.025 # Margin for the axes range
@@ -583,7 +584,7 @@ colorFragments = [
     '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e',
 ]
 
-color = { # Colors for the app
+confColor = { # Colors for the app
     'Zebra' : '#ffe6e6',
     'RecProt' : 'gray',
     'NatProt' : '#c94c4c',
@@ -637,7 +638,7 @@ color = { # Colors for the app
 
 
 #region --------------------------------------------------------------> Values
-values = {
+confValues = {
     nwCheckDataPrep : {
         'Shift' : '1.8',
         'Width' : '0.3',
