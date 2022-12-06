@@ -20,9 +20,13 @@ from pathlib import Path
 
 import pandas as pd
 
-import data.file as mFile
+import data.file      as mFile
 import data.exception as mException
 #endregion ----------------------------------------------------------> Imports
+
+
+# Test data lead to long lines, so this check will be disabled for this module
+# pylint: disable=line-too-long
 
 
 #region -------------------------------------------------------> File Location
@@ -39,7 +43,7 @@ class Test_FastaFile(unittest.TestCase):
     """Test for data.file.FastaFile"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
         """Create class instances"""
         cls.f1Prot = mFile.FastaFile(fasta1Prot)
         cls.f2Prot = mFile.FastaFile(fasta2Prot)
@@ -130,7 +134,7 @@ class Test_FastaFile(unittest.TestCase):
         ]
         #------------------------------>
         for a,b in tInput:
-            msg = f"GetSelfDelta"
+            msg = "GetSelfDelta"
             with self.subTest(msg):
                 #------------------------------>
                 result = a.GetSelfDelta()
@@ -146,7 +150,7 @@ class Test_FastaFile(unittest.TestCase):
         ]
         #------------------------------>
         for a,b in tInput:
-            msg = f"GetNatProtLoc"
+            msg = "GetNatProtLoc"
             with self.subTest(msg):
                 #------------------------------>
                 result = a.GetNatProtLoc()
@@ -163,7 +167,7 @@ class Test_FastaFile(unittest.TestCase):
         ]
         #------------------------------>
         for a in tInput:
-            msg = f"Throw exception."
+            msg = "Throw exception."
             with self.subTest(msg):
                 self.assertRaises(
                     mException.ExecutionError, a)
@@ -176,7 +180,7 @@ class Test_PDBFile(unittest.TestCase):
     """Test for data.file.PDB"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
         """Create class instances"""
         cls.pdb = mFile.PDBFile(pdb)
         cls.df = pd.DataFrame({
@@ -230,7 +234,7 @@ class Test_PDBFile(unittest.TestCase):
             'Segment'   : 44*[''],
             'Element'   : ['N','C','C','O','C','O','N','C','C','O','C','N','C','C','O','C','C','C','N','C','C','O','C','C','C','O','N','C','C','O','C','O','N','C','C','O','C','N','C','C','O','C','C','C'],
         })
-        
+
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -239,8 +243,9 @@ class Test_PDBFile(unittest.TestCase):
         """Test correct initialization"""
         #------------------------------>
         tInput = [
-            (self.pdb.rChain.tolist(), ['A', 'B'],               self.assertEqual, 'Chain'),
-            (self.pdb.rDFAtom,            self.df, pd._testing.assert_frame_equal,    'DF'),        # type: ignore
+            (self.pdb.rChain.tolist(), ['A', 'B'], self.assertEqual,               'Chain'),
+            # pylint: disable-next=protected-access
+            (self.pdb.rDFAtom,         self.df,    pd._testing.assert_frame_equal, 'DF'),           # type: ignore
         ]
         #------------------------------>
         for a,b,c,d in tInput:
@@ -258,7 +263,7 @@ class Test_PDBFile(unittest.TestCase):
         ]
         #------------------------------>
         for a,b in tInput:
-            msg = f"GetSequence"
+            msg = "GetSequence"
             with self.subTest(msg):
                 #------------------------------>
                 result = self.pdb.GetSequence(a)
@@ -275,14 +280,14 @@ class Test_PDBFile(unittest.TestCase):
         ]
         #------------------------------>
         for a,b in tInput:
-            msg = f"GetResNum"
+            msg = "GetResNum"
             with self.subTest(msg):
                 #------------------------------>
                 result = self.pdb.GetResNum(a)
                 #------------------------------>
                 self.assertEqual(result, b)
     #---
-    
+
     def test_SetBeta(self):
         """Test SetBeta"""
         #------------------------------>
@@ -292,13 +297,14 @@ class Test_PDBFile(unittest.TestCase):
         ]
         #------------------------------>
         for a,b,c in tInput:
-            msg = f"SetBeta"
+            msg = "SetBeta"
             with self.subTest(msg):
                 #------------------------------>
                 self.pdb.SetBeta(a, b)
+                # pylint: disable-next=protected-access
                 pd._testing.assert_frame_equal(self.pdb.rDFAtom, c)             # type: ignore
                 #------------------------------>
-                
+
     #---
     #endregion ----------------------------------------------> Expected Output
 #---

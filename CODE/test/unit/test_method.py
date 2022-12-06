@@ -19,14 +19,18 @@ import unittest
 from pathlib import Path
 
 import pandas as pd
-from numpy import nan
+from numpy  import nan
 from pandas import NA
 
-import config.config as mConfig
-import data.method as mMethod
+import config.config  as mConfig
+import data.method    as mMethod
 import data.exception as mException
-import data.file as mFile
+import data.file      as mFile
 #endregion ----------------------------------------------------------> Imports
+
+
+# Test data lead to long lines, so this check will be disabled for this module
+# pylint: disable=line-too-long
 
 
 #region ---------------------------------------------------------------> Files
@@ -132,7 +136,7 @@ class Test_Str2ListNumber(unittest.TestCase):
     """Test for data.method.Str2ListNumber"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
         """Set the line used by the test """
         cls.tStrC  = "1, 2, 3,  4  ,  5, 6  , 7, 6-10"
         cls.tStrCO = "  1, 2, 3, 6-10,  4  ,  5, 6  , 7   "
@@ -143,14 +147,14 @@ class Test_Str2ListNumber(unittest.TestCase):
     #region -----------------------------------------------------> Valid Input
     def test_invalid_input(self):
         """Test for invalid input"""
-        #------------------------------> 
+        #------------------------------>
         badInput = [
             (self.tStrC, 'badNumType', ',', False, KeyError),
             ('1, 2, 4b',        'int', ',', False, ValueError),
             ('50-10, 4, 7',     'int', ',', False, mException.InputError),
             ('1,2,3,4-',        'int', ',', False, mException.InputError),
         ]
-        #------------------------------> 
+        #------------------------------>
         for a,b,c,d, e in badInput:
             msg = f"tStr={a}, numType]{b}, sep={c}, unique={d}"
             with self.subTest(msg):
@@ -165,7 +169,7 @@ class Test_Str2ListNumber(unittest.TestCase):
     #region -------------------------------------------------> Expected Output
     def test_expected_output(self):
         """Expected output"""
-        #------------------------------> 
+        #------------------------------>
         tInput = [
             ( self.tStrC,    'int', ',', False, [1, 2, 3, 4, 5, 6, 7, 6, 7, 8, 9, 10]),
             ( self.tStrC,    'int', ',',  True, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
@@ -174,13 +178,13 @@ class Test_Str2ListNumber(unittest.TestCase):
             (self.tStrCO,    'int', ',',  True, [1, 2, 3, 6, 7, 8, 9, 10, 4, 5]),
             ( self.tStrS,    'int', ' ', False, [1, 2, 3, 4, 5, 6, 7, 6, 7, 8, 9, 10]),
         ]
-        #------------------------------> 
+        #------------------------------>
         for a,b,c,d,e in tInput:
             msg = f"tStr={a}, numType={b}, sep={c}, unique={d}"
             with self.subTest(msg):
-                #------------------------------> 
+                #------------------------------>
                 result = mMethod.Str2ListNumber(a, numType=b, sep=c, unique=d)
-                #------------------------------> 
+                #------------------------------>
                 self.assertEqual(result, e)
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -216,12 +220,12 @@ class Test_ResControl2ListNumber(unittest.TestCase):
         """Test for expected output"""
         #------------------------------>
         tInput = [
-            (',;,', [' ', ',', ';'], 'int', [[[], []], [[], []]]),   
-            ('0 1 2, 3 4 5; 6 7 8, 9 10 11', [' ', ',', ';'], 'int', [[[0,1,2], [3,4,5]], [[6,7,8], [9,10,11]]]),           
-            ('0 1 2,; 6 7 8,', [' ', ',', ';'], 'int', [[[0,1,2], []], [[6,7,8], []]]),      
-            ('0-2, 3-5; 6-8, 9-11', [' ', ',', ';'], 'int', [[[0,1,2], [3,4,5]], [[6,7,8], [9,10,11]]]),       
-            ('0-2, 3 4 5; 6-8, 9-11', [' ', ',', ';'], 'int', [[[0,1,2], [3,4,5]], [[6,7,8], [9,10,11]]]),                    
-            ('0-2 20, 3 4 5 21; 6-8 22, 23 9-11', [' ', ',', ';'], 'int', [[[0,1,2,20], [3,4,5, 21]], [[6,7,8, 22], [23,9,10,11]]]),                    
+            (',;,', [' ', ',', ';'], 'int', [[[], []], [[], []]]),
+            ('0 1 2, 3 4 5; 6 7 8, 9 10 11', [' ', ',', ';'], 'int', [[[0,1,2], [3,4,5]], [[6,7,8], [9,10,11]]]),
+            ('0 1 2,; 6 7 8,', [' ', ',', ';'], 'int', [[[0,1,2], []], [[6,7,8], []]]),
+            ('0-2, 3-5; 6-8, 9-11', [' ', ',', ';'], 'int', [[[0,1,2], [3,4,5]], [[6,7,8], [9,10,11]]]),
+            ('0-2, 3 4 5; 6-8, 9-11', [' ', ',', ';'], 'int', [[[0,1,2], [3,4,5]], [[6,7,8], [9,10,11]]]),
+            ('0-2 20, 3 4 5 21; 6-8 22, 23 9-11', [' ', ',', ';'], 'int', [[[0,1,2,20], [3,4,5, 21]], [[6,7,8, 22], [23,9,10,11]]]),
         ]
         #------------------------------>
         for a,b,c,d in tInput:
@@ -242,11 +246,11 @@ class Test_ResControl2Flat(unittest.TestCase):
         """Test for expected output"""
         #------------------------------>
         tInput = [
-            ([[[], []], [[], []]], []),   
-            ([[[0,1,2], [3,4,5]], [[6,7,8], [9,10,11]]], [0,1,2,3,4,5,6,7,8,9,10,11]),           
-            ([[[0,1,2], []], [[6,7,8], []]], [0,1,2,6,7,8]),      
-            ([[[0,1,2], [3,4,5]], [[6,7,8], [9,10,11]]], [0,1,2,3,4,5,6,7,8,9,10,11]),                           
-            ([[[0,1,2,20], [3,4,5, 21]], [[6,7,8, 22], [23,9,10,11]]], [0,1,2,20,3,4,5,21,6,7,8,22,23,9,10,11]),                    
+            ([[[], []], [[], []]], []),
+            ([[[0,1,2], [3,4,5]], [[6,7,8], [9,10,11]]], [0,1,2,3,4,5,6,7,8,9,10,11]),
+            ([[[0,1,2], []], [[6,7,8], []]], [0,1,2,6,7,8]),
+            ([[[0,1,2], [3,4,5]], [[6,7,8], [9,10,11]]], [0,1,2,3,4,5,6,7,8,9,10,11]),
+            ([[[0,1,2,20], [3,4,5, 21]], [[6,7,8, 22], [23,9,10,11]]], [0,1,2,20,3,4,5,21,6,7,8,22,23,9,10,11]),
         ]
         #------------------------------>
         for a,b in tInput:
@@ -290,7 +294,7 @@ class Test_ExpandRange(unittest.TestCase):
     #region -------------------------------------------------> Expected Output
     def test_expected_output(self):
         """Expected output"""
-        #------------------------------> 
+        #------------------------------>
         tInput = [
             (   '4',   'int',           [4]),
             ( '4.9', 'float',         [4.9]),
@@ -314,19 +318,19 @@ class Test_ListRemoveDuplicates(unittest.TestCase):
     #region -------------------------------------------------> Expected Output
     def test_expected_output(self):
         """Test for the expected output"""
-        #------------------------------> 
+        #------------------------------>
         tInput = [
             ([1,2,3,6,4,7,5,6,10,7,8,9], [1,2,3,6,4,7,5,10,8,9]),
             (['q', 'u', 'u', 'z', 'h', 'z'], ['q', 'u', 'z', 'h']),
             ([1, 2, 4, 'q', 'u', 'u', 'z', 6, 2], [1,2,4,'q','u','z',6]),
         ]
-        #------------------------------> 
+        #------------------------------>
         for a,b in tInput:
             with self.subTest(f"l={a}"):
-                #------------------------------> 
+                #------------------------------>
                 result = mMethod.ListRemoveDuplicates(a)
-                #------------------------------> 
-                self.assertEqual(result, b) 
+                #------------------------------>
+                self.assertEqual(result, b)
     #---
     #endregion ----------------------------------------------> Expected Output
 #---
@@ -336,22 +340,22 @@ class Test_DictVal2Str(unittest.TestCase):
     """Test for data.method.DictVal2Str"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
-        """"""
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
         cls.iDict = {
             1    : Path('/k/d/c'),
             'B'  : 3,
             '2'  : [1,2,3,4,5],
             'All': 'This is already a str',
         }
-        
+
         cls.allDict = {
             1    : str(Path('/k/d/c')),
             'B'  : str(3),
             '2'  : str([1,2,3,4,5]),
             'All': str('This is already a str'),
         }
-        
+
         cls.pathDict = {
             1    : str(Path('/k/d/c')),
             'B'  : 3,
@@ -364,19 +368,19 @@ class Test_DictVal2Str(unittest.TestCase):
     #region -------------------------------------------------> Expected Output
     def test_expected_output(self):
         """Test for the expected output"""
-        #------------------------------> 
+        #------------------------------>
         tInput = [
             (self.iDict,                [], True, self.iDict),
             (self.iDict,               [1], True, self.pathDict),
             (self.iDict, [1,'B','2','All'], True, self.allDict),
         ]
-        #------------------------------> 
+        #------------------------------>
         for a,b,c,d in tInput:
             with self.subTest(f"iDict={a}, changeKey={b}, new={c}"):
-                #------------------------------> 
+                #------------------------------>
                 result = mMethod.DictVal2Str(a, changeKey=b, new=c)
-                #------------------------------> 
-                self.assertEqual(result, d) 
+                #------------------------------>
+                self.assertEqual(result, d)
     #---
     #endregion ----------------------------------------------> Expected Output
 #---
@@ -402,6 +406,7 @@ class Test_DFReplace(unittest.TestCase):
                 #------------------------------>
                 result = mMethod.DFReplace(a, b, c, sel=d)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, e)                       # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -412,8 +417,8 @@ class Test_DFExclude(unittest.TestCase):
     """Test for data.method.DFExclude"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
-        """"""
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
         cls.a = DF_DFExclude.iloc[0:4,:]
         cls.b = DF_DFExclude.iloc[1:4,:]
         cls.c = DF_DFExclude.iloc[[1,3],:]
@@ -437,6 +442,7 @@ class Test_DFExclude(unittest.TestCase):
                 #------------------------------>
                 result = mMethod.DFExclude(a,b)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, c)                       # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -447,8 +453,8 @@ class Test_DFFilterByColN(unittest.TestCase):
     """Test for data.method.DFFilterByColN"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
-        """"""
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
         cls.a = DF_DFFilterByColN.iloc[2:5,:]
         cls.b = DF_DFFilterByColN.iloc[0,:].to_frame().transpose()
         cls.c = DF_DFFilterByColN.iloc[[0,1],:]
@@ -470,6 +476,7 @@ class Test_DFFilterByColN(unittest.TestCase):
                 #------------------------------>
                 result = mMethod.DFFilterByColN(a, b, c, d)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, e)                       # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -480,11 +487,10 @@ class Test_DFFilterByColS(unittest.TestCase):
     """Test for data.method.DFFilterByColS"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
-        """"""
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
         cls.a = DF_DFFilterByColS.iloc[[1,3],:]
         cls.b = DF_DFFilterByColS.iloc[[0,2,4],:]
-        pass
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -502,6 +508,7 @@ class Test_DFFilterByColS(unittest.TestCase):
                 #------------------------------>
                 result = mMethod.DFFilterByColS(a, b, c, d)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, e)                       # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -512,8 +519,8 @@ class Test_Fragments(unittest.TestCase):
     """Test for data.method.Fragments"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
-        """"""
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
         cls.a = pd.DataFrame({
             ('Seq','Seq')     :  [  'A',  'Q',  'A',  'N',  'P',  'V',  'V',  'A',  'I',  'Q',  'E',  'A',  'Y',  'L',  'L',  'N',  'D'],
             ('N', 'N')        :  [    1,   50,  201,  247,  258,  270,  270,  274,  311,  325,  327,  343,  368,  372,  372,  376,  432],
@@ -589,8 +596,8 @@ class Test_MergeOverlappingFragments(unittest.TestCase):
     """Test for data.method.MergeOverlappingFragments"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
-        """"""
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
         cls.a = [(1,42), (201, 211), (247, 263), (38, 50), (212, 230)]
         cls.b = [(1,50), (201, 211), (212, 230), (247, 263)]
         cls.c = [(1,50), (201, 230), (247, 263)]
@@ -622,8 +629,8 @@ class Test_CorrA(unittest.TestCase):
     """Test for data.method.CorrA"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
-        """"""
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
         cls.df = mFile.ReadCSV2DF(tarprotData)
         cls.dict1 = {
             'Cero' : False,
@@ -716,6 +723,7 @@ class Test_CorrA(unittest.TestCase):
                 #------------------------------>
                 dfF = pd.read_csv(d, sep='\t',index_col=0).round(3)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, dfF)                     # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -726,8 +734,8 @@ class Test_ProtProf(unittest.TestCase):
     """Test for data.method.ProtProf"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
-        """"""
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
         cls.df = mFile.ReadCSV2DF(protprofData)
         cls.dExtra  = {
             'cLDFThreeCol'  : mConfig.dfcolProtprofFirstThree,
@@ -789,6 +797,7 @@ class Test_ProtProf(unittest.TestCase):
                 #------------------------------>
                 dfF = pd.read_csv(e, sep='\t', header=[0,1,2]).round(3)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, dfF)                     # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -799,8 +808,8 @@ class Test_Rec2NatCoord(unittest.TestCase):
     """Test for data.method.Rec2NatCoord"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
-        """"""
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
         cls.a = [(1,42), (38, 50), (201, 211), (247, 263)]
         cls.b = [(48, 60), (211, 221), (257, 273)]
         cls.c = [(211, 221)]
@@ -837,8 +846,8 @@ class Test_R2AA(unittest.TestCase):
     """
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
-        """"""
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
         cls.a = pd.DataFrame({
             ('Seq','Seq') : ['TVAQA', 'MLVAF', 'TITLS', 'LRDII', 'WVTAD', 'PDYAS', 'HDLEK', 'MKHHH', 'HHHLM'],
             ('Exp1', 'P') : [  0.001,   0.904,   0.001,   0.012,   0.869,   0.001,   0.504,   0.176,   0.010],
@@ -846,14 +855,14 @@ class Test_R2AA(unittest.TestCase):
             ('Exp3', 'P') : [  0.732,   0.001,   0.605,   0.164,   0.650,   0.230,   0.001,   0.001,   0.001],
         })
         cls.seq = (
-            f'MKHHHHHHHHHHHHMKKTAIAIAVALAGFATVAQAASWSHPQFEKIEGRRDRGQKTQSAP'
-            f'GTLSPDARNEKQPFYGEHQAGILTPQQAAMMLVAFDVLASDKADLERLFRLLTQRFAFLT'
-            f'QGGAAPETPNPRLPPLDSGILGGYIAPDNLTITLSVGHSLFDERFGLAPQMPKKLQKMTR'
-            f'FPNDSLDAALCHGDVLLQICANTQDTVIHALRDIIKHTPDLLSVRWKREGFISDHAARSK'
-            f'GKETPINLLGFKDGTANPDSQNDKLMQKVVWVTADQQEPAWTIGGSYQAVRLIQFRVEFW'
-            f'DRTPLKEQQTIFGRDKQTGAPLGMQHEHDVPDYASDPEGKVIALDSHIRLANPRTAESES'
-            f'SLMLRRGYSYSLGVTNSGQLDMGLLFVCYQHDLEKGFLTVQKRLNGEALEEYVKPIGGGY'
-            f'FFALPGVKDANDYFGSALLRVMMMMMMMHHHHHHHHHLM')
+            'MKHHHHHHHHHHHHMKKTAIAIAVALAGFATVAQAASWSHPQFEKIEGRRDRGQKTQSAP'
+            'GTLSPDARNEKQPFYGEHQAGILTPQQAAMMLVAFDVLASDKADLERLFRLLTQRFAFLT'
+            'QGGAAPETPNPRLPPLDSGILGGYIAPDNLTITLSVGHSLFDERFGLAPQMPKKLQKMTR'
+            'FPNDSLDAALCHGDVLLQICANTQDTVIHALRDIIKHTPDLLSVRWKREGFISDHAARSK'
+            'GKETPINLLGFKDGTANPDSQNDKLMQKVVWVTADQQEPAWTIGGSYQAVRLIQFRVEFW'
+            'DRTPLKEQQTIFGRDKQTGAPLGMQHEHDVPDYASDPEGKVIALDSHIRLANPRTAESES'
+            'SLMLRRGYSYSLGVTNSGQLDMGLLFVCYQHDLEKGFLTVQKRLNGEALEEYVKPIGGGY'
+            'FFALPGVKDANDYFGSALLRVMMMMMMMHHHHHHHHHLM')
         cls.b = pd.DataFrame(
             {
                 ('AA', 'AA')    : ['A','I','L','V','M','F','W','Y','R','K','D','E','C','Q','H','S','T','N','G','P'],
@@ -873,7 +882,7 @@ class Test_R2AA(unittest.TestCase):
                 ('ALL_CLEAVAGES_UMSAP', 'P1')  : [41, 19, 46, 21, 17, 20,  5, 10, 24, 24, 29, 20,  3, 27, 32, 23, 24, 12, 35, 25],
                 ('ALL_CLEAVAGES_UMSAP', "P1'") : [41, 19, 47, 21, 16, 20,  5, 10, 24, 24, 29, 20,  3, 27, 32, 23, 24, 12, 35, 25],
                 ('ALL_CLEAVAGES_UMSAP', "P2'") : [41, 19, 47, 21, 17, 20,  5, 10, 24, 23, 29, 20,  3, 27, 32, 23, 24, 12, 35, 25],
-            }, 
+            },
             index=['A','I','L','V','M','F','W','Y','R','K','D','E','C','Q','H','S','T','N','G','P']
         )
     #---
@@ -894,6 +903,7 @@ class Test_R2AA(unittest.TestCase):
                 result = mMethod.R2AA(a, b, c, d, e)
                 result = result.iloc[0:-1,:] # Exclude chi2 test row
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, f)                       # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -904,8 +914,8 @@ class Test_R2Hist(unittest.TestCase):
     """Test for data.method.R2Hist"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
-        """"""
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
         cls.a = pd.DataFrame({
             ('Nterm',   'Nterm') : [    1,   50,  201,  247,  258,  270,  270,  274,  311,  325,  327,  343,  368,  372,  372,  376,  432],
             ('Cterm',   'Cterm') : [   42,   62,  211,  263,  269,  283,  290,  293,  324,  342,  342,  351,  377,  385,  387,  387,  441],
@@ -915,7 +925,7 @@ class Test_R2Hist(unittest.TestCase):
             ('Exp2',        'P') : [0.963,0.001,0.001,0.001,0.001,0.112,0.058,0.060,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.472],
             ('Exp3',        'P') : [0.732,0.335,0.605,0.164,0.650,0.230,0.034,0.655,0.002,0.008,0.243,0.307,0.240,0.666,0.663,0.189,0.001],
         })
-        
+
         cls.b = pd.DataFrame({
             ('Rec',    'Win',  'Win') : [0.0, 50.0, 100.0, 150.0, 200.0, 250.0, 300.0, 350.0, 400.0, 450.0],
             ('Rec',    'All', 'Exp1') : [1.0,    0,     0,     0,   3.0,   1.0,     0,   4.0,     0,   nan],
@@ -932,7 +942,7 @@ class Test_R2Hist(unittest.TestCase):
             ('Nat', 'Unique', 'Exp2') : [1.0,    0,     0,   2.0,   3.0,   2.0,   3.0,     0,     0,   nan],
             ('Nat', 'Unique', 'Exp3') : [  0,    0,     0,     0,     0,   3.0,   2.0,     0,     0,   nan],
         })
-        
+
         cls.c = pd.DataFrame({
             ('Rec',    'Win',  'Win') : [200.0, 250.0, 300.0],
             ('Rec',    'All', 'Exp1') : [  3.0,   1.0,   nan],
@@ -967,6 +977,7 @@ class Test_R2Hist(unittest.TestCase):
                 #------------------------------>
                 result = mMethod.R2Hist(a, b, c, d)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, e)                       # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -977,8 +988,8 @@ class Test_R2CpR(unittest.TestCase):
     """Test for data.method.R2CpR"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
-        """"""
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
         cls.a = pd.DataFrame({
             ('Nterm',   'Nterm') : [    1,   5,  20,  24,  25,  27,  27,  27,  31,  32,  32,  34,  36,  37,  37,  37,  43],
             ('Cterm',   'Cterm') : [    4,   6,  21,  26,  26,  28,  29,  30,  32,  34,  35,  36,  38,  39,  40,  41,  45],
@@ -988,7 +999,7 @@ class Test_R2CpR(unittest.TestCase):
             ('Exp2',        'P') : [0.963,0.001,0.001,0.001,0.001,0.112,0.058,0.060,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.472],
             ('Exp3',        'P') : [0.732,0.335,0.605,0.164,0.650,0.230,0.034,0.655,0.002,0.008,0.243,0.307,0.240,0.666,0.663,0.189,0.001],
         })
-        
+
         cls.b = pd.DataFrame({
                             #  1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45
             ('Rec', 'Exp1') : [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0],
@@ -1015,6 +1026,7 @@ class Test_R2CpR(unittest.TestCase):
                 #------------------------------>
                 result = mMethod.R2CpR(a, b, c)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, d)                       # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -1025,8 +1037,8 @@ class Test_R2CEvol(unittest.TestCase):
     """Test for data.method.R2CEvol"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
-        """"""
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
         cls.a = pd.DataFrame({
             ('Nterm',   'Nterm') : [        1,         5,        20,        24,        25,        27,        27,        27,        31,        32,        32,        34,        36,        37,        37,        37,        43],
             ('Cterm',   'Cterm') : [        4,         6,        21,        26,        26,        28,        29,        30,        32,        34,        35,        36,        38,        39,        40,        41,        45],
@@ -1039,7 +1051,7 @@ class Test_R2CEvol(unittest.TestCase):
             ('Exp3',      'Int') : ['[0,0,0]', '[4,6,8]', '[7,8,9]', '[0,0,0]', '[0,0,0]', '[1,2,3]', '[3,4,5]', '[0,0,0]', '[1,2,3]', '[7,8,9]', '[0,0,0]', '[0,0,0]', '[2,4,5]', '[0,0,0]', '[0,0,0]', '[0,0,0]', '[3,4,5]'],
             ('Exp3',        'P') : [    0.732,     0.001,     0.001,     0.164,     0.650,     0.001,     0.034,     0.655,     0.002,     0.008,     0.243,     0.307,     0.010,     0.666,     0.663,     0.189,     0.001],
         })
-        
+
         cls.b = pd.DataFrame({
                             #  1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25, 26,27, 28,29, 30,31,  32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47
             ('Rec', 'Exp1') : [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0,  1, 0,  0, 0,  1, 0,   1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0],
@@ -1066,6 +1078,7 @@ class Test_R2CEvol(unittest.TestCase):
                 #------------------------------>
                 result = mMethod.R2CEvol(a, b, c)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, d)                       # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output

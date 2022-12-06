@@ -27,7 +27,7 @@ class Test_VersionCompare(unittest.TestCase):
     #region -------------------------------------------------> Expected Output
     def test_expected_output(self):
         """Test for the first element of the expected output"""
-        #------------------------------> 
+        #------------------------------>
         tInput = [
             (   'badVersion',       '2.4.6', False),
             ('2.44.9 (beta)',  'badVersion', False),
@@ -45,12 +45,12 @@ class Test_VersionCompare(unittest.TestCase):
             ('3.4.7 (beta)',        '2.4.1',  True),
             (       '3.4.7',   '2.4.1 beta',  True),
         ]
-        #------------------------------> 
+        #------------------------------>
         for a,b,c in tInput:
             with self.subTest(f"strA={a}, strB={b}"):
-                #------------------------------> 
+                #------------------------------>
                 result = mCheck.VersionCompare(a, b)[0]
-                #------------------------------> 
+                #------------------------------>
                 self.assertIs(result, c)
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -62,7 +62,7 @@ class Test_Path2FFOutput(unittest.TestCase):
     #region -----------------------------------------------------> Class Setup
     @classmethod
     def setUpClass(cls):
-        """"""
+        """Set test"""
         cls.file   = Path(__file__)
         cls.folder = cls.file.parent
         cls.noPerm = Path('/etc/')
@@ -101,7 +101,7 @@ class Test_Path2FFInput(unittest.TestCase):
     #region -----------------------------------------------------> Class Setup
     @classmethod
     def setUpClass(cls):
-        """"""
+        """Set test"""
         cls.file   = Path(__file__)
         cls.folder = cls.file.parent
         cls.noPerm = Path('/etc/kbr-delete.delete')
@@ -142,7 +142,7 @@ class Test_NumberList(unittest.TestCase):
     #region -----------------------------------------------------> Class Setup
     @classmethod
     def setUpClass(cls):
-        """"""
+        """Set test"""
         cls.a = '1 2 3 4'
         cls.b = '1 2 3 4.0'
         cls.c = '1 2 3 4-10'
@@ -171,12 +171,12 @@ class Test_NumberList(unittest.TestCase):
             (self.f,   'int',  True, ' ', False, None, None, None, None, None, False), #
             (self.a,   'int',  True, ' ', False,    3, None, None, None, None, False), # vMin
             (self.g,   'int',  True, ' ', False, None,   10, None, None, None, False), # vMax
-            (self.c,   'int',  True, ' ', False,    0,   10, None, None, None,  True), # 
+            (self.c,   'int',  True, ' ', False,    0,   10, None, None, None,  True), #
             (self.a,   'int',  True, ' ', False,    0,   10, None,    3, None, False), # Length
-            (self.a,   'int',  True, ' ', False,    0,   10,    0,    3,    5, False), # 
-            (self.a,   'int',  True, ' ', False,    0,   10,    0,    4,    1,  True), # 
-            (self.a,   'int',  True, ' ', False,    0,   10,    0, None,    5,  True), # 
-            (self.f,   'int', False, ' ', False,    0,   10,    0, None,    5, False), # 
+            (self.a,   'int',  True, ' ', False,    0,   10,    0,    3,    5, False), #
+            (self.a,   'int',  True, ' ', False,    0,   10,    0,    4,    1,  True), #
+            (self.a,   'int',  True, ' ', False,    0,   10,    0, None,    5,  True), #
+            (self.f,   'int', False, ' ', False,    0,   10,    0, None,    5, False), #
             (self.h,   'int',  True, ',', False, None, None, None, None, None,  True),
         ]
         #------------------------------>
@@ -188,7 +188,7 @@ class Test_NumberList(unittest.TestCase):
             with self.subTest(msg):
                 #------------------------------>
                 result = mCheck.NumberList(
-                    a, 
+                    a,
                     numType = b,
                     unique  = c,
                     sep     = d,
@@ -211,7 +211,7 @@ class Test_AInRange(unittest.TestCase):
     #region -------------------------------------------------> Expected output
     def test_expected_output(self):
         """Test for first element in expected result"""
-        #------------------------------> 
+        #------------------------------>
         tInput = [
             (     6,  None,   None,  True), # Nothing to compare is True
             (     6,   '3',     10,  True), #   3 <=    6 <=   10 is True
@@ -227,15 +227,15 @@ class Test_AInRange(unittest.TestCase):
             (    '3', None,    '3',  True), #           3 <=    3 is True
             (     -1, None, '-3.9', False), #          -1 <= -3.9 is False
         ]
-        #------------------------------> 
+        #------------------------------>
         for a,b,c,d in tInput:
             with self.subTest(f"a={a}, refMin={b}, refMax={c}"):
-                #------------------------------> 
+                #------------------------------>
                 result = mCheck.AInRange(a, refMin=b, refMax=c)[0]
-                #------------------------------> 
+                #------------------------------>
                 self.assertIs(result, d)
     #---
-    #endregion ----------------------------------------------> Expected output  
+    #endregion ----------------------------------------------> Expected output
 #---
 
 
@@ -244,7 +244,7 @@ class Test_ListUnique(unittest.TestCase):
     #region -------------------------------------------------> Expected Output
     def test_expected_output(self):
         """Test for first element in expected result"""
-        #------------------------------> 
+        #------------------------------>
         tInput = [
             (                               [], False, False),
             (                               [],  True,  True),
@@ -253,12 +253,12 @@ class Test_ListUnique(unittest.TestCase):
             (            [1,2,3,'1','2','3',2], False, False),
             (['A',1,2,3,'1','2','3',2,'3','A'], False, False),
         ]
-        #------------------------------> 
+        #------------------------------>
         for a,b,c in tInput:
             with self.subTest(f"tList={a}, opt={b}"):
-                #------------------------------> 
+                #------------------------------>
                 result = mCheck.ListUnique(a, opt=b)[0]
-                #------------------------------> 
+                #------------------------------>
                 self.assertIs(result, c)
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -269,8 +269,8 @@ class Test_UniqueColNumbers(unittest.TestCase):
     """Test for data.check.UniqueColNumbers"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
-        """"""
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
         cls.a = [1, 2, 3, 4]
         cls.b = ['1 2 3 4', '5-7, 8-10; 11-13, 14-16', '17-20']
         cls.c = [' 1 2 3 4 ', '5-7  ,  8-10 ; 11-13  , 14-16', '  17-20  ']
@@ -313,8 +313,8 @@ class Test_Comparison(unittest.TestCase):
     """Test for data.check.Comparison"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
-        """"""
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
         cls.op1 = ['<', '>', '<=', '>=']
         cls.op2 = ['>', '<=', '>=']
     #---

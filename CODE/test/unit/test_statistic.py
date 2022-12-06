@@ -27,6 +27,10 @@ import data.file      as mFile
 #endregion ----------------------------------------------------------> Imports
 
 
+# Test data lead to long lines, so this check will be disabled for this module
+# pylint: disable=line-too-long
+
+
 #region ---------------------------------------------------------------> Files
 folder = Path(__file__).parent / 'test_files'
 tarprotData = folder / 'tarprot-data-file.txt'
@@ -210,7 +214,7 @@ DF_tost_delta = pd.DataFrame({
     'G' : [88.3, 88.0],
     'H' : [89.3, 86.5],
     'I' : [88.9, 89.6],
-    'J' : [91.1, 89.1], 
+    'J' : [91.1, 89.1],
     'K' : [86.2, 86.1],
     'L' : [91.3, 86.2],
     'M' : [89.3, 87.7],
@@ -299,8 +303,8 @@ class Test_DataRange(unittest.TestCase):
     """Test for data.statistic.DataRange"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
-        """"""
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
         cls.Tlist = [1,2,3,4,5]
     #---
     #endregion --------------------------------------------------> Class Setup
@@ -364,6 +368,7 @@ class Test_DataPrep_Float(unittest.TestCase):
                 #------------------------------>
                 dfI, dfF = mStatistic.DataPrep_Float(a, b, c, d, e)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(dfI, f)                          # type: ignore
                 pd._testing.assert_frame_equal(dfF, g)                          # type: ignore
     #---
@@ -377,7 +382,7 @@ class Test_DataTransformation(unittest.TestCase):
     #------------------------------> Log2
     def test_output(self):
         """Test method output"""
-        #------------------------------> 
+        #------------------------------>
         tInput = [
             (DF_Log2,      [], 'None', None, DF_Log2),
             (DF_Log2,      [], 'Log2', None, DF_Log2_Full_None),
@@ -385,13 +390,14 @@ class Test_DataTransformation(unittest.TestCase):
             (DF_Log2, [0,2,4], 'Log2',    0, DF_Log2_0_2_4_0),
             (DF_Log2, [0,1,2], 'Log2',  nan, DF_Log2_0_1_2_NA),
         ]
-        #------------------------------> 
+        #------------------------------>
         for a,b,c,d,e in tInput:
             with self.subTest(f"df=DF_Log2, sel={b}, method={c}, rep={d}"):
-                #------------------------------> 
+                #------------------------------>
                 result = mStatistic.DataTransformation(
                     a, sel=b, method=c, rep=d)
-                #------------------------------> 
+                #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, e)                       # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -417,6 +423,7 @@ class Test_DataNormalization(unittest.TestCase):
                 result = mStatistic.DataNormalization(
                     a, sel=b, method=c)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, d)                       # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -439,6 +446,7 @@ class Test_DataImputation(unittest.TestCase):
                 result = mStatistic.DataImputation(
                     a, sel=b, method=c)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, d)                       # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -449,8 +457,8 @@ class Test_DataPreparation(unittest.TestCase):
     """Test for data.statistic.DataPreparation"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):
-        """"""
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
         cls.df = mFile.ReadCSV2DF(tarprotData)
         cls.dict1 = {
             'Cero' : False,
@@ -487,6 +495,7 @@ class Test_DataPreparation(unittest.TestCase):
                 result = result.round(3)
                 result = result.iloc[range(0,20),:]
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, d)                       # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -513,6 +522,7 @@ class Test_CI_Mean_Diff_DF(unittest.TestCase):
                 #------------------------------>
                 result = mStatistic.CI_Mean_Diff_DF(a,b,c,d,e,fullCI=f,roundN=g)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, h)                       # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -536,6 +546,7 @@ class Test_CI_Mean_DF(unittest.TestCase):
                 #------------------------------>
                 result = mStatistic.CI_Mean_DF(a, b, fullCI=c, roundN=d)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, e)                       # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -561,6 +572,7 @@ class Test_f_DF(unittest.TestCase):
                 #------------------------------>
                 result = mStatistic.Test_f_DF(a,b,c,alpha=d,roundTo=e)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, f)                       # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -613,6 +625,7 @@ class Test_t_PS_DF(unittest.TestCase):
                 #------------------------------>
                 result = mStatistic.Test_t_PS_DF(a,b,c,alpha=d,roundTo=e)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, f)                       # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -640,6 +653,7 @@ class Test_t_IS_DF(unittest.TestCase):
                 #------------------------------>
                 result = mStatistic.Test_t_IS_DF(a,b,c,alpha=d,f=e,roundTo=f)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, g)                       # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -667,6 +681,7 @@ class Test_tost(unittest.TestCase):
                 r = mStatistic.Test_tost(a,b,c,d,f=e,delta=f,alpha=g,beta=h,gamma=i,d=j,deltaMax=k)
                 r = r.round(4)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(r, l)                            # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -690,6 +705,7 @@ class Test_tost_delta(unittest.TestCase):
                 r = mStatistic.Test_tost_delta(a,b,c,d,e,f)
                 r = r.round(2)
                 #------------------------------>
+                # pylint: disable=protected-access
                 pd._testing.assert_series_equal(r, g)                           # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output

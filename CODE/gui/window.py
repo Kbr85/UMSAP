@@ -61,6 +61,10 @@ import gui.validator  as mValidator
 #endregion ----------------------------------------------------------> Imports
 
 
+# Pandas lead to long lines, so this check will be disabled for this module
+# pylint: disable=line-too-long
+
+
 #region -------------------------------------------------------------> Methods
 def UpdateCheck(
     ori: Literal['menu', 'main'],
@@ -94,7 +98,7 @@ def UpdateCheck(
     #endregion ------------------------------> Get web page text from Internet
 
     #region --------------------------------------------> Get Internet version
-    if r.status_code == requests.codes.ok:                                      # type: ignore
+    if r.status_code == requests.codes.ok:                                      # pylint: disable=no-member
         #------------------------------>
         text = r.text.split('\n')
         #------------------------------>
@@ -184,7 +188,7 @@ class BaseWindow(wx.Frame):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(
+    def __init__(                                                               # pylint: disable=dangerous-default-value
         self,
         parent  : Optional[wx.Window]=None,
         menuData: dict={},
@@ -309,7 +313,7 @@ class BaseWindow(wx.Frame):
     #endregion ------------------------------------------------> Class Methods
 
     #region ---------------------------------------------------> Event Methods
-    def OnClose(self, event: wx.CloseEvent) -> bool:
+    def OnClose(self, event: wx.CloseEvent) -> bool:                            # pylint: disable=unused-argument
         """Destroy window. Override as needed.
 
             Parameters
@@ -394,7 +398,7 @@ class BaseWindowResult(BaseWindow):
     """
 
     #region --------------------------------------------------> Instance setup
-    def __init__(
+    def __init__(                                                               # pylint: disable=dangerous-default-value
         self,
         parent  : Optional[wx.Window]=None,
         menuData: dict={},
@@ -407,10 +411,11 @@ class BaseWindowResult(BaseWindow):
         self.cMsgExportFailed = getattr(
             self, 'cMsgExportFailed', 'Export {} failed.')
         #------------------------------>
-        self.rDate    = getattr(self, 'rDate', [])
-        self.rDateC   = getattr(self, 'rDateC', '')
-        self.rData    = getattr(self, 'rData', {})
-        self.rDf      = getattr(self, 'rDf', pd.DataFrame())
+        self.rDate  = getattr(self, 'rDate', [])
+        self.rDateC = getattr(self, 'rDateC', '')
+        self.rData  = getattr(self, 'rData', {})
+        self.rDf    = getattr(self, 'rDf', pd.DataFrame())
+        self.rObj: mFile.UMSAPFile
         #------------------------------>
         super().__init__(parent=parent, menuData=menuData)
         #------------------------------>
@@ -632,7 +637,7 @@ class BaseWindowResult(BaseWindow):
         return True
     #---
 
-    def CheckDataPrep(self, tDate: str) -> bool:
+    def CheckDataPrep(self, tDate: str) -> bool:                                # pylint: disable=unused-argument
         """Launch the Check Data Preparation Window.
 
             Parameters
@@ -679,7 +684,7 @@ class BaseWindowResult(BaseWindow):
                 }
         """
         #region ---------------------------------------------------> Fill dict
-        date = [x for x in self.rData.keys() if x != 'Error']
+        date = [x for x in self.rData if x != 'Error']
         #endregion ------------------------------------------------> Fill dict
 
         return (date, {'MenuDate':date})
@@ -704,7 +709,7 @@ class BaseWindowResultOnePlot(BaseWindowResult):
         At least one plot is expected in the window.
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(
+    def __init__(                                                               # pylint: disable=dangerous-default-value
         self,
         parent  : Optional[wx.Window]=None,
         menuData: dict={},
@@ -763,7 +768,7 @@ class BaseWindowResultOnePlot(BaseWindowResult):
         return True
     #---
 
-    def OnUpdateStatusBar(self, event) -> bool:
+    def OnUpdateStatusBar(self, event) -> bool:                                 # pylint: disable=unused-argument
         """Update the statusbar info.
 
             Parameters
@@ -805,7 +810,7 @@ class BaseWindowResultOnePlotFA(BaseWindowResultOnePlot):
 
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(
+    def __init__(                                                               # pylint: disable=dangerous-default-value
         self,
         parent  : Optional[wx.Window]=None,
         menuData: dict={},
@@ -818,14 +823,16 @@ class BaseWindowResultOnePlotFA(BaseWindowResultOnePlot):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def ExportData(self) -> bool:
+    def ExportData(self, df: Optional[pd.DataFrame]=None) -> bool:
         """Export data to a csv file
 
             Returns
             -------
             bool
         """
-        return super().ExportData(df=self.rData)                                # type: ignore
+        if df is None:
+            df = self.rData                                                     # type: ignore
+        return super().ExportData(df=df)
     #---
     #endregion ------------------------------------------------> Class methods
 
@@ -874,7 +881,7 @@ class BaseWindowResultListText(BaseWindowResult):
             class.
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(
+    def __init__(                                                               # pylint: disable=dangerous-default-value
         self,
         parent  : Optional[wx.Window]=None,
         menuData: dict={},
@@ -921,7 +928,7 @@ class BaseWindowResultListText(BaseWindowResult):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnSearch(self, event: wx.Event) -> bool:
+    def OnSearch(self, event: wx.Event) -> bool:                                # pylint: disable=unused-argument
         """Search for a given string in the wx.ListCtrl.
 
             Parameters
@@ -979,7 +986,7 @@ class BaseWindowResultListText(BaseWindowResult):
         return True
     #---
 
-    def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:
+    def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:         # pylint: disable=unused-argument
         """Processes a wx.ListCtrl event.
 
             Parameters
@@ -1081,7 +1088,7 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
             class.
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(
+    def __init__(                                                               # pylint: disable=dangerous-default-value
         self,
         parent  : Optional[wx.Window]=None,
         menuData: dict={},
@@ -1245,7 +1252,7 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
             See Child class for more details.
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(
+    def __init__(                                                               # pylint: disable=dangerous-default-value
         self,
         parent  : Optional[wx.Window]=None,
         menuData: dict={},
@@ -1462,7 +1469,7 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(
+    def __init__(                                                               # pylint: disable=dangerous-default-value
         self,
         parent  : Optional[wx.Window]=None,
         menuData: dict={},
@@ -1480,6 +1487,8 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         self.rProtLoc     = []
         self.rProtLength  = None
         self.rPeptide     = None
+        self.rFragSelC    = [None, None, None]
+        self.rRectsFrag   = []
         #------------------------------>
         super().__init__(parent, menuData=menuData)
         #------------------------------>
@@ -1647,7 +1656,7 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         return True
     #---
 
-    def SetFragmentAxis(self, showAll: list[str]=[]) -> bool:
+    def SetFragmentAxis(self, showAll: list[str]=[]) -> bool:                   # pylint: disable=unused-argument, dangerous-default-value
         """Set the axis of the Fragments plot.
 
             Parameters
@@ -1672,7 +1681,7 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         return True
     #---
 
-    def OnPickFragment(self, showAll: list[str]=[]) -> bool:
+    def OnPickFragment(self, showAll: list[str]=[]) -> bool:                    # pylint: disable=dangerous-default-value, unused-argument
         """Display info about the selected fragment.
 
             Parameters
@@ -1855,7 +1864,7 @@ class WindowAbout(BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnButtonClose(self, event: wx.CommandEvent) -> bool:
+    def OnButtonClose(self, event: wx.CommandEvent) -> bool:                    # pylint: disable=unused-argument
         """Close the window
 
             Parameters
@@ -2145,6 +2154,9 @@ class WindowResCorrA(BaseWindowResultOnePlot):
             c3  = mConfig.color[self.cSection]['CMAP']['c3'],
             bad = mConfig.color[self.cSection]['CMAP']['NA'],
         )
+        self.rSelColNum  = []
+        self.rSelColIdx  = []
+        self.rSelColName = []
         #------------------------------>
         self.cParent  = parent
         self.cTitle  = f"{parent.cTitle} - {self.cSection} - {self.rDateC}"
@@ -2187,7 +2199,7 @@ class WindowResCorrA(BaseWindowResultOnePlot):
                 #------------------------------>
                 xf = int(x)
                 yf = int(y)
-                zf = '{:.2f}'.format(self.rDataPlot.iat[yf,xf])
+                zf = f'{self.rDataPlot.iat[yf,xf]:.2f}'
                 #------------------------------>
                 if self.rCol:
                     xs = self.rSelColName[xf]
@@ -2619,9 +2631,8 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
             self.PlotdfF(self.rLCIdx)
         except Exception as e:
             #------------------------------>
-            msg = (
-                f'It was not possible to build the histograms for the selected '
-                f'column.')
+            msg = ('It was not possible to build the histograms for the '
+                   'selected column.')
             DialogNotification('errorU', msg=msg, tException=e, parent=self)
             #------------------------------>
             self.ClearPlots()
@@ -3082,7 +3093,7 @@ class WindowResDataPrep(BaseWindowResultListTextNPlot):
         return True
     #---
 
-    def ExportData(self) -> bool:
+    def ExportData(self, df: Optional[pd.DataFrame]=None) -> bool:
         """Export data from each plot to a csv file.
 
             Returns
@@ -4550,7 +4561,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         return color
     #---
 
-    def GetColorZScore(self, *args) -> list:
+    def GetColorZScore(self, *args) -> list:                                    # pylint: disable=unused-argument
         """Get the color by z value.
 
             Returns
@@ -4576,7 +4587,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         return np.select(cond, choice, default=self.cColor['Vol'][1])           # type: ignore
     #---
 
-    def GetColorPLog2FC(self, *args) -> list:
+    def GetColorPLog2FC(self, *args) -> list:                                   # pylint: disable=unused-argument
         """Get the color by P - Log2FC.
 
             Returns
@@ -4659,10 +4670,10 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
             #------------------------------> sort ind
             ind = sorted(ind, key=int)
             #------------------------------>
-            msg = (f'The selected point is an overlap of several proteins.')
+            msg = ('The selected point is an overlap of several proteins.')
             tException = (
-                f'The numbers of the proteins included in the selected '
-                f'point are:\n {str(ind)[1:-1]}')
+                'The numbers of the proteins included in the selected '
+                'point are:\n {str(ind)[1:-1]}')
             DialogNotification(
                 'warning',
                 msg        = msg,
@@ -5141,7 +5152,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
     #endregion ------------------------------------------------> Event Methods
 
     #region --------------------------------------------------> Filter Methods
-    def Filter_FCChange(self, choice: dict={}, updateL: bool=True) -> bool:
+    def Filter_FCChange(self, choice: dict={}, updateL: bool=True) -> bool:     # pylint: disable=dangerous-default-value
         """Filter results based on FC evolution.
 
             Parameters
@@ -5193,6 +5204,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         elif choice0 == self.cLFFCDown:
             mask = df.groupby(level=0, axis=1).apply(lambda x: (x < 0).all(axis=1))                                                                                     # type: ignore
         elif choice0 == self.cLFFCNo:
+            # pylint disable=invalid-unary-operand-type
             mask = df.groupby(level=0, axis=1).apply(lambda x: ((x > -self.rT0*self.rS0) & (x < self.rT0*self.rS0)).all(axis=1))                                        # type: ignore
         elif choice0 == self.cLFFCUpMon:
             mask = df.groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_increasing) & (x > 0)).all(), axis=1))                                # type: ignore
@@ -5240,7 +5252,7 @@ class WindowResProtProf(BaseWindowResultListTextNPlot):
         return True
     #---
 
-    def Filter_HCurve(self, updateL: bool=True, **kwargs) -> bool:
+    def Filter_HCurve(self, updateL: bool=True, **kwargs) -> bool:              # pylint: disable=unused-argument
         """Filter results based on Hyperbolic Curve.
 
             Parameters
@@ -5839,6 +5851,7 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         self.rRecSeq        = {}
         self.rTextStyleDef  = wx.TextAttr(
             'Black', 'White', mConfig.font['SeqAlign'])
+        self.rGelSelC       = [None, None]
         #------------------------------>
         super().__init__(parent, menuData=menuData)
         #------------------------------>
@@ -5972,6 +5985,7 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         #------------------------------>
         nc = len(self.cColor['Spot'])                                           # type: ignore
         #------------------------------>
+        k = 1
         for k,v in enumerate(tKeys, start=1):
             for j,f in enumerate(self.rFragments[v]['Coord']):
                 self.rRectsFrag.append(mpatches.Rectangle(
@@ -6327,7 +6341,7 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         return True
     #---
 
-    def SetFragmentAxis(self, showAll: list[str]=[]) -> bool:
+    def SetFragmentAxis(self, showAll: list[str]=[]) -> bool:                   # pylint: disable=dangerous-default-value
         """Set the axis for the plot showing the fragments.
 
             Parameters
@@ -6462,11 +6476,11 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
             ncL = ncL + self.rFragments[x]['Coord']
         #------------------------------>
         dictO['LanesWithFP'] = (
-            f'{len(lanesWithFP)} (' + f'{lanesWithFP}'[1:-1] + f')')
+            f'{len(lanesWithFP)} (' + f'{lanesWithFP}'[1:-1] + ')')
         dictO['Fragments'] = (
-            f'{sum(fragments)} (' + f'{fragments}'[1:-1] + f')')
+            f'{sum(fragments)} (' + f'{fragments}'[1:-1] + ')')
         dictO['FP'] = (
-            f'{sum(fP)} (' +f'{fP}'[1:-1] + f')')
+            f'{sum(fP)} (' +f'{fP}'[1:-1] + ')')
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
@@ -6532,15 +6546,15 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         #region ----------------------------------------------------> New Text
         if infoDict:
             self.wText.AppendText(f'Details for {self.rBands[band]}\n\n')
-            self.wText.AppendText(f'--> Analyzed Lanes\n\n')
+            self.wText.AppendText('--> Analyzed Lanes\n\n')
             self.wText.AppendText(f'Total Lanes  : {len(self.rLanes)}\n')
             self.wText.AppendText(f'Lanes with FP: {infoDict["LanesWithFP"]}\n')
             self.wText.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
             self.wText.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
-            self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
-            self.wText.AppendText(f'Recombinant Sequence:\n')
+            self.wText.AppendText('--> Detected Protein Regions:\n\n')
+            self.wText.AppendText('Recombinant Sequence:\n')
             self.wText.AppendText(f'{infoDict["NCO"]}'[1:-1]+'\n\n')
-            self.wText.AppendText(f'Native Sequence:\n')
+            self.wText.AppendText('Native Sequence:\n')
             self.wText.AppendText(f'{infoDict["NCONat"]}'[1:-1])
         else:
             self.wText.AppendText(f'There were no peptides from '
@@ -6578,15 +6592,15 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         #region ----------------------------------------------------> New Text
         if infoDict:
             self.wText.AppendText(f'Details for {self.rLanes[lane]}\n\n')
-            self.wText.AppendText(f'--> Analyzed Bands\n\n')
+            self.wText.AppendText('--> Analyzed Bands\n\n')
             self.wText.AppendText(f'Total Bands  : {len(self.rBands)}\n')
             self.wText.AppendText(f'Bands with FP: {infoDict["LanesWithFP"]}\n')
             self.wText.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
             self.wText.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
-            self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
-            self.wText.AppendText(f'Recombinant Sequence:\n')
+            self.wText.AppendText('--> Detected Protein Regions:\n\n')
+            self.wText.AppendText('Recombinant Sequence:\n')
             self.wText.AppendText(f'{infoDict["NCO"]}'[1:-1]+'\n\n')
-            self.wText.AppendText(f'Native Sequence:\n')
+            self.wText.AppendText('Native Sequence:\n')
             self.wText.AppendText(f'{infoDict["NCONat"]}'[1:-1])
         else:
             self.wText.AppendText(f'There were no peptides from '
@@ -6650,10 +6664,10 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
             f'Details for {self.rLanes[x]} - {self.rBands[y]}\n\n')
         self.wText.AppendText(f'--> Fragments: {fragments}\n\n')
         self.wText.AppendText(f'--> Number of FP: {fp}\n\n')
-        self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
-        self.wText.AppendText(f'Recombinant Protein:\n')
+        self.wText.AppendText('--> Detected Protein Regions:\n\n')
+        self.wText.AppendText('Recombinant Protein:\n')
         self.wText.AppendText(f'{self.rFragments[tKey]["Coord"]}'[1:-1]+'\n\n')
-        self.wText.AppendText(f'Native Protein:\n')
+        self.wText.AppendText('Native Protein:\n')
         self.wText.AppendText(f'{ncONat}'[1:-1])
 
         self.wText.SetInsertionPoint(0)
@@ -6695,7 +6709,7 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
             cnat = 'NA'
         resNum = f'Nterm {n}({nnat}) - Cterm {c}({cnat})'
         #------------------------------>
-        np = (f'{self.rFragments[tKey]["Np"][fragC[2]]} '
+        tNP = (f'{self.rFragments[tKey]["Np"][fragC[2]]} '
               f'({self.rFragments[tKey]["NpNat"][fragC[2]]})')
         clSite = (f'{self.rFragments[tKey]["Nc"][fragC[2]]} '
                   f'({self.rFragments[tKey]["NcNat"][fragC[2]]})')
@@ -6709,9 +6723,9 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         self.wText.AppendText(
             f'Details for {self.rLanes[fragC[1]]} - {self.rBands[fragC[0]]} - Fragment {fragC[2]+1}\n\n')
         self.wText.AppendText(f'Residue Numbers: {resNum}\n')
-        self.wText.AppendText(f'Sequences: {np}\n')
+        self.wText.AppendText(f'Sequences: {tNP}\n')
         self.wText.AppendText(f'Cleavage Sites: {clSite}\n\n')
-        self.wText.AppendText(f'Sequences in the fragment:\n\n')
+        self.wText.AppendText('Sequences in the fragment:\n\n')
         self.wText.AppendText(f'{self.rFragments[tKey]["Seq"][fragC[2]]}')
         self.wText.SetInsertionPoint(0)
         #endregion ------------------------------------------------>
@@ -6743,15 +6757,15 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
-        self.wText.AppendText(f'Details for Gel\n\n')
-        self.wText.AppendText(f'--> Analyzed Spots:\n\n')
+        self.wText.AppendText('Details for Gel\n\n')
+        self.wText.AppendText('--> Analyzed Spots:\n\n')
         self.wText.AppendText(f'Analyzed Spots: {aSpot}\n')
         self.wText.AppendText(f'Empty Spots: {eSpot}\n')
         self.wText.AppendText(f'Detected Peptides: {nPept}\n\n')
-        self.wText.AppendText(f'--> Detected Protein Regions:\n\n')
-        self.wText.AppendText(f'Recombinant Sequence:\n')
+        self.wText.AppendText('--> Detected Protein Regions:\n\n')
+        self.wText.AppendText('Recombinant Sequence:\n')
         self.wText.AppendText(f'{", ".join(map(str,coord))}\n\n')
-        self.wText.AppendText(f'Native Sequence:\n')
+        self.wText.AppendText('Native Sequence:\n')
         self.wText.AppendText(f'{coordN}')
         self.wText.SetInsertionPoint(0)
         #endregion ------------------------------------------------>
@@ -6906,8 +6920,8 @@ class WindowResLimProt(BaseWindowResultListText2PlotFragments):
         #------------------------------>
         j = 0
         #------------------------------>
-        for nb,b in enumerate(self.rBands):
-            for nl,l in enumerate(self.rLanes):
+        for nb,_ in enumerate(self.rBands):
+            for nl,_ in enumerate(self.rLanes):
                 self.rRectsGel[j].set_facecolor(
                     self.SetGelSpotColor(nb,nl, showAll=showAll)
                 )
@@ -7698,7 +7712,7 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
             bool
         """
         #region ---------------------------------------------------> Variables
-        info = super().WinPos()
+        # info = super().WinPos()
         #endregion ------------------------------------------------> Variables
 
         #region ------------------------------------------------> Set Position
@@ -8019,9 +8033,8 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
         #------------------------------> Res Numbers
         n, c = self.rFragments[tKey]["Coord"][fragC[1]]
         nf, cf = self.rFragments[tKey]["CoordN"][fragC[1]]
-        resNum = f'Nterm {n}({nf}) - Cterm {c}({cf})'
         #------------------------------> Sequences
-        np = (f'{self.rFragments[tKey]["Np"][fragC[1]]}'
+        tNP = (f'{self.rFragments[tKey]["Np"][fragC[1]]}'
               f'({self.rFragments[tKey]["NpNat"][fragC[1]]})')
         #------------------------------> Cleavages
         clSite = (f'{self.rFragments[tKey]["Nc"][fragC[1]]}'
@@ -8042,8 +8055,8 @@ class WindowResTarProt(BaseWindowResultListText2PlotFragments):
         self.wText.AppendText(f'{expL}: Fragments {frag}, Cleavage sites {clSiteExp}\n')
         self.wText.AppendText(f'{emptySpace}Peptides {seqExp}\n\n')
         self.wText.AppendText(f'{fragL}: Nterm {n}({nf}), Cterm {c}({cf})\n')
-        self.wText.AppendText(f'{emptySpace}Peptides {np}, Cleavage sites {clSite}\n\n')
-        self.wText.AppendText(f'Sequences in the fragment:\n\n')
+        self.wText.AppendText(f'{emptySpace}Peptides {tNP}, Cleavage sites {clSite}\n\n')
+        self.wText.AppendText('Sequences in the fragment:\n\n')
         self.wText.AppendText(f'{self.rFragments[tKey]["Seq"][fragC[1]]}')
         self.wText.SetInsertionPoint(0)
         #endregion ------------------------------------------------>
@@ -8897,7 +8910,7 @@ class WindowResAA(BaseWindowResultOnePlotFA):
         return True
     #---
 
-    def UpdateStatusBarPos(self, x: float, y: float) -> bool:
+    def UpdateStatusBarPos(self, x: float, y: float) -> bool:                   # pylint: disable=unused-argument
         """Update the wx.StatusBar text when plotting a positions.
 
             Parameters
@@ -9258,7 +9271,7 @@ class WindowResHist(BaseWindowResultOnePlotFA):
         """
         #region --------------------------------------------------->
         if event.inaxes:
-            x, y = event.xdata, event.ydata
+            x, _ = event.xdata, event.ydata
             xf = round(x)
         else:
             self.wStatBar.SetStatusText('')
@@ -9781,7 +9794,6 @@ class WindowResCpR(BaseWindowResultOnePlotFA):
         self.rLabelC = label
         #------------------------------>
         idx = pd.IndexSlice
-        df = self.rData.loc[:,idx[self.rNat,label]]                             # type: ignore
         #------------------------------>
         if nat:
             tXIdx = range(0, self.rProtLength[1])
@@ -10124,7 +10136,7 @@ class WindowUMSAPControl(BaseWindow):
             bool
         """
         #region -----------------------------------> Update list of open files
-        del(mConfig.winUMSAP[self.rObj.rFileP])
+        del mConfig.winUMSAP[self.rObj.rFileP]
         #endregion --------------------------------> Update list of open files
 
         #region ------------------------------------> Reduce number of windows
@@ -10267,7 +10279,7 @@ class WindowUMSAPControl(BaseWindow):
                     n = 1
                     dateFile, nameFile = dataFile.split('_')
                     nameF = f"{dateFile}M{n}_{nameFile}"
-                    while((folderInit/nameF).exists()):
+                    while (folderInit/nameF).exists():
                         n = n + 1
                         nameF = f"{dateFile}M{n}_{nameFile}"
                     #------------------------------>
@@ -10283,7 +10295,7 @@ class WindowUMSAPControl(BaseWindow):
                         n = 1
                         dateFile, nameFile = dataFile.split('_')
                         nameF = f"{dateFile}M{n}_{nameFile}"
-                        while((folderInit/nameF).exists()):
+                        while (folderInit/nameF).exists():
                             n = n + 1
                             nameF = f"{dateFile}M{n}_{nameFile}"
                         #------------------------------>
@@ -10311,7 +10323,7 @@ class WindowUMSAPControl(BaseWindow):
         return True
     #---
 
-    def ExportAnalysis(self, selItems: dict, *args) -> bool:
+    def ExportAnalysis(self, selItems: dict, *args) -> bool:                    # pylint: disable=unused-argument
         """Export analysis to a new UMSAP file.
 
             Parameters
@@ -10388,7 +10400,7 @@ class WindowUMSAPControl(BaseWindow):
         return True
     #---
 
-    def DeleteAnalysis(self, selItems: dict, *args) -> bool:
+    def DeleteAnalysis(self, selItems: dict, *args) -> bool:                    # pylint: disable=unused-argument
         """Delete selected analysis.
 
             Parameters
@@ -10451,7 +10463,7 @@ class WindowUMSAPControl(BaseWindow):
 
         #region -------------------------------------------------------->
         folder = list(set(folder))
-        [shutil.rmtree(x) for x in folder]
+        [shutil.rmtree(x) for x in folder]                                      # pylint: disable=expression-not-assigned
         #------------------------------>
         inputF = list(set(inputF))
         inputNeeded = self.rObj.GetInputFiles()
@@ -12125,8 +12137,8 @@ class DialogListSelect(BaseDialogOkCancel):
         #region --------------------------------------------------------> Bind
         self.wAddCol.Bind(wx.EVT_BUTTON, self.OnAdd)
         if rightDelete:
-                self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDelete)
-                self.wLCtrlO.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDelete)
+            self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDelete)
+            self.wLCtrlO.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDelete)
         else:
             pass
         #endregion -----------------------------------------------------> Bind
@@ -13302,4 +13314,3 @@ Contact Information:
 The best contact path for licensing issues is by e-mail to umsap@umsap.nl
 """
 #endregion -------------------------------------------------------> ABOUT TEXT
-
