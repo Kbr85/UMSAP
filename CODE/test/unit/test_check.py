@@ -325,6 +325,7 @@ class Test_Comparison(unittest.TestCase):
         """Test for expected output"""
         #------------------------------>
         tInput = [
+            ('    ',  'float',  True,   0,   100, self.op2,  True),
             ('< 1.4', 'float', False,    0,  100, self.op1,  True),
             (  '1.4', 'float', False,    0,  100, self.op1, False),
             ('< 1.4',   'int', False,    0,  100, self.op2, False),

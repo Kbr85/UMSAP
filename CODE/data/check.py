@@ -44,7 +44,14 @@ def VersionCompare(
         -------
         tuple
             (True, None)
-            (False, ('', '', ''))
+            - (False, (code, value, msg))
+                code is:
+                - Exception, Input is not valid.
+                - '', First version is lower than the second version.
+
+        Notes
+        -----
+        Return True only if first argument is greater than the second.
 
         Examples
         --------
@@ -65,21 +72,22 @@ def VersionCompare(
     #endregion ----------------------------------------------> Get number list
 
     #region ---------------------------------------------------------> Compare
+    #------------------------------> First number
     if xA > xB:
         return (True, None)
-    elif xA < xB:
+    if xA < xB:
         return (False, ('', '', ''))
-    else:
-        if yA > yB:
-            return (True, None)
-        elif yA < yB:
-            return (False, ('', '', ''))
-        else:
-            if zA > zB:
-                return (True, None)
-            else:
-                return (False, ('', '', ''))
+    #------------------------------> Second number
+    if yA > yB:
+        return (True, None)
+    if yA < yB:
+        return (False, ('', '', ''))
+    #------------------------------> Third number
+    if zA > zB:
+        return (True, None)
     #endregion ------------------------------------------------------> Compare
+
+    return (False, ('', '', ''))
 #---
 
 
@@ -121,11 +129,9 @@ def Path2FFOutput(
     if value == '':
         if opt:
             return (True, None)
-        else:
-            msg = f"The selected path is not valid.\nSelected path: '{value}'"
-            return (False, ('NotPath', str(value), msg))
-    else:
-        pass
+        #------------------------------>
+        msg = f"The selected path is not valid.\nSelected path: '{value}'"
+        return (False, ('NotPath', str(value), msg))
     #endregion -----------------------------------------------------> Optional
 
     #region ---------------------------------------------------> Is valid Path
@@ -197,13 +203,12 @@ def Path2FFInput(
     # Test in test.unit.test_check.Test_Path2FFInput
     #region --------------------------------------------------------> Optional
     if value == '':
+        #------------------------------>
         if opt:
             return (True, None)
-        else:
-            msg = f"The selected path is not valid.\nSelected path: '{value}'"
-            return (False, ('NotPath', str(value), msg))
-    else:
-        pass
+        #------------------------------>
+        msg = f"The selected path is not valid.\nSelected path: '{value}'"
+        return (False, ('NotPath', str(value), msg))
     #endregion -----------------------------------------------------> Optional
 
     #region ---------------------------------------------------> Is valid Path
@@ -216,16 +221,12 @@ def Path2FFInput(
 
     #region -------------------------------------------------------------> Fof
     if fof == 'file':
-        if tPath.is_file():
-            pass
-        else:
+        if not tPath.is_file():
             msg = (f"The selected path does not point to a file."
                    f"\nSelected path:'{tPath}'")
             return (False, ('NotFile', str(value), msg))
     elif fof == 'folder':
-        if tPath.is_dir():
-            pass
-        else:
+        if not tPath.is_dir():
             msg = (f"The selected path does not point to a folder.\n"
                    f"Selected path: '{tPath}'")
             return (False, ('NotDir', str(value), msg))
@@ -234,9 +235,7 @@ def Path2FFInput(
     #endregion ----------------------------------------------------------> Fof
 
     #region --------------------------------------------------------> Can read
-    if os.access(tPath, os.R_OK):
-        pass
-    else:
+    if not os.access(tPath, os.R_OK):
         msg = f"The selected path cannot be read.\nSelected path: '{tPath}'"
         return (False, ('NoRead', str(value), msg))
     #endregion -----------------------------------------------------> Can read
@@ -314,13 +313,12 @@ def NumberList(
 
     #region --------------------------------------------------------> Optional
     if value == '':
+        #------------------------------>
         if opt:
             return (True, None)
-        else:
-            msg = "An empty string is not a valid input."
-            return (False, ('NotOptional', str(value), msg))
-    else:
-        pass
+        #------------------------------>
+        msg = "An empty string is not a valid input."
+        return (False, ('NotOptional', str(value), msg))
     #endregion -----------------------------------------------------> Optional
 
     #region ----------------------------------------> numType, refMin & refMax
@@ -337,9 +335,7 @@ def NumberList(
         else:
             for tN in rN:
                 #------------------------------>
-                if AInRange(tN, refMin=vMin, refMax=vMax)[0]:
-                    pass
-                else:
+                if not AInRange(tN, refMin=vMin, refMax=vMax)[0]:
                     msg = mConfig.mInvalidValue.format(n)
                     return (False, ('BadElement', n, msg))
                 #------------------------------>
@@ -349,32 +345,23 @@ def NumberList(
     #region -----------------------------------------------------> List Length
     #------------------------------> Number of Elements
     lN = len(numbers)
-    #------------------------------>
+    #------------------------------> Exact Number of Elements
     if nN is not None:
-        #------------------------------> Exact Number of Elements
-        if lN == nN:
-            pass
-        else:
+        if not lN == nN:
             msg = (f'The number of elements in tStr ({lN}), after expanding '
                 f'ranges, is not equal to nN ({nN}).')
             return (False, ('ListLength', tStr, msg))
+    #------------------------------> Number of Elements in range
     elif nMin is not None or nMax is not None:
-        #------------------------------> Number of Elements in range
-        if AInRange(lN, refMin=nMin, refMax=nMax)[0]:
-            pass
-        else:
+        if not AInRange(lN, refMin=nMin, refMax=nMax)[0]:
             msg = (f'The number of elements in tStr ({lN}), after expanding '
                 f'ranges, is not in the [{nMin}, {nMax}] range.')
             return (False, ('ListLength', tStr, msg))
-    else:
-        pass
     #endregion --------------------------------------------------> List Length
 
     #region ----------------------------------------------------------> Unique
     if unique:
         return ListUnique(numbers)
-    else:
-        pass
     #endregion -------------------------------------------------------> Unique
 
     return (True, None)
@@ -435,9 +422,9 @@ def AInRange(
     #region ---------------------------------------------------------> Compare
     if b <= a <= c:
         return (True, None)
-    else:
-        msg = (f'{a} is not in the range: [{refMin}, {refMax}].')
-        return (False, ('AInRange', str(a), msg))
+    #------------------------------>
+    msg = (f'{a} is not in the range: [{refMin}, {refMax}].')
+    return (False, ('AInRange', str(a), msg))
     #endregion ------------------------------------------------------> Compare
 #---
 
@@ -479,12 +466,11 @@ def ListUnique(
 
     #region --------------------------------------------------------> Optional
     if not tList:
+        #------------------------------>
         if opt:
             return (True, None)
-        else:
-            return (False, ('NotOptional', '', "tList cannot be empty."))
-    else:
-        pass
+        #------------------------------>
+        return (False, ('NotOptional', '', "tList cannot be empty."))
     #endregion -----------------------------------------------------> Optional
 
     #region ----------------------------------------------------------> Search
@@ -505,9 +491,9 @@ def ListUnique(
         msg = f"List contains duplicated elements ({dupE})."
         #------------------------------>
         return (False, ('NotUnique', dupE, msg))
-    else:
-        return (True, None)
     #endregion -------------------------------------------------------> Return
+
+    return (True, None)
 #---
 
 
@@ -664,20 +650,12 @@ def TcUniqueColNumbers(                                                         
     #------------------------------> tcList
     try:
         for tc in tcList:
-            try:
-                values.append(tc.GetValue())
-            except Exception as e:
-                return (False, ('Exception', None, str(e)))
+            values.append(tc.GetValue())
     except Exception as e:
         return (False, ('Exception', None, str(e)))
     #endregion ----------------------------------------------------> Form list
 
-    #region ----------------------------------------------------------> Return
-    try:
-        return UniqueColNumbers(values, sepList=sepList)
-    except Exception as e:
-        raise e
-    #endregion -------------------------------------------------------> Return
+    return UniqueColNumbers(values, sepList=sepList)
 #---
 
 
@@ -715,14 +693,14 @@ def AllTcEmpty(
 
     #region ------------------------------------------------------> Get values
     for k in tcList:
-        values.append(k.GetValue())
+        values.append(k.GetValue().strip())
     #endregion ---------------------------------------------------> Get values
 
     #region -----------------------------------------------------> Check empty
     if any(values):
         return (False, ('NotEmpty', '', 'Some wx.TextCtrl are not empty.'))
-    else:
-        return (True, None)
+    #------------------------------>
+    return (True, None)
     #endregion --------------------------------------------------> Check empty
 #---
 
@@ -776,27 +754,22 @@ def Comparison(                                                                 
 
     #region --------------------------------------------------------> Optional
     if value == '':
+        #------------------------------>
         if opt:
             return (True, None)
-        else:
-            msg = "An empty string is not a valid input."
-            return (False, ('NotOptional', None, msg))
-    else:
-        pass
+        #------------------------------>
+        msg = "An empty string is not a valid input."
+        return (False, ('NotOptional', None, msg))
     #endregion -----------------------------------------------------> Optional
 
     #region ----------------------------------------------------------> Length
     if len(elements) != 2:
         msg = mConfig.mInvalidValue.format(tStr)
         return (False, ('BadElement', tStr, msg))
-    else:
-        pass
     #endregion -------------------------------------------------------> Length
 
     #region ---------------------------------------------------------> Operand
-    if elements[0] in op:
-        pass
-    else:
+    if not elements[0] in op:
         msg = (
             f'The given operand ({elements[0]}) is not valid '
             f'({str(op)[1:-1]}).')
@@ -812,13 +785,9 @@ def Comparison(                                                                 
     #endregion ------------------------------------------------------> NumType
 
     #region -----------------------------------------------------------> Range
-    if vMin is None and vMax is None:
-        pass
-    else:
+    if vMin is not None and vMax is not None:
         try:
-            if AInRange(elements[1], refMin=vMin, refMax=vMax)[0]:
-                pass
-            else:
+            if not AInRange(elements[1], refMin=vMin, refMax=vMax)[0]:
                 msg = mConfig.mInvalidValue.format(tStr)
                 return (False, ('BadElement', tStr, msg))
         except Exception:
