@@ -43,6 +43,7 @@ def FastaSequence(fileP: Union[Path, str]) -> Iterator[tuple[str, str]]:
         -----
         Header line in the multi fasta file is expected to start with >.
     """
+    # Test in test.unit.test_generator.Test_FastaSequence
     #region -------------------------------------------------------> Variables
     first  = True # To skip yield in the first header of the fasta file
     header = ''
@@ -58,8 +59,6 @@ def FastaSequence(fileP: Union[Path, str]) -> Iterator[tuple[str, str]]:
                 #------------------------------> Skip empty lines
                 if sLine == '':
                     continue
-                else:
-                    pass
                 #------------------------------> Process line
                 if sLine[0] == '>':
                     #--------------> No yield if it is the first header
@@ -95,6 +94,7 @@ def FindChildren(parent: wx.Window) -> Iterator[wx.Window]:
         wx.Window
             Each child in parent.
     """
+    # No test
     #region ---------------------------------------------------------> Iterate
     for child in parent.GetChildren():
         yield child

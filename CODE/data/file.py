@@ -472,14 +472,7 @@ class FastaFile():
             -------
             BioPython alignment.
         """
-        #region ---------------------------------------------------> Alignment
-        if getattr(self, 'rAlignment', []):
-            try:
-                self.SetSelfAlignment()
-            except Exception as e:
-                raise e
-        #endregion ------------------------------------------------> Alignment
-
+        self.SetSelfAlignment()
         return self.rAlignment
     #---
 
@@ -497,10 +490,7 @@ class FastaFile():
             region.
         """
         #region ---------------------------------------------------> Alignment
-        try:
-            self.SetSelfAlignment()
-        except Exception as e:
-            raise e
+        self.SetSelfAlignment()
         seqB = self.rAlignment[0].seqB
         #endregion ------------------------------------------------> Alignment
 
@@ -528,10 +518,7 @@ class FastaFile():
             region.
         """
         #region ---------------------------------------------------> Alignment
-        try:
-            self.SetSelfAlignment()
-        except Exception as e:
-            raise e
+        self.SetSelfAlignment()
         seqB = self.rAlignment[0].seqB
         #endregion ------------------------------------------------> Alignment
 
