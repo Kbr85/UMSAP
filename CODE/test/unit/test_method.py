@@ -364,14 +364,12 @@ class Test_DictVal2Str(unittest.TestCase):
             '2'  : [1,2,3,4,5],
             'All': 'This is already a str',
         }
-
         cls.allDict = {
             1    : str(Path('/k/d/c')),
             'B'  : str(3),
             '2'  : str([1,2,3,4,5]),
             'All': str('This is already a str'),
         }
-
         cls.pathDict = {
             1    : str(Path('/k/d/c')),
             'B'  : 3,

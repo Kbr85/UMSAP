@@ -534,25 +534,14 @@ def DFReplace(                                                                  
         Column selection in the df is done by column number.
     """
     # Test in test.unit.test_method.Test_DFReplace
-    #region -----------------------------------------------------> Check input
-    if isinstance(repVal, (list, tuple)):
-        repValFix = repVal
-    else:
-        repValFix = len(oriVal) * [repVal]
-    #endregion --------------------------------------------------> Check input
-
     #region ---------------------------------------------------------> Replace
     #------------------------------> Copy
     dfo = df.copy()
-    #------------------------------>
-    for k, v in enumerate(oriVal):
-        #------------------------------>
-        rep = repValFix[k]
-        #------------------------------>
-        if sel:
-            dfo.iloc[:,sel] = dfo.iloc[:,sel].replace(v, rep)                   # type: ignore
-        else:
-            dfo = dfo.replace(v, rep)
+    #------------------------------> Replace
+    if sel:
+        dfo.iloc[:,sel] = dfo.iloc[:,sel].replace(oriVal, repVal)               # type: ignore
+    else:
+        dfo = dfo.replace(oriVal, repVal)                                       # type: ignore
     #endregion ------------------------------------------------------> Replace
 
     return dfo
@@ -628,15 +617,15 @@ def DFFilterByColN(
     dfo = df.copy()
     #------------------------------> Filter
     if comp == 'lt':
-        dfo = df.loc[(df.iloc[:,col] < refVal).any(axis=1)] # type: ignore
+        dfo = df.loc[(df.iloc[:,col] < refVal).any(axis=1)]                     # type: ignore
     elif comp == 'le':
-        dfo = df.loc[(df.iloc[:,col] <= refVal).any(axis=1)] # type: ignore
+        dfo = df.loc[(df.iloc[:,col] <= refVal).any(axis=1)]                    # type: ignore
     elif comp == 'e':
-        dfo = df.loc[(df.iloc[:,col] == refVal).any(axis=1)] # type: ignore
+        dfo = df.loc[(df.iloc[:,col] == refVal).any(axis=1)]                    # type: ignore
     elif comp == 'ge':
-        dfo = df.loc[(df.iloc[:,col] >= refVal).any(axis=1)] # type: ignore
+        dfo = df.loc[(df.iloc[:,col] >= refVal).any(axis=1)]                    # type: ignore
     elif comp == 'gt':
-        dfo = df.loc[(df.iloc[:,col] > refVal).any(axis=1)] # type: ignore
+        dfo = df.loc[(df.iloc[:,col] > refVal).any(axis=1)]                     # type: ignore
     else:
         msg = mConfig.mNotImplementedFull.format(comp, 'comp', mConfig.litComp)
         raise mException.InputError(msg)
@@ -816,8 +805,6 @@ def MatplotLibCmap(
     #------------------------------>
     if bad is not None:
         newMap.set_bad(color=bad)
-    else:
-        pass
     #endregion ---------------------------------------------------------> CMAP
 
     return newMap
@@ -917,24 +904,18 @@ def Fragments(
             if n != 1:
                 ncL.append(n-1)
                 nctL.append(n-1)
-            else:
-                pass
             if c != protL:
                 ncL.append(c)
                 nctL.append(c)
-            else:
-                pass
             #------------------------------> Cleavages Nat
-            if pd.isna(nf) or nf == 1:
-                pass
-            else:
-                ncLNat.append(nf-1)
-                nctLNat.append(nf-1)
-            if pd.isna(cf) or cf == protL == protLoc[1]:
-                pass
-            else:
-                ncLNat.append(cf)
-                nctLNat.append(cf)
+            if not pd.isna(nf):
+                if nf != 1:
+                    ncLNat.append(nf-1)
+                    nctLNat.append(nf-1)
+            if not pd.isna(cf):
+                if cf != protL != protLoc[1]:
+                    ncLNat.append(cf)
+                    nctLNat.append(cf)
         else:
             dictO[colK]['NcT'] = []
             dictO[colK]['NFrag'] = []
@@ -953,38 +934,28 @@ def Fragments(
                 seqL.append(seqC)
                 #------------------------------> Number of peptides
                 nP = nP + 1
-                if pd.isna(ncf) and pd.isna(ccf):
-                    pass
-                else:
+                if not pd.isna(ncf) and not pd.isna(ccf):
                     npNat = npNat + 1
                 #------------------------------> Cleavages Rec
                 if nc != 1:
                     ncL.append(nc-1)
                     nctL.append(nc-1)
-                else:
-                    pass
                 if cc != protL:
                     ncL.append(cc)
                     nctL.append(cc)
-                else:
-                    pass
                 #------------------------------> Cleavages Nat
-                if pd.isna(ncf) or ncf == 1:
-                    pass
-                else:
-                    ncLNat.append(nc-1)
-                    nctLNat.append(nc-1)
-                if pd.isna(ccf) or ccf == protL == protLoc[1]:
-                    pass
-                else:
-                    ncLNat.append(ccf)
-                    nctLNat.append(ccf)
+                if not pd.isna(ncf):
+                    if ncf != 1:
+                        ncLNat.append(nc-1)
+                        nctLNat.append(nc-1)
+                if not pd.isna(ccf):
+                    if ccf != protL != protLoc[1]:
+                        ncLNat.append(ccf)
+                        nctLNat.append(ccf)
                 #------------------------------> Update c residue
                 if cc > c:
                     c = cc
                     cf = ccf
-                else:
-                    pass
             else:
                 #------------------------------> Add Fragment
                 dictO[colK]['Coord'].append((n,c))
@@ -1015,24 +986,18 @@ def Fragments(
                 if n != 1:
                     ncL.append(n-1)
                     nctL.append(n-1)
-                else:
-                    pass
                 if c != protL:
                     ncL.append(c)
                     nctL.append(c)
-                else:
-                    pass
                 #------------------------------> Cleavages Nat
-                if pd.isna(nf) or nf == 1:
-                    pass
-                else:
-                    ncLNat.append(nf-1)
-                    nctLNat.append(nf-1)
-                if pd.isna(cf) or cf == protL == protLoc[1]:
-                    pass
-                else:
-                    ncLNat.append(cf)
-                    nctLNat.append(cf)
+                if not pd.isna(nf):
+                    if nf != 1:
+                        ncLNat.append(nf-1)
+                        nctLNat.append(nf-1)
+                if not pd.isna(cf):
+                    if cf != protL != protLoc[1]:
+                        ncLNat.append(cf)
+                        nctLNat.append(cf)
         #------------------------------> Catch the last line
         dictO[colK]['Coord'].append((n,c))
         dictO[colK]['CoordN'].append((nf,cf))
@@ -1092,8 +1057,6 @@ def MergeOverlappingFragments(
         if ac <= b+delta:
             if bc > b:
                 b = bc
-            else:
-                pass
         else:
             coordO.append((a,b))
             a = ac
@@ -1123,6 +1086,7 @@ def HCurve(x:Union[float,pd.DataFrame,pd.Series], t0:float, s0:float) -> float:
         -------
         float
     """
+    # No test
     #region ---------------------------------------------------> Calculate
     return abs((abs(x)*t0)/(abs(x)-t0*s0))                                      # type: ignore
     #endregion ------------------------------------------------> Calculate
@@ -1174,9 +1138,7 @@ def CorrA(
     # Test in test.unit.test_method.Test_CorrA
     #region ------------------------------------------------> Data Preparation
     tOut = mStatistic.DataPreparation(df, rDO, resetIndex=resetIndex)
-    if tOut[0]:
-        pass
-    else:
+    if not tOut[0]:
         return tOut
     #endregion ---------------------------------------------> Data Preparation
 
@@ -1607,9 +1569,9 @@ def NCResNumbers(
         #region ------------------------------------------------> Check ok
         if nc[0] != -1:
             return nc
-        else:
-            msg = mConfig.mSeqPeptNotFound.format(row[0], seqType)
-            raise mException.ExecutionError(msg)
+        #------------------------------>
+        msg = mConfig.mSeqPeptNotFound.format(row[0], seqType)
+        raise mException.ExecutionError(msg)
         #endregion ---------------------------------------------> Check ok
     #---
     #endregion -----------------------------------------> Helper Functions
