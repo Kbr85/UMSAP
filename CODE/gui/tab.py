@@ -22,7 +22,7 @@ import wx
 import wx.lib.agw.aui as aui
 
 import config.config as mConfig
-import data.method   as mMethod
+import gui.method    as gMethod
 import gui.pane      as mPane
 import gui.widget    as mWidget
 #endregion ----------------------------------------------------------> Imports
@@ -221,7 +221,7 @@ class ResControlExp(wx.Panel):
             colLabel = self.cLLCtrlColName,
             colSize  = self.cSLCTrlCol,
         )
-        mMethod.LCtrlFillColNames(self.wLCtrl, iFile)
+        gMethod.LCtrlFillColNames(self.wLCtrl, iFile)
         #------------------------------> Conf panel here to read NRow in lc
         self.wConf = self.dWidget[topParent.cName]( # type: ignore
             self, topParent, self.wLCtrl.GetItemCount())

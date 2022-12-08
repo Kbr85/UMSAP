@@ -34,8 +34,6 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus      import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles    import getSampleStyleSheet, ParagraphStyle
 
-import wx
-
 import config.config  as mConfig
 import data.exception as mException
 import data.file      as mFile
@@ -82,13 +80,9 @@ def StrException(
     #------------------------------> str(e)
     if tStr:
         msg = f"{msg}{str(tException)}\n\n"
-    else:
-        pass
     #------------------------------> repr(e)
     if tRepr:
         msg = f"{msg}{repr(tException)}\n\n"
-    else:
-        pass
     #------------------------------> traceback
     if trace:
         tTrace = "".join(
@@ -99,8 +93,6 @@ def StrException(
             )
         )
         msg = f"{msg}{tTrace}"
-    else:
-        pass
     #endregion ------------------------------------------------------> Message
 
     return msg
@@ -125,6 +117,7 @@ def StrNow(dtFormat: str=mConfig.dtFormat) -> str:
         >>> StrNow()
         >>> '20210112-140137'
     """
+    # No test
     return datetime.now().strftime(dtFormat)
 #---
 
@@ -151,10 +144,11 @@ def StrSetMessage(start:str, end:str, link:str='\n\nFurther details:\n') -> str:
         >>> StrSetMessage('Start', 'End', link=' - ')
         >>> 'Start - End'
     """
+    # No test
     if link:
         return f"{start}{link}{end}"
-    else:
-        return f"{start} {end}"
+    #------------------------------>
+    return f"{start} {end}"
 #---
 
 
@@ -201,13 +195,11 @@ def Str2ListNumber(
             lK = ExpandRange(k, numType)
             #------------------------------> Get list of numbers
             lN = lN + lK
-        else:
-            pass
     #endregion --------------------------------------------------> Get numbers
 
     #region ----------------------------------------------------------> Unique
     if unique:
-        lo = ListRemoveDuplicates(lN)
+        lo = list(dict.fromkeys(lN))
     else:
         lo = lN
     #endregion -------------------------------------------------------> Unique
@@ -429,95 +421,29 @@ def ExpandRange(
     """
     # Test in test.unit.test_method.Test_ExpandRange
     #region -------------------------------------------------> Expand & Return
-    #------------------------------> Remove flanking empty characters
     tr = r.strip()
     #------------------------------> Expand
     if '-' in tr:
-        #------------------------------> Range
-        #--------------> Catch more than one - in range
+        #------------------------------> Catch more than one - in range
         a,b = tr.split('-')
-        #-------------->  Check a value
+        #------------------------------> Negative value
         if a == '':
-            #--> Negative number
             return [mConfig.oNumType[numType](tr)]
-        else:
-            pass
-        #-------------->  Check b
+        #------------------------------> Range like 4-
         if b == '':
-            #--> range like 4-
             raise mException.InputError(mConfig.mRangeNumIE.format(r))
-        else:
-            pass
-        #--------------> Expand range
+        #------------------------------> Expand range
         a = int(a)
         b = int(b)
-        #--> Expand range
         if a < b:
             return [x for x in range(a, b+1, 1)]
-        else:
-            raise mException.InputError(mConfig.mRangeNumIE.format(r))
-    else:
-        #------------------------------> Positive number
-        return [mConfig.oNumType[numType](tr)]
+        #------------------------------> Bad Input
+        raise mException.InputError(mConfig.mRangeNumIE.format(r))
+    #------------------------------> Positive number
+    return [mConfig.oNumType[numType](tr)]
     #endregion ----------------------------------------------> Expand & Return
 #---
 #endregion ---------------------------------------------------> Number methods
-
-
-#region ---------------------------------------------------------> wx.ListCtrl
-def LCtrlFillColNames(lc: wx.ListCtrl, fileP: Union[Path, str]) -> bool:
-    """Fill the wx.ListCtrl with the name of the columns in fileP.
-
-        Parameters
-        ----------
-        lc : wx.ListCtrl
-            wx.ListCtrl to fill info into
-        fileP : Path
-            Path to the file from which to read the column names
-
-        Notes
-        -----
-        This will delete the wx.ListCtrl before adding the new names.
-        wx.ListCtrl is assumed to have at least two columns [#, Name,]
-    """
-    #region -------------------------------------------------------> Read file
-    colNames = mFile.ReadFileFirstLine(fileP)
-    #endregion ----------------------------------------------------> Read file
-
-    #region -------------------------------------------------------> Fill List
-    #------------------------------> Del items
-    lc.DeleteAllItems()
-    #------------------------------> Fill
-    for k, v in enumerate(colNames):
-        index = lc.InsertItem(k, " " + str(k))
-        lc.SetItem(index, 1, v)
-    #endregion ----------------------------------------------------> Fill List
-
-    return True
-#---
-
-
-def ListRemoveDuplicates(l: Union[list, tuple]) -> list:
-    """Remove duplicate elements from l. Order is conserved.
-
-        Parameters
-        ----------
-        l : list or tuple
-            Contain the duplicate elements to remove
-
-        Returns
-        -------
-        list
-
-        Examples
-        --------
-        >>> ListRemoveDuplicates([1,2,3,6,4,7,5,6,10,7,8,9])
-        >>> [1, 2, 3, 6, 4, 7, 5, 10, 8, 9]
-    """
-    # Test in tests.unit.data.test_method.Test_ListRemoveDuplicates
-    return list(dict.fromkeys(l))
-#---
-#endregion ------------------------------------------------------> wx.ListCtrl
 
 
 #region ----------------------------------------------------------------> Dict

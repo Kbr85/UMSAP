@@ -649,7 +649,7 @@ class BaseConfPanel(
 
         #region ---------------------------------------------------> Fill list
         try:
-            mMethod.LCtrlFillColNames(self.wLCtrlI, fileP)
+            gMethod.LCtrlFillColNames(self.wLCtrlI, fileP)
         except Exception as e:
             mWindow.DialogNotification(
                 'errorF', parent=self, msg=str(e), tException=e)

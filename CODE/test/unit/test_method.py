@@ -156,7 +156,7 @@ class Test_Str2ListNumber(unittest.TestCase):
         ]
         #------------------------------>
         for a,b,c,d, e in badInput:
-            msg = f"tStr={a}, numType]{b}, sep={c}, unique={d}"
+            msg = f"tStr={a}, numType={b}, sep={c}, unique={d}"
             with self.subTest(msg):
                 self.assertRaises(
                     e,
@@ -193,6 +193,25 @@ class Test_Str2ListNumber(unittest.TestCase):
 
 class Test_StrEqualLength(unittest.TestCase):
     """Test for data.method.StrEqualLength"""
+    #region -----------------------------------------------------> Valid Input
+    def test_invalid_input(self):
+        """Test for invalid input"""
+        #------------------------------>
+        badInput = [
+            (['1, 2, 4b'], ' ', 'Bad Input', mException.InputError),
+        ]
+        #------------------------------>
+        for a,b,c,d in badInput:
+            msg = f"tStr={a}, char={b}, loc={c}"
+            with self.subTest(msg):
+                self.assertRaises(
+                    d,
+                    mMethod.StrEqualLength,
+                    a, char=b, loc=c
+                )
+    #---
+    #endregion --------------------------------------------------> Valid Input
+
     #region -------------------------------------------------> Expected Output
     def test_expected_output(self):
         """Test for expected output"""
@@ -291,6 +310,26 @@ class Test_ResControl2DF(unittest.TestCase):
 
 class Test_ExpandRange(unittest.TestCase):
     """Test for data.method.ExpandRange"""
+    #region -----------------------------------------------------> Valid Input
+    def test_invalid_input(self):
+        """Test for invalid input"""
+        #------------------------------>
+        badInput = [
+            ('4-',  'int', mException.InputError),
+            ('4-1', 'int', mException.InputError),
+        ]
+        #------------------------------>
+        for a,b,c in badInput:
+            msg = f"r={a}, numType={b}"
+            with self.subTest(msg):
+                self.assertRaises(
+                    c,
+                    mMethod.ExpandRange,
+                    a, numType=b
+                )
+    #---
+    #endregion --------------------------------------------------> Valid Input
+
     #region -------------------------------------------------> Expected Output
     def test_expected_output(self):
         """Expected output"""
@@ -308,29 +347,6 @@ class Test_ExpandRange(unittest.TestCase):
                 result = mMethod.ExpandRange(a, numType=b)
                 #------------------------------>
                 self.assertEqual(result, c)
-    #---
-    #endregion ----------------------------------------------> Expected Output
-#---
-
-
-class Test_ListRemoveDuplicates(unittest.TestCase):
-    """Test for data.method.ListRemoveDuplicates"""
-    #region -------------------------------------------------> Expected Output
-    def test_expected_output(self):
-        """Test for the expected output"""
-        #------------------------------>
-        tInput = [
-            ([1,2,3,6,4,7,5,6,10,7,8,9], [1,2,3,6,4,7,5,10,8,9]),
-            (['q', 'u', 'u', 'z', 'h', 'z'], ['q', 'u', 'z', 'h']),
-            ([1, 2, 4, 'q', 'u', 'u', 'z', 6, 2], [1,2,4,'q','u','z',6]),
-        ]
-        #------------------------------>
-        for a,b in tInput:
-            with self.subTest(f"l={a}"):
-                #------------------------------>
-                result = mMethod.ListRemoveDuplicates(a)
-                #------------------------------>
-                self.assertEqual(result, b)
     #---
     #endregion ----------------------------------------------> Expected Output
 #---
@@ -580,7 +596,7 @@ class Test_LoadUserConfig(unittest.TestCase):
                 #------------------------------>
                 result = mMethod.LoadUserConfig(a, b)
                 #------------------------------>
-                self.assertEquals(result, c)
+                self.assertEqual(result, c)
     #---
     #endregion ----------------------------------------------> Expected Output
 #---
