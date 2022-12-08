@@ -2063,8 +2063,6 @@ def Rec2NatCoord(
     #region ---------------------------------------------------> Return NA
     if delta is None or protLoc[0] is None or protLoc[1] is None:
         return ['NA']
-    else:
-        pass
     #endregion ------------------------------------------------> Return NA
 
     #region ---------------------------------------------------> Calc
@@ -2110,6 +2108,7 @@ def R2AA(
             AA -2 -1 1 2 P  -2 -1 1 2 P
     """
     # Test in test.unit.test_method.Test_R2AA
+    #region ---------------------------------------------------> Helper Method
     def AddNewAA(
         dfO: pd.DataFrame,
         r  : int,
@@ -2157,6 +2156,8 @@ def R2AA(
 
         return dfO
     #---
+    #endregion ------------------------------------------------> Helper Method
+
     #region ---------------------------------------------------> Empty
     aL = ['AA']
     bL = ['AA']
@@ -2177,20 +2178,16 @@ def R2AA(
             n = seq.find(s)
             if n > 0:
                 dfO = AddNewAA(dfO, n, pos, seq, l)
-            else:
-                pass
             #------------------------------>
             c = n+len(s)
             if c < protL:
                 dfO = AddNewAA(dfO, c, pos, seq, l)
-            else:
-                pass
     #endregion ------------------------------------------------> Fill
 
     #region ---------------------------------------------------> Random Cleavage
-    c = 'ALL_CLEAVAGES_UMSAP'
-    aL = 2*pos*[c]
-    bL = [f'P{x}' for x in range(pos, 0, -1)] + [f"P{x}'" for x in range(1, pos+1,1)]
+    c   = 'ALL_CLEAVAGES_UMSAP'
+    aL  = 2*pos*[c]
+    bL  = [f'P{x}' for x in range(pos, 0, -1)] + [f"P{x}'" for x in range(1, pos+1,1)]
     idx = pd.MultiIndex.from_arrays([aL[:],bL[:]])
     dfT = pd.DataFrame(0, columns=idx, index=mConfig.lAA1+['Chi'])              # type: ignore
     dfO = pd.concat([dfO, dfT], axis=1)
@@ -2244,9 +2241,9 @@ def R2Hist(
     #region ---------------------------------------------------> Variables
     tBin = []
     if len(win) == 1:
-        tBin.append([x for x in range(0, maxL[0]+win[0], win[0])])
+        tBin.append(list(range(0, maxL[0]+win[0], win[0])))
         if maxL[1] is not None:
-            tBin.append([x for x in range(0, maxL[1]+win[0], win[0])])
+            tBin.append(list(range(0, maxL[1]+win[0], win[0])))
         else:
             tBin.append([None])
     else:
@@ -2257,10 +2254,10 @@ def R2Hist(
     #region --------------------------------------------------------> Empty DF
     #------------------------------> Columns
     label = df.columns.unique(level=0).tolist()[4:]
-    nL = len(label)
-    a = (2*nL+1)*['Rec']+(2*nL+1)*['Nat']
-    b = ['Win']+nL*['All']+nL*['Unique']+['Win']+nL*['All']+nL*['Unique']
-    c = 2*(['Win']+2*label)
+    nL    = len(label)
+    a     = (2*nL+1)*['Rec']+(2*nL+1)*['Nat']
+    b     = ['Win']+nL*['All']+nL*['Unique']+['Win']+nL*['All']+nL*['Unique']
+    c     = 2*(['Win']+2*label)
     #------------------------------> Rows
     nR = sorted([len(x) for x in tBin])[-1]
     #------------------------------> df
@@ -2273,8 +2270,6 @@ def R2Hist(
     dfO.iloc[range(0,len(tBin[0])), dfO.columns.get_loc(('Rec','Win','Win'))] = tBin[0]             # type: ignore
     if tBin[1][0] is not None:
         dfO.iloc[range(0,len(tBin[1])), dfO.columns.get_loc(('Nat','Win','Win'))] = tBin[1]         # type: ignore
-    else:
-        pass
     #------------------------------>
     for e in label:
         dfT = df[df[(e,'P')] < alpha]
@@ -2299,8 +2294,6 @@ def R2Hist(
             l = list(set(l))
             a,_ = np.histogram(l, bins=tBin[0])
             dfO.iloc[range(0,len(a)),dfO.columns.get_loc(('Nat','Unique',e))] = a                   # type: ignore
-        else:
-            pass
     #endregion ------------------------------------------------> Fill
 
     return dfO
@@ -2327,13 +2320,13 @@ def R2CpR(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
     # Test in test.unit.test_method.Test_R2CpR
     #region -------------------------------------------------------------> dfO
     label = df.columns.unique(level=0).tolist()[4:]
-    nL = len(label)
-    a = (nL)*['Rec']+(nL)*['Nat']
-    b = 2*label
-    nR = sorted(protL, reverse=True)[0] if protL[1] is not None else protL[0]
-    idx = pd.IndexSlice
-    col = pd.MultiIndex.from_arrays([a[:],b[:]])
-    dfO = pd.DataFrame(0, index=range(0,nR), columns=col)                       # type: ignore
+    nL    = len(label)
+    a     = (nL)*['Rec']+(nL)*['Nat']
+    b     = 2*label
+    nR    = sorted(protL, reverse=True)[0] if protL[1] is not None else protL[0]
+    idx   = pd.IndexSlice
+    col   = pd.MultiIndex.from_arrays([a[:],b[:]])
+    dfO   = pd.DataFrame(0, index=range(0,nR), columns=col)                       # type: ignore
     #endregion ----------------------------------------------------------> dfO
 
     #region ------------------------------------------------------------> Fill
@@ -2362,8 +2355,6 @@ def R2CpR(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
             l = [x for x in l if not pd.isna(x) and x > -1 and x < lastR]
             for x in l:
                 dfO.at[x, idx['Nat',e]] = dfO.at[x, idx['Nat',e]] + 1
-        else:
-            pass
     #endregion ---------------------------------------------------------> Fill
 
     return dfO
@@ -2388,6 +2379,7 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         pd.DataFrame
     """
     # Test in test.unit.test_method.Test_R2CEvol
+    #region -------------------------------------------------> Helper Function
     def IntL2MeanI(a: list, alpha: float) -> float:
         """Calculate the intensity average.
 
@@ -2401,21 +2393,23 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
         if a[-1] < alpha:
             l = list(map(float, a[0][1:-1].split(',')))
             return (sum(l)/len(l))
-        else:
-            return np.nan
+        #------------------------------>
+        return np.nan
     #---
+    #endregion ----------------------------------------------> Helper Function
+
     #region -------------------------------------------------------->
-    idx = pd.IndexSlice
+    idx   = pd.IndexSlice
     label = df.columns.unique(level=0).tolist()[4:]
-    nL = len(label)
-    a = df.columns.tolist()[4:]
-    colN = list(range(4, len(a)+4))
+    nL    = len(label)
+    a     = df.columns.tolist()[4:]
+    colN  = list(range(4, len(a)+4))
     #endregion ----------------------------------------------------->
 
     #region -------------------------------------------------------->
-    a = (nL)*['Rec']+(nL)*['Nat']
-    b = 2*label
-    nR = sorted(protL, reverse=True)[0] if protL[1] is not None else protL[0]
+    a   = (nL)*['Rec']+(nL)*['Nat']
+    b   = 2*label
+    nR  = sorted(protL, reverse=True)[0] if protL[1] is not None else protL[0]
     col = pd.MultiIndex.from_arrays([a[:],b[:]])
     dfO = pd.DataFrame(0, index=range(0,nR), columns=col)                                                               # type: ignore
     #endregion ----------------------------------------------------->
@@ -2425,9 +2419,9 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
     #------------------------------> 0 range for residue numbers
     dfT.iloc[:,0] = dfT.iloc[:,0]-2
     dfT.iloc[:,1] = dfT.iloc[:,1]-1
-    resL = sorted(list(set(dfT.iloc[:,[0,1]].to_numpy().flatten())))
+    resL  = sorted(list(set(dfT.iloc[:,[0,1]].to_numpy().flatten())))
     lastR = protL[0] - 1
-    resL = [x for x in resL if x > -1 and x < lastR]
+    resL  = [x for x in resL if x > -1 and x < lastR]
     #------------------------------>
     for e in label:
         dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])       # type: ignore
@@ -2479,8 +2473,6 @@ def R2CEvol(df: pd.DataFrame, alpha: float, protL: list[int]) -> pd.DataFrame:
             dfG.loc[:,idx[:,'Int']] = dfG.loc[:,idx[:,'Int']].apply(lambda x: x/x.loc[x.ne(0).idxmax()], axis=1)        # type: ignore
             #------------------------------>
             dfO.iloc[r, range(len(label),2*len(label))] = dfG.loc[:,idx[:,'Int']].sum(axis=0)                           # type: ignore
-    else:
-        pass
     #endregion ------------------------------------------------>
 
     return dfO
@@ -2517,6 +2509,7 @@ def R2SeqAlignment(
         bool
     """
     # No Test
+    #region -------------------------------------------------> Helper Function
     def GetString(
         df   : pd.DataFrame,
         seq  : str,
@@ -2547,10 +2540,10 @@ def R2SeqAlignment(
             tuple(int, list[str])
         """
         #region -------------------------------------------------------->
-        idx = pd.IndexSlice
-        df = df[df.loc[:,idx[label,'P']] <= alpha].copy()                       # type: ignore
-        df = df.reset_index(drop=True)
-        nCero = len(str(df.shape[0]+1))
+        idx     = pd.IndexSlice
+        df      = df[df.loc[:,idx[label,'P']] <= alpha].copy()                       # type: ignore
+        df      = df.reset_index(drop=True)
+        nCero   = len(str(df.shape[0]+1))
         tString = [seq]
         #endregion ----------------------------------------------------->
 
@@ -2561,12 +2554,13 @@ def R2SeqAlignment(
         #endregion ------------------------------------------------>
         return (nCero, tString)
     #---
+    #endregion ----------------------------------------------> Helper Function
+
     #region ---------------------------------------------------> Variables
-    #------------------------------>
-    label = df.columns.unique(level=0)[7:].tolist()
+    label   = df.columns.unique(level=0)[7:].tolist()
     lenSeqR = len(seqR)
     lenSeqN = len(seqN) if seqN else 0
-    end = 0
+    end     = 0
     #------------------------------> ReportLab
     doc = SimpleDocTemplate(fileP, pagesize=A4, rightMargin=25,
         leftMargin=25, topMargin=25, bottomMargin=25)
@@ -2590,14 +2584,10 @@ def R2SeqAlignment(
                 if a.strip():
                     end = k
                     printString = f"{printString}{str(k).zfill(nCero)}-{a.replace(' ', '&nbsp;')}<br />"
-                else:
-                    pass
             #------------------------------>
             Story.append(Paragraph(printString, style=styles['Seq']))
             if end:
                 Story.append(Spacer(1,10))
-            else:
-                pass
         if end:
             Story.append(Spacer(1,10))
         else:
@@ -2620,14 +2610,10 @@ def R2SeqAlignment(
                     if a.strip():
                         end = k
                         printString = f"{printString}{str(k).zfill(nCero)}-{a.replace(' ', '&nbsp;')}<br />"
-                    else:
-                        pass
                 #------------------------------>
                 Story.append(Paragraph(printString, style=styles['Seq']))
                 if end:
                     Story.append(Spacer(1,10))
-                else:
-                    pass
             if end:
                 Story.append(Spacer(1,10))
             else:
