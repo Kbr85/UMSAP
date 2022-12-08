@@ -45,7 +45,7 @@ def ReadJSON(fileP: Union[Path, str]) -> dict:
         dict:
             Data in the file.
     """
-    # No test needed.
+    # No test
     #region -------------------------------------------------------> Read file
     with open(fileP, 'r', encoding="utf-8") as file:
         data = json.load(file)
@@ -86,24 +86,24 @@ def ReadFileFirstLine(
           first line is returned independently of the line content.
         - If the file is empty an empty line is returned.
     """
+    # Test in test.unit.test_file.Test_ReadFileFirstLine
     #region --------------------------------------------> Read and split lines
     with open(fileP, 'r', encoding="utf-8") as file:
         for line in file:
             #--> To remove ' ', \n, \t & \r from start/end of line
             l = line.strip()
-            #------------------------------> Return first line
+            #------------------------------> Return first line if empty
             if l == '' and not empty:
-                #------------------------------> Discard empty
-                continue
-            else:
-                #------------------------------> Set data
-                if char:
-                    return l.split(char)
-                else:
-                    return [l]
+                continue # Discard empty lines
+            #------------------------------> Return splitted line
+            if char:
+                return l.split(char)
+            #------------------------------> Return first line
+            return [l]
+    #endregion -----------------------------------------> Read and split lines
+
     #------------------------------> If file is empty then return
     return []
-    #endregion -----------------------------------------> Read and split lines
 #---
 
 
@@ -131,6 +131,7 @@ def ReadCSV2DF(
         dataframe:
             Pandas dataframe with the data.
     """
+    # No test
     #region -------------------------------------------------------> Read file
     return pd.read_csv(
         str(fileP), sep=sep, index_col=index_col, header=header)
@@ -152,6 +153,7 @@ def WriteJSON(fileP: Union[Path, str], data: dict) -> bool:
         ------
         bool
     """
+    # No test
     #region ---------------------------------------------------> Write to file
     with open(fileP, 'w', encoding="utf-8") as file:
         json.dump(data, file, indent=4)
@@ -183,6 +185,7 @@ def WriteDF2CSV(
         index: boolean
             Write index columns
     """
+    # No Test
     #region ---------------------------------------------------> Write to file
     df.to_csv(str(fileP), sep=sep, na_rep=na_rep, index=index)
     return True
@@ -216,6 +219,7 @@ def WriteDFs2CSV(
         -----
         Existing files will be overwritten if needed.
     """
+    # No test
     #region ---------------------------------------------------> Write to file
     for k,i in ncDict.items():
         fileP = baseP / k
@@ -257,7 +261,7 @@ class CSVFile():
         -----
         It is assumed the CSV file has column names in the first row.
         """
-    # No Test
+    # Test in test.unit.test_file.Test_CSVFile
     #region --------------------------------------------------> Instance setup
     def __init__(self, fileP: Union[Path, str], sep: str="\t") -> None:
         """ """
@@ -278,7 +282,7 @@ class CSVFile():
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def StrInCol(self, tStr:str, col:int, comp: Literal['e', 'ne']='e') -> bool:
+    def StrInCol(self, tStr:str, col:int) -> bool:
         """Basically check if str is in col.
 
             Parameters
@@ -287,14 +291,12 @@ class CSVFile():
                 String to look for.
             col: int
                 Column containing the string.
-            comp: str
-                One of 'e', 'ne'. Equal or not Equal.
 
             Returns
             -------
             bool
         """
-        df = mMethod.DFFilterByColS(self.rData, col, tStr, comp=comp)
+        df = mMethod.DFFilterByColS(self.rData, col, tStr, comp='e')
         return not df.empty
     #---
     #endregion ------------------------------------------------> Class methods
@@ -327,6 +329,12 @@ class FastaFile():
             Sequence of the Native sequence.
         rSeqRec: str
             Sequence of the Recombinant sequence.
+
+        Notes
+        -----
+        It handle the first two sequences in the file. All other sequences
+        are discarded. It is assume that the first sequence is the recombinant
+        sequence and the second sequence is the native sequence.
     """
     # Test in test.unit.test_file.Test_FastaFile
     #region --------------------------------------------------> Instance setup
@@ -344,14 +352,13 @@ class FastaFile():
         #------------------------------>
         try:
             self.rHeaderNat, self.rSeqNat = next(gen)
+            self.rSeqLengthNat = len(self.rSeqNat)
         except StopIteration:
             self.rHeaderNat, self.rSeqNat, self.rSeqLengthNat = ('', '', None)
         except Exception as e:
             msg = (f'There was an unexpected error when parsing the fasta '
                 f'file.\n{fileP}')
             raise mException.UnexpectedError(msg) from e
-        else:
-            self.rSeqLengthNat = len(self.rSeqNat)
         #endregion --------------------------------------------> Initial Setup
         #---
     #endregion -----------------------------------------------> Instance setup
@@ -390,21 +397,18 @@ class FastaFile():
                 "peptide sequence can only be searched for in the "
                 "Recombinant sequence")
             raise mException.ExecutionError(msg)
-        else:
-            pass
         #endregion ----------------------------------------------> Check Input
 
         #region ------------------------------------------------------> Find N
         #------------------------------>
         n = self.rSeqRec.find(seq) if seqRec else self.rSeqNat.find(seq)
         #------------------------------>
-        if n != -1:
-            n = n + 1
-        else:
+        if n == -1:
             return (-1, -1)
         #endregion ---------------------------------------------------> Find N
 
         #region ------------------------------------------------------> Find C
+        n = n + 1
         c = n + len(seq) - 1
         #endregion ---------------------------------------------------> Find C
 
@@ -451,15 +455,11 @@ class FastaFile():
             msg = ('It is not possible to calculate the sequence alignment '
                    'because the Fasta file contains only one sequence.')
             raise mException.ExecutionError(msg)
-        else:
-            pass
         #endregion ------------------------------------------------>
 
         #region ---------------------------------------------------> Alignment
-        if getattr(self, 'rAlignment', None) is None:
+        if not getattr(self, 'rAlignment', []):
             self.rAlignment = self.CalculateAlignment(self.rSeqRec,self.rSeqNat)
-        else:
-            pass
         #endregion ------------------------------------------------> Alignment
 
         return True
@@ -473,13 +473,11 @@ class FastaFile():
             BioPython alignment.
         """
         #region ---------------------------------------------------> Alignment
-        if getattr(self, 'rAlignment', None) is None:
+        if getattr(self, 'rAlignment', []):
             try:
                 self.SetSelfAlignment()
             except Exception as e:
                 raise e
-        else:
-            pass
         #endregion ------------------------------------------------> Alignment
 
         return self.rAlignment
@@ -500,17 +498,15 @@ class FastaFile():
         """
         #region ---------------------------------------------------> Alignment
         try:
-            alignment = self.GetSelfAlignment()
+            self.SetSelfAlignment()
         except Exception as e:
             raise e
-        seqB = alignment[0].seqB
+        seqB = self.rAlignment[0].seqB
         #endregion ------------------------------------------------> Alignment
 
         #region ---------------------------------------------------> Get delta
         for k,l in enumerate(seqB):
-            if l == '-':
-                pass
-            else:
+            if l != '-':
                 return -1 * k
         #------------------------------>
         return 0 # ProtRec and ProtNat are the same
@@ -533,19 +529,17 @@ class FastaFile():
         """
         #region ---------------------------------------------------> Alignment
         try:
-            alignment = self.GetSelfAlignment()
+            self.SetSelfAlignment()
         except Exception as e:
             raise e
-        seqB = alignment[0].seqB
+        seqB = self.rAlignment[0].seqB
         #endregion ------------------------------------------------> Alignment
 
         #region -------------------------------------------> Get Left Position
         ll = None
         #------------------------------>
         for k,l in enumerate(seqB, start=1):
-            if l == '-':
-                pass
-            else:
+            if l != '-':
                 ll = k
                 break
         #------------------------------>
@@ -556,9 +550,7 @@ class FastaFile():
         lr = None
         #------------------------------>
         for k,l in reversed(list(enumerate(seqB, start=1))):
-            if l == '-':
-                pass
-            else:
+            if l != '-':
                 lr = k
                 break
         #------------------------------>
@@ -841,9 +833,7 @@ class UMSAPFile():
         #------------------------------> Sort Keys
         dataKey = sorted([x for x in data.keys()])
         #------------------------------>
-        self.rData = {}
-        for k in dataKey:
-            self.rData[k] = data[k]
+        self.rData = {self.rData[k]:data[k] for k in dataKey}
         #endregion ------------------------------------------------> Read File
 
         #region ---------------------------------------------------> Variables
@@ -896,38 +886,41 @@ class UMSAPFile():
             {
                 'Error': ['Date1',...], # Analysis containing errors.
                 'Date1': {
-                    'DF' : pd.DataFrame with the data to plot,
-                    'NumCol' : number of columns in 'DF',
+                    'DF'         : pd.DataFrame with the data to plot,
+                    'NumCol'     : number of columns in 'DF',
                     'NumColList' : List with the number of the columns,
                 },
                 'DateN' : {}
             }
         """
-        #region -------------------------------------------------> Plot & Menu
-        #------------------------------> Empty start
+        #region ---------------------------------------------------> Variables
         plotData = {}
         plotData['Error'] = []
+        pathB = mConfig.nuCorrA.replace(" ", "-")
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Plot & Menu
         #------------------------------> Fill
         for k, v in self.rData[mConfig.nuCorrA].items():
             #------------------------------>
-            tPath = self.rStepDataP / f'{k.split(" - ")[0]}_{mConfig.nuCorrA.replace(" ", "-")}'
-            #------------------------------>
+            pathA = k.split(" - ")[0]
+            tPath = self.rStepDataP / f'{pathA}_{pathB}'
+            #------------------------------> Read data
             try:
-                #------------------------------> Create data
                 df = ReadCSV2DF(tPath/v['R'])
-                #-------------->
-                if (numCol := len(v['CI']['oc']['Column'])) == df.shape[0]:
-                    pass
-                else:
-                    continue
-                #------------------------------> Add to dict if no error
-                plotData[k] = { # type: ignore
-                    'DF'        : df,
-                    'NumCol'    : numCol,
-                    'NumColList': v['CI']['oc']['Column'],
-                }
             except Exception:
                 plotData['Error'].append(k)
+                continue
+            #------------------------------> Check Columns
+            if not (numCol := len(v['CI']['oc']['Column'])) == df.shape[0]:
+                plotData['Error'].append(k)
+                continue
+            #------------------------------> Add to dict if no error
+            plotData[k] = { # type: ignore
+                'DF'        : df,
+                'NumCol'    : numCol,
+                'NumColList': v['CI']['oc']['Column'],
+            }
         #endregion ----------------------------------------------> Plot & Menu
 
         return plotData
@@ -955,14 +948,16 @@ class UMSAPFile():
                 'DateN': {},
             }
         """
+        #------------------------------> Data Prep From Plot
         if tSection and tDate:
             return self.ConfigureDataDataPrepFromPlot(tSection, tDate)
-        elif not tSection and not tDate:
+        #------------------------------> Data Prep From UMSAP
+        if not tSection and not tDate:
             return self.ConfigureDataDataPrepFromUMSAP()
-        else:
-            msg = (f'Both tSection ({tSection}) and tDate ({tDate}) must be '
-                   f"defined or ''.")
-            raise mException.InputError(msg)
+        #------------------------------> Error
+        msg = (f'Both tSection ({tSection}) and tDate ({tDate}) must be '
+               f"defined or ''.")
+        raise mException.InputError(msg)
     #---
 
     def ConfigureDataDataPrepFromPlot(self, tSection: str, tDate: str) -> dict:
@@ -989,7 +984,9 @@ class UMSAPFile():
         #region ---------------------------------------------------> Variables
         plotData = {}
         plotData['Error'] = []
-        tPath = self.rStepDataP / f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'
+        pathA = tDate.split(" - ")[0]
+        pathB = tSection.replace(" ", "-")
+        tPath = self.rStepDataP / f'{pathA}_{pathB}'
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu
@@ -1023,22 +1020,23 @@ class UMSAPFile():
         #region ---------------------------------------------------> Variables
         plotData = {}
         plotData['Error'] = []
+        pathB = mConfig.nuDataPrep.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu
         for k,v in self.rData[mConfig.nuDataPrep].items():
+            #------------------------------> Read and type
             try:
-                #------------------------------>
-                a = k.split(" - ")[0]
-                b = mConfig.nuDataPrep.replace(" ", "-")
-                tPath = self.rStepDataP / f'{a}_{b}'
-                #------------------------------> Add to dict
-                plotData[k] = {
-                    'DP' : {j:ReadCSV2DF(tPath/w) for j,w in v['DP'].items()},
-                    'NumColList': v['CI']['oc']['Column'],
-                }
+                pathA = k.split(" - ")[0]
+                tPath = self.rStepDataP / f'{pathA}_{pathB}'
             except Exception:
                 plotData['Error'].append(k)
+                continue
+            #------------------------------> Add to dict
+            plotData[k] = {
+                'DP' : {j:ReadCSV2DF(tPath/w) for j,w in v['DP'].items()},
+                'NumColList': v['CI']['oc']['Column'],
+            }
         #endregion ----------------------------------------------> Plot & Menu
 
         return plotData
@@ -1060,29 +1058,31 @@ class UMSAPFile():
                 'DateN': {},
             }
         """
-        #region -------------------------------------------------> Plot & Menu
-        #------------------------------> Empty start
+        #region ---------------------------------------------------> Variables
         plotData = {}
         plotData['Error'] = []
         colStr = [('Gene','Gene','Gene'),('Protein','Protein','Protein')]
-        #------------------------------> Fill
+        pathB  = mConfig.nmProtProf.replace(" ", "-")
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Plot & Menu
         for k,v in self.rData[mConfig.nmProtProf].items():
+            #------------------------------> Path
+            pathA = k.split(" - ")[0]
+            tPath = self.rStepDataP / f'{pathA}_{pathB}'
+            #------------------------------> Read and type
             try:
-                #------------------------------>
-                a = k.split(" - ")[0]
-                b = mConfig.nmProtProf.replace(" ", "-")
-                tPath = self.rStepDataP / f'{a}_{b}'
-                #------------------------------> Create data
                 df = ReadCSV2DF(tPath/v['R'], header=[0,1,2])
                 df.loc[:,colStr] = df.loc[:,colStr].astype('str')               # type: ignore
-                #------------------------------> Add to dict if no error
-                plotData[k] = {
-                    'DF'   : df,
-                    'F'    : v['F'],
-                    'Alpha': v['CI']['Alpha'],
-                }
             except Exception:
                 plotData['Error'].append(k)
+                continue
+            #------------------------------> Add to dict
+            plotData[k] = {
+                'DF'   : df,
+                'F'    : v['F'],
+                'Alpha': v['CI']['Alpha'],
+            }
         #endregion ----------------------------------------------> Plot & Menu
 
         return plotData
@@ -1112,18 +1112,19 @@ class UMSAPFile():
                 'DateN': {},
             }
         """
-        #region -------------------------------------------------> Plot & Menu
-        #------------------------------> Empty start
+        #region ---------------------------------------------------> Variables
         plotData = {}
         plotData['Error'] = []
-        #------------------------------> Fill
+        pathB = mConfig.nmLimProt.replace(" ", "-")
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Plot & Menu
         for k,v in self.rData[mConfig.nmLimProt].items():
+            #------------------------------>
+            pathA = k.split(" - ")[0]
+            tPath = self.rStepDataP / f'{pathA}_{pathB}'
+            #------------------------------>
             try:
-                #------------------------------>
-                a = k.split(" - ")[0]
-                b = mConfig.nmLimProt.replace(" ", "-")
-                tPath = self.rStepDataP / f'{a}_{b}'
-                #------------------------------> Create data
                 df = ReadCSV2DF(tPath/v['R'], header=[0,1,2])
                 #------------------------------> Plot Info
                 PI = {
@@ -1135,13 +1136,14 @@ class UMSAPFile():
                     'ProtDelta' : v['CI']['ProtDelta'],
                     'Prot'      : v['CI']['TargetProt'],
                 }
-                #------------------------------> Add to dict if no error
-                plotData[k] = {
-                    'DF': df,
-                    'PI': PI,
-                }
             except Exception:
                 plotData['Error'].append(k)
+                continue
+            #------------------------------>
+            plotData[k] = {
+                'DF': df,
+                'PI': PI,
+            }
         #endregion ----------------------------------------------> Plot & Menu
 
         return plotData
@@ -1181,18 +1183,20 @@ class UMSAPFile():
                 'DateN': {},
             }
         """
-        #region -------------------------------------------------> Plot & Menu
-        #------------------------------> Empty start
+        #region ---------------------------------------------------> Variables
         plotData = {}
         plotData['Error']=[]
-        #------------------------------> Fill
+        pathB = mConfig.nmTarProt.replace(" ", "-")
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------------> Plot & Menu
         for k,v in self.rData[mConfig.nmTarProt].items():
+            #------------------------------>
+            pathA = k.split(" - ")[0]
+            tPath = self.rStepDataP / f'{pathA}_{pathB}'
+            #------------------------------>
             try:
                 #------------------------------>
-                a = k.split(" - ")[0]
-                b = mConfig.nmTarProt.replace(" ", "-")
-                tPath = self.rStepDataP / f'{a}_{b}'
-                #------------------------------> Create data
                 df  = ReadCSV2DF(tPath/v['R'], header=[0,1])
                 #------------------------------> Plot Info
                 PI = {
@@ -1204,17 +1208,18 @@ class UMSAPFile():
                     'ProtDelta' : v['CI']['ProtDelta'],
                     'Prot'      : v['CI']['TargetProt'],
                 }
-                #------------------------------> Add to dict if no error
-                plotData[k] = {
-                    'DF'   : df,
-                    'PI'   : PI,
-                    'AA'   : v.get('AA', {}),
-                    'Hist' : v.get('Hist', {}),
-                    'CpR'  : v['CpR'],
-                    'CEvol': v['CEvol'],
-                }
             except Exception:
                 plotData['Error'].append(k)
+                continue
+            #------------------------------> Add to dict if no error
+            plotData[k] = {
+                'DF'   : df,
+                'PI'   : PI,
+                'AA'   : v.get('AA', {}),
+                'Hist' : v.get('Hist', {}),
+                'CpR'  : v['CpR'],
+                'CEvol': v['CEvol'],
+            }
         #endregion ----------------------------------------------> Plot & Menu
 
         return plotData
@@ -1243,11 +1248,8 @@ class UMSAPFile():
                 }
         """
         #region ------------------------------------------------> Strip I keys
-        #------------------------------>
-        i = {}
-        #------------------------------>
-        for k,v in self.rData[tSection][tDate]['I'].items():
-            i[k.strip()] = v
+        i = {k.strip():v
+             for k,v in self.rData[tSection][tDate]['I'].items()}
         #endregion ---------------------------------------------> Strip I keys
 
         return {
@@ -1279,8 +1281,6 @@ class UMSAPFile():
             if 'Sequences File' in k:
                 fileN = v
                 break
-            else:
-                pass
         #endregion ---------------------------------------------> Path
 
         #region --------------------------------------------------->
@@ -1307,12 +1307,11 @@ class UMSAPFile():
         """
         #region ------------------------------------------------> Path
         fileN = ''
+        #------------------------------>
         for k,v in self.rData[tSection][tDate]['I'].items():
             if 'Sequences File' in k:
                 fileN = v
                 break
-            else:
-                pass
         #endregion ---------------------------------------------> Path
 
         #region --------------------------------------------------->
@@ -1346,9 +1345,12 @@ class UMSAPFile():
             -------
             pd.DataFrame
         """
-        tPath = (
-            self.rStepDataP/f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'/fileN
-        )
+        #region --------------------------------------------------->
+        pathA = tDate.split(" - ")[0]
+        pathB = tSection.replace(" ", "-")
+        tPath = self.rStepDataP/f'{pathA}_{pathB}'/fileN
+        #endregion ------------------------------------------------>
+
         return ReadCSV2DF(tPath, header=header)
     #---
 
@@ -1368,8 +1370,8 @@ class UMSAPFile():
         """
         #region ---------------------------------------------------> Path
         folder = f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'
-        fileN = self.rData[tSection][tDate]['CpR']
-        fileP = self.rStepDataP/folder/fileN
+        fileN  = self.rData[tSection][tDate]['CpR']
+        fileP  = self.rStepDataP/folder/fileN
         #endregion ------------------------------------------------> Path
 
         return ReadCSV2DF(fileP, header=[0,1])
@@ -1391,8 +1393,8 @@ class UMSAPFile():
         """
         #region ---------------------------------------------------> Path
         folder = f'{tDate.split(" - ")[0]}_{tSection.replace(" ", "-")}'
-        fileN = self.rData[tSection][tDate]['CEvol']
-        fileP = self.rStepDataP/folder/fileN
+        fileN  = self.rData[tSection][tDate]['CEvol']
+        fileP  = self.rStepDataP/folder/fileN
         #endregion ------------------------------------------------> Path
 
         return ReadCSV2DF(fileP, header=[0,1])
@@ -1421,8 +1423,6 @@ class UMSAPFile():
                 inputF.append(next(iVal))
                 if k in self.SeqF:
                     inputF.append(next(iVal))
-                else:
-                    pass
         #endregion ------------------------------------------------>
 
         return inputF

@@ -35,10 +35,93 @@ fasta1Prot = folder / 'tarprot-seq-rec.txt'
 fasta2Prot = folder / 'tarprot-seq-both.txt'
 fastaNProt = folder / 'tarprot-seq-N.txt'
 pdb        = folder / '2y4f.pdb'
+csvFile    = folder / 'res-corrA-1.txt'
 #endregion ----------------------------------------------------> File Location
 
 
 #region ---------------------------------------------------------> Class Setup
+class Test_ReadFileFirstLine(unittest.TestCase):
+    """Test for data.file.ReadFileFirstLine"""
+    #region -----------------------------------------------------> Class Setup
+    @classmethod
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Create class instances"""
+        cls.file = fasta1Prot
+        cls.firstLine = ['>sp|P31545|EFEB_ECOLI Recombinant']
+        cls.firstLineSpace = ['>sp|P31545|EFEB_ECOLI', 'Recombinant']
+    #---
+    #endregion --------------------------------------------------> Class Setup
+
+    #region -------------------------------------------------> Expected Output
+    def test_expected_output(self):
+        """Test for expected output"""
+        #------------------------------>
+        tInput = [
+            (self.file, '', False, self.firstLine),
+            (self.file, '',  True, self.firstLine),
+            (self.file, ' ', False, self.firstLineSpace),
+        ]
+        #------------------------------>
+        for a,b,c,d in tInput:
+            msg = f"fileP={a}, char={b}, empty={c}"
+            with self.subTest(msg):
+                result = mFile.ReadFileFirstLine(a, char=b, empty=c)
+                self.assertEqual(result, d)
+    #---
+    #endregion ----------------------------------------------> Expected Output
+#---
+
+
+class Test_CSVFile(unittest.TestCase):
+    """Test for data.file.CSVFile"""
+    #region -----------------------------------------------------> Class Setup
+    @classmethod
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Create class instances"""
+        cls.csvFile = mFile.CSVFile(csvFile)
+        cls.header = [
+            'Unnamed: 0', 'Intensity 01', 'Intensity 02', 'Intensity 03',
+            'Intensity 04', 'Intensity 05']
+    #---
+    #endregion --------------------------------------------------> Class Setup
+
+    #region -------------------------------------------------> Expected Output
+    def test_Init(self):
+        """Test correct initialization"""
+        #------------------------------>
+        tInput = [
+            (self.csvFile.rFileP,  csvFile,     'File Path'),
+            (self.csvFile.rHeader, self.header, 'Data Header'),
+            (self.csvFile.rNRow,   5,           'Number of Rows'),
+            (self.csvFile.rNCol,   6,           'Number of Columns'),
+        ]
+        #------------------------------>
+        for a,b,c in tInput:
+            msg = f"{c}"
+            with self.subTest(msg):
+                self.assertEqual(a, b)
+    #---
+
+    def test_StrInCol(self):
+        """Test for StrInCol method"""
+        #------------------------------>
+        tInput = [
+            (self.csvFile, 'Intensity 04', 0, True),
+            (self.csvFile, 'Intensity 20', 0, False),
+        ]
+        #------------------------------>
+        for a,b,c,d in tInput:
+            msg = f"tStr={b}, col={c}"
+            with self.subTest(msg):
+                #------------------------------>
+                result = a.StrInCol(b, c)
+                #------------------------------>
+                self.assertEqual(result, d)
+    #---
+    #endregion ----------------------------------------------> Expected Output
+#---
+
+
 class Test_FastaFile(unittest.TestCase):
     """Test for data.file.FastaFile"""
     #region -----------------------------------------------------> Class Setup
@@ -169,8 +252,7 @@ class Test_FastaFile(unittest.TestCase):
         for a in tInput:
             msg = "Throw exception."
             with self.subTest(msg):
-                self.assertRaises(
-                    mException.ExecutionError, a)
+                self.assertRaises(mException.ExecutionError, a)
     #---
     #endregion ----------------------------------------------> Expected Output
 #---
@@ -234,7 +316,6 @@ class Test_PDBFile(unittest.TestCase):
             'Segment'   : 44*[''],
             'Element'   : ['N','C','C','O','C','O','N','C','C','O','C','N','C','C','O','C','C','C','N','C','C','O','C','C','C','O','N','C','C','O','C','O','N','C','C','O','C','N','C','C','O','C','C','C'],
         })
-
     #---
     #endregion --------------------------------------------------> Class Setup
 
