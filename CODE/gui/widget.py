@@ -1974,7 +1974,7 @@ class ResControl():
     def __init__(self, parent: wx.Window) -> None:
         """ """
         #region -------------------------------------------------------->
-        self.cParent = parent
+        self.cParent = parent.GetParent()
         #endregion ----------------------------------------------------->
 
         #region -----------------------------------------------------> Widgets

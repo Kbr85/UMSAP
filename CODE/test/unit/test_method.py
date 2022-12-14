@@ -855,7 +855,7 @@ class Test_ProtProf(unittest.TestCase):
                 'DetectedP': 0,
                 'GeneName': 1,
                 'ScoreCol': 2,
-                'ExcludeP': [3, 4, 5],
+                'ExcludeR': [3, 4, 5],
                 'ResCtrl': [[[6, 7, 8]], [[9, 10, 11], [12, 13, 14]], [[15, 16, 17], [18, 19, 20]]],
                 'ResCtrlFlat': [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
                 'ColumnR': [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
@@ -866,25 +866,25 @@ class Test_ProtProf(unittest.TestCase):
     #endregion --------------------------------------------------> Class Setup
 
     #region -------------------------------------------------> Expected Output
-    # def test_output(self):
-    #     """Test method output"""
-    #     #------------------------------>
-    #     tInput = [
-    #         (self.df, self.dict1, self.dExtra, True, protprof_1),
-    #     ]
-    #     #------------------------------>
-    #     for a,b,c,d,e in tInput:
-    #         with self.subTest(f"df={a}, rDO={b}, dExtra={c}, resetIndex={d}"):
-    #             #------------------------------>
-    #             result = mMethod.ProtProf(
-    #                 a, b, c, resetIndex=d)[0]['dfR']
-    #             result = result.round(3)
-    #             #------------------------------>
-    #             dfF = pd.read_csv(e, sep='\t', header=[0,1,2]).round(3)
-    #             #------------------------------>
-    #             # pylint: disable=protected-access
-    #             pd._testing.assert_frame_equal(result, dfF)                     # type: ignore
-    # #---
+    def test_output(self):
+        """Test method output"""
+        #------------------------------>
+        tInput = [
+            (self.df, self.dict1, self.dExtra, True, protprof_1),
+        ]
+        #------------------------------>
+        for a,b,c,d,e in tInput:
+            with self.subTest(f"df={a}, rDO={b}, dExtra={c}, resetIndex={d}"):
+                #------------------------------>
+                result = mMethod.ProtProf(
+                    a, b, c, resetIndex=d)[0]['dfR']
+                result = result.round(2)
+                #------------------------------>
+                dfF = pd.read_csv(e, sep='\t', header=[0,1,2]).round(2)
+                #------------------------------>
+                # pylint: disable=protected-access
+                pd._testing.assert_frame_equal(result, dfF)                     # type: ignore
+    #---
     #endregion ----------------------------------------------> Expected Output
 #---
 

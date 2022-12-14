@@ -27,7 +27,7 @@ from typing      import Union, Optional
 import numpy      as np
 import matplotlib as mpl
 import pandas     as pd
-
+from scipy                       import stats
 from statsmodels.stats.multitest import multipletests
 
 from reportlab.lib.pagesizes import A4
@@ -1353,11 +1353,6 @@ def ProtProf(
             -------
             bool
         """
-        #region ---------------------------------------------------> Print
-        if mConfig.development:
-            print(cN, tN, colC, colD)
-        #endregion ------------------------------------------------> Print
-
         #region ---------------------------------------------------> Ave & Std
         if colC:
             dfR.loc[:,(cN, tN, 'aveC')] = dfS.iloc[:,colC].mean(                # type: ignore
@@ -1415,13 +1410,20 @@ def ProtProf(
         #region -----------------------------------------------------------> P
         if rDO['RawI']:
             if rDO['IndS']:
-                dfR.loc[:,(cN,tN,'P')] = mStatistic.Test_t_IS_DF(               # type: ignore
-                    dfLogI, colC, colD, alpha=rDO['Alpha']
-                )['P'].to_numpy()
+                dfR.loc[:,(cN,tN,'P')] = stats.ttest_ind(                       # type: ignore
+                    dfLogI.iloc[:,colC],
+                    dfLogI.iloc[:,colD],
+                    equal_var  = False,
+                    nan_policy = 'omit',
+                    axis       = 1,
+                ).pvalue
             else:
-                dfR.loc[:,(cN,tN,'P')] = mStatistic.Test_t_PS_DF(               # type: ignore
-                    dfLogI, colC, colD, alpha=rDO['Alpha']
-                )['P'].to_numpy()
+                dfR.loc[:,(cN,tN,'P')] = stats.ttest_rel(                       # type: ignore
+                    dfLogI.iloc[:,colC],
+                    dfLogI.iloc[:,colD],
+                    axis       = 1,
+                    nan_policy = 'omit',
+                ).pvalue
         else:
             #------------------------------> Dummy 0 columns
             dfLogI['TEMP_Col_Full_00'] = 0
@@ -1429,10 +1431,17 @@ def ProtProf(
             colCF = []
             colCF.append(dfLogI.columns.get_loc('TEMP_Col_Full_00'))
             colCF.append(dfLogI.columns.get_loc('TEMP_Col_Full_01'))
-            #------------------------------>
-            dfR.loc[:,(cN,tN,'P')] = mStatistic.Test_t_IS_DF(                   # type: ignore
-                dfLogI, colCF, colD, f=True,
-            )['P'].to_numpy()
+            # #------------------------------>
+            # dfR.loc[:,(cN,tN,'P')] = mStatistic.Test_t_IS_DF(                   # type: ignore
+            #     dfLogI, colCF, colD, f=True,
+            # )['P'].to_numpy()
+            dfR.loc[:,(cN,tN,'P')] = stats.ttest_ind(                           # type: ignore
+                dfLogI.iloc[:,colCF],
+                dfLogI.iloc[:,colD],
+                equal_var  = False,
+                nan_policy = 'omit',
+                axis       = 1,
+            ).pvalue
         #endregion --------------------------------------------------------> P
 
         #region ----------------------------------------------------------> Pc
@@ -1495,12 +1504,12 @@ def ProtProf(
     #endregion ----------------------------------------------------> Calculate
 
     #region --------------------------------------------------->
-    if mConfig.development:
-        print('dfR.shape: ', dfR.shape)
-        print(dfR.head())
-        print('')
-    else:
-        pass
+    # if mConfig.development:
+    #     print('dfR.shape: ', dfR.shape)
+    #     print(dfR.head())
+    #     print('')
+    # else:
+    #     pass
     #endregion ------------------------------------------------>
 
     #region --------------------------------------------------->

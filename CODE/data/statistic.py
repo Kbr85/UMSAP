@@ -265,19 +265,19 @@ def DataPreparation(
     #endregion ----------------------------------------------> Reset index
 
     #region -------------------------------------------------------> Print
-    if mConfig.development:
-        #------------------------------>
-        dfList = [dfI, dfF, dfT, dfN, dfIm, dfTP, dfE, dfS]
-        dfName = ['dfI', 'dfF', 'dfT', 'dfN', 'dfIm', 'dfTP', 'dfE', 'dfS']
-        #------------------------------>
-        print('')
-        for i, a in enumerate(dfList):
-            if a is not None:
-                print(f'{dfName[i]}: {a.shape}')
-            else:
-                print(f'{dfName[i]}: None')
-    else:
-        pass
+    # if mConfig.development:
+    #     #------------------------------>
+    #     dfList = [dfI, dfF, dfT, dfN, dfIm, dfTP, dfE, dfS]
+    #     dfName = ['dfI', 'dfF', 'dfT', 'dfN', 'dfIm', 'dfTP', 'dfE', 'dfS']
+    #     #------------------------------>
+    #     print('')
+    #     for i, a in enumerate(dfList):
+    #         if a is not None:
+    #             print(f'{dfName[i]}: {a.shape}')
+    #         else:
+    #             print(f'{dfName[i]}: None')
+    # else:
+    #     pass
     #endregion ----------------------------------------------------> Print
 
     #region --------------------------------------------------->
