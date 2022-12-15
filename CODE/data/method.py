@@ -1523,11 +1523,12 @@ def ProtProf(
 def NCResNumbers(
     dfR        : pd.DataFrame,
     rDO        : dict,
-    rSeqFileObj: 'mFile.FastaFile',
+    rSeqFileObj: mFile.FastaFile,
     seqNat     : bool=True
     ) -> tuple[pd.DataFrame, str, Optional[Exception]]:
     """Find the residue numbers for the peptides in the sequence of the
         Recombinant and Native protein.
+
         Parameters
         ----------
         seqNat: bool
@@ -1551,6 +1552,7 @@ def NCResNumbers(
                 },
             }
     """
+    # Test in test.unit.test_method.Test_NCResNumbers
     #region --------------------------------------------> Helper Functions
     def NCTerm(
         row    : list[str],
@@ -1558,6 +1560,7 @@ def NCResNumbers(
         seqType: str,
         ) -> tuple[int, int]:
         """Get the N and C terminal residue numbers for a given peptide.
+
             Parameters
             ----------
             row: list[str]
@@ -1603,16 +1606,18 @@ def NCResNumbers(
 
     #region -----------------------------------------------------> Nat Seq
     #------------------------------>
-    if seqNat and rSeqFileObj.rSeqNat:                                          # type: ignore
+    if seqNat and rSeqFileObj.rSeqNat:
         #------------------------------>
-        delta = rSeqFileObj.GetSelfDelta()                                      # type: ignore
+        delta = rSeqFileObj.GetSelfDelta()
+        protLoc = rSeqFileObj.GetNatProtLoc()
         #------------------------------>
         a = dfR.iloc[:,rDO['dfo']['NC']] + delta
         dfR.iloc[:,rDO['dfo']['NCF']] = a
         #------------------------------>
-        m = dfR.iloc[:,rDO['dfo']['NCF']] > 0
+        m = ((dfR.iloc[:,rDO['dfo']['NC']] >= protLoc[0]) &
+            (dfR.iloc[:,rDO['dfo']['NC']] <= protLoc[1])).to_numpy()
         a = dfR.iloc[:,rDO['dfo']['NCF']].where(m, np.nan)
-        a = a.astype('int')
+        a = a.astype('Int64')
         dfR.iloc[:,rDO['dfo']['NCF']] = a
     #endregion --------------------------------------------------> Nat Seq
 
@@ -1753,8 +1758,6 @@ def LimProt(
         dfR, rDO, rDExtra['rSeqFileObj'], seqNat=True)
     if dfR.empty:
         return ({}, msgError, tException)
-    else:
-        pass
     #------------------------------> Control Columns
     colC  = rDO['df']['ResCtrl'][0][0]
     #------------------------------> Delta

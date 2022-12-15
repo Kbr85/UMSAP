@@ -38,6 +38,7 @@ folder      = Path(__file__).parent / 'test_files'
 #------------------------------> Input Files
 tarprotData  = folder / 'tarprot-data-file.txt'  # For TarProt and CorrA
 protprofData = folder / 'protprof-data-file.txt' # For ProtProf
+seqFileBoth  = folder / 'tarprot-seq-both.txt'   # Fasta File with two seq
 #------------------------------> Result Files
 #-------------->
 corrA_1 = folder / 'res-corrA-1.txt'
@@ -888,6 +889,58 @@ class Test_ProtProf(unittest.TestCase):
     #endregion ----------------------------------------------> Expected Output
 #---
 
+
+class Test_NCResNumbers(unittest.TestCase):
+    """Test for data.method.NCResNumbers"""
+    #region -----------------------------------------------------> Class Setup
+    @classmethod
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
+        cls.df = pd.DataFrame({
+            'Seq': ['HMKKTA', 'VALAG', 'SALLR', 'LRVMM'],
+            'N'  : [nan, nan, nan, nan,],
+            'C'  : [nan, nan, nan, nan,],
+            'NF' : [nan, nan, nan, nan,],
+            'CF' : [nan, nan, nan, nan,],
+        })
+        cls.do = {
+                'df' : {
+                    'SeqCol' : 0,
+                },
+                'dfo' : {
+                    'NC' : [1,2],
+                    'NCF': [3,4],
+                },
+            }
+        cls.seqF = mFile.FastaFile(seqFileBoth)
+        cls.dfRes = pd.DataFrame({
+            'Seq': ['HMKKTA', 'VALAG', 'SALLR', 'LRVMM'],
+            'N'  : [14, 24, 76, 79,],
+            'C'  : [19, 28, 80, 83,],
+            'NF' : [NA, 10, 62, 65,],
+            'CF' : [5,  14, 66, NA,],
+        })
+        cls.dfRes.iloc[:,3:5] = cls.dfRes.iloc[:,3:5].astype('Int64')
+    #---
+    #endregion --------------------------------------------------> Class Setup
+
+    #region -------------------------------------------------> Expected Output
+    def test_output(self):
+        """Test method output"""
+        #------------------------------>
+        tInput = [
+            (self.df, self.do, self.seqF, True, self.dfRes),
+        ]
+        #------------------------------>
+        for a,b,c,d,e in tInput:
+            with self.subTest(f"dfR={a}, rDO={b}, rSeqFileObj={c}, seqNat={d}"):
+                #------------------------------>
+                result = mMethod.NCResNumbers(a,b,c,seqNat=d)[0]
+                # pylint: disable=protected-access
+                pd._testing.assert_frame_equal(result, e)                     # type: ignore
+    #---
+    #endregion ----------------------------------------------> Expected Output
+#---
 
 class Test_Rec2NatCoord(unittest.TestCase):
     """Test for data.method.Rec2NatCoord"""
