@@ -1664,6 +1664,7 @@ def LimProt(
                 )                                  when everything went fine.
             -   ({}, 'Error message', Exception)   when something went wrong.
     """
+    # Test in test.unit.test_method.Test_LimProt
     #region ------------------------------------------------> Helper Functions
     def EmptyDFR() -> 'pd.DataFrame':
         """Creates the empty df for the results.
@@ -1727,15 +1728,52 @@ def LimProt(
             bool
         """
         #region ----------------------------------------------> Delta and TOST
-        a = mStatistic.Test_tost(
-            dfS,
-            colC,
-            colD,
-            sample = rDO['Sample'],
-            delta  = dfR[('Delta', 'Delta', 'Delta')],
-            alpha  = rDO['Alpha'],
-        )
-        dfR[(bN, lN, 'Ptost')] = a['P'].to_numpy()
+        if rDO['Sample'] == 'p':
+            pG = stats.ttest_rel(
+                dfS.iloc[:,colC].add(dfR[('Delta', 'Delta', 'Delta')], axis=0),
+                dfS.iloc[:,colD],
+                axis        = 1,
+                nan_policy  = 'omit',
+                alternative = 'greater',
+            ).pvalue
+            pL = stats.ttest_rel(
+                dfS.iloc[:,colC].sub(dfR[('Delta', 'Delta', 'Delta')], axis=0),
+                dfS.iloc[:,colD],
+                axis        = 1,
+                nan_policy  = 'omit',
+                alternative = 'less',
+            ).pvalue
+        else:
+            pG = stats.ttest_ind(
+                dfS.iloc[:,colC].add(dfR[('Delta', 'Delta', 'Delta')], axis=0),
+                dfS.iloc[:,colD],
+                axis        = 1,
+                equal_var   = False,
+                nan_policy  = 'omit',
+                alternative = 'greater',
+            ).pvalue
+            pL = stats.ttest_ind(
+                dfS.iloc[:,colC].sub(dfR[('Delta', 'Delta', 'Delta')], axis=0),
+                dfS.iloc[:,colD],
+                axis        = 1,
+                equal_var   = False,
+                nan_policy  = 'omit',
+                alternative = 'less',
+            ).pvalue
+        #------------------------------>
+        pG = pG.filled(np.nan)
+        pL = pL.filled(np.nan)
+        pR = np.where(pG >= pL, pG, pL)
+        dfR[(bN, lN, 'Ptost')] = pR
+        # a = mStatistic.Test_tost(
+        #     dfS,
+        #     colC,
+        #     colD,
+        #     sample = rDO['Sample'],
+        #     delta  = dfR[('Delta', 'Delta', 'Delta')],
+        #     alpha  = rDO['Alpha'],
+        # )
+        # dfR[(bN, lN, 'Ptost')] = a['P'].to_numpy()
         #endregion -------------------------------------------> Delta and TOST
 
         return True
@@ -1808,16 +1846,6 @@ def LimProt(
     )
     dfR = dfR.reset_index(drop=True)
     #endregion -----------------------------------------------------> Sort
-
-    #region --------------------------------------------------------> Print
-    if mConfig.development:
-        print('dfR.shape: ', dfR.shape)
-        print('')
-        print(dfR.head())
-        print('')
-    else:
-        pass
-    #endregion -----------------------------------------------------> Print
 
     dictO = tOut[0]
     dictO['dfR'] = dfR
