@@ -36,11 +36,13 @@ import data.file      as mFile
 #region ---------------------------------------------------------------> Files
 folder      = Path(__file__).parent / 'test_files'
 #------------------------------> Input Files
-tarprotData  = folder / 'tarprot-data-file.txt'  # For TarProt and CorrA
-protprofData = folder / 'protprof-data-file.txt' # For ProtProf
-limprotData  = folder / 'limprot-data-file.txt'  # For LimProt
-seqFileBoth  = folder / 'tarprot-seq-both.txt'   # Fasta File with two seq
-seqLimProt   = folder / 'limprot-seq-both.txt'
+tarprotData   = folder / 'tarprot-data-file.txt'   # For CorrA
+tarprotData1  = folder / 'tarprot-data-file-1.txt' # For TarProt
+protprofData  = folder / 'protprof-data-file.txt'  # For ProtProf
+limprotData   = folder / 'limprot-data-file.txt'   # For LimProt
+seqFileBoth   = folder / 'tarprot-seq-both.txt'    # Fasta File with two seq
+seqLimProt    = folder / 'limprot-seq-both.txt'
+tarprot_seq_1 = folder / 'tarprot-seq-both-1.txt'
 #------------------------------> Result Files
 #-------------->
 corrA_1 = folder / 'res-corrA-1.txt'
@@ -50,6 +52,7 @@ corrA_4 = folder / 'res-corrA-4.txt'
 #-------------->
 protprof_1 = folder / 'res-protprof-1.txt'
 limprot_1  = folder / 'res-limprot-1.txt'
+tarprot_1  = folder / 'res-tarprot-1.txt'
 #endregion ------------------------------------------------------------> Files
 
 
@@ -1017,6 +1020,80 @@ class Test_LimProt(unittest.TestCase):
                 # result = result.round(2)
                 #------------------------------>
                 dfF = pd.read_csv(e, sep='\t', header=[0,1,2])#.round(2)
+                dfF.iloc[:,4:6] = dfF.iloc[:,4:6].astype('Int64')
+                #------------------------------>
+                # pylint: disable=protected-access
+                pd._testing.assert_frame_equal(result, dfF)                     # type: ignore
+    #---
+    #endregion ----------------------------------------------> Expected Output
+#---
+
+
+class Test_TarProt(unittest.TestCase):
+    """Test for data.method.TarProt"""
+    #region -----------------------------------------------------> Class Setup
+    @classmethod
+    def setUp(cls):                                                             # pylint: disable=arguments-differ
+        """Set test"""
+        cls.df = mFile.ReadCSV2DF(tarprotData1)
+        cls.dExtra  = {
+            'cLDFFirst'  : mConfig.dfcolTarProtFirstPart,
+            'cLDFSecond' : mConfig.dfcolTarProtBLevel,
+            'rSeqFileObj': mFile.FastaFile(tarprot_seq_1),
+        }
+        cls.dict1 = {
+            'Cero': True,
+            'TransMethod': 'Log2',
+            'NormMethod': 'Median',
+            'ImpMethod': 'None',
+            'Shift': 1.8,
+            'Width': 0.3,
+            'TargetProt': 'efeB',
+            'ScoreVal': 100.0,
+            'Alpha': 0.05,
+            'Exp': ['Exp1', 'Exp2'],
+            'ControlL': ['Ctrl'],
+            'oc' : {
+                'SeqCol': 0,
+                'TargetProtCol': 38,
+                'ScoreCol': 44,
+                'ResCtrl': [[[98, 99, 100, 101, 102, 103, 104, 105]], [[109, 110, 111]], [[112, 113, 114]]],
+                'ColumnF': [44, 98, 99, 100, 101, 102, 103, 104, 105, 109, 110, 111, 112, 113, 114],
+                'Column': [0, 38, 44, 98, 99, 100, 101, 102, 103, 104, 105, 109, 110, 111, 112, 113, 114],
+            },
+            'df': {
+                'SeqCol': 0,
+                'TargetProtCol': 1,
+                'ScoreCol': 2,
+                'ResCtrl': [[[3, 4, 5, 6, 7, 8, 9, 10]], [[11, 12, 13]], [[14, 15, 16]]],
+                'ResCtrlFlat': [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+                'ColumnR': [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+                'ColumnF': [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+            },
+            'dfo': {
+                'NC': [2, 3],
+                'NCF': [4, 5],
+            },
+        }
+    #---
+    #endregion --------------------------------------------------> Class Setup
+
+    #region -------------------------------------------------> Expected Output
+    def test_output(self):
+        """Test method output"""
+        #------------------------------>
+        tInput = [
+            (self.df, self.dict1, self.dExtra, True, tarprot_1),
+        ]
+        #------------------------------>
+        for a,b,c,d,e in tInput:
+            with self.subTest(f"df={a}, rDO={b}, dExtra={c}, resetIndex={d}"):
+                #------------------------------>
+                result = mMethod.TarProt(
+                    a, b, c, resetIndex=d)[0]['dfR']
+                # result = result.round(2)
+                #------------------------------>
+                dfF = pd.read_csv(e, sep='\t', header=[0,1])#.round(2)
                 dfF.iloc[:,4:6] = dfF.iloc[:,4:6].astype('Int64')
                 #------------------------------>
                 # pylint: disable=protected-access
