@@ -11,7 +11,7 @@
 # ------------------------------------------------------------------------------
 
 
-"""Custom exceptions """
+"""Custom exceptions."""
 
 
 #region -------------------------------------------------------------> Classes
@@ -67,7 +67,7 @@ class FileIOError(Exception):
 
 
 class NotYetImplementedError(Exception):
-    """Exception raised when input option is valid but not implemented in 
+    """Exception raised when input option is valid but not implemented in
         method.
 
         Parameters
@@ -94,23 +94,6 @@ class InputError(Exception):
     """
     #region --------------------------------------------------> Instance setup
     def __init__(self, message: str) -> None:
-        """ """
-        self.message = message
-    #----
-    #endregion -----------------------------------------------> Instance setup
-#---
-
-
-class PassException(Exception):
-    """To signal that the exception was already handled and it can be skipped.
-
-        Parameters
-        ----------
-        message : str
-            Explanation of the error
-    """
-    #region --------------------------------------------------> Instance setup
-    def __init__(self, message: str='') -> None:
         """ """
         self.message = message
     #----

@@ -16,18 +16,20 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from typing import Optional
+from typing  import Optional, Union
 
 import wx
 
 import config.config as mConfig
-import gui.window as mWindow
+import gui.window    as mWindow
+import data.file     as mFile
 #endregion ----------------------------------------------------------> Imports
 
 
 #region -------------------------------------------------------------> Methods
 def LoadUMSAPFile(
-    fileP: Optional[Path]=None, win: Optional[wx.Window]=None,
+    fileP: Optional[Path]      = None,
+    win  : Optional[wx.Window] = None,
     ) -> bool:
     """Load an UMSAP File either from Read UMSAP File menu, LoadResults
         method in Tab or Update File Content menu.
@@ -90,7 +92,7 @@ def LoadUMSAPFile(
 
 def GetDisplayInfo(win: wx.Frame) -> dict[str, dict[str, int]]:
     """This will get the information needed to set the position of a window.
-        Should be called after Fitting sizers for accurate window size 
+        Should be called after Fitting sizers for accurate window size
         information.
 
         Parameters
@@ -132,5 +134,37 @@ def GetDisplayInfo(win: wx.Frame) -> dict[str, dict[str, int]]:
     #endregion ---------------------------------------------------------> Dict
 
     return data
+#---
+
+
+def LCtrlFillColNames(lc: wx.ListCtrl, fileP: Union[Path, str]) -> bool:
+    """Fill the wx.ListCtrl with the name of the columns in fileP.
+
+        Parameters
+        ----------
+        lc : wx.ListCtrl
+            wx.ListCtrl to fill info into
+        fileP : Path
+            Path to the file from which to read the column names
+
+        Notes
+        -----
+        This will delete the wx.ListCtrl before adding the new names.
+        wx.ListCtrl is assumed to have at least two columns [#, Name,]
+    """
+    #region -------------------------------------------------------> Read file
+    colNames = mFile.ReadFileFirstLine(fileP)
+    #endregion ----------------------------------------------------> Read file
+
+    #region -------------------------------------------------------> Fill List
+    #------------------------------> Del items
+    lc.DeleteAllItems()
+    #------------------------------> Fill
+    for k, v in enumerate(colNames):
+        index = lc.InsertItem(k, " " + str(k))
+        lc.SetItem(index, 1, v)
+    #endregion ----------------------------------------------------> Fill List
+
+    return True
 #---
 #endregion ----------------------------------------------------------> Methods

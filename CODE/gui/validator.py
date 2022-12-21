@@ -11,12 +11,12 @@
 # ------------------------------------------------------------------------------
 
 
-"""Field validators for wxPython widgets. 
-    The validators and methods return a tuple like: 
+"""Field validators for wxPython widgets.
+    The validators and methods return a tuple like:
     (True, None)
     (False, None) when there is no single offending value or this makes no sense
         like in IsNotEmpty
-    (False, (code, value/None, msg)) code indicates the section of the 
+    (False, (code, value/None, msg)) code indicates the section of the
         validation that failed, value is the value raising the error and msg
         is a general msg about the error.
 """
@@ -28,19 +28,19 @@ from typing import Optional
 import wx
 
 import config.config as mConfig
-import data.check as mCheck
+import data.check    as mCheck
 #endregion ----------------------------------------------------------> Imports
 
 
 #region -----------------------------------------------------------> Validator
 class InputFF(wx.Validator):
-    """Check widget holds the path to an input file/folder
+    """Check widget holds the path to an input file/folder.
 
         Parameters
         ----------
         fof : str
             One of 'file', 'folder'. Check widgets hold path to file or folder.
-            Default is 'folder'.
+            Default is 'file'.
         opt : Boolean
             Value is optional. Default is False.
 
@@ -50,11 +50,11 @@ class InputFF(wx.Validator):
             - (True, None)
             - (False, (code, path, msg))
                 code is:
-                - NotPath,   Input is not valid path
-                - NotFile,   Input is not valid file
-                - NotDir,    Input is not valid folder
-                - NoRead,    Input cannot be read
-                - (ExceptionRaised, ExceptionName): Check method raised an exception.
+                - NotPath,         Input is not valid path
+                - NotFile,         Input is not valid file
+                - NotDir,          Input is not valid folder
+                - NoRead,          Input cannot be read
+                - ExceptionRaised, Check method raised an exception.
 
         Attributes
         ----------
@@ -79,10 +79,7 @@ class InputFF(wx.Validator):
     #region ------------------------------------------------> Override methods
     def Clone(self) -> wx.Validator:
         """Overridden method"""
-        return InputFF(
-            fof = self.rFof,
-            opt = self.rOpt,
-        )
+        return InputFF(fof=self.rFof, opt=self.rOpt)
     #---
 
     def Validate(self) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
@@ -131,14 +128,14 @@ class OutputFF(wx.Validator):
                 code is:
                 - NotPath,         Input is not a valid path.
                 - NoWrite,         It is not possible to write.
-                - (ExceptionRaised, ExceptionName): Check method raised an exception.
-                
+                - ExceptionRaised, Check method raised an exception.
+
         Attributes
         ----------
-        fof : str
+        rFof : str
             One of 'file', 'folder'. Check widgets hold path to file or folder.
             Default is 'file'.
-        opt : Boolean
+        rOpt : Boolean
             Value is optional. Default is True.
     """
     #region --------------------------------------------------> Instance setup
@@ -147,7 +144,7 @@ class OutputFF(wx.Validator):
         #region -----------------------------------------------> Initial Setup
         self.rFof: mConfig.litFoF = fof
         self.rOpt = opt
-        #------------------------------> 
+        #------------------------------>
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
     #---
@@ -156,10 +153,7 @@ class OutputFF(wx.Validator):
     #region ------------------------------------------------> Override methods
     def Clone(self) -> wx.Validator:
         """Overridden method"""
-        return OutputFF(
-            fof = self.rFof,
-            opt = self.rOpt,
-        )
+        return OutputFF(fof=self.rFof, opt=self.rOpt)
     #---
 
     def Validate(self) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
@@ -195,16 +189,16 @@ class OutputFF(wx.Validator):
 
 
 class IsNotEmpty(wx.Validator):
-    """Check wx widget has a value different than ''"""
-    #region --------------------------------------------------> Instance Setup
-    def __init__(self) -> None:
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        super().__init__()
-        #endregion --------------------------------------------> Initial Setup
-    #---
-    #endregion -----------------------------------------------> Instance Setup
+    """Check wx widget has a value different than ''
 
+        Returns by Validate method
+        --------------------------
+        tuple
+            - (True, None)
+            - (False, (code, path, msg))
+                code is:
+                - Empty, Field is empty.
+    """
     #region ------------------------------------------------> Override Methods
     def Clone(self) -> wx.Validator:
         """ Overridden method """
@@ -239,7 +233,7 @@ class IsNotEmpty(wx.Validator):
 
 
 class NumberList(wx.Validator):
-    """Checks window holds a list of numbers or just one. Ranges (5-9) are 
+    """Checks window holds a list of numbers or just one. Ranges (5-9) are
         supported. Number of elements in the final list are checked after ranges
         are expanded.
 
@@ -263,7 +257,7 @@ class NumberList(wx.Validator):
             List must contain exactly nN elements
         nMax : int or None
             List must contain maximum nMax elements
-            
+
         Return by Validate method
         -------------------------
         tuple
@@ -275,46 +269,41 @@ class NumberList(wx.Validator):
                 - (ListLengthE, None) : Only x values are accepted
                 - (ListLengthR, None) : Only x to y values are accepted
                 - (NotUnique, list) : list is the list of repeated elements
-                - (ExceptionRaised, ExceptionName): Check method raised an exception.
+                - (ExceptionRaised, Name): Check method raised an exception.
 
         Attributes
         ----------
-        numType : str
+        rNumType : str
             One of 'int' or 'float'. Default is 'int'
-        unique : boolean
+        rUnique : boolean
             Elements must be unique (True) or not
-        sep : str
+        rSep : str
             List elements are separated by sep. Default ' '
-        opt : boolean
+        rOpt : boolean
             To allow for empty fields
-        vMin : float or None
+        rVMin : float or None
             Elements in the list must be >= vMin
-        vMax : float or None
+        rVMax : float or None
             Elements in the list must be <= vMax
-        nMin : int or None
+        rNMin : int or None
             List must contain at least nMin elements
-        nN : int or None
+        rNN : int or None
             List must contain exactly nN elements
-        nMax : int or None
+        rNMax : int or None
             List must contain maximum nMax elements
-
-        Raises
-        ------
-        InputError:
-            - When numType is not in config.oNumType.keys()
     """
     #region --------------------------------------------------> Instance Setup
     def __init__(
         self,
-        numType: mConfig.litNumType='int',
-        unique: bool=True,
-        sep: str=',',
-        opt: bool=False,
-        vMin: Optional[float]=None,
-        vMax: Optional[float]=None,
-        nMin: Optional[int]=None,
-        nN: Optional[int]=None,
-        nMax: Optional[int]=None,
+        numType: mConfig.litNumType = 'int',
+        unique : bool= True,
+        sep    : str = ',',
+        opt    : bool = False,
+        vMin   : Optional[float] = None,
+        vMax   : Optional[float] = None,
+        nMin   : Optional[int] = None,
+        nN     : Optional[int] = None,
+        nMax   : Optional[int] = None,
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -350,11 +339,11 @@ class NumberList(wx.Validator):
     #---
 
     def Validate(
-        self, 
-        vMin: Optional[float]=None, 
-        vMax: Optional[float]=None, 
-        nMin: Optional[int]=None, 
-        nN: Optional[int]=None, 
+        self,
+        vMin: Optional[float]=None,
+        vMax: Optional[float]=None,
+        nMin: Optional[int]=None,
+        nN  : Optional[int]=None,
         nMax: Optional[int]=None,
         ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
         """ Validate widget value. Parameters allow to give these values just
@@ -379,8 +368,8 @@ class NumberList(wx.Validator):
         tnMin = nMin if nMin is not None else self.rNMin
         tnN   = nN if nN is not None else self.rNN
         tnMax = nMax if nMax is not None else self.rNMax
-        #------------------------------> 
-        value    = self.GetWindow().GetValue()
+        #------------------------------>
+        value = self.GetWindow().GetValue()
         #endregion ------------------------------------------------> Variables
 
         #region ----------------------------------------------------> Validate
@@ -420,8 +409,6 @@ class Comparison(wx.Validator):
 
         Parameters
         ----------
-        tStr: str
-            String to check
         numType : One of int or float
             Number type in tStr.
         opt : bool
@@ -435,17 +422,15 @@ class Comparison(wx.Validator):
 
         Attributes
         ----------
-        tStr: str
-            String to check
-        numType : One of int or float
+        rNumType : One of int or float
             Number type in tStr.
-        opt : bool
+        rOpt : bool
             Input is optional (True) or not (False). Default is False.
-        vMin : float or None
+        rVMin : float or None
             Minimum acceptable value in tStr
-        vMax : float or None
+        rVMax : float or None
             Maximum acceptable value in tStr
-        op : list
+        rOp : list
             List of acceptable operand in front of value for tStr.
 
         Return by Validate method
@@ -459,17 +444,17 @@ class Comparison(wx.Validator):
                 - (FalseOperand, operand) : Operand is not in the list of valid operand.
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(
-        self, 
+    def __init__(                                                               # pylint: disable=dangerous-default-value
+        self,
         numType: mConfig.litNumType='int',
-        opt: bool=False, 
-        vMin: Optional[float]=None,
-        vMax: Optional[float]=None,
-        op: list[str]=['<', '>', '<=', '>='],
+        opt    : bool=False,
+        vMin   : Optional[float]=None,
+        vMax   : Optional[float]=None,
+        op     : list[str]=['<', '>', '<=', '>='],
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.rNumType = numType
+        self.rNumType: mConfig.litNumType=numType
         self.rOpt     = opt
         self.rVMin    = vMin
         self.rVMax    = vMax
@@ -484,7 +469,7 @@ class Comparison(wx.Validator):
     def Clone(self):
         """Overridden method"""
         return Comparison(
-            numType = self.rNumType, # type: ignore
+            numType = self.rNumType,
             opt     = self.rOpt,
             vMin    = self.rVMin,
             vMax    = self.rVMax,
@@ -502,7 +487,7 @@ class Comparison(wx.Validator):
         try:
             return mCheck.Comparison(
                 value,
-                numType = self.rNumType, # type: ignore
+                numType = self.rNumType,
                 opt     = self.rOpt,
                 vMin    = self.rVMin,
                 vMax    = self.rVMax,
