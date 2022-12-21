@@ -820,11 +820,11 @@ class UMSAPFile():
         #------------------------------> Sort Keys
         dataKey = sorted([x for x in data.keys()])
         #------------------------------>
-        self.rData = {self.rData[k]:data[k] for k in dataKey}
+        self.rData = {k:data[k] for k in dataKey}
         #endregion ------------------------------------------------> Read File
 
         #region ---------------------------------------------------> Variables
-        self.rFileP = Path(fileP)
+        self.rFileP = fileP
         self.rStepDataP  = self.rFileP.parent / mConfig.fnDataSteps
         self.rInputFileP = self.rFileP.parent / mConfig.fnDataInit
         #------------------------------>
