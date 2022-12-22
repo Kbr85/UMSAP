@@ -52,12 +52,12 @@ class UmsapApp(wx.App):
         imgFullPath = f'{fileRoot}{imgPath}'
         #endregion ------------------------------------------------> Variables
 
-        #region --------------------------------------------------->
+        #region -------------------------------------------------> Development
         if DEVELOPMENT:
             imgPath     = '/Resources/IMAGES/SPLASHSCREEN/splash.png'
             fileRoot    = Path(__file__).parent.parent
             imgFullPath = f'{fileRoot}{imgPath}'
-        #endregion ------------------------------------------------>
+        #endregion ----------------------------------------------> Development
 
         #region ------------------------------------------------> SplashScreen
         SplashWindow(str(imgFullPath))
@@ -112,10 +112,9 @@ class SplashWindow(wx.adv.SplashScreen):
         #region	-----------------------------------------------------> Imports
         # Import here to speed up the creation of the splash window
         # pylint: disable=import-outside-toplevel
-        import config.config as mConfig
-        import data.method   as mMethod
-        import gui.menu      as mMenu
-        import gui.window    as mWindow
+        from config.config import config as mConfig
+        from core import menu   as cMenu
+        from main import window as mWindow
         #endregion---------------------------------------------------> Imports
 
         #region -------------------------------------------------------> Fonts
@@ -153,34 +152,30 @@ class SplashWindow(wx.adv.SplashScreen):
             faceName="Courier",
         )
         #------------------------------> Adapt to Win/Linux
-        if mConfig.os == "Windows":
-            mConfig.confFont['SeqAlign']         = fSeqAlignFont.SetPointSize(12)
-            mConfig.confFont['TreeItemDataFile'] = fTreeItemFileData.SetPointSize(10)
-        if mConfig.os not in ['Windows', 'Darwin']:
-            mConfig.confFont['SeqAlign'] = fSeqAlignFont.SetPointSize(11)
+        if mConfig.core.os == "Windows":
+            fSeqAlignFont     = fSeqAlignFont.SetPointSize(12)
+            fTreeItemFileData = fTreeItemFileData.SetPointSize(10)
+        if mConfig.core.os not in ['Windows', 'Darwin']:
+            fSeqAlignFont = fSeqAlignFont.SetPointSize(11)
         #------------------------------> Add to config
-        mConfig.confFont['SeqAlign']              = fSeqAlignFont
-        mConfig.confFont['TreeItem']              = fTreeItem
-        mConfig.confFont['TreeItemDataFile']      = fTreeItemFileData
-        mConfig.confFont['TreeItemDataFileFalse'] = fTreeItemFileDataFalse
+        mConfig.core.fSeqAlign              = fSeqAlignFont
+        mConfig.core.fTreeItem              = fTreeItem
+        mConfig.core.fTreeItemDataFile      = fTreeItemFileData
+        mConfig.core.fTreeItemDataFileFalse = fTreeItemFileDataFalse
         #endregion ----------------------------------------------------> Fonts
 
         #region ------------------------------------------> User Configuration
         # After fonts were created and assigned to config, load user values
-        res = mMethod.LoadUserConfig(mConfig.fConfig, mConfig.confGeneral)
-        mConfig.confUserFile          = res['confUserFile']
-        mConfig.confUserFileException = res['confUserFileException']
-        mConfig.confUserWrongOptions  = res['confUserWrongOptions']
-        mConfig.confGeneral           = res['confGeneral']
+        mConfig.LoadUserConfig()
         #endregion ---------------------------------------> User Configuration
 
         #region --------------------------------------------------------> Menu
-        if mConfig.os == "Darwin":
-            wx.MenuBar.MacSetCommonMenuBar(mMenu.MenuBarMain())
+        if mConfig.core.os == "Darwin":
+            wx.MenuBar.MacSetCommonMenuBar(cMenu.MenuBarMain())
         #endregion -----------------------------------------------------> Menu
 
         #region ------------------------------------------> Create main window
-        mConfig.winMain = mWindow.WindowMain()
+        mConfig.main.mainWin = mWindow.WindowMain()
         #endregion ---------------------------------------> Create main window
 
         #region --------------------------------------------> Destroy & Return
@@ -193,8 +188,10 @@ class SplashWindow(wx.adv.SplashScreen):
 #endregion ----------------------------------------------------------> Classes
 
 
+#region -----------------------------------------------------------> Start App
 if __name__ == "__main__":
     app = UmsapApp()
     app.MainLoop()
 else:
     pass
+#endregion --------------------------------------------------------> Start App
