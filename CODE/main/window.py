@@ -22,6 +22,7 @@ from wx.lib.agw import aui
 
 from config.config import config as mConfig
 from core import window as cWindow
+from main import menu   as mMenu
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -73,6 +74,12 @@ class WindowMain(cWindow.BaseWindow):
         #region ------------------------------------------------------> Sizers
         self.sSizer.Add(self.wNotebook, 1, wx.EXPAND|wx.ALL, 5)
         #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Menu
+        # self.mBar = mMenu.MenuBarTool(self.cName, menuData)
+        self.mBar = mMenu.MenuBarMain()
+        self.SetMenuBar(self.mBar)
+        #endregion -----------------------------------------------------> Menu
 
         #region --------------------------------------------> Create Start Tab
         # self.CreateTab(mConfig.ntStart)

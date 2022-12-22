@@ -6327,45 +6327,4 @@ class PaneResControlExpConfTarProt(BaseResControlExpConf):
     #---
     #endregion ------------------------------------------------> Class methods
 #---
-
-
-class PanePrefUpdate(wx.Panel):
-    """Panel for the Preferences window.
-
-        Parameters
-        ----------
-        parent: wx.Window
-            Parent of the pane.
-    """
-    #region -----------------------------------------------------> Class setup
-    cName = mConfig.npPrefUpdate
-    #------------------------------>
-    cLTab = mConfig.ntPrefUpdate
-    #endregion --------------------------------------------------> Class setup
-
-    #region --------------------------------------------------> Instance setup
-    def __init__(self, parent):
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        super().__init__(parent, name=self.cName)
-        #endregion --------------------------------------------> Initial Setup
-
-        #region -----------------------------------------------------> Widgets
-        self.wRBox = wx.RadioBox(
-            self,
-            label   = 'Check for Updates',
-            choices = ['Always', 'Never'],
-         )
-        #endregion --------------------------------------------------> Widgets
-
-        #region ------------------------------------------------------> Sizers
-        self.sSizer = wx.BoxSizer(orient=wx.VERTICAL)
-
-        self.sSizer.Add(self.wRBox, 0, wx.EXPAND|wx.ALL, 5)
-
-        self.SetSizer(self.sSizer)
-        #endregion ---------------------------------------------------> Sizers
-    #---
-    #endregion -----------------------------------------------> Instance setup
-#---
 #endregion ----------------------------------------------------------> Classes

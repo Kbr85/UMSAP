@@ -22,39 +22,6 @@ from typing  import Literal
 
 
 #region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
-#region ---------------------------------------- Platform Dependent Parameters
-# # There are some that must be defined in other sections
-if os == 'Darwin':
-    #------------------------------> Root & Resources Folder
-    root = cwd.parent.parent.parent
-    res = root / 'Resources'  # Path to the Resources folder
-    #------------------------------> Key for shortcuts
-    copyShortCut = 'Cmd'
-    #------------------------------>
-    commOpen = 'open'
-elif os == 'Windows':
-    #------------------------------> Root & Resources Folder
-    if development:
-        root = cwd.parent.parent.parent
-        res = root / 'Resources'
-    else:
-        root = cwd.parent.parent
-        res = root / 'RESOURCES/'
-    #------------------------------> Key for shortcuts
-    copyShortCut = 'Ctrl'
-    #------------------------------>
-    commOpen = 'start'
-else:
-    #------------------------------> Root & Resources Folder
-    root = cwd.parent
-    res = root / 'Resources'
-    #------------------------------> Key for shortcuts
-    copyShortCut = 'Ctrl'
-    #------------------------------>
-    commOpen = 'xdg-open'
-#endregion ------------------------------------- Platform Dependent Parameters
-
-
 #region -------------------------------------------------------------> Windows
 #------------------------------> Number of windows for screen positioning
 # Keys: Windows ID - Values: Total number of opened windows, except conf win
@@ -77,15 +44,11 @@ nwAAPlot        = 'AAPlot'
 nwHistPlot      = 'HistPlot'
 nwCpRPlot       = 'CpRPlot'
 nwCEvolPlot     = 'CEvolPlot'
-nwAbout         = 'About UMSAP'
 #------------------------------> Dialogs
-ndCheckUpdateResDialog = 'Check for Updates'
-ndPreferences          = 'Preferences'
 ndResControlExp        = 'Results & Control Experiments'
 ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Tab for notebook windows
 ntStart      = 'Start'
-ntPrefUpdate = 'Updates'
 #------------------------------> Individual Panes
 npDef                   = 'Default Pane'
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
@@ -98,7 +61,6 @@ npTarProt               = 'TarProtPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
 npResControlExpLimProt  = 'ResControlExpPaneLimProt'
 npResControlExpTarProt  = 'ResControlExpPaneTarProt'
-npPrefUpdate            = 'PrefUpdate'
 #------------------------------> Utilities
 nuAA       = 'AA Distribution'
 nuHist     = 'Histograms'
@@ -138,16 +100,8 @@ kwToolFAPDBMap         = 'PDB Map'
 
 
 #region ------------------------------------------------------> Path and Files
-#------------------------------> Relevant paths
-pImages = res / 'IMAGES' # Images folder
 #------------------------------> Location & names of important files
 fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
-fImgIcon  = pImages / 'DIALOGUE/dlg.png'
-fImgAbout = pImages / 'ABOUT/p97-2-about.png'
-#------------------------------> Manual
-fManual = res / 'MANUAL/manual.pdf'
-#------------------------------>
-fConfigDef = res / 'CONFIG/config_def.json'
 #------------------------------> Names
 fnInitial    = "{}_{}-Initial-Data.txt"
 fnFloat      = "{}_{}-Floated-Data.txt"
@@ -160,14 +114,6 @@ fnScore      = "{}_{}-Score-Filtered-Data.txt"
 fnDataSteps  = 'Steps_Data_Files'
 fnDataInit   = 'Input_Data_Files'
 #endregion ---------------------------------------------------> Path and Files
-
-
-#region ------------------------------------------------------------------ URL
-#------------------------------> www.umsap.nl
-urlHome     = 'https://www.umsap.nl'
-urlUpdate   = f"{urlHome}/page/release-notes"
-urlTutorial = f"{urlHome}/tutorial/2-2-X"
-#endregion --------------------------------------------------------------- URL
 
 
 #region --------------------------------------------------------------> Labels
@@ -307,7 +253,6 @@ litFFSelect     = Literal['openO', 'openM', 'save', 'folder']
 litFSelect      = Literal['openO', 'openM', 'save']
 litFoF          = Literal['file', 'folder']
 litNumType      = Literal['int', 'float']
-litNotification = Literal['errorF', 'errorU', 'warning', 'success', 'question']
 litComp         = Literal['lt', 'le', 'e', 'ge', 'gt']
 litCompEq       = Literal['e', 'ne']
 litStartEnd     = Literal['end', 'start']
@@ -471,14 +416,6 @@ sLCtrlColI  = [50, 150]
 
 
 #region ---------------------------------------------> CONFIGURABLE PARAMETERS
-#------------------------------> These must be dictionaries to save/load from
-#------------------------------> configuration file
-#region ------------------> Fonts. Set from UMSAP.py, requires a wx.App object
-confFont = {
-}
-#endregion ---------------> Fonts. Set from UMSAP.py, requires a wx.App object
-
-
 #region --------------------------------------------------------------> Colors
 colorFragments = [
     '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',

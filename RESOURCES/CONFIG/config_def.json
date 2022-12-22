@@ -1,5 +1,5 @@
 {
-    "confGeneral": {
+    "core": {
         "checkUpdate": true,
         "DPI": 100,
         "MatPlotMargin": 0.025

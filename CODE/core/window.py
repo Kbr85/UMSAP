@@ -15,16 +15,19 @@
 
 
 #region -------------------------------------------------------------> Imports
-from typing import Optional
+from typing import Optional, Union, Literal
 
 import wx
 
 from config.config import config as mConfig
-from core import menu as cMenu
+from core import method as cMethod
 #endregion ----------------------------------------------------------> Imports
 
 
-#region -------------------------------------------------------------> Classes
+LIT_Notification = Literal['errorF', 'errorU', 'warning', 'success', 'question']
+
+
+#region --------------------------------------------------------------> Frames
 class BaseWindow(wx.Frame):
     """Base window for UMSAP.
 
@@ -32,9 +35,9 @@ class BaseWindow(wx.Frame):
         ----------
         parent : wx.Window or None
             Parent of the window. Default None
-        menuData : dict
-            Data to build the Tool menu of the window. See structure in child
-            class.
+        # menuData : dict
+        #     Data to build the Tool menu of the window. See structure in child
+        #     class.
 
         Attributes
         ----------
@@ -50,7 +53,7 @@ class BaseWindow(wx.Frame):
     def __init__(                                                               # pylint: disable=dangerous-default-value
         self,
         parent  : Optional[wx.Window]=None,
-        menuData: dict={},
+        # menuData: dict={},
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -60,28 +63,15 @@ class BaseWindow(wx.Frame):
         self.cSWindow = getattr(self, 'cSWindow', mConfig.core.sWinFull)
         self.cTitle   = getattr(self, 'cTitle',   self.cName)
         #------------------------------>
-        self.dKeyMethod = {
-            #------------------------------> Help Menu
-            # mConfig.kwHelpAbout   : self.UMSAPAbout,
-            # mConfig.kwHelpManual  : self.UMSAPManual,
-            # mConfig.kwHelpTutorial: self.UMSAPTutorial,
-            # mConfig.kwHelpCheckUpd: self.CheckUpdate,
-            # mConfig.kwHelpPref    : self.Preference,
-        }
+        self.dKeyMethod = {}
         #------------------------------>
         super().__init__(
-            parent, size=self.cSWindow, title=self.cTitle, name=self.cName,
-        )
+            parent, size=self.cSWindow, title=self.cTitle, name=self.cName)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
         self.wStatBar = self.CreateStatusBar()
         #endregion --------------------------------------------------> Widgets
-
-        #region --------------------------------------------------------> Menu
-        self.mBar = cMenu.MenuBarTool(self.cName, menuData)
-        self.SetMenuBar(self.mBar)
-        #endregion -----------------------------------------------------> Menu
 
         #region ------------------------------------------------------> Sizers
         self.sSizer = wx.BoxSizer(wx.VERTICAL)
@@ -93,83 +83,6 @@ class BaseWindow(wx.Frame):
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
-
-    #region ---------------------------------------------------> Class Methods
-    # def UMSAPAbout(self) -> bool:
-    #     """Show the About UMSAP window.
-
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     try:
-    #         WindowAbout()
-    #         return True
-    #     except Exception as e:
-    #         msg = 'Failed to show the About UMSAP window.'
-    #         DialogNotification('errorU', msg=msg, tException=e, parent=self)
-    #         return False
-    # #---
-
-    # def UMSAPManual(self) -> bool:
-    #     """Show the Manual of UMSAP.
-
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     try:
-    #         os.system(f'{mConfig.commOpen} {mConfig.fManual}')
-    #         return True
-    #     except Exception as e:
-    #         msg = 'Failed to open the manual of UMSAP.'
-    #         DialogNotification('errorU', msg=msg, tException=e, parent=self)
-    #         return False
-    # #---
-
-    # def UMSAPTutorial(self) -> bool:
-    #     """Show the tutorial for UMSAP.
-
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     try:
-    #         webbrowser.open_new(f'{mConfig.urlTutorial}/start')
-    #         return True
-    #     except Exception as e:
-    #         msg = 'Failed to open the url with the tutorials for UMSAP.'
-    #         DialogNotification('errorU', msg=msg, tException=e, parent=self)
-    #         return False
-    # #---
-
-    # def CheckUpdate(self) -> bool:
-    #     """Check for updates.
-
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     _thread.start_new_thread(UpdateCheck, ('menu',))
-    #     return True
-    # #---
-
-    # def Preference(self) -> bool:
-    #     """Set UMSAP preferences.
-
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     try:
-    #         DialogPreference()
-    #         return True
-    #     except Exception as e:
-    #         msg = 'Failed to show the Preferences window.'
-    #         DialogNotification('errorU', msg=msg, tException=e, parent=self)
-    #         return False
-    # #---
-    #endregion ------------------------------------------------> Class Methods
 
     #region ---------------------------------------------------> Event Methods
     # def OnClose(self, event: wx.CloseEvent) -> bool:                            # pylint: disable=unused-argument
@@ -227,4 +140,193 @@ class BaseWindow(wx.Frame):
     # #---
     #endregion ------------------------------------------------> Manage Methods
 #---
-#endregion ----------------------------------------------------------> Classes
+#endregion -----------------------------------------------------------> Frames
+
+
+#region -------------------------------------------------------------> Dialogs
+class DialogNotification(wx.Dialog):
+    """Show a custom notification dialog.
+
+        Parameters
+        ----------
+        mode : str
+            One of 'errorF', 'errorU', 'warning', 'success', 'question'
+        msg : str
+            General message to place below the Notification type. This cannot be
+            copied by the user.
+        tException : str, Exception or None
+            The message and traceback to place in the wx.TextCtrl. This
+            can be copied by the user. If str then only an error message will
+            be placed in the wx.TextCtrl.
+        parent : wx widget or None
+            Parent of the dialog.
+        button : int
+            Kind of buttons to show. 1 is wx.OK else wx.OK|wx.CANCEL
+        setText : bool
+            Set wx.TextCtrl for message independently of the mode of the window.
+            Default is False.
+    """
+    #region -----------------------------------------------------> Class setup
+    style = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
+    error = ['errorF', 'errorU']
+    img   = mConfig.core.fImgIcon
+    #------------------------------>
+    cTitle = 'UMSAP - Notification'
+    #------------------------------>
+    oNotification = {
+        'errorF' : 'Fatal Error',
+        'errorU' : 'Unexpected Error',
+        'warning': 'Warning',
+        'success': 'Success',
+        'question':'Please answer the following question:',
+    }
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self,
+        mode:LIT_Notification,
+        msg:str                          = '',
+        tException:Union[Exception, str] = '',
+        parent:Optional[wx.Window]       = None,
+        button:int                       = 1,
+        setText:bool                     = False,
+        ) -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        if not msg and not tException:
+            msg = "The message and exception received were both empty."
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent, title=self.cTitle, style=self.style)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wType = wx.StaticText(
+            self,
+            label = self.oNotification[mode],
+        )
+        self.wType.SetFont(self.wType.GetFont().MakeBold())
+
+        if msg:
+            self.wMsg = wx.StaticText(self, label=msg)
+        else:
+            self.wMsg = None
+
+        if mode in self.error or setText:
+            self.wError = wx.TextCtrl(
+                self,
+                size  = (565, 100),
+                style = wx.TE_READONLY|wx.TE_MULTILINE,
+            )
+            self.SetErrorText(msg, tException)
+
+        self.wImg = wx.StaticBitmap(
+            self,
+            bitmap = wx.Bitmap(str(self.img), wx.BITMAP_TYPE_PNG),
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> Create Sizers
+        self.sSizer = wx.BoxSizer(wx.VERTICAL)
+        self.sTop   = wx.GridBagSizer(1,1)
+        if button == 1:
+            self.sBtn = self.CreateButtonSizer(wx.OK)
+        else:
+            self.sBtn = self.CreateButtonSizer(wx.OK|wx.CANCEL)
+        #------------------------------> Top Sizer
+        self.sTop.Add(
+            self.wImg,
+            pos    = (0,0),
+            flag   = wx.ALIGN_CENTER_HORIZONTAL|wx.ALL,
+            border = 5,
+            span   = (3,0),
+        )
+        self.sTop.Add(
+            self.wType,
+            pos    = (0,1),
+            flag   = wx.ALIGN_LEFT|wx.ALL,
+            border = 5
+        )
+        if self.wMsg is not None:
+            self.sTop.Add(
+                self.wMsg,
+                pos    = (1,1),
+                flag   = wx.EXPAND|wx.ALL,
+                border = 5
+            )
+
+        if getattr(self, 'wError', False):
+            #------------------------------>
+            if self.wMsg is not None:
+                pos = (2,1)
+            else:
+                pos = (1,1)
+            #------------------------------>
+            self.sTop.Add(
+                self.wError,
+                pos    = pos,
+                flag   = wx.EXPAND|wx.ALL,
+                border = 5
+            )
+        #--------------> Add Grow Col to Top Sizer
+        self.sTop.AddGrowableCol(1,1)
+        if getattr(self, 'wError', False):
+            if self.wMsg is not None:
+                self.sTop.AddGrowableRow(2,1)
+            else:
+                self.sTop.AddGrowableRow(1,1)
+        #------------------------------> Main Sizer
+        self.sSizer.Add(self.sTop, 1, wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT, 25)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.RIGHT|wx.BOTTOM, 25)
+        #------------------------------>
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+
+        self.CenterOnParent()
+        self.ShowModal()
+        self.Destroy()
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def SetErrorText(
+        self,
+        msg:str                          = '',
+        tException:Union[Exception, str] = '',
+        ) -> bool:
+        """Set the error text in the wx.TextCtrl.
+
+            Parameters
+            ----------
+            msg : str
+                Error message.
+            tException : Exception, str
+                To display full traceback or a custom further details message.
+        """
+        #region -----------------------------------------------------> Message
+        if msg:
+            self.wError.AppendText(msg)
+        #endregion --------------------------------------------------> Message
+
+        #region ---------------------------------------------------> Exception
+        if tException:
+            if msg:
+                self.wError.AppendText('\n\nFurther details:\n\n')
+            else:
+                pass
+            if isinstance(tException, str):
+                self.wError.AppendText(tException)
+            else:
+                self.wError.AppendText(cMethod.StrException(tException))
+        #endregion ------------------------------------------------> Exception
+
+        self.wError.SetInsertionPoint(0)
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+#endregion ----------------------------------------------------------> Dialogs

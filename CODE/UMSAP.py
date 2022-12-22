@@ -113,7 +113,7 @@ class SplashWindow(wx.adv.SplashScreen):
         # Import here to speed up the creation of the splash window
         # pylint: disable=import-outside-toplevel
         from config.config import config as mConfig
-        from core import menu   as cMenu
+        from main import menu   as mMenu
         from main import window as mWindow
         #endregion---------------------------------------------------> Imports
 
@@ -171,7 +171,7 @@ class SplashWindow(wx.adv.SplashScreen):
 
         #region --------------------------------------------------------> Menu
         if mConfig.core.os == "Darwin":
-            wx.MenuBar.MacSetCommonMenuBar(cMenu.MenuBarMain())
+            wx.MenuBar.MacSetCommonMenuBar(mMenu.MenuBarMain())
         #endregion -----------------------------------------------------> Menu
 
         #region ------------------------------------------> Create main window

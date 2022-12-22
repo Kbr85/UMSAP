@@ -15,14 +15,11 @@
 
 
 #region -------------------------------------------------------------> Imports
-from pathlib import Path
-from typing  import Callable
+from typing import Callable
 
 import wx
 
 from config.config import config as mConfig
-from core import window as cWindow
-from main import window as mWindow
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -62,39 +59,13 @@ class BaseMenu(wx.Menu):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event methods
-    def OnCreateTab(self, event:wx.CommandEvent) -> bool:
-        """Creates a new tab in the main window.
-
-            Parameters
-            ----------
-            event : wx.CommandEvent
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region -------------------------------------------------> Check MainW
-        if mConfig.main.mainWin is None:
-            mConfig.main.mainWin = mWindow.WindowMain()
-        else:
-            pass
-        #endregion ----------------------------------------------> Check MainW
-
-        #region --------------------------------------------------> Create Tab
-        mConfig.main.mainWin.CreateTab(self.rIDMap[event.GetId()])
-        #endregion -----------------------------------------------> Create Tab
-
-        return True
-    #---
-
-    def OnMethod(self, event:wx.CommandEvent) -> bool:
+    def OnMethod(self, event:wx.MenuEvent) -> bool:
         """Call the corresponding method in the window with no arguments or
             keyword arguments.
 
             Parameters
             ----------
-            event: wx.CommandEvent
+            event: wx.MenuEvent
                 Information about the event.
 
             Returns
@@ -109,13 +80,13 @@ class BaseMenu(wx.Menu):
         return True
     #---
 
-    def OnMethodLabel(self, event:wx.CommandEvent) -> bool:
+    def OnMethodLabel(self, event:wx.MenuEvent) -> bool:
         """Call the corresponding method in the window with the text of the menu
             item as argument.
 
             Parameters
             ----------
-            event: wx.CommandEvent
+            event: wx.MenuEvent
                 Information about the event.
 
             Returns
@@ -134,13 +105,13 @@ class BaseMenu(wx.Menu):
         return True
     #---
 
-    def OnMethodLabelKey(self, event:wx.CommandEvent) -> bool:
+    def OnMethodLabelKey(self, event:wx.MenuEvent) -> bool:
         """Call the corresponding method in the window with the value associated
             with the menu item as argument.
 
             Parameters
             ----------
-            event: wx.CommandEvent
+            event: wx.MenuEvent
                 Information about the event.
 
             Returns
@@ -159,13 +130,13 @@ class BaseMenu(wx.Menu):
         return True
     #---
 
-    def OnMethodLabelBool(self, event:wx.CommandEvent) -> bool:
+    def OnMethodLabelBool(self, event:wx.MenuEvent) -> bool:
         """Call the corresponding method in the window with the boolean of the
             menu item as argument.
 
             Parameters
             ----------
-            event: wx.CommandEvent
+            event: wx.MenuEvent
                 Information about the event.
 
             Returns
@@ -189,12 +160,12 @@ class BaseMenu(wx.Menu):
         return True
     #---
 
-    def OnMethodKey(self, event:wx.CommandEvent) -> bool:
+    def OnMethodKey(self, event:wx.MenuEvent) -> bool:
         """Call the corresponding method in the window with a keyword argument.
 
             Parameters
             ----------
-            event: wx.CommandEvent
+            event: wx.MenuEvent
                 Information about the event.
 
             Returns
@@ -214,13 +185,13 @@ class BaseMenu(wx.Menu):
         return True
     #---
 
-    def OnMethodKeyBool(self, event:wx.CommandEvent) -> bool:
+    def OnMethodKeyBool(self, event:wx.MenuEvent) -> bool:
         """Call the corresponding method in the window with a keyword argument
             with boolean value.
 
             Parameters
             ----------
-            event: wx.CommandEvent
+            event: wx.MenuEvent
                 Information about the event.
 
             Returns
@@ -407,7 +378,7 @@ class BaseMenuMainResult(BaseMenu):
         #region ---------------------------------------------------> Variables
         self.cMenuData = menuData
         dateC = self.GetCheckedRadioItem(self.rPlotDate).GetItemLabelText()
-        checkedFound   = False
+        checkedFound = False
         #------------------------------>
         for k in self.rPlotDate:
             del self.rIDMap[k.GetId()]
@@ -467,7 +438,7 @@ class BaseMenuMainResult(BaseMenu):
         """
         #region ---------------------------------------------------> Update GUI
         if updateGUI:
-            self.OnMethodKey(wx.CommandEvent(id=tDate.GetId()))
+            self.OnMethodKey(wx.MenuEvent(id=tDate.GetId()))
         else:
             pass
         #endregion ------------------------------------------------> Update GUI
@@ -600,9 +571,9 @@ class BaseMenuFurtherAnalysis(BaseMenu):
     #region ---------------------------------------------------> Class methods
     def AddNatRecSeqEntry(
         self,
-        tMethod: Callable,
-        idMap  : str='',
-        idKey  : str='',
+        tMethod:Callable,
+        idMap:str ='',
+        idKey:str ='',
         ) -> bool:
         """Add the Native Sequence entry to the menu.
 
@@ -695,12 +666,12 @@ class BaseMenuFurtherAnalysis(BaseMenu):
         return True
     #---
 
-    def OnClear(self, event:wx.CommandEvent) -> bool:                           # pylint: disable=unused-argument
+    def OnClear(self, event:wx.MenuEvent) -> bool:                              # pylint: disable=unused-argument
         """Override as needed.
 
             Parameters
             ----------
-            event: wx.CommandEvent
+            event: wx.MenuEvent
                 Information about the event.
 
             Returns
@@ -749,10 +720,10 @@ class BaseMenuFurtherAnalysisEntry(BaseMenu):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self,
-        menuData : dict,
-        ciDate   : str,
-        dictKey  : str,
-        itemLabel: str,
+        menuData:dict,
+        ciDate:str,
+        dictKey:str,
+        itemLabel:str,
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -825,8 +796,6 @@ class BaseMenuFurtherAnalysisEntry(BaseMenu):
 
         if self.rSep is not None:
             self.Delete(self.rSep)
-        else:
-            pass
         #endregion ----------------------------------------------------->
 
         #region --------------------------------------------------->
@@ -839,265 +808,3 @@ class BaseMenuFurtherAnalysisEntry(BaseMenu):
     #endregion ------------------------------------------------> Class methods
 #---
 #endregion ----------------------------------------------------------> Classes
-
-
-#region ----------------------------------------------------------------> Menu
-class MenuModule(BaseMenu):
-    """Menu with module entries."""
-    #region -----------------------------------------------------> Class Setup
-    #------------------------------> Labels
-    cLLimProt  = mConfig.core.nmLimProt
-    cLProtProf = mConfig.core.nmProtProf
-    cLTarProt  = mConfig.core.nmTarProt
-    #------------------------------> Key - Values
-    cVLimProt  = mConfig.core.tLimProt
-    cVProtProf = mConfig.core.tProtProf
-    cVTarProt  = mConfig.core.tTarProt
-    #endregion --------------------------------------------------> Class Setup
-
-    #region --------------------------------------------------> Instance setup
-    def __init__(self) -> None:
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        super().__init__()
-        #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------> Menu items
-        self.miLimProt  = self.Append(-1, f'{self.cLLimProt}\tAlt+Ctrl+L')
-        self.miProtProf = self.Append(-1, f'{self.cLProtProf}\tAlt+Ctrl+P')
-        self.miTarProt  = self.Append(-1, f'{self.cLTarProt}\tAlt+Ctrl+T')
-        #endregion -----------------------------------------------> Menu items
-
-        #region -------------------------------------------------------> Names
-        self.rIDMap = { # Associate IDs with Tab names. Avoid manual IDs
-            self.miLimProt.GetId() : self.cVLimProt,
-            self.miProtProf.GetId(): self.cVProtProf,
-            self.miTarProt.GetId() : self.cVTarProt,
-        }
-        #endregion ----------------------------------------------------> Names
-
-        #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miLimProt)
-        self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miProtProf)
-        self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miTarProt)
-        #endregion -----------------------------------------------------> Bind
-    #---
-    #endregion ------------------------------------------------ Instance Setup
-#---
-
-
-class MenuUtility(BaseMenu):
-    """Menu with the utilities entries."""
-    #region -----------------------------------------------------> Class Setup
-    #------------------------------> Labels
-    cLCorrA    = mConfig.core.nuCorrA
-    cLDataPrep = mConfig.core.nuDataPrep
-    cLReadF    = mConfig.core.nuReadF
-    #------------------------------> Key - Values
-    cVCorrA    = mConfig.core.tCorrA
-    cVDataPrep = mConfig.core.tDataPrep
-    #endregion --------------------------------------------------> Class Setup
-
-    #region --------------------------------------------------> Instance Setup
-    def __init__(self) -> None:
-        """"""
-        #region -----------------------------------------------> Initial Setup
-        super().__init__()
-        #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------> Menu items
-        self.miCorrA    = self.Append(-1, self.cLCorrA)
-        self.miDataPrep = self.Append(-1, self.cLDataPrep)
-        self.AppendSeparator()
-        self.miReadFile = self.Append(-1, f'{self.cLReadF}\tCtrl+R')
-        #endregion -----------------------------------------------> Menu items
-
-        #region -------------------------------------------------------> Names
-        self.rIDMap = {
-            self.miCorrA.GetId()   : self.cVCorrA,
-            self.miDataPrep.GetId(): self.cVDataPrep,
-        }
-        #endregion ----------------------------------------------------> Names
-
-        #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnReadFile,  source=self.miReadFile)
-        self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miCorrA)
-        self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miDataPrep)
-        #endregion -----------------------------------------------------> Bind
-    #---
-    #endregion -----------------------------------------------> Instance Setup
-
-    #region ---------------------------------------------------> Event Methods
-    def OnReadFile(self, event: wx.CommandEvent) -> bool:                       # pylint: disable=unused-argument
-        """Read an UMSAP output file.
-
-            Parameters
-            ----------
-            event : wx.CommandEvent
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region ------------------------------------------------------> Window
-        win = self.GetWindow()
-        #endregion ---------------------------------------------------> Window
-
-        #region ---------------------------------------------------> Get fileP
-        # dlg = cWindow.DialogFileSelect(
-        #     'openO',
-        #     ext    = mConfig.core.elUMSAP,
-        #     parent = win,
-        #     msg    = mConfig.core.mFileSelUMSAP,
-        # )
-        #------------------------------>
-        # if dlg.ShowModal() == wx.ID_OK:
-        #     fileP = Path(dlg.GetPath())
-        # else:
-        #     return False
-        #endregion ------------------------------------------------> Get fileP
-
-        #region ---------------------------------------------------> Load file
-        # gMethod.LoadUMSAPFile(fileP=fileP)
-        #endregion ------------------------------------------------> Load file
-
-        # dlg.Destroy()
-        return True
-    #---
-    #endregion ------------------------------------------------> Event Methods
-#---
-
-
-class MenuHelp(BaseMenu):
-    """Menu with the help entries."""
-    #region ---------------------------------------------------> Class Setup
-    #------------------------------> Label
-    cLAbout       = 'About UMSAP'
-    cLCheckUpdate = 'Check for Updates'
-    cLManual      = 'Manual'
-    cLPreference  = 'Preferences'
-    cLTutorial    = 'Tutorial'
-    #------------------------------> Key
-    cVAbout       = mConfig.main.kwAbout
-    cVCheckUpdate = mConfig.main.kwCheckUpd
-    cVManual      = mConfig.main.kwManual
-    cVPreference  = mConfig.main.kwPref
-    cVTutorial    = mConfig.main.kwTutorial
-    #endregion ------------------------------------------------> Class Setup
-
-    #region --------------------------------------------------> Instance setup
-    def __init__(self) -> None:
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        super().__init__()
-        #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------> Menu Items
-        self.miAbout    = self.Append(-1, self.cLAbout)
-        self.AppendSeparator()
-        self.miManual   = self.Append(-1, self.cLManual)
-        self.miTutorial = self.Append(-1, self.cLTutorial)
-        self.AppendSeparator()
-        self.miCheckUpd = self.Append(-1, self.cLCheckUpdate)
-        self.AppendSeparator()
-        self.miPref     = self.Append(-1, self.cLPreference)
-        #endregion -----------------------------------------------> Menu Items
-
-        #region ---------------------------------------------------> Links
-        self.rIDMap = {
-            self.miAbout.GetId()   : self.cVAbout,
-            self.miManual.GetId()  : self.cVManual,
-            self.miTutorial.GetId(): self.cVTutorial,
-            self.miCheckUpd.GetId(): self.cVCheckUpdate,
-            self.miPref.GetId()    : self.cVPreference,
-        }
-        #endregion ------------------------------------------------> Links
-
-        #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miAbout)
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miManual)
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miTutorial)
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miCheckUpd)
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miPref)
-        #endregion -----------------------------------------------------> Bind
-    #---
-    #endregion -----------------------------------------------> Instance setup
-#---
-#endregion -------------------------------------------------------------> Menu
-
-
-#region -------------------------------------------------------------> MenuBar
-class MenuBarMain(wx.MenuBar):
-    """Creates the application menu bar"""
-    #region --------------------------------------------------- Instance Setup
-    def __init__(self) -> None:
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        super().__init__()
-        #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------> Menu items
-        self.mModule  = MenuModule()
-        self.mUtility = MenuUtility()
-        self.mHelp    = MenuHelp()
-        #endregion -----------------------------------------------> Menu items
-
-        #region -------------------------------------------> Append to menubar
-        self.Append(self.mModule,  '&Modules')
-        self.Append(self.mUtility, '&Utilities')
-        self.Append(self.mHelp,    '&Help')
-        #endregion ----------------------------------------> Append to menubar
-    #---
-    #endregion ------------------------------------------------ Instance Setup
-#---
-
-
-class MenuBarTool(MenuBarMain):
-    """Menu bar for a window showing the corresponding tool menu
-
-        Parameters
-        ----------
-        cName : str
-            Unique name of the window/tab for which the Tool menu will be
-            created
-        menuData : dict
-            Data to build the Tool menu of the window. See structure in the
-            window or menu class.
-
-        Attributes
-        ----------
-        dTool: dict
-            Methods to create the Tool Menu
-    """
-    #region -----------------------------------------------------> Class Setup
-    dTool = { # Key are window name and values the corresponding tool menu
-        # mConfig.nwUMSAPControl : MenuToolFileControl,
-        # mConfig.nwCorrAPlot    : MenuToolCorrA,
-        # mConfig.nwCheckDataPrep: MenuToolDataPrep,
-        # mConfig.nwProtProf     : MenuToolProtProf,
-        # mConfig.nwLimProt      : MenuToolLimProt,
-        # mConfig.nwTarProt      : MenuToolTarProt,
-        # mConfig.nwAAPlot       : MenuToolAA,
-        # mConfig.nwHistPlot     : MenuToolHist,
-        # mConfig.nwCpRPlot      : MenuToolCpR,
-        # mConfig.nwCEvolPlot    : MenuToolCleavageEvol,
-    }
-    #endregion --------------------------------------------------> Class Setup
-
-    #region --------------------------------------------------- Instance Setup
-    def __init__(self, cName: str, menuData: dict={}) -> None:                  # pylint: disable=dangerous-default-value
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        super().__init__()
-        #endregion --------------------------------------------> Initial Setup
-
-        #region -----------------------------------------> Menu items & Append
-        if cName in self.dTool:
-            self.mTool = self.dTool[cName](menuData)
-            self.Insert(mConfig.core.toolMenuIdx, self.mTool, '&Tools')
-        #endregion --------------------------------------> Menu items & Append
-    #---
-    #endregion ------------------------------------------------ Instance Setup
-#---
-#endregion ----------------------------------------------------------> MenuBar

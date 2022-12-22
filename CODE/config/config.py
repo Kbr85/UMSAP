@@ -20,6 +20,7 @@ from dataclasses import dataclass
 
 from core import config as cConfig
 from main import config as mConfig
+from help import config as hConfig
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -38,6 +39,7 @@ class Configuration():
     #region ---------------------------------------------------------> Options
     core:cConfig.Configuration
     main:mConfig.Configuration
+    help:hConfig.Configuration
     #endregion ------------------------------------------------------> Options
 
     #region ---------------------------------------------------> Class Methods
@@ -50,7 +52,7 @@ class Configuration():
 
             Notes
             -----
-            Method handle any exception raise since this will be reported by
+            Method handles any exception raise since this will be reported by
             mWindow.MainWindow
         """
         # Test in test.unit.test_method.Test_LoadUserConfig
@@ -59,11 +61,11 @@ class Configuration():
             with open(self.core.fConfig, 'r', encoding="utf-8") as file:
                 data = json.load(file)
         except FileNotFoundError:
-            # Config file has not been created or was deleted by user
+            #--> Config file has not been created or was deleted by user
             return True
         except Exception as e:
-            # Config file exists but cannot be read
-            self.core.confUserFile = False
+            #--> Config file exists but cannot be read
+            self.core.confUserFile          = False
             self.core.confUserFileException = e
             return False
         #endregion ------------------------------------------------> Read File
@@ -81,14 +83,12 @@ class Configuration():
             #------------------------------>
             for j,v in data[k].items():
                 #------------------------------>
-                opt = getattr(sec, j)
-                #------------------------------>
-                if opt is None:
+                if getattr(sec, j, None) is None:
                     badOpt.append(j)
                     continue
                 #------------------------------>
                 conv = sec.converter.get(j, str)
-                opt  = conv(v)
+                setattr(sec, j, conv(v))
         #------------------------------>
         self.core.confUserWrongOptions = badOpt
         #endregion ----------------------------------------------> Load Config
@@ -101,5 +101,6 @@ class Configuration():
 config = Configuration(
     cConfig.Configuration(),
     mConfig.Configuration(),
+    hConfig.Configuration(),
 )
 #endregion ----------------------------------------------------> Configuration

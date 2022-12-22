@@ -32,29 +32,6 @@ import data.method    as mMethod
 
 
 #region -------------------------------------------------------------> Methods
-def ReadJSON(fileP: Union[Path, str]) -> dict:
-    """Reads a file with json format.
-
-        Parameters
-        ----------
-        fileP: Path, str
-            Path to the file.
-
-        Return
-        ------
-        dict:
-            Data in the file.
-    """
-    # No test
-    #region -------------------------------------------------------> Read file
-    with open(fileP, 'r', encoding="utf-8") as file:
-        data = json.load(file)
-    #endregion ----------------------------------------------------> Read file
-
-    return data
-#---
-
-
 def ReadFileFirstLine(
     fileP: Union[Path, str],
     char : str='\t',
@@ -136,30 +113,6 @@ def ReadCSV2DF(
     return pd.read_csv(
         str(fileP), sep=sep, index_col=index_col, header=header)
     #endregion ----------------------------------------------------> Read file
-#---
-
-
-def WriteJSON(fileP: Union[Path, str], data: dict) -> bool:
-    """ Writes a JSON file.
-
-        Parameters
-        ----------
-        fileP : str or Path
-            Path to the file.
-        data: dict
-            Data to be written.
-
-        Return
-        ------
-        bool
-    """
-    # No test
-    #region ---------------------------------------------------> Write to file
-    with open(fileP, 'w', encoding="utf-8") as file:
-        json.dump(data, file, indent=4)
-    #endregion ------------------------------------------------> Write to file
-
-    return True
 #---
 
 

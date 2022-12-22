@@ -29,49 +29,57 @@ import wx
 class Configuration():
     """Configuration for the core module"""
     #region ---------------------------------------------------------> Options
-    development:bool = True # Development (True) or Production (False)
+    #------------------------------> Options for post_init
+    deltaWin:int     = field(init=False)                                        # Command to open files
+    res:Path         = field(init=False)                                        # Key for shortcuts
+    root:Path        = field(init=False)                                        # Horizontal space between top of windows
+    toolMenuIdx:int  = field(init=False)                                        # Path to the Resources folder
+    commOpen:str     = field(init=False)                                        # Root folder
+    copyShortCut:str = field(init=False)                                        # Tool place location
     #------------------------------>
-    version:str      = '2.2.1 (beta)' # String to write in the output files
-    software:str     = 'UMSAP' # Software short name
-    softwareF:str    = 'Utilities for Mass Spectrometry Analysis of Proteins'
-    dictVersion:dict = field(default_factory=lambda: { # To write into out files
+    development:bool = True                                                     # Development (True) or Production (False)
+    #------------------------------>
+    version:str      = '2.2.1 (beta)'                                           # String to write in the output files
+    software:str     = 'UMSAP'                                                  # Software short name
+    softwareF:str    = 'Utilities for Mass Spectrometry Analysis of Proteins'   # Software full name
+    dictVersion:dict = field(default_factory=lambda: {                          # To write into output files
         'Version': '2.2.1 (beta)',
     })
     #------------------------------>
-    os:str   = platform.system() # Current operating system
-    cwd:Path = Path(__file__)    # Config file path
-    #------------------------------> Name of windows
+    os:str   = platform.system()                                                # Current operating system
+    cwd:Path = Path(__file__)                                                   # Config file path
+    #------------------------------> Name of Windows
     nwDef:str = 'Untitled Window'
-    #------------------------------> Modules
+    #------------------------------> Name of Modules
     nmLimProt:str  = 'Limited Proteolysis'
     nmProtProf:str = 'Proteome Profiling'
     nmTarProt:str  = 'Targeted Proteolysis'
-    #------------------------------> Utilities
+    #------------------------------> Name of Utilities
     nuCorrA:str    = 'Correlation Analysis'
     nuDataPrep:str = 'Data Preparation'
     nuReadF:str    = 'Read UMSAP File'
-    #------------------------------> Title Tab
+    #------------------------------> Title of Tabs
     tDef:str      = 'Default Tab'
     tCorrA:str    = 'CorrA'
     tDataPrep:str = 'DataPrep'
     tLimProt:str  = 'LimProt'
     tProtProf:str = 'ProtProf'
     tTarProt:str  = 'TarProt'
-    #------------------------------> Label for menu items
+    #------------------------------> Label for Menu Items
     lmNatSeq:str = 'Native Sequence'
-    #------------------------------> Keywords for menu
+    #------------------------------> Keywords for Menu
     kwCheckDP:str      = 'General Tool Check DP'
     kwDupWin:str       = 'General Tool Duplicate Window'
     kwExpData:str      = 'General Tool Export Data'
-    kwExpImg:str       = 'GeneralTool Export Image One'
+    kwExpImg:str       = 'General Tool Export Image One'
     kwExpImgAll:str    = 'General Tool Export Image'
     kwWinUpdate:str    = 'General Tool Update Result Window'
-    kwZoomReset:str    = 'GeneralTool Reset Zoom One'
+    kwZoomReset:str    = 'General Tool Reset Zoom One'
     kwZoomResetAll:str = 'General Tool Reset Zoom All'
     #------------------------------> Files
     fConfig:Path = Path.home() / '.umsap_config.json'
     #------------------------------> Sizes
-    sWinFull:tuple[int,int] = (990, 775) # Full size window
+    sWinFull:tuple[int,int] = (990, 775)                                        # Full size window
     #------------------------------> Extensions
     #--> For wx.Dialogs
     elData:str         = 'txt files (*.txt)|*.txt'
@@ -92,45 +100,68 @@ class Configuration():
     esUMSAP:list = field(default_factory=lambda: ['.umsap'])
     #------------------------------> Messages
     mFileSelUMSAP:str = 'Select the UMSAP File'
+    #------------------------------> URLs
+    urlHome     = 'https://www.umsap.nl'
+    urlUpdate   = f"{urlHome}/page/release-notes"
+    urlTutorial = f"{urlHome}/tutorial/2-2-X"
     #------------------------------> Fonts
     fSeqAlign:Union[wx.Font, str]              = ''
     fTreeItem:Union[wx.Font, str]              = ''
     fTreeItemDataFile:Union[wx.Font, str]      = ''
     fTreeItemDataFileFalse:Union[wx.Font, str] = ''
     #------------------------------>
-    # User configuration file is Ok
-    confUserFile:bool = True
-    # Exception thrown when reading conf file
-    confUserFileException:Optional[Exception] = None
-    # List of wrong options in the file
-    confUserWrongOptions:list  = field(default_factory=lambda: [])
+    confUserFile:bool = True                                                    # User configuration file is Ok
+    confUserFileException:Optional[Exception] = None                            # Exception thrown when reading conf file
+    confUserWrongOptions:list = field(default_factory=lambda: [])               # List of wrong options in the file
+    confList:list = field(default_factory=lambda: ['core'])                     # Config modules with user configurable options
     #------------------------------> User Configurable Options
-    checkUpdate:bool    = True  # True Check, False No check
-    DPI:int             = 100   # DPI for plot images
-    MatPlotMargin:float = 0.025 # Margin for the axes range
+    checkUpdate:bool    = True                                                  # True Check, False No check
+    DPI:int             = 100                                                   # DPI for plot images
+    MatPlotMargin:float = 0.025                                                 # Margin for the axes range
     #------------------------------> Converter for user options
     converter:dict = field(default_factory=lambda: {
-        'checkUpdate': bool,
-        'DPI': int,
+        'checkUpdate'  : bool,
+        'DPI'          : int,
         'MatPlotMargin': float,
     })
-    #------------------------------> Options for post_init
-    deltaWin:int = field(init=False)
-    toolMenuIdx:int = field(init=False)
     #endregion ------------------------------------------------------> Options
 
     #region ---------------------------------------------------> Class Methods
     def __post_init__(self):
         """ """
+        #------------------------------> Platform dependent parameters
         if self.os == 'Darwin':
-            self.deltaWin    = 23 # Horizontal space between top of windows
-            self.toolMenuIdx = 2  # Tool place location
+            self.commOpen     = 'open'
+            self.copyShortCut = 'Cmd'
+            self.deltaWin     = 23
+            self.root         = self.cwd.parent.parent.parent
+            self.res          = self.root / 'Resources'
+            self.toolMenuIdx  = 2
         elif self.os == 'Window':
-            self.deltaWin    = 20
-            self.toolMenuIdx = 2
+            self.commOpen     = 'start'
+            self.copyShortCut = 'Ctrl'
+            self.deltaWin     = 20
+            self.toolMenuIdx  = 2
+            if self.development:
+                self.root = self.cwd.parent.parent.parent
+                self.res  = self.root / 'Resources'
+            else:
+                self.root = self.cwd.parent.parent
+                self.res  = self.root / 'RESOURCES/'
         else:
-            self.deltaWin    = 20
-            self.toolMenuIdx = 3
+            self.commOpen     = 'xdg-open'
+            self.copyShortCut = 'Ctrl'
+            self.deltaWin     = 20
+            self.root         = self.cwd.parent
+            self.res          = self.root / 'Resources'
+            self.toolMenuIdx  = 3
+        #------------------------------> Relevant Paths
+        self.pImages = self.res / 'IMAGES'                                      # Images folder
+        #------------------------------> Files
+        self.fImgAbout  = self.pImages / 'ABOUT/p97-2-about.png'
+        self.fImgIcon   = self.pImages / 'DIALOGUE/dlg.png'
+        self.fManual    = self.res / 'MANUAL/manual.pdf'
+        self.fConfigDef = self.res / 'CONFIG/config_def.json'
     #endregion ------------------------------------------------> Class Methods
 #---
 #endregion ----------------------------------------------------> Configuration
