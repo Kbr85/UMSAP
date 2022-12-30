@@ -52,8 +52,7 @@ class BaseWindow(wx.Frame):
     #region --------------------------------------------------> Instance setup
     def __init__(                                                               # pylint: disable=dangerous-default-value
         self,
-        parent  : Optional[wx.Window]=None,
-        # menuData: dict={},
+        parent:Optional[wx.Window] = None,
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -79,72 +78,72 @@ class BaseWindow(wx.Frame):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
-        # self.Bind(wx.EVT_CLOSE, self.OnClose)
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    # def OnClose(self, event: wx.CloseEvent) -> bool:                            # pylint: disable=unused-argument
-    #     """Destroy window. Override as needed.
+    def OnClose(self, event: wx.CloseEvent) -> bool:                            # pylint: disable=unused-argument
+        """Destroy window.
 
-    #         Parameters
-    #         ----------
-    #         event: wx.CloseEvent
-    #             Information about the event.
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event.
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region -------------------------------------------> Reduce win number
-    #     try:
-    #         mConfig.winNumber[self.cName] -= 1
-    #     except Exception:
-    #         pass
-    #     #endregion ----------------------------------------> Reduce win number
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------> Reduce win number
+        try:
+            mConfig.core.winNumber[self.cName] -= 1
+        except Exception:
+            pass
+        #endregion ----------------------------------------> Reduce win number
 
-    #     #region -----------------------------------------------------> Destroy
-    #     self.Destroy()
-    #     #endregion --------------------------------------------------> Destroy
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
 
-    #     return True
-    # #---
+        return True
+    #---
     #endregion ------------------------------------------------> Event Methods
 
     #region ---------------------------------------------------> Manage Methods
-    # def WinPos(self) -> dict:
-    #     """Adjust win number and return information about the size of the
-    #         window.
+    def WinPos(self) -> dict:
+        """Adjust win number and return information about the size of the
+            window.
 
-    #         Return
-    #         ------
-    #         dict
-    #             Information about the size of the window and display and number
-    #             of windows. See also data.method.GetDisplayInfo
+            Return
+            ------
+            dict
+                Information about the size of the window and display and number
+                of windows. See also data.method.GetDisplayInfo
 
-    #         Notes
-    #         -----
-    #         Final position of the window on the display must be set in child
-    #         class.
-    #     """
-    #     #region ---------------------------------------------------> Variables
-    #     info = gMethod.GetDisplayInfo(self)
-    #     #endregion ------------------------------------------------> Variables
+            Notes
+            -----
+            Final position of the window on the display must be set in child
+            class.
+        """
+        #region ---------------------------------------------------> Variables
+        info = cMethod.GetDisplayInfo(self)
+        #endregion ------------------------------------------------> Variables
 
-    #     #region ----------------------------------------------------> Update N
-    #     mConfig.winNumber[self.cName] = info['W']['N'] + 1
-    #     #endregion -------------------------------------------------> Update N
+        #region ----------------------------------------------------> Update N
+        mConfig.core.winNumber[self.cName] = info['W']['N'] + 1
+        #endregion -------------------------------------------------> Update N
 
-    #     return info
-    # #---
+        return info
+    #---
     #endregion ------------------------------------------------> Manage Methods
 #---
 #endregion -----------------------------------------------------------> Frames
 
 
 #region -------------------------------------------------------------> Dialogs
-class DialogNotification(wx.Dialog):
+class Notification(wx.Dialog):
     """Show a custom notification dialog.
 
         Parameters

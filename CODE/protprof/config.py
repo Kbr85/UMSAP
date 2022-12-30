@@ -11,28 +11,20 @@
 # ------------------------------------------------------------------------------
 
 
-"""Configuration for the main module of the app"""
+"""Configuration for the protprof module of the app"""
 
 
 #region -------------------------------------------------------------> Imports
-from dataclasses import dataclass, field
-from typing import Optional, TYPE_CHECKING
-if TYPE_CHECKING:
-    from main import window as mWindow
+from dataclasses import dataclass
 #endregion ----------------------------------------------------------> Imports
 
 
 #region -------------------------------------------------------> Configuration
 @dataclass
 class Configuration():
-    """Configuration for the main module"""
-    #------------------------------> Names
-    nwMain:str = 'Analysis Setup'
-    #------------------------------> Name Tab
-    ntStart:str = 'Start'
-    #------------------------------> Reference to main window
-    mainWin:Optional['mWindow.WindowMain'] = None
-    #------------------------------> Converter for user options
-    converter:dict = field(default_factory=lambda: {})
+    """Configuration for the protprof module"""
+    #region ---------------------------------------------------------> Options
+    nMod:str = 'Proteome Profiling'                                             # Name of the Module
+    #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration

@@ -33,6 +33,15 @@ winUMSAP = {}
 
 
 #region ---------------------------------------------------------------> Names
+#------------------------------> Name of Utilities
+nuReadF:str    = 'Read UMSAP File'
+#------------------------------> Title of Tabs
+tDef:str      = 'Default Tab'
+tCorrA:str    = 'CorrA'
+tDataPrep:str = 'DataPrep'
+tLimProt:str  = 'LimProt'
+tProtProf:str = 'ProtProf'
+tTarProt:str  = 'TarProt'
 #------------------------------> Windows
 nwUMSAPControl  = 'UMSAP Control'
 nwCorrAPlot     = 'CorrAPlot'
@@ -48,7 +57,6 @@ nwCEvolPlot     = 'CEvolPlot'
 ndResControlExp        = 'Results & Control Experiments'
 ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Tab for notebook windows
-ntStart      = 'Start'
 #------------------------------> Individual Panes
 npDef                   = 'Default Pane'
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
@@ -100,8 +108,6 @@ kwToolFAPDBMap         = 'PDB Map'
 
 
 #region ------------------------------------------------------> Path and Files
-#------------------------------> Location & names of important files
-fImgStart = pImages / 'MAIN-WINDOW/p97-2.png'
 #------------------------------> Names
 fnInitial    = "{}_{}-Initial-Data.txt"
 fnFloat      = "{}_{}-Floated-Data.txt"

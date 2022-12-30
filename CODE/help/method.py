@@ -115,8 +115,6 @@ def UpdateCheck(
     elif not updateAvail and ori == 'menu':
         wx.CallAfter(
             hWindow.DialogCheckUpdateResult, parent=win, checkRes=None)
-    else:
-        pass
     #endregion --------------------------------------------> Compare & message
 
     return True

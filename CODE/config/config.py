@@ -18,9 +18,14 @@
 import json
 from dataclasses import dataclass
 
-from core import config as cConfig
-from main import config as mConfig
-from help import config as hConfig
+from core     import config as cConfig
+from corr     import config as corrConfig
+from dataprep import config as dataConfig
+from help     import config as hConfig
+from limprot  import config as limpConfig
+from main     import config as mConfig
+from protprof import config as protConfig
+from tarprot  import config as tarpConfig
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -38,8 +43,13 @@ class Configuration():
     """
     #region ---------------------------------------------------------> Options
     core:cConfig.Configuration
-    main:mConfig.Configuration
+    corr:corrConfig.Configuration
+    data:dataConfig.Configuration
     help:hConfig.Configuration
+    limp:limpConfig.Configuration
+    main:mConfig.Configuration
+    prot:protConfig.Configuration
+    tarp:tarpConfig.Configuration
     #endregion ------------------------------------------------------> Options
 
     #region ---------------------------------------------------> Class Methods
@@ -100,7 +110,12 @@ class Configuration():
 
 config = Configuration(
     cConfig.Configuration(),
-    mConfig.Configuration(),
+    corrConfig.Configuration(),
+    dataConfig.Configuration(),
     hConfig.Configuration(),
+    limpConfig.Configuration(),
+    mConfig.Configuration(),
+    protConfig.Configuration(),
+    tarpConfig.Configuration(),
 )
 #endregion ----------------------------------------------------> Configuration

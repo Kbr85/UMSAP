@@ -48,23 +48,10 @@ class Configuration():
     #------------------------------>
     os:str   = platform.system()                                                # Current operating system
     cwd:Path = Path(__file__)                                                   # Config file path
+    #------------------------------>
+    winNumber:dict = field(default_factory=lambda: {})                          # Keys: Windows ID - Values: Total number of opened windows, except conf win
     #------------------------------> Name of Windows
     nwDef:str = 'Untitled Window'
-    #------------------------------> Name of Modules
-    nmLimProt:str  = 'Limited Proteolysis'
-    nmProtProf:str = 'Proteome Profiling'
-    nmTarProt:str  = 'Targeted Proteolysis'
-    #------------------------------> Name of Utilities
-    nuCorrA:str    = 'Correlation Analysis'
-    nuDataPrep:str = 'Data Preparation'
-    nuReadF:str    = 'Read UMSAP File'
-    #------------------------------> Title of Tabs
-    tDef:str      = 'Default Tab'
-    tCorrA:str    = 'CorrA'
-    tDataPrep:str = 'DataPrep'
-    tLimProt:str  = 'LimProt'
-    tProtProf:str = 'ProtProf'
-    tTarProt:str  = 'TarProt'
     #------------------------------> Label for Menu Items
     lmNatSeq:str = 'Native Sequence'
     #------------------------------> Keywords for Menu
@@ -160,6 +147,7 @@ class Configuration():
         #------------------------------> Files
         self.fImgAbout  = self.pImages / 'ABOUT/p97-2-about.png'
         self.fImgIcon   = self.pImages / 'DIALOGUE/dlg.png'
+        self.fImgStart  = self.pImages / 'MAIN-WINDOW/p97-2.png'
         self.fManual    = self.res / 'MANUAL/manual.pdf'
         self.fConfigDef = self.res / 'CONFIG/config_def.json'
     #endregion ------------------------------------------------> Class Methods

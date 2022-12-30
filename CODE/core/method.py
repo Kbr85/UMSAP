@@ -16,6 +16,14 @@
 
 #region -------------------------------------------------------------> Imports
 import traceback
+from typing import TYPE_CHECKING
+
+import wx
+
+from config.config import config as mConfig
+
+if TYPE_CHECKING:
+    from core import window as cWindow
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -70,5 +78,52 @@ def StrException(
     #endregion ------------------------------------------------------> Message
 
     return msg
+#---
+
+
+def GetDisplayInfo(win: 'cWindow.BaseWindow') -> dict[str, dict[str, int]]:
+    """This will get the information needed to set the position of a window.
+        Should be called after Fitting sizers for accurate window size
+        information.
+
+        Parameters
+        ----------
+        win : wx.Frame
+            Window to be positioned
+
+        Returns
+        -------
+        dict
+            {
+                'D' : {'xo':X, 'yo':Y, 'w':W, 'h':h}, Info about display
+                'W' : {'N': N, 'w':W, 'h', H},        Info about win
+            }
+    """
+    #region ----------------------------------------------------> Display info
+    xd, yd, wd, hd =  wx.Display(win).GetClientArea()
+    #endregion -------------------------------------------------> Display info
+
+    #region -----------------------------------------------------> Window info
+    nw = mConfig.core.winNumber.get(win.cName, 0)
+    ww, hw = win.GetSize()
+    #endregion --------------------------------------------------> Window info
+
+    #region ------------------------------------------------------------> Dict
+    data = {
+        'D' : {
+            'xo' : xd,
+            'yo' : yd,
+            'w'  : wd,
+            'h'  : hd,
+        },
+        'W' : {
+            'N' : nw,
+            'w' : ww,
+            'h' : hw,
+        },
+    }
+    #endregion ---------------------------------------------------------> Dict
+
+    return data
 #---
 #endregion ----------------------------------------------------------> Methods

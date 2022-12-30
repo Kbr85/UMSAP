@@ -32,10 +32,6 @@ class Configuration():
     ntPrefUpdate:str = 'Updates'
     #------------------------------> Names of Panes
     npPrefUpdate:str = 'PrefUpdate'
-    #------------------------------> Keyword for Menu items
-
-    #------------------------------> Reference to main window
-
     #------------------------------> Converter for user options
     converter:dict = field(default_factory=lambda: {})
 #---

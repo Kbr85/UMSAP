@@ -90,53 +90,6 @@ def LoadUMSAPFile(
 #---
 
 
-def GetDisplayInfo(win: wx.Frame) -> dict[str, dict[str, int]]:
-    """This will get the information needed to set the position of a window.
-        Should be called after Fitting sizers for accurate window size
-        information.
-
-        Parameters
-        ----------
-        win : wx.Frame
-            Window to be positioned
-
-        Returns
-        -------
-        dict
-            {
-                'D' : {'xo':X, 'yo':Y, 'w':W, 'h':h}, Info about display
-                'W' : {'N': N, 'w':W, 'h', H},        Info about win
-            }
-    """
-    #region ----------------------------------------------------> Display info
-    xd, yd, wd, hd =  wx.Display(win).GetClientArea()
-    #endregion -------------------------------------------------> Display info
-
-    #region -----------------------------------------------------> Window info
-    nw = mConfig.winNumber.get(win.cName, 0) # type: ignore
-    ww, hw = win.GetSize()
-    #endregion --------------------------------------------------> Window info
-
-    #region ------------------------------------------------------------> Dict
-    data = {
-        'D' : {
-            'xo' : xd,
-            'yo' : yd,
-            'w'  : wd,
-            'h'  : hd,
-        },
-        'W' : {
-            'N' : nw,
-            'w' : ww,
-            'h' : hw,
-        },
-    }
-    #endregion ---------------------------------------------------------> Dict
-
-    return data
-#---
-
-
 def LCtrlFillColNames(lc: wx.ListCtrl, fileP: Union[Path, str]) -> bool:
     """Fill the wx.ListCtrl with the name of the columns in fileP.
 

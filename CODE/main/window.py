@@ -23,6 +23,7 @@ from wx.lib.agw import aui
 from config.config import config as mConfig
 from core import window as cWindow
 from main import menu   as mMenu
+from main import tab    as mTab
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -44,12 +45,12 @@ class WindowMain(cWindow.BaseWindow):
     cName = mConfig.main.nwMain
     #------------------------------>
     dTab = {
-        # mConfig.ntStart   : mTab.TabStart,
-        # mConfig.ntCorrA   : mTab.BaseConfTab,
-        # mConfig.ntDataPrep: mTab.BaseConfListTab,
-        # mConfig.ntLimProt : mTab.BaseConfListTab,
-        # mConfig.ntProtProf: mTab.BaseConfListTab,
-        # mConfig.ntTarProt : mTab.BaseConfListTab,
+        mConfig.main.ntStart   : mTab.TabStart,
+        # mConfig.main.ntCorrA   : mTab.BaseConfTab,
+        # mConfig.main.ntDataPrep: mTab.BaseConfListTab,
+        # mConfig.main.ntLimProt : mTab.BaseConfListTab,
+        # mConfig.main.ntProtProf: mTab.BaseConfListTab,
+        # mConfig.main.ntTarProt : mTab.BaseConfListTab,
     }
     #endregion --------------------------------------------------> Class Setup
 
@@ -65,7 +66,7 @@ class WindowMain(cWindow.BaseWindow):
         self.wStatBar.SetStatusText(
             f"{mConfig.core.softwareF} {mConfig.core.version}", 0)
         #------------------------------> Notebook
-        self.wNotebook = aui.auibook.AuiNotebook( # type: ignore
+        self.wNotebook = aui.auibook.AuiNotebook(                               # type: ignore
             self,
             agwStyle=aui.AUI_NB_TOP|aui.AUI_NB_CLOSE_ON_ALL_TABS|aui.AUI_NB_TAB_MOVE,
         )
@@ -82,7 +83,7 @@ class WindowMain(cWindow.BaseWindow):
         #endregion -----------------------------------------------------> Menu
 
         #region --------------------------------------------> Create Start Tab
-        # self.CreateTab(mConfig.ntStart)
+        self.CreateTab(mConfig.main.ntStart)
         self.wNotebook.SetCloseButton(0, False)
         #endregion -----------------------------------------> Create Start Tab
 
@@ -132,35 +133,35 @@ class WindowMain(cWindow.BaseWindow):
         #endregion --------------------------------------------------> Get tab
 
         #region ------------------------------------------> Find/Create & Show
-        # if win is None:
-        #     #------------------------------> Create tab
-        #     try:
-        #         tab = self.dTab[name](self.wNotebook, name, dataI)
-        #     except Exception as e:
-        #         msg = f'Failed to create the {name} tab.'
-        #         DialogNotification('errorU', msg=msg, tException=e, parent=self)
-        #         return False
-        #     #------------------------------> Add
-        #     self.wNotebook.AddPage(tab, name, select=True)
-        # else:
-        #     #------------------------------> Focus
-        #     self.wNotebook.SetSelection(self.wNotebook.GetPageIndex(win))
-        #     #------------------------------> Initial Data
-        #     win.wConf.SetInitialData(dataI)
+        if win is None:
+            #------------------------------> Create tab
+            try:
+                tab = self.dTab[name](self.wNotebook, name, dataI)
+            except Exception as e:
+                msg = f'Failed to create the {name} tab.'
+                cWindow.Notification('errorU', msg=msg, tException=e, parent=self)
+                return False
+            #------------------------------> Add
+            self.wNotebook.AddPage(tab, name, select=True)
+        else:
+            #------------------------------> Focus
+            self.wNotebook.SetSelection(self.wNotebook.GetPageIndex(win))
+            #------------------------------> Initial Data
+            win.wConf.SetInitialData(dataI)
         #endregion ---------------------------------------> Find/Create & Show
 
         #region ---------------------------------------------------> Start Tab
-        # if self.wNotebook.GetPageCount() > 1:
-        #     winS = self.FindWindowByName(mConfig.ntStart)
-        #     if winS is not None:
-        #         self.wNotebook.SetCloseButton(
-        #             self.wNotebook.GetPageIndex(winS),
-        #             True,
-        #         )
-        #     else:
-        #         pass
-        # else:
-        #     pass
+        if self.wNotebook.GetPageCount() > 1:
+            winS = self.FindWindowByName(mConfig.main.ntStart)
+            if winS is not None:
+                self.wNotebook.SetCloseButton(
+                    self.wNotebook.GetPageIndex(winS),
+                    True,
+                )
+            else:
+                pass
+        else:
+            pass
         #endregion ------------------------------------------------> Start Tab
 
         #region ---------------------------------------------------> Raise
@@ -215,25 +216,26 @@ class WindowMain(cWindow.BaseWindow):
     #     return True
     # #---
 
-    # def OnClose(self, event: wx.CloseEvent) -> bool:
-    #     """Destroy window and set config.winMain to None.
+    def OnClose(self, event: wx.CloseEvent) -> bool:
+        """Destroy window and set config.winMain to None.
 
-    #         Parameters
-    #         ----------
-    #         event: wx.CloseEvent
-    #             Information about the event
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #------------------------------>
-    #     self.Destroy()
-    #     #------------------------------>
-    #     mConfig.winMain = None
-    #     #------------------------------>
-    #     return True
-    # #---
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        self.Destroy()
+        #------------------------------>
+        mConfig.main.mainWin = None
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
     #endregion ------------------------------------------------> Event methods
 #---
 #endregion ----------------------------------------------------------> Classes
