@@ -59,7 +59,7 @@ def UpdateCheck(
     except Exception as e:
         msg = 'Check for Updates failed. Please try again later.'
         wx.CallAfter(
-            cWindow.DialogNotification,
+            cWindow.Notification,
             'errorU',
             msg        = msg,
             tException = e,
@@ -85,7 +85,7 @@ def UpdateCheck(
         msg = 'Check for Updates failed. Please try again later.'
         e = f'Web page returned code was: {r.status_code}.'
         wx.CallAfter(
-            cWindow.DialogNotification,
+            cWindow.Notification,
             'errorU',
             msg        = msg,
             tException = e,
@@ -101,7 +101,7 @@ def UpdateCheck(
     except Exception as e:
         msg = 'Check for Updates failed. Please try again later.'
         wx.CallAfter(
-            cWindow.DialogNotification,
+            cWindow.Notification,
             'errorU',
             msg        = msg,
             tException = e,

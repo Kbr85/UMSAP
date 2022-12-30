@@ -15,6 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
+import _thread
 from typing import Optional
 
 import wx
@@ -22,7 +23,9 @@ from wx.lib.agw import aui
 
 from config.config import config as mConfig
 from core import window as cWindow
+from help import method as hMethod
 from main import menu   as mMenu
+from main import method as mMethod
 from main import tab    as mTab
 #endregion ----------------------------------------------------------> Imports
 
@@ -77,8 +80,7 @@ class WindowMain(cWindow.BaseWindow):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Menu
-        # self.mBar = mMenu.MenuBarTool(self.cName, menuData)
-        self.mBar = mMenu.MenuBarMain()
+        self.mBar = mMenu.MenuBarTool(self.cName, {})
         self.SetMenuBar(self.mBar)
         #endregion -----------------------------------------------------> Menu
 
@@ -93,22 +95,21 @@ class WindowMain(cWindow.BaseWindow):
         #endregion ------------------------------------------> Position & Show
 
         #region --------------------------------------------------------> Bind
-        # self.wNotebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnTabClose)
+        self.wNotebook.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnTabClose)
         #endregion -----------------------------------------------------> Bind
 
         #region	------------------------------------------------------> Update
-        # if mConfig.confGeneral["checkUpdate"]:
-        #     _thread.start_new_thread(UpdateCheck, ("main", self))
-        # else:
-        #     pass
+        if mConfig.core.checkUpdate:
+            _thread.start_new_thread(hMethod.UpdateCheck, ("main", self))
         #endregion ---------------------------------------------------> Update
 
         #region -------------------------------------> User Configuration File
-        # if not mConfig.confUserFile:
-        #     _thread.start_new_thread(
-        #         BadUserConf, (mConfig.confUserFileException,))
-        # else:
-        #     pass
+        if not mConfig.core.confUserFile:
+            _thread.start_new_thread(
+                mMethod.BadUserConfFile, (mConfig.core.confUserFileException,))
+        if mConfig.core.confUserWrongOptions:
+            _thread.start_new_thread(
+                mMethod.BadUserConfOptions, (mConfig.core.confUserWrongOptions,))
         #endregion ----------------------------------> User Configuration File
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -173,48 +174,48 @@ class WindowMain(cWindow.BaseWindow):
     #endregion ------------------------------------------------> Class Methods
 
     #region ---------------------------------------------------> Event methods
-    # def OnTabClose(self, event: wx.Event) -> bool:
-    #     """Make sure to show the Start Tab if no other tab exists.
+    def OnTabClose(self, event: wx.Event) -> bool:
+        """Make sure to show the Start Tab if no other tab exists.
 
-    #         Parameters
-    #         ----------
-    #         event : wx.aui.Event
-    #             Information about the event.
+            Parameters
+            ----------
+            event : wx.aui.Event
+                Information about the event.
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region --------------------------------------------------->
-    #     event.Skip()
-    #     #endregion ------------------------------------------------>
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        event.Skip()
+        #endregion ------------------------------------------------>
 
-    #     #region --------------------------------------------------->
-    #     pageC = self.wNotebook.GetPageCount() - 1
-    #     #------------------------------> Update tabs & close buttons
-    #     if pageC == 1:
-    #         #------------------------------> Remove close button from Start tab
-    #         if (win := self.FindWindowByName(mConfig.ntStart)) is not None:
-    #             self.wNotebook.SetCloseButton(
-    #                 self.wNotebook.GetPageIndex(win),
-    #                 False,
-    #             )
-    #         else:
-    #             pass
-    #     elif pageC == 0:
-    #         #------------------------------> Show Start Tab with close button
-    #         self.CreateTab(mConfig.ntStart)
-    #         self.wNotebook.SetCloseButton(
-    #             self.wNotebook.GetPageIndex(
-    #                 self.FindWindowByName(mConfig.ntStart)),
-    #             False,
-    #         )
-    #     else:
-    #         pass
-    #     #endregion ------------------------------------------------>
+        #region --------------------------------------------------->
+        pageC = self.wNotebook.GetPageCount() - 1
+        #------------------------------> Update tabs & close buttons
+        if pageC == 1:
+            #------------------------------> Remove close button from Start tab
+            if (win := self.FindWindowByName(mConfig.main.ntStart)) is not None:
+                self.wNotebook.SetCloseButton(
+                    self.wNotebook.GetPageIndex(win),
+                    False,
+                )
+            else:
+                pass
+        elif pageC == 0:
+            #------------------------------> Show Start Tab with close button
+            self.CreateTab(mConfig.main.ntStart)
+            self.wNotebook.SetCloseButton(
+                self.wNotebook.GetPageIndex(
+                    self.FindWindowByName(mConfig.main.ntStart)),
+                False,
+            )
+        else:
+            pass
+        #endregion ------------------------------------------------>
 
-    #     return True
-    # #---
+        return True
+    #---
 
     def OnClose(self, event: wx.CloseEvent) -> bool:
         """Destroy window and set config.winMain to None.

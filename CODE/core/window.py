@@ -315,8 +315,6 @@ class Notification(wx.Dialog):
         if tException:
             if msg:
                 self.wError.AppendText('\n\nFurther details:\n\n')
-            else:
-                pass
             if isinstance(tException, str):
                 self.wError.AppendText(tException)
             else:

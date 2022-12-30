@@ -65,30 +65,6 @@ import gui.validator  as mValidator
 # pylint: disable=line-too-long
 
 
-#region -------------------------------------------------------------> Methods
-def BadUserConf(tException) -> bool:
-    """Show error message when user configuration file could not be read.
-
-        Parameters
-        ----------
-        tException: Exception
-            Error exception.
-
-        Returns
-        -------
-        bool
-
-        Notes
-        -----
-        Always called from another thread.
-    """
-    msg = 'It was not possible to read the user configuration file.'
-    wx.CallAfter(DialogNotification,'errorU', msg=msg, tException=tException)
-    return True
-#---
-#endregion ----------------------------------------------------------> Methods
-
-
 #region --------------------------------------------------------> Base Classes
 class BaseWindowResult(BaseWindow):
     """Base class for windows showing results.
