@@ -15,7 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -25,6 +25,25 @@ class Configuration():
     """Configuration for the core module"""
     #region ---------------------------------------------------------> Options
     nUtil:str = 'Data Preparation'                                              # Name of the Utility
+    #------------------------------> Normal distribution parameters
+    Shift:float = 1.8
+    Width:float = 0.3
+    #------------------------------> Options
+    oTransMethod:dict = field(default_factory=lambda: {
+        ''    : '',
+        'None': 'None',
+        'Log2': 'Log2',
+    })
+    oNormMethod:dict = field(default_factory=lambda: {
+        ''      : '',
+        'None'  : 'None',
+        'Median': 'Median',
+    })
+    oImputation:dict = field(default_factory=lambda: {
+        ''                   : '',
+        'None'               : 'None',
+        'Normal Distribution': 'ND',
+    })
     #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration

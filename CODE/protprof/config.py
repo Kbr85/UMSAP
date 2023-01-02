@@ -24,7 +24,8 @@ from dataclasses import dataclass
 class Configuration():
     """Configuration for the protprof module"""
     #region ---------------------------------------------------------> Options
-    nMod:str = 'Proteome Profiling'                                             # Name of the Module
+    nMod:str  = 'Proteome Profiling'                                            # Name of the Module
+    nPane:str = 'Pane ProtProf'                                                 # Name of Conf Pane
     #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration

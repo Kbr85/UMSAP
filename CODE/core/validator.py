@@ -23,13 +23,17 @@
 
 
 #region -------------------------------------------------------------> Imports
-from typing import Optional
+from typing import Optional, Literal
 
 import wx
 
-import config.config as mConfig
-import data.check    as mCheck
+from config.config import config as mConfig
+from core import check as cCheck
 #endregion ----------------------------------------------------------> Imports
+
+
+LIT_FoF     = Literal['file', 'folder']
+LIT_NumType = Literal['int', 'float']
 
 
 #region -----------------------------------------------------------> Validator
@@ -38,10 +42,10 @@ class InputFF(wx.Validator):
 
         Parameters
         ----------
-        fof : str
+        fof: str
             One of 'file', 'folder'. Check widgets hold path to file or folder.
             Default is 'file'.
-        opt : Boolean
+        opt: Boolean
             Value is optional. Default is False.
 
         Return by Validate method
@@ -65,10 +69,10 @@ class InputFF(wx.Validator):
             Value is optional. Default is False.
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, fof: mConfig.litFoF='file', opt: bool=False) -> None:
+    def __init__(self, fof:LIT_FoF='file', opt:bool=False) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.rFof: mConfig.litFoF = fof
+        self.rFof:LIT_FoF = fof
         self.rOpt = opt
         #------------------------------>
         super().__init__()
@@ -90,7 +94,7 @@ class InputFF(wx.Validator):
 
         #region ----------------------------------------------------> Validate
         try:
-            return mCheck.Path2FFInput(value, self.rFof, self.rOpt)
+            return cCheck.Path2FFInput(value, self.rFof, self.rOpt)
         except Exception as e:
             return (False, ('ExceptionRaised', type(e).__name__, str(e)))
         #endregion -------------------------------------------------> Validate
@@ -114,10 +118,10 @@ class OutputFF(wx.Validator):
 
         Parameters
         ----------
-        fof : str
+        fof: str
             One of 'file', 'folder'. Check widgets hold path to file or folder.
             Default is 'file'.
-        opt : Boolean
+        opt: Boolean
             Value is optional. Default is True.
 
         Returns by Validate method
@@ -139,10 +143,10 @@ class OutputFF(wx.Validator):
             Value is optional. Default is True.
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, fof: mConfig.litFoF='file', opt: bool=False) -> None:
+    def __init__(self, fof:LIT_FoF='file', opt:bool=False) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.rFof: mConfig.litFoF = fof
+        self.rFof:LIT_FoF = fof
         self.rOpt = opt
         #------------------------------>
         super().__init__()
@@ -169,7 +173,7 @@ class OutputFF(wx.Validator):
 
         #region ----------------------------------------------------> Validate
         try:
-            return mCheck.Path2FFOutput(value, self.rFof, self.rOpt)
+            return cCheck.Path2FFOutput(value, self.rFof, self.rOpt)
         except Exception as e:
             return (False, ('ExceptionRaised', type(e).__name__, str(e)))
         #endregion -------------------------------------------------> Validate
@@ -189,7 +193,7 @@ class OutputFF(wx.Validator):
 
 
 class IsNotEmpty(wx.Validator):
-    """Check wx widget has a value different than ''
+    """Check wx widget has a value different than ''.
 
         Returns by Validate method
         --------------------------
@@ -214,8 +218,7 @@ class IsNotEmpty(wx.Validator):
         #region ----------------------------------------------------> Validate
         if value != '':
             return (True, None)
-        else:
-            return (False, ('Empty', str(value), mConfig.mEmpty))
+        return (False, ('Empty', str(value), mConfig.core.mEmpty))
         #endregion -------------------------------------------------> Validate
     #---
 
@@ -239,24 +242,24 @@ class NumberList(wx.Validator):
 
         Parameters
         ----------
-        numType : str
-            One of 'int' or 'float'. Default is 'int'
-        unique : boolean
-            Elements must be unique (True) or not
-        sep : str
-            List elements are separated by sep. Default ' '
-        opt : boolean
-            To allow for empty fields
-        vMin : float or None
-            Elements in the list must be >= vMin
-        vMax : float or None
-            Elements in the list must be <= vMax
-        nMin : int or None
-            List must contain at least nMin elements
-        nN : int or None
-            List must contain exactly nN elements
-        nMax : int or None
-            List must contain maximum nMax elements
+        numType: str
+            One of 'int' or 'float'. Default is 'int'.
+        unique: boolean
+            Elements must be unique (True) or not.
+        sep: str
+            List elements are separated by sep. Default ' '.
+        opt: boolean
+            To allow for empty fields.
+        vMin: float or None
+            Elements in the list must be >= vMin.
+        vMax: float or None
+            Elements in the list must be <= vMax.
+        nMin: int or None
+            List must contain at least nMin elements.
+        nN: int or None
+            List must contain exactly nN elements.
+        nMax: int or None
+            List must contain maximum nMax elements.
 
         Return by Validate method
         -------------------------
@@ -273,49 +276,49 @@ class NumberList(wx.Validator):
 
         Attributes
         ----------
-        rNumType : str
-            One of 'int' or 'float'. Default is 'int'
-        rUnique : boolean
-            Elements must be unique (True) or not
-        rSep : str
-            List elements are separated by sep. Default ' '
-        rOpt : boolean
-            To allow for empty fields
-        rVMin : float or None
-            Elements in the list must be >= vMin
-        rVMax : float or None
-            Elements in the list must be <= vMax
-        rNMin : int or None
-            List must contain at least nMin elements
-        rNN : int or None
-            List must contain exactly nN elements
-        rNMax : int or None
-            List must contain maximum nMax elements
+        rNumType: str
+            One of 'int' or 'float'. Default is 'int'.
+        rUnique: boolean
+            Elements must be unique (True) or not.
+        rSep: str
+            List elements are separated by sep. Default ' '.
+        rOpt: boolean
+            To allow for empty fields.
+        rVMin: float or None
+            Elements in the list must be >= vMin.
+        rVMax: float or None
+            Elements in the list must be <= vMax.
+        rNMin: int or None
+            List must contain at least nMin elements.
+        rNN: int or None
+            List must contain exactly nN elements.
+        rNMax: int or None
+            List must contain maximum nMax elements.
     """
     #region --------------------------------------------------> Instance Setup
     def __init__(
         self,
-        numType: mConfig.litNumType = 'int',
-        unique : bool= True,
-        sep    : str = ',',
-        opt    : bool = False,
-        vMin   : Optional[float] = None,
-        vMax   : Optional[float] = None,
-        nMin   : Optional[int] = None,
-        nN     : Optional[int] = None,
-        nMax   : Optional[int] = None,
+        numType:LIT_NumType  = 'int',
+        unique:bool          = True,
+        sep:str              = ',',
+        opt:bool             = False,
+        vMin:Optional[float] = None,
+        vMax:Optional[float] = None,
+        nMin:Optional[int]   = None,
+        nN:Optional[int]     = None,
+        nMax:Optional[int]   = None,
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.rNumType: mConfig.litNumType = numType
-        self.rUnique  = unique
-        self.rSep     = sep
-        self.rOpt     = opt
-        self.rVMin    = vMin
-        self.rVMax    = vMax
-        self.rNMin    = nMin
-        self.rNN      = nN
-        self.rNMax    = nMax
+        self.rNumType:LIT_NumType = numType
+        self.rUnique = unique
+        self.rSep    = sep
+        self.rOpt    = opt
+        self.rVMin   = vMin
+        self.rVMax   = vMax
+        self.rNMin   = nMin
+        self.rNN     = nN
+        self.rNMax   = nMax
         #------------------------------>
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
@@ -340,27 +343,27 @@ class NumberList(wx.Validator):
 
     def Validate(
         self,
-        vMin: Optional[float]=None,
-        vMax: Optional[float]=None,
-        nMin: Optional[int]=None,
-        nN  : Optional[int]=None,
-        nMax: Optional[int]=None,
+        vMin:Optional[float] = None,
+        vMax:Optional[float] = None,
+        nMin:Optional[int]   = None,
+        nN:Optional[int]     = None,
+        nMax:Optional[int]   = None,
         ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
         """ Validate widget value. Parameters allow to give these values just
             before validation.
 
             Parameters
             ----------
-            vMin : float or None
-                Elements in the list must be >= vMin
-            vMax : float or None
-                Elements in the list must be <= vMax
-            nMin : int or None
-                List must contain at least nMin elements
-            nN : int or None
-                List must contain exactly nN elements
-            nMax : int or None
-                List must contain maximum nMax elements
+            vMin: float or None
+                Elements in the list must be >= vMin.
+            vMax: float or None
+                Elements in the list must be <= vMax.
+            nMin: int or None
+                List must contain at least nMin elements.
+            nN: int or None
+                List must contain exactly nN elements.
+            nMax: int or None
+                List must contain maximum nMax elements.
         """
         #region ---------------------------------------------------> Variables
         tvMin = vMin if vMin is not None else self.rVMin
@@ -374,7 +377,7 @@ class NumberList(wx.Validator):
 
         #region ----------------------------------------------------> Validate
         try:
-            return mCheck.NumberList(
+            return cCheck.NumberList(
                 value,
                 numType = self.rNumType,
                 unique  = self.rUnique,
@@ -409,28 +412,28 @@ class Comparison(wx.Validator):
 
         Parameters
         ----------
-        numType : One of int or float
+        numType: One of int or float
             Number type in tStr.
-        opt : bool
+        opt: bool
             Input is optional (True) or not (False). Default is False.
-        vMin : float or None
-            Minimum acceptable value in tStr
-        vMax : float or None
-            Maximum acceptable value in tStr
-        op : list
+        vMin: float or None
+            Minimum acceptable value in tStr.
+        vMax: float or None
+            Maximum acceptable value in tStr.
+        op: list
             List of acceptable operand in front of value for tStr.
 
         Attributes
         ----------
-        rNumType : One of int or float
+        rNumType: One of int or float
             Number type in tStr.
-        rOpt : bool
+        rOpt: bool
             Input is optional (True) or not (False). Default is False.
-        rVMin : float or None
-            Minimum acceptable value in tStr
-        rVMax : float or None
-            Maximum acceptable value in tStr
-        rOp : list
+        rVMin: float or None
+            Minimum acceptable value in tStr.
+        rVMax: float or None
+            Maximum acceptable value in tStr.
+        rOp: list
             List of acceptable operand in front of value for tStr.
 
         Return by Validate method
@@ -446,19 +449,19 @@ class Comparison(wx.Validator):
     #region --------------------------------------------------> Instance setup
     def __init__(                                                               # pylint: disable=dangerous-default-value
         self,
-        numType: mConfig.litNumType='int',
-        opt    : bool=False,
-        vMin   : Optional[float]=None,
-        vMax   : Optional[float]=None,
-        op     : list[str]=['<', '>', '<=', '>='],
+        numType:LIT_NumType  = 'int',
+        opt:bool             = False,
+        vMin:Optional[float] = None,
+        vMax:Optional[float] = None,
+        op:list[str]         = ['<', '>', '<=', '>='],
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.rNumType: mConfig.litNumType=numType
-        self.rOpt     = opt
-        self.rVMin    = vMin
-        self.rVMax    = vMax
-        self.rOp      = op
+        self.rNumType:LIT_NumType = numType
+        self.rOpt  = opt
+        self.rVMin = vMin
+        self.rVMax = vMax
+        self.rOp   = op
         #------------------------------>
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
@@ -485,7 +488,7 @@ class Comparison(wx.Validator):
 
         #region ----------------------------------------------------> Validate
         try:
-            return mCheck.Comparison(
+            return cCheck.Comparison(
                 value,
                 numType = self.rNumType,
                 opt     = self.rOpt,

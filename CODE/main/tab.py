@@ -31,7 +31,8 @@ class TabStart(wx.Panel):
             Direct parent of the widgets in the tab.
     """
     #region -----------------------------------------------------> Class setup
-    cName = mConfig.main.ntStart
+    cName  = mConfig.main.ntStart
+    tTitle = mConfig.main.tStart
     #------------------------------> Files
     cImg = mConfig.core.fImgStart
     #endregion --------------------------------------------------> Class setup
@@ -42,7 +43,7 @@ class TabStart(wx.Panel):
         #region -----------------------------------------------> Initial setup
         self.cParent = parent
         #------------------------------>
-        super().__init__(parent=parent, name=self.cName)
+        super().__init__(parent=parent)
         self.SetBackgroundColour('white')
         #endregion --------------------------------------------> Initial setup
 
@@ -89,10 +90,10 @@ class TabStart(wx.Panel):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
-        # self.wBtnCorrA.Bind(
-        #     wx.EVT_BUTTON,
-        #     lambda event: mConfig.winMain.CreateTab(mConfig.ntCorrA)            # type: ignore
-        # )
+        self.wBtnCorrA.Bind(
+            wx.EVT_BUTTON,
+            lambda event: mConfig.main.mainWin.CreateTab(mConfig.corr.nTab)     # type: ignore
+        )
         # self.wBtnDataPrep.Bind(
         #     wx.EVT_BUTTON,
         #     lambda event: mConfig.winMain.CreateTab(mConfig.ntDataPrep)         # type: ignore

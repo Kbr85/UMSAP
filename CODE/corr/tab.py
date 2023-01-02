@@ -11,21 +11,21 @@
 # ------------------------------------------------------------------------------
 
 
-"""Configuration for the tarprot module of the app"""
+"""Tabs for the corr module of the app"""
 
 
 #region -------------------------------------------------------------> Imports
-from dataclasses import dataclass
+from config.config import config as mConfig
+from core import tab as cTab
 #endregion ----------------------------------------------------------> Imports
 
 
-#region -------------------------------------------------------> Configuration
-@dataclass
-class Configuration():
-    """Configuration for the tarprot module"""
-    #region ---------------------------------------------------------> Options
-    nMod:str  = 'Targeted Proteolysis'                                          # Name of the Module
-    nPane:str = 'Pane TarProt'                                                  # Name of Conf Pane
-    #endregion ------------------------------------------------------> Options
+#region -------------------------------------------------------------> Classes
+class CorrA(cTab.BaseConfTab):
+    """Creates the Tab to setup a Correlation Analysis"""
+    #region -----------------------------------------------------> Class Setup
+    cName  = mConfig.corr.nTab
+    cTitle = mConfig.corr.tCorrA
+    #endregion --------------------------------------------------> Class Setup
 #---
-#endregion ----------------------------------------------------> Configuration
+#endregion ----------------------------------------------------------> Classes

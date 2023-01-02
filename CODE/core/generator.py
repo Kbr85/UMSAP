@@ -11,7 +11,7 @@
 # ------------------------------------------------------------------------------
 
 
-"""Classes and methods to handle generators."""
+"""Generators of the app."""
 
 
 #region -------------------------------------------------------------> Imports
@@ -20,8 +20,7 @@ from typing  import Iterator, Union
 
 import wx
 
-import config.config  as mConfig
-import data.exception as mException
+from config.config import config as mConfig
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -31,13 +30,13 @@ def FastaSequence(fileP: Union[Path, str]) -> Iterator[tuple[str, str]]:
 
         Parameters
         ----------
-        fileP : Path
+        fileP: Path
             Location of the fasta file in the file system.
 
         Yield
         -----
         tuple
-            (Fasta header, sequence) or ('', '') if file is empty
+            (Fasta header, sequence) or ('', '') if file is empty.
 
         Notes
         -----
@@ -73,7 +72,7 @@ def FastaSequence(fileP: Union[Path, str]) -> Iterator[tuple[str, str]]:
                     #--------------> Append to seq
                     seq.append(sLine)
     except Exception as e:
-        raise mException.ExecutionError(mConfig.mFileRead.format(fileP)) from e
+        raise RuntimeError(mConfig.core.mFileRead.format(fileP)) from e
     #endregion -------------------------------------------------> Process file
 
     #region --------------------------------------------> Get the last protein

@@ -36,8 +36,7 @@ winUMSAP = {}
 #------------------------------> Name of Utilities
 nuReadF:str    = 'Read UMSAP File'
 #------------------------------> Title of Tabs
-tDef:str      = 'Default Tab'
-tCorrA:str    = 'CorrA'
+
 tDataPrep:str = 'DataPrep'
 tLimProt:str  = 'LimProt'
 tProtProf:str = 'ProtProf'
@@ -58,14 +57,10 @@ ndResControlExp        = 'Results & Control Experiments'
 ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Tab for notebook windows
 #------------------------------> Individual Panes
-npDef                   = 'Default Pane'
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npNPlot                 = 'NPlot'
-npCorrA                 = 'CorrAPane'
 npDataPrep              = 'DataPrepPane'
 npLimProt               = 'LimProtPane'
-npProtProf              = 'ProtProfPane'
-npTarProt               = 'TarProtPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
 npResControlExpLimProt  = 'ResControlExpPaneLimProt'
 npResControlExpTarProt  = 'ResControlExpPaneTarProt'
@@ -107,29 +102,14 @@ kwToolFAPDBMap         = 'PDB Map'
 #endregion ---------------------------------> Keywords for Menu - Method Links
 
 
-#region ------------------------------------------------------> Path and Files
-#------------------------------> Names
-fnInitial    = "{}_{}-Initial-Data.txt"
-fnFloat      = "{}_{}-Floated-Data.txt"
-fnTrans      = "{}_{}-Transformed-Data.txt"
-fnNorm       = "{}_{}-Normalized-Data.txt"
-fnImp        = "{}_{}-Imputed-Data.txt"
-fnTargetProt = "{}_{}-Target-Protein-Data.txt"
-fnExclude    = "{}_{}-After-Excluding-Data.txt"
-fnScore      = "{}_{}-Score-Filtered-Data.txt"
-fnDataSteps  = 'Steps_Data_Files'
-fnDataInit   = 'Input_Data_Files'
-#endregion ---------------------------------------------------> Path and Files
-
-
 #region --------------------------------------------------------------> Labels
 #------------------------------> Pane Title
-lnPaneConf = 'Configuration Options'
+
 lnListPane = 'Data File Content'
 #------------------------------> wx.Button
-lBtnTypeResCtrl = 'Type Values'
+
 #------------------------------> wx.ListCtrl
-lLCtrlColNameI = ['#', 'Name']
+
 # #------------------------------> wx.StaticBox
 lStProtProfCond = 'Conditions'
 lStProtProfRP   = 'Relevant Points'
@@ -139,18 +119,14 @@ lStTarProtExp   = 'Experiments'
 lStCtrlName     = 'Name'
 lStCtrlType     = 'Type'
 #------------------------------> wx.StaticText
-lStColAnalysis = 'Columns for Analysis'
 lStScoreVal    = 'Score Value'
 lStScoreCol    = 'Score'
-lStResultCtrl  = 'Results - Control experiments'
 lStResultCtrlS = 'Results - Control'
 lStExcludeProt = 'Exclude Proteins'
 lStGeneName    = 'Gene Names'
 # #------------------------------> wx.ComboBox or wx.CheckBox
 lCbCorrectP    = 'P Correction'
 lCbSample      = 'Samples'
-#------------------------------> wx.Dialog
-lPdError = 'Fatal Error'
 #------------------------------> Filters
 lFilFCEvol   = 'FC Evolution'
 lFilHypCurve = 'Hyp Curve'
@@ -167,8 +143,6 @@ lmCorrAAllCol      = 'All Columns'
 
 
 #region ------------------------------------------------------------> Tooltips
-#------------------------------> wx.Button
-ttBtnHelp = 'Read tutorial at {}.'
 #------------------------------> wx.StaticText
 ttStScoreVal    = 'Set the minimum acceptable Score value.\ne.g. -4'
 ttStScoreCol    = f'Set the column number containing the {lStScoreVal}.\ne.g. 4'
@@ -179,49 +153,10 @@ ttStCorrectP    = 'Select the p correction method.'
 ttStSample      = ("Specify if samples are independent or paired.\n"
                    "For example, samples are paired when the same Petri dish "
                    "is used for the control and experiment.")
-#------------------------------> wx.ListCtrl
-ttLCtrlCopyNoMod    = (f"Selected rows can be copied ({copyShortCut}+C) but "
-                       f"the table cannot be modified.")
-ttLCtrlPasteMod     = (f"New rows can be pasted ({copyShortCut}+V) after the "
-                      f"last selected element and existing ones cut/deleted "
-                      f"({copyShortCut}+X) or copied "
-                      f"({copyShortCut}+C).")
-ttSectionRightClick = ('The content of the Section can be deleted with a '
-                       'right click.')
 #endregion ---------------------------------------------------------> Tooltips
 
 
 #region -------------------------------------------------------------> Options
-oNumType = {
-    'int'  : int,
-    'float': float,
-}
-oYesNo = {
-    ''   : '',
-    'Yes': True,
-    'No' : False,
-}
-oTransMethod = {
-    ''    : '',
-    'None': 'None',
-    'Log2': 'Log2',
-}
-oNormMethod = {
-    ''      : '',
-    'None'  : 'None',
-    'Median': 'Median',
-}
-oImputation = {
-    ''                   : '',
-    'None'               : 'None',
-    'Normal Distribution': 'ND',
-}
-oCorrMethod = {
-    ''        : '',
-    'Pearson' : 'Pearson',
-    'Kendall' : 'Kendall',
-    'Spearman': 'Spearman',
-}
 oIntensities = {
     'Empty' : '',
     'RawI'  : 'Raw Intensities',
@@ -255,12 +190,7 @@ oControlTypeProtProf = {
 
 
 #region --------------------------------------------------------> Literal
-litFFSelect     = Literal['openO', 'openM', 'save', 'folder']
-litFSelect      = Literal['openO', 'openM', 'save']
-litFoF          = Literal['file', 'folder']
-litNumType      = Literal['int', 'float']
 litComp         = Literal['lt', 'le', 'e', 'ge', 'gt']
-litCompEq       = Literal['e', 'ne']
 litStartEnd     = Literal['end', 'start']
 litTestSide     = Literal['ts', 's', 'l']
 #endregion -----------------------------------------------------> Literal
@@ -280,8 +210,6 @@ dfcolSeqNC              = ['Sequence', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
 
 
 #region -----------------------------------------------------> Important Lists
-ltDPKeys = ['dfF', 'dfT', 'dfN', 'dfIm']
-
 lAA1 = [ # AA one letter codes
     'A', 'I', 'L', 'V', 'M', 'F', 'W', 'Y', 'R', 'K', 'D', 'E', 'C', 'Q',
     'H', 'S', 'T', 'N', 'G', 'P'
@@ -320,9 +248,6 @@ mOptField        = '\nThis field is optional.'
 #endregion ----------------------------------------------------------> Other
 
 #region ------------------------------------------------------------> Values
-mOneRNumText     = "Only one real number can be accepted here."
-mOneRPlusNumText = (
-    "Only one number equal or greater than zero can be accepted here.")
 mOneZPlusNumText = "Only a non-negative integer can be accepted here."
 mOne01NumText    = "Only one number between 0 and 1 can be accepted here."
 mNZPlusNumText   = (
@@ -331,7 +256,6 @@ mNZPlusNumText   = (
 
 #region ---------------------------------------------------------------> Files
 mFileSelector = 'It was not possible to show the file selecting dialog.'
-mFileRead     = 'An error occurred when reading file:\n{}'
 #endregion ------------------------------------------------------------> Files
 
 #region ------------------------------------------------------------> Pandas
@@ -351,17 +275,12 @@ mColNumbers        = ('In addition, each value must be smaller than the total '
                       'number of columns in the Data file.')
 mColNumber         = ('In addition, the value must be smaller than the total '
                       'number of columns in the Data file.')
-mSection           = 'Values in section {} must be unique.'
 mAllTextFieldEmpty = 'All text fields are empty. Nothing will be done.'
 mRepeatColNum      = 'There are repeated column numbers in the text fields.'
 mRowsInLCtrl       = 'There must be at least {} items in {}.'
 mNoDataLeft        = ('No data left for analysis after all filters (Score, '
                       'Target Protein, etc) were applied.')
-mFileBad           = "File: '{}'\ncannot be used as {} file."
-mOptionBad         = "Option '{}' cannot be accepted in {}."
-mValueBad          = "Value '{}' cannot be accepted in {}.\n"
 mOneRealNum        = f"{mValueBad}{mOneRNumText}"
-mOneRPlusNum       = f"{mValueBad}{mOneRPlusNumText}"
 mOneZPlusNum       = f"{mValueBad}{mOneZPlusNumText}"
 mOneZPlusNumCol    = f"{mOneZPlusNum} {mColNumber}"
 mNZPlusNum         = f"{mValueBad}{mNZPlusNumText}"
@@ -386,37 +305,15 @@ mCtrlEmpty         = 'None of the Control fields can be empty.'
 #------------------------------>
 mCompNYI            = "Comparison method is not yet implemented: {}."
 mPDFilterByCol      = "Filtering process failed."
-mRangeNumIE         = "Invalid range or number: {}"
-mNotImplementedFull = ('Option {} is not yet implemented. Valid options for {} '
-                       'are: {}.')
-mwxLCtrNoCopy       = "The elements of this list cannot be copied."
-mCopyFailedW        = "Copy operation failed. Try again."
-mwxLCtrNoChange     = "This list cannot be modified."
-mPasteFailedW       = "Paste operation failed. Try again."
-mNothingToPasteW    = "Nothing to paste."
-mwxLCtrlNColPaste   = ("The clipboard content cannot be pasted because the "
-                       "number of columns being pasted is different to the "
-                       "number of columns in the list.")
-mInvalidValue       = "'{}' is an invalid value."
 mNotImplemented     = 'Option {} is not yet implemented.'
 mNotSupported       = "{} value '{}' is not supported."
-mEmpty              = 'The field value cannot be empty.'
 #endregion ---------------------------------------------------------> Messages
-
-
-#region ---------------------------------------------------------> Date & Time
-dtFormat = '%Y%m%d-%H%M%S'
-#endregion ------------------------------------------------------> Date & Time
 
 
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Plot Window
 sWinPlot    = (560, 560)
 sWinModPlot = (1100, 625)
-#------------------------------> wx.TextCtrl
-sTc         = (50, 22)
-#------------------------------> wx.ListCtrl
-sLCtrlColI  = [50, 150]
 #endregion ------------------------------------------------------------> Sizes
 #endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS
 
@@ -429,7 +326,6 @@ colorFragments = [
 ]
 
 confColor = { # Colors for the app
-    'Zebra' : '#ffe6e6',
     'RecProt' : 'gray',
     'NatProt' : '#c94c4c',
     nuCorrA : { # Color for plot in Correlation Analysis
@@ -479,14 +375,4 @@ confColor = { # Colors for the app
     },
 }
 #endregion -----------------------------------------------------------> Colors
-
-
-#region --------------------------------------------------------------> Values
-confValues = {
-    nwCheckDataPrep : {
-        'Shift' : '1.8',
-        'Width' : '0.3',
-    }
-}
-#endregion -----------------------------------------------------------> Values
 #endregion ------------------------------------------> CONFIGURABLE PARAMETERS

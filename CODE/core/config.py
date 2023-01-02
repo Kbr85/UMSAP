@@ -50,10 +50,66 @@ class Configuration():
     cwd:Path = Path(__file__)                                                   # Config file path
     #------------------------------>
     winNumber:dict = field(default_factory=lambda: {})                          # Keys: Windows ID - Values: Total number of opened windows, except conf win
-    #------------------------------> Name of Windows
-    nwDef:str = 'Untitled Window'
+    #------------------------------> Name for Windows
+    nwDef:str = 'Name Default Window'
+    #------------------------------> Name for Tabs
+    ntDef:str = 'Name Default Tab'
+    #------------------------------> Name for Panes
+    npDef:str = 'Name Default Pane'
+    #------------------------------>
+    tTitleDef:str = 'Tab'
     #------------------------------> Label for Menu Items
     lmNatSeq:str = 'Native Sequence'
+    #------------------------------> Label for wx.Button
+    lBtnTypeResCtrl:str = 'Type Values'
+    #------------------------------> Label for wx.StaticText
+    lStResultCtrl:str = 'Results - Control experiments'
+    #------------------------------> Label for Pane
+    lnPaneConf:str = 'Configuration Options'
+    #------------------------------> Label for Progress Dialog
+    lPdError:str = 'Fatal Error'
+    #------------------------------> wx.ListCtrl Column names
+    lLCtrlColNameI:list[str] = field(default_factory=lambda: ['#', 'Name'])
+    #------------------------------> DateTime Format
+    dtFormat:str = '%Y%m%d-%H%M%S'
+    #------------------------------> Options
+    oNumType:dict = field(default_factory=lambda: {
+        'int'  : int,
+        'float': float,
+    })
+    #------------------------------> Tooltips
+    ttSectionRightClick:str = ('The content of the Section can be deleted with '
+                               'a right click.')
+    #------------------------------> Messages
+    mFileRead:str       = 'An error occurred when reading file:\n{}'
+    mCopyFailedW:str    = "Copy operation failed. Try again."
+    mPasteFailedW:str   = "Paste operation failed. Try again."
+    mNothing2PasteW:str = "Nothing to paste."
+    mLCtrNoCopy:str     = "The elements of this list cannot be copied."
+    mLCtrNoChange:str   = "This list cannot be modified."
+    mLCtrlNColPaste:str = ("The clipboard content cannot be pasted because the "
+                           "number of columns being pasted is different to the "
+                           "number of columns in the list.")
+    mRangeNumIE:str     = "Invalid range or number: {}"
+    mInvalidValue:str   = "'{}' is an invalid value."
+    mEmpty:str          = 'The field value cannot be empty.'
+    mFileBad:str        = "File: '{}'\ncannot be used as {} file."
+    mOptionBad:str      = "Option '{}' cannot be accepted in {}."
+    mValueBad:str       = "Value '{}' cannot be accepted in {}.\n"
+    mOneRNumText:str    = "Only one real number can be accepted here."
+    mOneRPlusNumText:str = ("Only one number equal or greater than zero can be "
+                            "accepted here.")
+    mSection:str        = 'Values in section {} must be unique.'
+    mNotImplementedFull:str = ('Option {} is not yet implemented. Valid '
+                               'options for {} are: {}.')
+    #------------------------------> Tooltips
+    ttBtnHelp:str = 'Read tutorial at {}.'
+    ttLCtrlCopyNoMod:str = (f"Selected rows can be copied ({copyShortCut}+C) "
+                            "but the table cannot be modified.")
+    ttLCtrlPasteMod:str = (f"New rows can be pasted ({copyShortCut}+V) after "
+                           f"the last selected element and existing ones "
+                           f"cut/deleted ({copyShortCut}+X) or copied "
+                           f"({copyShortCut}+C).")
     #------------------------------> Keywords for Menu
     kwCheckDP:str      = 'General Tool Check DP'
     kwDupWin:str       = 'General Tool Duplicate Window'
@@ -67,6 +123,8 @@ class Configuration():
     fConfig:Path = Path.home() / '.umsap_config.json'
     #------------------------------> Sizes
     sWinFull:tuple[int,int] = (990, 775)                                        # Full size window
+    sTc:tuple[int,int]      = (50, 22)                                          # wx.TextCtrl
+    sLCtrlColI:list[int]    = field(default_factory=lambda: [50, 150])          # Size for # Name columns in a wx.ListCtrl
     #------------------------------> Extensions
     #--> For wx.Dialogs
     elData:str         = 'txt files (*.txt)|*.txt'
@@ -91,6 +149,25 @@ class Configuration():
     urlHome     = 'https://www.umsap.nl'
     urlUpdate   = f"{urlHome}/page/release-notes"
     urlTutorial = f"{urlHome}/tutorial/2-2-X"
+    #------------------------------> List
+    ltDPKeys:list[str] = field(default_factory=lambda: ['dfF', 'dfT', 'dfN', 'dfIm'])
+    #------------------------------> Options
+    oYesNo:dict = field(default_factory=lambda: {
+        ''   : '',
+        'Yes': True,
+        'No' : False,
+    })
+    #------------------------------> Names for output folder and files
+    fnInitial:str    = "{}_{}-Initial-Data.txt"
+    fnFloat:str      = "{}_{}-Floated-Data.txt"
+    fnTrans:str      = "{}_{}-Transformed-Data.txt"
+    fnNorm:str       = "{}_{}-Normalized-Data.txt"
+    fnImp:str        = "{}_{}-Imputed-Data.txt"
+    fnTargetProt:str = "{}_{}-Target-Protein-Data.txt"
+    fnExclude:str    = "{}_{}-After-Excluding-Data.txt"
+    fnScore:str      = "{}_{}-Score-Filtered-Data.txt"
+    fnDataSteps:str  = 'Steps_Data_Files'
+    fnDataInit:str   = 'Input_Data_Files'
     #------------------------------> Fonts
     fSeqAlign:Union[wx.Font, str]              = ''
     fTreeItem:Union[wx.Font, str]              = ''
@@ -105,6 +182,7 @@ class Configuration():
     checkUpdate:bool    = True                                                  # True Check, False No check
     DPI:int             = 100                                                   # DPI for plot images
     MatPlotMargin:float = 0.025                                                 # Margin for the axes range
+    cZebra: str         = '#ffe6e6'                                             # Zebra style in wx.ListCrl
     #------------------------------> Converter for user options
     converter:dict = field(default_factory=lambda: {
         'checkUpdate'  : bool,
@@ -150,6 +228,8 @@ class Configuration():
         self.fImgStart  = self.pImages / 'MAIN-WINDOW/p97-2.png'
         self.fManual    = self.res / 'MANUAL/manual.pdf'
         self.fConfigDef = self.res / 'CONFIG/config_def.json'
+        #------------------------------> Messages
+        self.mOneRPlusNum = f"{self.mValueBad}{self.mOneRPlusNumText}"
     #endregion ------------------------------------------------> Class Methods
 #---
 #endregion ----------------------------------------------------> Configuration

@@ -88,36 +88,4 @@ def LoadUMSAPFile(
 
     return True
 #---
-
-
-def LCtrlFillColNames(lc: wx.ListCtrl, fileP: Union[Path, str]) -> bool:
-    """Fill the wx.ListCtrl with the name of the columns in fileP.
-
-        Parameters
-        ----------
-        lc : wx.ListCtrl
-            wx.ListCtrl to fill info into
-        fileP : Path
-            Path to the file from which to read the column names
-
-        Notes
-        -----
-        This will delete the wx.ListCtrl before adding the new names.
-        wx.ListCtrl is assumed to have at least two columns [#, Name,]
-    """
-    #region -------------------------------------------------------> Read file
-    colNames = mFile.ReadFileFirstLine(fileP)
-    #endregion ----------------------------------------------------> Read file
-
-    #region -------------------------------------------------------> Fill List
-    #------------------------------> Del items
-    lc.DeleteAllItems()
-    #------------------------------> Fill
-    for k, v in enumerate(colNames):
-        index = lc.InsertItem(k, " " + str(k))
-        lc.SetItem(index, 1, v)
-    #endregion ----------------------------------------------------> Fill List
-
-    return True
-#---
 #endregion ----------------------------------------------------------> Methods

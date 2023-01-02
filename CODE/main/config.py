@@ -28,8 +28,9 @@ class Configuration():
     """Configuration for the main module"""
     #------------------------------> Names
     nwMain:str = 'Analysis Setup'
-    #------------------------------> Name Tab
-    ntStart:str = 'Start'
+    ntStart:str = 'Tab Start'
+    #------------------------------> Title of Tab
+    tStart:str = 'Start'
     #------------------------------> Reference to main window
     mainWin:Optional['mWindow.WindowMain'] = None
     #------------------------------> Converter for user options

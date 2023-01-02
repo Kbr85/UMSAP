@@ -23,6 +23,7 @@ from wx.lib.agw import aui
 
 from config.config import config as mConfig
 from core import window as cWindow
+from corr import tab    as corrTab
 from help import method as hMethod
 from main import menu   as mMenu
 from main import method as mMethod
@@ -48,8 +49,8 @@ class WindowMain(cWindow.BaseWindow):
     cName = mConfig.main.nwMain
     #------------------------------>
     dTab = {
-        mConfig.main.ntStart   : mTab.TabStart,
-        # mConfig.main.ntCorrA   : mTab.BaseConfTab,
+        mConfig.main.ntStart : mTab.TabStart,
+        mConfig.corr.nTab    : corrTab.CorrA,
         # mConfig.main.ntDataPrep: mTab.BaseConfListTab,
         # mConfig.main.ntLimProt : mTab.BaseConfListTab,
         # mConfig.main.ntProtProf: mTab.BaseConfListTab,
@@ -137,13 +138,13 @@ class WindowMain(cWindow.BaseWindow):
         if win is None:
             #------------------------------> Create tab
             try:
-                tab = self.dTab[name](self.wNotebook, name, dataI)
+                tab = self.dTab[name](self.wNotebook, dataI)
             except Exception as e:
                 msg = f'Failed to create the {name} tab.'
                 cWindow.Notification('errorU', msg=msg, tException=e, parent=self)
                 return False
             #------------------------------> Add
-            self.wNotebook.AddPage(tab, name, select=True)
+            self.wNotebook.AddPage(tab, tab.tTitle, select=True)
         else:
             #------------------------------> Focus
             self.wNotebook.SetSelection(self.wNotebook.GetPageIndex(win))
@@ -159,10 +160,6 @@ class WindowMain(cWindow.BaseWindow):
                     self.wNotebook.GetPageIndex(winS),
                     True,
                 )
-            else:
-                pass
-        else:
-            pass
         #endregion ------------------------------------------------> Start Tab
 
         #region ---------------------------------------------------> Raise
@@ -200,8 +197,6 @@ class WindowMain(cWindow.BaseWindow):
                     self.wNotebook.GetPageIndex(win),
                     False,
                 )
-            else:
-                pass
         elif pageC == 0:
             #------------------------------> Show Start Tab with close button
             self.CreateTab(mConfig.main.ntStart)
@@ -210,8 +205,6 @@ class WindowMain(cWindow.BaseWindow):
                     self.FindWindowByName(mConfig.main.ntStart)),
                 False,
             )
-        else:
-            pass
         #endregion ------------------------------------------------>
 
         return True
