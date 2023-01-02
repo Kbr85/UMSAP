@@ -18,7 +18,7 @@
 import _thread
 import shutil
 from pathlib import Path
-from typing  import Optional, Union
+from typing  import Optional, Union, Callable
 
 import pandas as pd
 
@@ -33,15 +33,6 @@ from core import validator as cValidator
 from core import widget    as cWidget
 from core import window    as cWindow
 #endregion ----------------------------------------------------------> Imports
-
-
-ANALYSIS_METHOD = {
-    # mConfig.npCorrA   : mMethod.CorrA,
-    # mConfig.npDataPrep: mStatistic.DataPreparation,
-    # mConfig.npProtProf: mMethod.ProtProf,
-    # mConfig.npLimProt : mMethod.LimProt,
-    # mConfig.npTarProt : mMethod.TarProt,
-}
 
 
 #region -------------------------------------------------------------> Classes
@@ -247,6 +238,7 @@ class BaseConfPanel(
         #------------------------------> Needed to Run the Analysis
         self.rCheckUnique = []
         self.rLLenLongest = getattr(self, 'rLLenLongest', 0)
+        self.rAnalysisMethod:Callable
         self.rMainData    = getattr(self, 'rMainData', '')
         #--------------> Dict with the user input as given
         self.rDI = {}
@@ -1149,29 +1141,29 @@ class BaseConfPanel(
             bool
         """
         #region -------------------------------------------------------> Print
-        if mConfig.core.development:
-            print('RunAnalysis')
-            print('d:')
-            for k,v in self.rDI.items():
-                print(str(k)+': '+str(v))
-            print('')
-            print('do:')
-            for k,v in self.rDO.items():
-                if k not in ['df', 'oc', 'dfo']:
-                    print(str(k)+': '+str(v))
-                else:
-                    print(k)
-                    for j,w in v.items():
-                        print(f'\t{j}: {w}')
-            print('')
+        # if mConfig.core.development:
+        #     print('RunAnalysis')
+        #     print('d:')
+        #     for k,v in self.rDI.items():
+        #         print(str(k)+': '+str(v))
+        #     print('')
+        #     print('do:')
+        #     for k,v in self.rDO.items():
+        #         if k not in ['df', 'oc', 'dfo']:
+        #             print(str(k)+': '+str(v))
+        #         else:
+        #             print(k)
+        #             for j,w in v.items():
+        #                 print(f'\t{j}: {w}')
+        #     print('')
         #endregion ----------------------------------------------------> Print
 
         #region ----------------------------------------------------> Analysis
         msgStep = self.cLPdRun + self.cLPdRunText
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------>
-        dfDict, self.rMsgError, self.rException = ANALYSIS_METHOD[self.cName](
-            self.rIFileObj.rDf, self.rDO, self.rDExtra)                         # type: ignore
+        dfDict, self.rMsgError, self.rException = self.rAnalysisMethod(
+            df=self.rIFileObj.rDf, rDO=self.rDO, rDExtra=self.rDExtra)                         # type: ignore
         #------------------------------>
         if dfDict:
             for k,v in dfDict.items():

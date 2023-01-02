@@ -24,14 +24,15 @@ from dataclasses import dataclass, field
 class Configuration():
     """Configuration for the core module"""
     #region ---------------------------------------------------------> Options
-    nUtil:str  = 'Correlation Analysis'                                         # Name of the Utility
-    nTab:str   = 'Tab Correlation AnalysisA'                                    # Name for the Tab
-    nPane:str  = 'Pane Correlation Analysis'                                    # Name for Conf Pane
-    tCorrA:str = 'CorrA'                                                        # Title of the Tab
-    #------------------------------> Label for wx.StaticText
-    lStColAnalysis:str = 'Columns for Analysis'
+    #------------------------------> Name & Title
+    nUtil:str   = 'Correlation Analysis'                                        # Name of the Utility
+    nTab:str    = 'Tab Correlation AnalysisA'                                   # Name for the Tab
+    nPane:str   = 'Pane Correlation Analysis'                                   # Name for Conf Pane
+    ttCorrA:str = 'CorrA'                                                       # Title of the Tab
+    #------------------------------> Label
+    lStColAnalysis:str = 'Columns for Analysis'                                 # lSt: Label for wx.StaticText
     #------------------------------> Options
-    oCorrMethod:dict = field(default_factory=lambda: {
+    oCorrMethod:dict = field(default_factory=lambda: {                          # Correlation Methods
         ''        : '',
         'Pearson' : 'Pearson',
         'Kendall' : 'Kendall',

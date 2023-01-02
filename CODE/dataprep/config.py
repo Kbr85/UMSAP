@@ -27,8 +27,8 @@ class Configuration():
     #------------------------------> Name & Title
     nUtil:str = 'Data Preparation'                                              # Name of the Utility
     #------------------------------> Normal distribution parameters
-    Shift:float = 1.8                                                           # Shifted center
-    Width:float = 0.3                                                           # Stdev
+    Shift:str = '1.8'                                                           # Shifted center
+    Width:str = '0.3'                                                           # Stdev
     #------------------------------> Options
     oTransMethod:dict = field(default_factory=lambda: {                         # Transformation Methods
         ''    : '',

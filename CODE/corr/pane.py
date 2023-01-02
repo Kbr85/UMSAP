@@ -15,7 +15,8 @@
 
 
 #region -------------------------------------------------------------> Imports
-from typing import Union
+from pathlib import Path
+from typing  import Union
 
 import wx
 
@@ -23,25 +24,26 @@ from config.config import config as mConfig
 from core import pane   as cPane
 from core import widget as cWidget
 from core import validator as cValidator
+from corr import method as corrMethod
 #endregion ----------------------------------------------------------> Imports
 
 
 #region -------------------------------------------------------------> Classes
-class PaneCorrA(cPane.BaseConfPanel):
+class CorrA(cPane.BaseConfPanel):
     """Creates the configuration tab for Correlation Analysis.
 
         Parameters
         ----------
-        parent : wx Widget
+        parent: wx.Window
             Parent of the widgets.
-        dataI : dict or None
+        dataI: dict
             Initial data provided by the user in a previous analysis.
             This contains both I and CI dicts e.g. {'I': I, 'CI': CI}
 
         Notes
         -----
         The structures of self.rDO and self.rDI are:
-        rDO : dict
+        rDO: dict
             Dict with the processed user input
             {
                 'uFile'      : 'umsap file path',
@@ -64,7 +66,7 @@ class PaneCorrA(cPane.BaseConfPanel):
                     'ResCtrlFlat' : [cero based flat list of result & control],
                 },
             }
-        rDI : dict
+        rDI: dict
             Similar to 'do' but:
                 - No oc and df dict
                 - With the values given by the user
@@ -119,23 +121,23 @@ class PaneCorrA(cPane.BaseConfPanel):
     cLColAnalysis = mConfig.corr.lStColAnalysis
     cLNumName     = mConfig.core.lLCtrlColNameI
     cSNumName     = mConfig.core.sLCtrlColI
-    cLPdRunText   = 'Calculating the Correlation coefficients'
+    cLPdRunText   = 'Calculating Correlation Coefficients'
     #------------------------------> Needed by BaseConfPanel
-    cName        = mConfig.corr.nPane
-    cURL         = f'{mConfig.core.urlTutorial}/correlation-analysis'
-    cSection     = mConfig.corr.nUtil
-    cTitlePD     = 'Calculating Correlation Coefficients'
-    cGaugePD     = 21
-    cTTHelp      = mConfig.core.ttBtnHelp.format(cURL)
-    rLLenLongest = len(cLCorrMethod)
-    rMainData    = '{}_{}-CorrelationCoefficients-Data.txt'
+    cName           = mConfig.corr.nPane
+    cURL            = f'{mConfig.core.urlTutorial}/correlation-analysis'
+    cSection        = mConfig.corr.nUtil
+    cTitlePD        = 'Calculating Correlation Coefficients'
+    cGaugePD        = 21
+    cTTHelp         = mConfig.core.ttBtnHelp.format(cURL)
+    rLLenLongest    = len(cLCorrMethod)
+    rMainData       = '{}_{}-CorrelationCoefficients-Data.txt'
+    rAnalysisMethod = corrMethod.CorrA
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: wx.Window, dataI: dict={}):                      # pylint: disable=dangerous-default-value
+    def __init__(self, parent:wx.Window, dataI:dict={}):                        # pylint: disable=dangerous-default-value
         """"""
         #region -----------------------------------------------> Initial setup
-        #------------------------------> Setup attributes in base class
         super().__init__(parent)
         #endregion --------------------------------------------> Initial setup
 
@@ -263,31 +265,26 @@ class PaneCorrA(cPane.BaseConfPanel):
         #endregion -------------------------------------------> checkUserInput
 
         #region --------------------------------------------------------> Test
-        # if mConfig.development:
-        #     # pylint: disable=line-too-long
-        #     import getpass                                                      # pylint: disable=import-outside-toplevel
-        #     user = getpass.getuser()
-        #     if mConfig.os == "Darwin":
-        #         self.wUFile.wTc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
-        #         fDataTemp = "/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt"
-        #         self.wIFile.wTc.SetValue(fDataTemp)
-        #         self.IFileEnter(fDataTemp)
-        #     elif mConfig.os == 'Windows':
-        #         self.wUFile.wTc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
-        #         self.wIFile.wTc.SetValue(str(Path(f'C:/Users/{user}/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt')))
-        #     else:
-        #         pass
-        #     self.wId.wTc.SetValue("Beta Version Dev")
-        #     self.wCeroB.wCb.SetValue("Yes")
-        #     self.wTransMethod.wCb.SetValue("Log2")
-        #     self.wNormMethod.wCb.SetValue("Median")
-        #     self.wImputationMethod.wCb.SetValue("Normal Distribution")
-        #     self.OnImpMethod('fEvent')
-        #     self.wShift.wTc.SetValue('1.8')
-        #     self.wWidth.wTc.SetValue('0.3')
-        #     self.wCorrMethod.wCb.SetValue("Pearson")
-        # else:
-        #     pass
+        if mConfig.core.development:
+            import getpass                                                      # pylint: disable=import-outside-toplevel
+            user = getpass.getuser()
+            if mConfig.core.os == "Darwin":
+                self.wUFile.wTc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
+                fDataTemp = "/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt"
+                self.wIFile.wTc.SetValue(fDataTemp)
+                self.IFileEnter(fDataTemp)
+            elif mConfig.core.os == 'Windows':
+                self.wUFile.wTc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
+                self.wIFile.wTc.SetValue(str(Path(f'C:/Users/{user}/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt')))
+            self.wId.wTc.SetValue("Beta Version Dev")
+            self.wCeroB.wCb.SetValue("Yes")
+            self.wTransMethod.wCb.SetValue("Log2")
+            self.wNormMethod.wCb.SetValue("Median")
+            self.wImputationMethod.wCb.SetValue("Normal Distribution")
+            self.OnImpMethod('fEvent')
+            self.wShift.wTc.SetValue('1.8')
+            self.wWidth.wTc.SetValue('0.3')
+            self.wCorrMethod.wCb.SetValue("Pearson")
         #endregion -----------------------------------------------------> Test
 
         #region -------------------------------------------------------> DataI
@@ -297,12 +294,12 @@ class PaneCorrA(cPane.BaseConfPanel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnAdd(self, event: Union[wx.Event, str]) -> bool:                       # pylint: disable=unused-argument
+    def OnAdd(self, event:Union[wx.Event, str]) -> bool:                        # pylint: disable=unused-argument
         """Add columns to analyze using the button.
 
             Parameters
             ----------
-            event : wx.Event
+            event: wx.Event
                 Event information.
 
             Returns
@@ -316,12 +313,12 @@ class PaneCorrA(cPane.BaseConfPanel):
     #endregion ------------------------------------------------> Event Methods
 
     #region ---------------------------------------------------> Class Methods
-    def SetInitialData(self, dataI: dict={}) -> bool:                           # pylint: disable=dangerous-default-value
+    def SetInitialData(self, dataI:dict={}) -> bool:                            # pylint: disable=dangerous-default-value
         """Set initial data.
 
             Parameters
             ----------
-            dataI : dict
+            dataI: dict
                 Data to fill all fields and repeat an analysis. See Notes.
 
             Returns
@@ -373,131 +370,125 @@ class PaneCorrA(cPane.BaseConfPanel):
     #endregion ------------------------------------------------> Class Methods
 
     #region ---------------------------------------------------> Run Analysis
-    # def CheckInput(self) -> bool:
-    #     """Check user input
+    def CheckInput(self) -> bool:
+        """Check user input
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region -------------------------------------------------------> Super
-    #     if super().CheckInput():
-    #         pass
-    #     else:
-    #         return False
-    #     #endregion ----------------------------------------------------> Super
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Super
+        if not super().CheckInput():
+            return False
+        #endregion ----------------------------------------------------> Super
 
-    #     #region -------------------------------------------> Individual Fields
-    #     #region -------------------------------------------> ListCtrl
-    #     msgStep = self.cLPdCheck +  self.cLColAnalysis
-    #     wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-    #     if self.wLCtrlO.GetItemCount() > 1:
-    #         pass
-    #     else:
-    #         self.rMsgError = mConfig.mRowsInLCtrl.format(2, self.cLColAnalysis)
-    #         return False
-    #     #endregion ----------------------------------------> ListCtrl
-    #     #endregion ----------------------------------------> Individual Fields
+        #region -------------------------------------------> Individual Fields
+        #region -------------------------------------------> ListCtrl
+        msgStep = self.cLPdCheck +  self.cLColAnalysis
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        if not self.wLCtrlO.GetItemCount() > 1:
+            self.rMsgError = mConfig.core.mRowsInLCtrl.format(2, self.cLColAnalysis)
+            return False
+        #endregion ----------------------------------------> ListCtrl
+        #endregion ----------------------------------------> Individual Fields
 
-    #     return True
-    # #---
+        return True
+    #---
 
-    # def PrepareRun(self) -> bool:
-    #     """Set variable and prepare data for analysis.
+    def PrepareRun(self) -> bool:
+        """Set variable and prepare data for analysis.
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region -------------------------------------------------------> Input
-    #     msgStep = self.cLPdPrepare + 'User input, reading'
-    #     wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Input
+        msgStep = self.cLPdPrepare + 'User input, reading'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
 
-    #     col  = [int(x) for x in self.wLCtrlO.GetColContent(0)]
-    #     colF = [x for x in range(0, len(col))]
-    #     impMethod = self.wImputationMethod.wCb.GetValue()
-    #     #------------------------------> As given
-    #     self.rDI = {
-    #         self.EqualLenLabel(self.cLiFile) : (
-    #             self.wIFile.wTc.GetValue()),
-    #         self.EqualLenLabel(self.cLId) : (
-    #             self.wId.wTc.GetValue()),
-    #         self.EqualLenLabel(self.cLCeroTreatD) : (
-    #             self.wCeroB.wCb.GetValue()),
-    #         self.EqualLenLabel(self.cLTransMethod) : (
-    #             self.wTransMethod.wCb.GetValue()),
-    #         self.EqualLenLabel(self.cLNormMethod) : (
-    #             self.wNormMethod.wCb.GetValue()),
-    #         self.EqualLenLabel(self.cLImputation) : (
-    #             impMethod),
-    #         self.EqualLenLabel(self.cLShift) : (
-    #             self.wShift.wTc.GetValue()),
-    #         self.EqualLenLabel(self.cLWidth) : (
-    #             self.wWidth.wTc.GetValue()),
-    #         self.EqualLenLabel(self.cLCorrMethod) : (
-    #             self.wCorrMethod.wCb.GetValue()),
-    #         self.EqualLenLabel('Selected Columns') : col,
-    #     }
-    #     #------------------------------>
-    #     msgStep = self.cLPdPrepare + 'User input, processing'
-    #     wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-    #     #------------------------------> Dict with all values
-    #     self.rDO = {
-    #         'uFile'      : Path(self.wUFile.wTc.GetValue()),
-    #         'iFile'      : Path(self.wIFile.wTc.GetValue()),
-    #         'ID'         : self.wId.wTc.GetValue(),
-    #         'Cero'       : mConfig.oYesNo[self.wCeroB.wCb.GetValue()],
-    #         'TransMethod': self.wTransMethod.wCb.GetValue(),
-    #         'NormMethod' : self.wNormMethod.wCb.GetValue(),
-    #         'ImpMethod'  : impMethod,
-    #         'Shift'      : float(self.wShift.wTc.GetValue()),
-    #         'Width'      : float(self.wWidth.wTc.GetValue()),
-    #         'CorrMethod' : self.wCorrMethod.wCb.GetValue(),
-    #         'oc'         : {
-    #             'Column'  : col,
-    #             'ColumnF' : col,
-    #         },
-    #         'df'         : {
-    #             'ColumnR'    : colF,
-    #             'ColumnF'    : colF,
-    #             'ResCtrlFlat': colF,
-    #         }
-    #     }
-    #     #endregion ----------------------------------------------------> Input
+        col  = [int(x) for x in self.wLCtrlO.GetColContent(0)]
+        colF = list(range(0, len(col)))
+        impMethod = self.wImputationMethod.wCb.GetValue()
+        #------------------------------> As given
+        self.rDI = {
+            self.EqualLenLabel(self.cLiFile) : (
+                self.wIFile.wTc.GetValue()),
+            self.EqualLenLabel(self.cLId) : (
+                self.wId.wTc.GetValue()),
+            self.EqualLenLabel(self.cLCeroTreatD) : (
+                self.wCeroB.wCb.GetValue()),
+            self.EqualLenLabel(self.cLTransMethod) : (
+                self.wTransMethod.wCb.GetValue()),
+            self.EqualLenLabel(self.cLNormMethod) : (
+                self.wNormMethod.wCb.GetValue()),
+            self.EqualLenLabel(self.cLImputation) : (
+                impMethod),
+            self.EqualLenLabel(self.cLShift) : (
+                self.wShift.wTc.GetValue()),
+            self.EqualLenLabel(self.cLWidth) : (
+                self.wWidth.wTc.GetValue()),
+            self.EqualLenLabel(self.cLCorrMethod) : (
+                self.wCorrMethod.wCb.GetValue()),
+            self.EqualLenLabel('Selected Columns') : col,
+        }
+        #------------------------------>
+        msgStep = self.cLPdPrepare + 'User input, processing'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> Dict with all values
+        self.rDO = {
+            'uFile'      : Path(self.wUFile.wTc.GetValue()),
+            'iFile'      : Path(self.wIFile.wTc.GetValue()),
+            'ID'         : self.wId.wTc.GetValue(),
+            'Cero'       : mConfig.core.oYesNo[self.wCeroB.wCb.GetValue()],
+            'TransMethod': self.wTransMethod.wCb.GetValue(),
+            'NormMethod' : self.wNormMethod.wCb.GetValue(),
+            'ImpMethod'  : impMethod,
+            'Shift'      : float(self.wShift.wTc.GetValue()),
+            'Width'      : float(self.wWidth.wTc.GetValue()),
+            'CorrMethod' : self.wCorrMethod.wCb.GetValue(),
+            'oc'         : {
+                'Column'  : col,
+                'ColumnF' : col,
+            },
+            'df'         : {
+                'ColumnR'    : colF,
+                'ColumnF'    : colF,
+                'ResCtrlFlat': colF,
+            }
+        }
+        #endregion ----------------------------------------------------> Input
 
-    #     #region ---------------------------------------------------> Super
-    #     if super().PrepareRun():
-    #         pass
-    #     else:
-    #         self.rMsgError = 'Something went wrong when preparing the analysis.'
-    #         return False
-    #     #endregion ------------------------------------------------> Super
+        #region ---------------------------------------------------> Super
+        if not super().PrepareRun():
+            self.rMsgError = 'Something went wrong when preparing the analysis.'
+            return False
+        #endregion ------------------------------------------------> Super
 
-    #     return True
-    # #---
+        return True
+    #---
 
-    # def WriteOutput(self) -> bool:
-    #     """Write output.
+    def WriteOutput(self) -> bool:
+        """Write output.
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region --------------------------------------------------> Data Steps
-    #     stepDict = self.SetStepDictDP()
-    #     stepDict['Files'] = {
-    #         mConfig.fnInitial.format(self.rDate, '01'): self.dfI,
-    #         mConfig.fnFloat.format(self.rDate, '02')  : self.dfF,
-    #         mConfig.fnTrans.format(self.rDate, '03')  : self.dfT,
-    #         mConfig.fnNorm.format(self.rDate, '04')   : self.dfN,
-    #         mConfig.fnImp.format(self.rDate, '05')    : self.dfIm,
-    #         self.rMainData.format(self.rDate, '06')   : self.dfR,
-    #     }
-    #     stepDict['R'] = self.rMainData.format(self.rDate, '06')
-    #     #endregion -----------------------------------------------> Data Steps
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Data Steps
+        stepDict = self.SetStepDictDP()
+        stepDict['Files'] = {
+            mConfig.core.fnInitial.format(self.rDate, '01'): self.dfI,
+            mConfig.core.fnFloat.format(self.rDate, '02')  : self.dfF,
+            mConfig.core.fnTrans.format(self.rDate, '03')  : self.dfT,
+            mConfig.core.fnNorm.format(self.rDate, '04')   : self.dfN,
+            mConfig.core.fnImp.format(self.rDate, '05')    : self.dfIm,
+            self.rMainData.format(self.rDate, '06')   : self.dfR,
+        }
+        stepDict['R'] = self.rMainData.format(self.rDate, '06')
+        #endregion -----------------------------------------------> Data Steps
 
-    #     return self.WriteOutputData(stepDict)
-    # #---
+        return self.WriteOutputData(stepDict)
+    #---
     #endregion ------------------------------------------------> Run Analysis
 #---
 #endregion ----------------------------------------------------------> Classes

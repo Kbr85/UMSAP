@@ -25,7 +25,7 @@ class CorrA(cTab.BaseConfTab):
     """Creates the Tab to setup a Correlation Analysis"""
     #region -----------------------------------------------------> Class Setup
     cName  = mConfig.corr.nTab
-    cTitle = mConfig.corr.tCorrA
+    cTitle = mConfig.corr.ttCorrA
     #endregion --------------------------------------------------> Class Setup
 #---
 #endregion ----------------------------------------------------------> Classes

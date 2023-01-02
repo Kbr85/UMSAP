@@ -190,7 +190,6 @@ oControlTypeProtProf = {
 
 
 #region --------------------------------------------------------> Literal
-litComp         = Literal['lt', 'le', 'e', 'ge', 'gt']
 litStartEnd     = Literal['end', 'start']
 litTestSide     = Literal['ts', 's', 'l']
 #endregion -----------------------------------------------------> Literal
@@ -261,12 +260,6 @@ mFileSelector = 'It was not possible to show the file selecting dialog.'
 #region ------------------------------------------------------------> Pandas
 mPDGetInitCol     = ('It was not possible to extract the selected columns ({}) '
                      'from the selected {} file:\n{}')
-mPDDataTargetProt = ('Selection of Target Protein failed.\nTarget Protein: {} '
-                     'Detected Proteins column: {}.')
-mPDDataExclude    = ('Data Exclusion failed.\nColumns used for data exclusion: '
-                    '{}.')
-mPDDataScore      = ('Data Filtering by Score value failed.\nColumns used for '
-                     'data filtering by Score value: {}.')
 mPDDataTypeCol    = 'The {} contains unexpected data type in columns {}.'
 #endregion ---------------------------------------------------------> Pandas
 
@@ -277,9 +270,6 @@ mColNumber         = ('In addition, the value must be smaller than the total '
                       'number of columns in the Data file.')
 mAllTextFieldEmpty = 'All text fields are empty. Nothing will be done.'
 mRepeatColNum      = 'There are repeated column numbers in the text fields.'
-mRowsInLCtrl       = 'There must be at least {} items in {}.'
-mNoDataLeft        = ('No data left for analysis after all filters (Score, '
-                      'Target Protein, etc) were applied.')
 mOneRealNum        = f"{mValueBad}{mOneRNumText}"
 mOneZPlusNum       = f"{mValueBad}{mOneZPlusNumText}"
 mOneZPlusNumCol    = f"{mOneZPlusNum} {mColNumber}"

@@ -86,11 +86,20 @@ class Configuration():
     mOptionBad:str      = "Option '{}' cannot be accepted in {}."
     mValueBad:str       = "Value '{}' cannot be accepted in {}.\n"
     mOneRNumText:str    = "Only one real number can be accepted here."
+    mRowsInLCtrl:str    = 'There must be at least {} items in {}.'
     mOneRPlusNumText:str = ("Only one number equal or greater than zero can be "
                             "accepted here.")
     mSection:str        = 'Values in section {} must be unique.'
     mNotImplementedFull:str = ('Option {} is not yet implemented. Valid '
                                'options for {} are: {}.')
+    mPDDataTargetProt:str = ('Selection of Target Protein failed.\nTarget '
+                             'Protein: {} Detected Proteins column: {}.')
+    mPDDataExclude:str    = ('Data Exclusion failed.\nColumns used for data '
+                             'exclusion: {}.')
+    mPDDataScore:str      = ('Data Filtering by Score value failed.\nColumns '
+                             'used for data filtering by Score value: {}.')
+    mNoDataLeft:str       = ('No data left for analysis after all filters '
+                             '(Score, Target Protein, etc) were applied.')
     #------------------------------> Tooltips
     ttSectionRightClick:str = ('The content of the Section can be deleted with '
                                'a right click.')

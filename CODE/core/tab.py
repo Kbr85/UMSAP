@@ -42,7 +42,7 @@ class BaseConfTab(wx.Panel):
     """
     #region -----------------------------------------------------> Class setup
     dConfPanel = {
-        mConfig.corr.nTab : corrPane.PaneCorrA,
+        mConfig.corr.nTab : corrPane.CorrA,
         # mConfig.ntDataPrep: mPane.PaneDataPrep,
         # mConfig.ntLimProt : mPane.PaneLimProt,
         # mConfig.ntProtProf: mPane.PaneProtProf,

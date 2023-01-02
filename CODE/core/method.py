@@ -35,6 +35,7 @@ if TYPE_CHECKING:
 
 LIT_NumType = Literal['int', 'float']
 LIT_CompEq  = Literal['e', 'ne']
+LIT_Comp    = Literal['lt', 'le', 'e', 'ge', 'gt']
 
 
 #region ------------------------------------------------------> String Methods
@@ -351,6 +352,148 @@ def DFFilterByColS(
             comp, 'comp', LIT_CompEq)
         raise ValueError(msg)
     #endregion -------------------------------------------------------> Filter
+
+    return dfo
+#---
+
+
+def DFExclude(df:pd.DataFrame, col:list[int]) -> 'pd.DataFrame':
+    """Exclude rows in the pd.DataFrame based on the values present in col.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            DataFrame with the data.
+        col: list[int]
+            Column numbers to look for rows to exclude.
+
+        Returns
+        -------
+        pd.DataFrame
+
+        Notes
+        -----
+        Rows with at least one value other than NA in the given columns are
+        discarded.
+    """
+    # Test in test.unit.test_method.Test_DFExclude
+    #region ----------------------------------------------------------> Exclude
+    #------------------------------>  Copy
+    dfo = df.copy()
+    #------------------------------> Exclude
+    a = dfo.iloc[:,col].notna()
+    a = a.loc[(a==True).any(axis=1)]                                            # pylint: disable=singleton-comparison
+    idx = a.index
+    dfo = dfo.drop(index=idx)                                                   # type: ignore
+    #endregion -------------------------------------------------------> Exclude
+
+    return dfo
+#---
+
+
+def DFFilterByColN(
+    df:pd.DataFrame,
+    col:list[int],
+    refVal:float,
+    comp:LIT_Comp,
+    ) -> pd.DataFrame:
+    """Filter rows in the pd.DataFrame based on the numeric values present in
+        col.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            DataFrame with the data.
+        col: list of int
+            The column indexes used to filter rows.
+        refVal: float
+            Reference value.
+        comp: str
+            Numeric comparison to use in the filter. One of:
+            'lt', 'le', 'e', 'ge', 'gt'
+
+        Returns
+        -------
+        pd.DataFrame
+
+        Notes
+        -----
+        Rows with values in col that do not comply with c[x] comp refVal are
+        discarded, e.g. c[x] > 3,45
+
+        Assumes all values in col are numbers.
+    """
+    # Test in test.unit.test_method.Test_DFFilterByColN
+    #region ----------------------------------------------------------> Filter
+    #------------------------------>  Copy
+    dfo = df.copy()
+    #------------------------------> Filter
+    if comp == 'lt':
+        dfo = df.loc[(df.iloc[:,col] < refVal).any(axis=1)]                     # type: ignore
+    elif comp == 'le':
+        dfo = df.loc[(df.iloc[:,col] <= refVal).any(axis=1)]                    # type: ignore
+    elif comp == 'e':
+        dfo = df.loc[(df.iloc[:,col] == refVal).any(axis=1)]                    # type: ignore
+    elif comp == 'ge':
+        dfo = df.loc[(df.iloc[:,col] >= refVal).any(axis=1)]                    # type: ignore
+    elif comp == 'gt':
+        dfo = df.loc[(df.iloc[:,col] > refVal).any(axis=1)]                     # type: ignore
+    else:
+        msg = mConfig.core.mNotImplementedFull.format(comp, 'comp', LIT_Comp)
+        raise ValueError(msg)
+    #endregion -------------------------------------------------------> Filter
+
+    return dfo
+#---
+
+
+def DFReplace(                                                                  # pylint: disable=dangerous-default-value
+    df:Union[pd.DataFrame, pd.Series],
+    oriVal:list,
+    repVal:Union[list, tuple, str, float, int],
+    sel:list[int] = [],
+    ) -> Union[pd.DataFrame, pd.Series]:
+    """Replace values in the dataframe.
+
+        Parameters
+        ----------
+        df: pd.DataFrame or pd.Series
+            Dataframe with the data.
+        oriVal: list
+            List of values to search and replace.
+        repVal: list or single value
+            List of values to use as replacement. When only one value is given
+            all oriVal are replace with the given value.
+        sel: list of int
+            Column indexes.
+
+        Returns
+        -------
+        pd.DataFrame or pd.Series
+            With replaced values
+
+        Raise
+        -----
+        ValueError :
+            - When selection is not found in df
+            - When oriVal and repVal have different length
+        RuntimeError :
+            - When the replacement procedure does not finish correctly
+
+        Notes
+        -----
+        Column selection in the df is done by column number.
+    """
+    # Test in test.unit.test_method.Test_DFReplace
+    #region ---------------------------------------------------------> Replace
+    #------------------------------> Copy
+    dfo = df.copy()
+    #------------------------------> Replace
+    if sel:
+        dfo.iloc[:,sel] = dfo.iloc[:,sel].replace(oriVal, repVal)               # type: ignore
+    else:
+        dfo = dfo.replace(oriVal, repVal)                                       # type: ignore
+    #endregion ------------------------------------------------------> Replace
 
     return dfo
 #---
