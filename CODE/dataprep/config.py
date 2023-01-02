@@ -22,24 +22,25 @@ from dataclasses import dataclass, field
 #region -------------------------------------------------------> Configuration
 @dataclass
 class Configuration():
-    """Configuration for the core module"""
+    """Configuration for the dataprep module"""
     #region ---------------------------------------------------------> Options
+    #------------------------------> Name & Title
     nUtil:str = 'Data Preparation'                                              # Name of the Utility
     #------------------------------> Normal distribution parameters
-    Shift:float = 1.8
-    Width:float = 0.3
+    Shift:float = 1.8                                                           # Shifted center
+    Width:float = 0.3                                                           # Stdev
     #------------------------------> Options
-    oTransMethod:dict = field(default_factory=lambda: {
+    oTransMethod:dict = field(default_factory=lambda: {                         # Transformation Methods
         ''    : '',
         'None': 'None',
         'Log2': 'Log2',
     })
-    oNormMethod:dict = field(default_factory=lambda: {
+    oNormMethod:dict = field(default_factory=lambda: {                          # Normalization Methods
         ''      : '',
         'None'  : 'None',
         'Median': 'Median',
     })
-    oImputation:dict = field(default_factory=lambda: {
+    oImputation:dict = field(default_factory=lambda: {                          # Imputation Methods
         ''                   : '',
         'None'               : 'None',
         'Normal Distribution': 'ND',

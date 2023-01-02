@@ -38,7 +38,7 @@ LIT_CompEq  = Literal['e', 'ne']
 
 
 #region ------------------------------------------------------> String Methods
-def StrNow(dtFormat: str=mConfig.core.dtFormat) -> str:
+def StrNow(dtFormat:str=mConfig.core.dtFormat) -> str:
     """Get a formatted datetime.now() string.
 
         Parameters
@@ -73,12 +73,12 @@ def StrException(
         ----------
         tException: Exception
             Exception to print.
-        tStr : boolean
+        tStr: boolean
             Include error message as return by str(tException). Default is True.
-        tRepr : boolean
+        tRepr: boolean
             Include error message as return by repr(tException).
             Default is True.
-        trace : boolean
+        trace: boolean
             Include the traceback. Default is True.
 
         Returns
@@ -176,11 +176,11 @@ def StrSetMessage(start:str, end:str, link:str='\n\nFurther details:\n') -> str:
         Parameters
         ----------
         start: str
-            Start of the message
-        end : str
-            End of the message
-        link : str
-            Link between start and end
+            Start of the message.
+        end: str
+            End of the message.
+        link: str
+            Link between start and end.
 
         Returns
         -------
@@ -405,15 +405,15 @@ def GetDisplayInfo(win: 'cWindow.BaseWindow') -> dict[str, dict[str, int]]:
 #---
 
 
-def LCtrlFillColNames(lc: wx.ListCtrl, fileP: Union[Path, str]) -> bool:
+def LCtrlFillColNames(lc:wx.ListCtrl, fileP:Union[Path, str]) -> bool:
     """Fill the wx.ListCtrl with the name of the columns in fileP.
 
         Parameters
         ----------
-        lc : wx.ListCtrl
-            wx.ListCtrl to fill info into
-        fileP : Path
-            Path to the file from which to read the column names
+        lc: wx.ListCtrl
+            wx.ListCtrl to fill info into.
+        fileP: Path
+            Path to the file from which to read the column names.
 
         Notes
         -----

@@ -11,9 +11,7 @@
 # ------------------------------------------------------------------------------
 
 
-"""Utilities for Mass Spectrometry Analysis of Proteins (UMSAP).
-    This module contains the wx.App instance starting the application.
-"""
+"""This module contains the wx.App instance starting the application."""
 
 
 #region -------------------------------------------------------------> Imports
@@ -25,7 +23,7 @@ import wx.adv
 #endregion ----------------------------------------------------------> Imports
 
 
-DEVELOPMENT = True # Track state, development (True) or production (False)
+DEVELOPMENT = True                                                              # Development (True) or Production (False)
 
 
 #region -------------------------------------------------------------> Classes
@@ -74,11 +72,11 @@ class SplashWindow(wx.adv.SplashScreen):
 
         Parameters
         ----------
-        imgPath : str
+        imgPath: str
             Path to the image used in the splash window.
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, imgPath: str) -> None:
+    def __init__(self, imgPath:str) -> None:
         """"""
         #region -----------------------------------------------> Initial setup
         super().__init__(
@@ -100,19 +98,18 @@ class SplashWindow(wx.adv.SplashScreen):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event methods
-    def OnClose(self, event: wx.CloseEvent) -> bool:                            # pylint: disable=unused-argument
+    def OnClose(self, event:wx.CloseEvent) -> bool:                             # pylint: disable=unused-argument
         """Finish app configuration (parameters that need a running wx.App) &
             launch main window.
 
             Parameters
             ----------
-            event : wx.CloseEvent
+            event: wx.CloseEvent
                 Information regarding the event.
         """
         #region	-----------------------------------------------------> Imports
-        # Import here to speed up the creation of the splash window
         # pylint: disable=import-outside-toplevel
-        from config.config import config as mConfig
+        from config.config import config as mConfig                             # Import here to speed up the creation of the splash window
         from main import menu   as mMenu
         from main import window as mWindow
         #endregion---------------------------------------------------> Imports
@@ -165,8 +162,7 @@ class SplashWindow(wx.adv.SplashScreen):
         #endregion ----------------------------------------------------> Fonts
 
         #region ------------------------------------------> User Configuration
-        # After fonts were created and assigned to config, load user values
-        mConfig.LoadUserConfig()
+        mConfig.LoadUserConfig()                                                # After fonts were created and assigned to config, load user values
         #endregion ---------------------------------------> User Configuration
 
         #region --------------------------------------------------------> Menu

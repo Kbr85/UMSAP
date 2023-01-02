@@ -36,10 +36,7 @@ class BaseWindow(wx.Frame):
         Parameters
         ----------
         parent : wx.Window or None
-            Parent of the window. Default None
-        # menuData : dict
-        #     Data to build the Tool menu of the window. See structure in child
-        #     class.
+            Parent of the window. Default None.
 
         Attributes
         ----------
@@ -246,14 +243,14 @@ class Progress(wx.Dialog):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def UpdateStG(self, text:str, step: int=1) -> bool:
+    def UpdateStG(self, text:str, step:int=1) -> bool:
         """Update the step message and the gauge step.
 
             Parameters
             ----------
-            text : str
+            text: str
                 Text for the wx.StaticText.
-            step : int
+            step: int
                 Number of steps to increase the gauge.
 
             Returns
@@ -273,7 +270,7 @@ class Progress(wx.Dialog):
         return True
     #---
 
-    def UpdateG(self, step: int=1) -> bool:
+    def UpdateG(self, step:int=1) -> bool:
         """Update only the gauge of the dialogue.
 
             Parameters
@@ -297,7 +294,7 @@ class Progress(wx.Dialog):
         return True
     #---
 
-    def UpdateSt(self, text: str) -> bool:
+    def UpdateSt(self, text:str) -> bool:
         """Update the step message.
 
             Parameters
@@ -317,14 +314,14 @@ class Progress(wx.Dialog):
         return True
     #---
 
-    def SuccessMessage(self, label: str, eTime: str='') -> bool:
+    def SuccessMessage(self, label:str, eTime:str='') -> bool:
         """Show a Success message.
 
             Parameters
             ----------
-            label : str
+            label: str
                 All done message.
-            eTime : str
+            eTime: str
                 Secondary message to display below the gauge. e.g. Elapsed time.
         """
         #region ------------------------------------------------------> Labels
@@ -332,8 +329,6 @@ class Progress(wx.Dialog):
         self.wSt.SetFont(self.wSt.GetFont().MakeBold())
         if eTime:
             self.wStTime.SetLabel(eTime)
-        else:
-            pass
         #endregion ---------------------------------------------------> Labels
 
         #region -------------------------------------------------------> Sizer
@@ -562,9 +557,9 @@ class Notification(wx.Dialog):
 
             Parameters
             ----------
-            msg : str
+            msg: str
                 Error message.
-            tException : Exception, str
+            tException: Exception, str
                 To display full traceback or a custom further details message.
         """
         #region -----------------------------------------------------> Message

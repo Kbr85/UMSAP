@@ -106,10 +106,10 @@ def Path2FFOutput(
         ----------
         value: str or Path
             Path to the file or folder
-        fof : str
+        fof: str
             One of 'file', 'folder'. Check widgets hold path to file or folder.
             Default is 'file'.
-        opt : Boolean
+        opt: Boolean
             Value is optional. Default is False.
 
         Returns
@@ -179,10 +179,10 @@ def Path2FFInput(
         ----------
         value: str or Path
             Path to the file or folder.
-        fof : str
+        fof: str
             One of 'file', 'folder'. Check widgets hold path to file or folder.
-            Default is 'folder'
-        opt : Boolean
+            Default is 'folder'.
+        opt: Boolean
             Value is optional. Default is False.
 
         Returns
@@ -347,8 +347,7 @@ def NumberList(
     #endregion -------------------------------------> numType, refMin & refMax
 
     #region -----------------------------------------------------> List Length
-    #------------------------------> Number of Elements
-    lN = len(numbers)
+    lN = len(numbers)                                                           # Number of Elements
     #------------------------------> Exact Number of Elements
     if nN is not None:
         if not lN == nN:
@@ -374,8 +373,8 @@ def NumberList(
 
 def AInRange(
     a:Union[str, int, float],
-    refMin:Union[str, int, float, None]=None,
-    refMax:Union[str, int, float, None]=None,
+    refMin:Union[str, int, float, None] = None,
+    refMax:Union[str, int, float, None] = None,
     ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
     """Check if refMin <= a <= refMax.
 
@@ -470,7 +469,6 @@ def ListUnique(
 
     #region --------------------------------------------------------> Optional
     if not tList:
-        #------------------------------>
         if opt:
             return (True, None)
         #------------------------------>
@@ -478,7 +476,6 @@ def ListUnique(
     #endregion -----------------------------------------------------> Optional
 
     #region ----------------------------------------------------------> Search
-    #------------------------------>
     for x in tList:
         if x not in seen:
             seen.add(x)
@@ -490,10 +487,8 @@ def ListUnique(
 
     #region ----------------------------------------------------------> Return
     if dup:
-        #------------------------------>
         dupE = ', '.join(map(str, dup))
-        msg = f"List contains duplicated elements ({dupE})."
-        #------------------------------>
+        msg  = f"List contains duplicated elements ({dupE})."
         return (False, ('NotUnique', dupE, msg))
     #endregion -------------------------------------------------------> Return
 
@@ -509,7 +504,7 @@ def UniqueColNumbers(                                                           
 
         Parameters
         ----------
-        value : list[str]
+        value: list[str]
             List of string with the values to check. The expected values are:
             ['1 3 4 5-10', '11-13, 14 15; ...', ...]. Only integers are allowed.
         sepList: list of str
@@ -554,7 +549,6 @@ def UniqueColNumbers(                                                           
             list[str]
                 A list containing each stripped element.
         """
-        #------------------------------>
         if isinstance(tEle, str):
             k = [tEle.strip()]
         else:
@@ -568,7 +562,6 @@ def UniqueColNumbers(                                                           
         return [x.strip() for x in out]
     #---
     #region -----------------------------------------------------> Check input
-    #------------------------------>
     try:
         value = list(map(str, value))
     except Exception:
@@ -585,7 +578,6 @@ def UniqueColNumbers(                                                           
     #endregion --------------------------------------------------> Check input
 
     #region ----------------------------------------------------> Get Elements
-    #------------------------------>
     values = []
     #------------------------------>
     for k in value:
@@ -599,7 +591,6 @@ def UniqueColNumbers(                                                           
     #endregion -------------------------------------------------> Get Elements
 
     #region --------------------------------------------------> Check Elements
-    #------------------------------>
     try:
         values = cMethod.Str2ListNumber(values, numType='int', sep=sepList[0])
     except Exception as e:
@@ -651,7 +642,6 @@ def TcUniqueColNumbers(                                                         
     #endregion ----------------------------------------------------> Variables
 
     #region -------------------------------------------------------> Form list
-    #------------------------------> tcList
     try:
         for tc in tcList:
             values.append(tc.GetValue())
@@ -759,7 +749,6 @@ def Comparison(                                                                 
 
     #region --------------------------------------------------------> Optional
     if value == '':
-        #------------------------------>
         if opt:
             return (True, None)
         #------------------------------>

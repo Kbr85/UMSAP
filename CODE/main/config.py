@@ -26,11 +26,11 @@ if TYPE_CHECKING:
 @dataclass
 class Configuration():
     """Configuration for the main module"""
-    #------------------------------> Names
-    nwMain:str = 'Analysis Setup'
+    #------------------------------> Name & Title
+    nwMain:str  = 'Window Analysis Setup'
     ntStart:str = 'Tab Start'
-    #------------------------------> Title of Tab
-    tStart:str = 'Start'
+    twMain:str  = 'Analysis Setup'
+    ttStart:str = 'Start'
     #------------------------------> Reference to main window
     mainWin:Optional['mWindow.WindowMain'] = None
     #------------------------------> Converter for user options

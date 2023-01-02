@@ -22,7 +22,7 @@ from config.config import config as mConfig
 
 
 #region -------------------------------------------------------------> Classes
-class PanePrefUpdate(wx.Panel):
+class PrefUpdate(wx.Panel):
     """Panel for the Preferences window.
 
         Parameters

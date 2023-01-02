@@ -33,8 +33,8 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 
 from config.config import config as mConfig
 from core import generator as cGenerator
-from core import window    as cWindow
 from core import validator as cValidator
+from core import window    as cWindow
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -63,7 +63,7 @@ def ClearInput(parent: wx.Window) -> bool:
 
         Parameters
         ----------
-        parent : wx.Window
+        parent: wx.Window
             All child widgets of parent will be clear.
     """
     #region -----------------------------------------------------------> Clear
@@ -137,8 +137,8 @@ class StaticBoxes():
     #region --------------------------------------------------> Instance setup
     def __init__(
         self,
-        parent: wx.Window,
-        rightDelete: bool = True,
+        parent:wx.Window,
+        rightDelete:bool  = True,
         labelF:str        = 'Files',
         labelD:str        = 'Data Preparation',
         labelV:str        = 'User-defined Values',
@@ -513,7 +513,7 @@ class ButtonRun():
 
             Parameter
             ---------
-            event : wx.CommandEvent
+            event: wx.CommandEvent
                 Receive the button event.
         """
         #region ------------------------------------------------------> Thread
@@ -684,7 +684,7 @@ class ButtonOnlineHelp():
 
             Parameters
             ----------
-            event : wx.CommandEvent
+            event: wx.CommandEvent
                 Information about the event.
         """
         #region ----------------------------------------------------> Open web
@@ -1167,7 +1167,7 @@ class MyListCtrl(wx.ListCtrl):
 
             Parameters
             ----------
-            event : wx.Event
+            event: wx.Event
                 Information about the event.
 
             Notes
@@ -1185,7 +1185,7 @@ class MyListCtrl(wx.ListCtrl):
         return True
     #---
 
-    def OnCopy(self, event: Union[wx.Event, str]) -> bool:                      # pylint: disable=unused-argument
+    def OnCopy(self, event:Union[wx.Event, str]) -> bool:                      # pylint: disable=unused-argument
         """Copy selected rows in the wx.ListCtrl to the clipboard.
 
             Parameters
@@ -1231,7 +1231,7 @@ class MyListCtrl(wx.ListCtrl):
         return True
     #---
 
-    def OnCut(self, event: wx.Event) -> bool:
+    def OnCut(self, event:wx.Event) -> bool:
         """Cut selected rows in the wx.ListCtrl to the clipboard.
 
             Parameters
@@ -1264,7 +1264,7 @@ class MyListCtrl(wx.ListCtrl):
         return True
     #---
 
-    def OnPaste(self, event: Union[wx.Event, str]) -> bool:                     # pylint: disable=unused-argument
+    def OnPaste(self, event:Union[wx.Event, str]) -> bool:                     # pylint: disable=unused-argument
         """Paste selected rows in the wx.ListCtrl from the clipboard.
 
             Parameters
@@ -1344,7 +1344,7 @@ class MyListCtrl(wx.ListCtrl):
     #endregion ------------------------------------------------> Event Methods
 
     #region ---------------------------------------------------> Class methods
-    def Search(self, tStr: str) -> list[list[int]]:
+    def Search(self, tStr:str) -> list[list[int]]:
         """Search tStr in the content of the wx.ListCtrl.
 
             Parameters
@@ -1366,7 +1366,7 @@ class MyListCtrl(wx.ListCtrl):
         return self.rSearchMode[self.IsVirtual()](tStr)
     #---
 
-    def SearchVirtual(self, tStr: str) -> list[list[int]]:
+    def SearchVirtual(self, tStr:str) -> list[list[int]]:
         """Search the tStr in a virtual wx.ListCtrl.
 
             Parameters
@@ -1407,7 +1407,7 @@ class MyListCtrl(wx.ListCtrl):
         return [iEqual, iSimilar]
     #---
 
-    def SearchReport(self, tStr: str) -> list[list[int]]:
+    def SearchReport(self, tStr:str) -> list[list[int]]:
         """Search a non virtual wx.ListCtrl for the given string.
 
             Parameters
@@ -1451,7 +1451,7 @@ class MyListCtrl(wx.ListCtrl):
     #---
 
     def SelectAll(self) -> bool:
-        """Select all rows in the wx.ListCtrl
+        """Select all rows in the wx.ListCtrl.
 
             Notes
             -----
@@ -1471,8 +1471,8 @@ class MyListCtrl(wx.ListCtrl):
 
             Parameters
             ----------
-            content : Boolean
-                Retrieve row content (True) or not (False). Default is False
+            content: Boolean
+                Retrieve row content (True) or not (False). Default is False.
 
             Returns
             -------
@@ -1487,6 +1487,7 @@ class MyListCtrl(wx.ListCtrl):
 
         #region -----------------------------------------------> Get selection
         item = self.GetFirstSelected()
+        #------------------------------>
         if content:
             while item > -1:
                 sel[item] = self.GetRowContent(item)
@@ -1623,7 +1624,7 @@ class MyListCtrl(wx.ListCtrl):
 
             Parameters
             ----------
-            listC : list[int]
+            listC: list[int]
                 List of row indexes.
 
             Returns
@@ -1710,7 +1711,6 @@ class MyListCtrl(wx.ListCtrl):
             bool
         """
         #region ---------------------------------------------------> Set Data
-        #------------------------------>
         self.rData = data
         #------------------------------>
         self.SetItemCount(len(self.rData))
@@ -1842,11 +1842,6 @@ class MyListCtrlZebraMaxWidth(MyListCtrlZebra, listmix.ListCtrlAutoWidthMixin):
             Style of the wx.ListCtrl. Default is wx.LC_REPORT.
         data: list of list of str
             Data for the wx.ListCtrl when in virtual mode.
-
-        Attributes
-        ----------
-        zebraColor : str
-            Default color for the zebra style in the wx.ListCtrl.
 
         Notes
         -----
@@ -2108,7 +2103,7 @@ class MatPlotPanel(wx.Panel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnSaveImage(self, event: wx.CommandEvent) -> bool:                      # pylint: disable=unused-argument
+    def OnSaveImage(self, event:wx.CommandEvent) -> bool:                       # pylint: disable=unused-argument
         """Save an image of the plot.
 
             Parameters
@@ -2123,7 +2118,7 @@ class MatPlotPanel(wx.Panel):
         return self.SaveImage(mConfig.core.elMatPlotSaveI, parent=self)
     #---
 
-    def OnZoomResetPlot(self, event: wx.CommandEvent) -> bool:                  # pylint: disable=unused-argument
+    def OnZoomResetPlot(self, event:wx.CommandEvent) -> bool:                   # pylint: disable=unused-argument
         """Reset the zoom level of the plot.
 
             Parameters
@@ -2336,7 +2331,7 @@ class MatPlotPanel(wx.Panel):
             Parameters
             ----------
             event: mpl.MouseEvent
-                Information about the mpl event
+                Information about the mpl event.
 
             Returns
             -------
@@ -2464,7 +2459,7 @@ class MatPlotPanel(wx.Panel):
             bool
         """
         self.rZoomReset = {'x': self.rAxes.get_xlim(), 'y': self.rAxes.get_ylim()}
-
+        #------------------------------>
         return True
     #---
 
@@ -2475,11 +2470,10 @@ class MatPlotPanel(wx.Panel):
             ------
             True
         """
-        #------------------------------>
         self.rAxes.set_xlim(self.rZoomReset['x'])
         self.rAxes.set_ylim(self.rZoomReset['y'])
         self.rCanvas.draw()
-
+        #------------------------------>
         return True
     #---
 

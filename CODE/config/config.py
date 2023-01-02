@@ -39,7 +39,7 @@ class Configuration():
         Each configuration section must define a converter dict to properly
         assign the correct type for each attribute that can be defined in a
         user configuration file, e.g.:
-        converter = {'DPI' : int, 'checkForUpdates':bool}
+        converter = {'DPI': int, 'checkForUpdates': bool}
     """
     #region ---------------------------------------------------------> Options
     core:cConfig.Configuration
@@ -70,11 +70,9 @@ class Configuration():
         try:
             with open(self.core.fConfig, 'r', encoding="utf-8") as file:
                 data = json.load(file)
-        except FileNotFoundError:
-            #--> Config file has not been created or was deleted by user
+        except FileNotFoundError:                                               # File has not been created or was deleted by user
             return True
-        except Exception as e:
-            #--> Config file exists but cannot be read
+        except Exception as e:                                                  # File exists but cannot be read
             self.core.confUserFile          = False
             self.core.confUserFileException = e
             return False
@@ -92,11 +90,11 @@ class Configuration():
                 continue
             #------------------------------>
             for j,v in data[k].items():
-                #------------------------------>
+                #------------------------------> Check config section has the read attribute
                 if getattr(sec, j, None) is None:
                     badOpt.append(j)
                     continue
-                #------------------------------>
+                #------------------------------> Apply the converter and assign
                 conv = sec.converter.get(j, str)
                 setattr(sec, j, conv(v))
         #------------------------------>

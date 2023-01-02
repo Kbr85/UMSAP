@@ -15,7 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -26,6 +26,8 @@ class Configuration():
     #region ---------------------------------------------------------> Options
     nMod:str  = 'Targeted Proteolysis'                                          # Name of the Module
     nPane:str = 'Pane TarProt'                                                  # Name of Conf Pane
+    #------------------------------> Converter for user options
+    converter:dict = field(default_factory=lambda: {})
     #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration

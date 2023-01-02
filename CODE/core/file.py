@@ -30,7 +30,7 @@ from core import method    as cMethod
 
 
 #region -------------------------------------------------------------> Methods
-def ReadJSON(fileP: Union[Path, str]) -> dict:
+def ReadJSON(fileP:Union[Path, str]) -> dict:
     """Reads a file with json format.
 
         Parameters
@@ -120,10 +120,11 @@ def ReadFileFirstLine(
     #region --------------------------------------------> Read and split lines
     with open(fileP, 'r', encoding="utf-8") as file:
         for line in file:
-            l = line.strip()                                                    # Remove ' ', \n, \t & \r from start/end of line
-            #------------------------------>
+            #------------------------------> # Remove ' ', \n, \t & \r from start/end of line
+            l = line.strip()
+            #------------------------------> Discard empty lines
             if l == '' and not empty:
-                continue                                                        # Discard empty lines
+                continue
             #------------------------------> Return splitted line
             if char:
                 return l.split(char)
@@ -259,7 +260,7 @@ class FastaFile():
         Notes
         -----
         It handle the first two sequences in the file. All other sequences
-        are discarded. It is assume that the first sequence is the recombinant
+        are discarded. It is assumed that the first sequence is the recombinant
         sequence and the second sequence is the native sequence.
     """
     # Test in test.unit.test_file.Test_FastaFile
@@ -267,7 +268,6 @@ class FastaFile():
     def __init__(self, fileP: Union[Path, str]) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        #------------------------------>
         self.rFileP = fileP
         #------------------------------>
         gen = cGenerator.FastaSequence(fileP)
@@ -308,7 +308,7 @@ class FastaFile():
             Raises
             ------
             RuntimeError:
-                - when seqRec is False but self.seqNat is None.
+                - When seqRec is False but self.seqNat is None.
 
             Notes
             -----
@@ -326,7 +326,6 @@ class FastaFile():
         #endregion ----------------------------------------------> Check Input
 
         #region ------------------------------------------------------> Find N
-        #------------------------------>
         n = self.rSeqRec.find(seq) if seqRec else self.rSeqNat.find(seq)
         #------------------------------>
         if n == -1:
@@ -412,7 +411,7 @@ class FastaFile():
 
             Notes
             -----
-            It is assumes both sequences differ only at the N or C terminal
+            It is assumed both sequences differ only at the N or C terminal
             region.
         """
         #region ---------------------------------------------------> Alignment
@@ -507,7 +506,7 @@ class CSVFile():
         """
     # Test in test.unit.test_file.Test_CSVFile
     #region --------------------------------------------------> Instance setup
-    def __init__(self, fileP: Union[Path, str], sep: str="\t") -> None:
+    def __init__(self, fileP:Union[Path, str], sep:str="\t") -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.rFileP = fileP

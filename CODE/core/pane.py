@@ -26,12 +26,12 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 
 from config.config import config as mConfig
-from core import widget    as cWidget
-from core import validator as cValidator
-from core import file      as cFile
-from core import window    as cWindow
-from core import method    as cMethod
 from core import check     as cCheck
+from core import file      as cFile
+from core import method    as cMethod
+from core import validator as cValidator
+from core import widget    as cWidget
+from core import window    as cWindow
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -143,7 +143,7 @@ class BaseConfPanel(
             Object to work with the sequences of the proteins.
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: wx.Window, rightDelete: bool=True) -> None:
+    def __init__(self, parent:wx.Window, rightDelete:bool=True) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cParent = parent
@@ -197,7 +197,7 @@ class BaseConfPanel(
             self, 'cHiFile', f"Path to the {self.cLiFile} file")
         self.cHId    = getattr(self, 'cHId', 'e.g. HIV inhibitor')
         #------------------------------> Tooltips
-        self.cTTRun = getattr(self, 'cTTRun', 'Start the analysis.')
+        self.cTTRun  = getattr(self, 'cTTRun', 'Start the analysis.')
         self.cTTHelp = getattr(
             self, 'cTTHelp', f'Read online tutorial at {mConfig.core.urlHome}.')
         self.cTTClearAll = getattr(
@@ -258,17 +258,17 @@ class BaseConfPanel(
         self.rMsgError  = ''
         self.rException = None
         #--------------> pd.DataFrames for:
-        self.dfI  = pd.DataFrame() # Initial and
-        self.dfF  = pd.DataFrame() # Data as float and 0 and '' values as np.nan
-        self.dfT  = pd.DataFrame() # Transformed values
-        self.dfN  = pd.DataFrame() # Normalized Values
-        self.dfIm = pd.DataFrame() # Imputed values
-        self.dfTP = pd.DataFrame() # Select Target Protein
-        self.dfE  = pd.DataFrame() # Exclude entries by some parameter
-        self.dfS  = pd.DataFrame() # Exclude entries by Score value
-        self.dfR  = pd.DataFrame() # Results values
+        self.dfI  = pd.DataFrame()                                              # Initial and
+        self.dfF  = pd.DataFrame()                                              # Data as float and 0 and '' values as np.nan
+        self.dfT  = pd.DataFrame()                                              # Transformed values
+        self.dfN  = pd.DataFrame()                                              # Normalized Values
+        self.dfIm = pd.DataFrame()                                              # Imputed values
+        self.dfTP = pd.DataFrame()                                              # Select Target Protein
+        self.dfE  = pd.DataFrame()                                              # Exclude entries by some parameter
+        self.dfS  = pd.DataFrame()                                              # Exclude entries by Score value
+        self.dfR  = pd.DataFrame()                                              # Results values
         #--------------> Date for umsap file
-        self.rDate = ''
+        self.rDate   = ''
         self.rDateID = ''
         #--------------> folder for output
         self.rOFolder = None
@@ -545,8 +545,8 @@ class BaseConfPanel(
         """
         if (fileP := self.wIFile.wTc.GetValue()) == '':
             return self.LCtrlEmpty()
-        else:
-            return self.IFileEnter(fileP)
+        #------------------------------>
+        return self.IFileEnter(fileP)
     #---
 
     def OnImpMethod(self, event: Union[wx.CommandEvent, str])-> bool:           # pylint: disable=unused-argument
@@ -571,6 +571,7 @@ class BaseConfPanel(
             self.wWidth.wTc.SetValue(self.cValWidth)
             self.sSizer.Layout()
             self.SetupScrolling()
+        #------------------------------>
         return True
     #---
 
@@ -588,6 +589,7 @@ class BaseConfPanel(
         """
         super().OnClear(event)
         self.OnImpMethod('fEvent')
+        #------------------------------>
         return True
     #---
     #endregion ------------------------------------------------> Event Methods
@@ -631,8 +633,6 @@ class BaseConfPanel(
         #region -----------------------------------------------> Check for lbI
         if self.wLCtrlI is None:
             return True
-        else:
-            pass
         #endregion --------------------------------------------> Check for lbI
 
         #region ----------------------------------------------------> Del list
@@ -708,6 +708,7 @@ class BaseConfPanel(
             -------
             dict
         """
+        #region --------------------------------------------------->
         stepDict = {
             'DP': {
                 mConfig.core.ltDPKeys[0] : mConfig.core.fnFloat.format(self.rDate, '02'),
@@ -728,6 +729,7 @@ class BaseConfPanel(
             },
             'R' : self.rMainData.format(self.rDate, '09'),
         }
+        #endregion ------------------------------------------------>
 
         return stepDict
     #---
@@ -1090,10 +1092,9 @@ class BaseConfPanel(
         #------------------------------> Check Target Protein. It cannot be done
         # before this step
         if 'TargetProt' in self.rDO:
-            if self.rIFileObj.StrInCol(
-                self.rDO['TargetProt'], self.rDO['oc']['TargetProtCol']):
-                pass
-            else:
+            a = self.rIFileObj.StrInCol(
+                self.rDO['TargetProt'], self.rDO['oc']['TargetProtCol'])
+            if not a:
                 self.rMsgError = (f'The Target Protein '
                     f'({self.rDO["TargetProt"]}) was not found in the '
                     f'{self.cLDetectedProt} column '
@@ -1129,16 +1130,12 @@ class BaseConfPanel(
                 ProtDelta = None
             #------------------------------>
             self.rDO['ProtDelta'] = ProtDelta
-        else:
-            pass
         #endregion ---------------------------------------------> Seq Rec File
 
         #region ---------------------------------------------------> Print Dev
         if mConfig.core.development and self.rSeqFileObj is not None:
             print("Rec Seq: ", self.rSeqFileObj.rSeqRec)
             print("Nat Seq: ", self.rSeqFileObj.rSeqNat)
-        else:
-            pass
         #endregion ------------------------------------------------> Print Dev
 
         return True

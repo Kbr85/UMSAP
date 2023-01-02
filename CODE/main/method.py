@@ -60,12 +60,16 @@ def BadUserConfOptions(badOpt: list[str]) -> bool:
         -----
         Always called from another thread.
     """
+    #region -------------------------------------------------------->
     msg = 'The configuration file contains unknown options.'
     badOptList = ('The following options, present in the configuration file, '
                   'are unknown:\n')
     for k in badOpt:
         badOptList = f'{badOptList}{k}\n'
+    #------------------------------>
     wx.CallAfter(cWindow.Notification,'errorU', msg=msg, tException=badOptList)
+    #endregion ----------------------------------------------------->
+
     return True
 #---
 #endregion ----------------------------------------------------------> Classes

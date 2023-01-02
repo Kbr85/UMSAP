@@ -62,10 +62,10 @@ class InputFF(wx.Validator):
 
         Attributes
         ----------
-        rFof : str
+        rFof: str
             One of 'file', 'folder'. Check widgets hold path to file or folder.
             Default is 'folder'.
-        rOpt : Boolean
+        rOpt: Boolean
             Value is optional. Default is False.
     """
     #region --------------------------------------------------> Instance setup
@@ -136,10 +136,10 @@ class OutputFF(wx.Validator):
 
         Attributes
         ----------
-        rFof : str
+        rFof: str
             One of 'file', 'folder'. Check widgets hold path to file or folder.
             Default is 'file'.
-        rOpt : Boolean
+        rOpt: Boolean
             Value is optional. Default is True.
     """
     #region --------------------------------------------------> Instance setup
@@ -349,7 +349,7 @@ class NumberList(wx.Validator):
         nN:Optional[int]     = None,
         nMax:Optional[int]   = None,
         ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
-        """ Validate widget value. Parameters allow to give these values just
+        """Validate widget value. Parameters allow to give these values just
             before validation.
 
             Parameters

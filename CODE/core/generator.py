@@ -25,7 +25,7 @@ from config.config import config as mConfig
 
 
 #region -------------------------------------------------------------> Methods
-def FastaSequence(fileP: Union[Path, str]) -> Iterator[tuple[str, str]]:
+def FastaSequence(fileP:Union[Path, str]) -> Iterator[tuple[str, str]]:
     """Find all sequences in a multi-FASTA file.
 
         Parameters
@@ -80,7 +80,7 @@ def FastaSequence(fileP: Union[Path, str]) -> Iterator[tuple[str, str]]:
     #endregion -----------------------------------------> Get the last protein
 #---
 
-def FindChildren(parent: wx.Window) -> Iterator[wx.Window]:
+def FindChildren(parent:wx.Window) -> Iterator[wx.Window]:
     """Find all child widgets in parent.
 
         Parameters

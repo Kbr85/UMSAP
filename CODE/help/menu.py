@@ -24,8 +24,8 @@ import wx
 from config.config import config as mConfig
 from core import menu   as cMenu
 from core import window as cWindow
-from help import window as hWindow
 from help import method as hMethod
+from help import window as hWindow
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -91,8 +91,7 @@ class MenuHelp(cMenu.BaseMenu):
             hWindow.WindowAbout()
         except Exception as e:
             msg = 'Failed to show the About UMSAP window.'
-            cWindow.DialogNotification(
-                'errorU', msg=msg, tException=e, parent=win)
+            cWindow.Notification('errorU', msg=msg, tException=e, parent=win)
             return False
         #endregion ------------------------------------------------>
 
@@ -120,8 +119,7 @@ class MenuHelp(cMenu.BaseMenu):
             os.system(f'{mConfig.core.commOpen} {mConfig.core.fManual}')
         except Exception as e:
             msg = 'Failed to open the manual of UMSAP.'
-            cWindow.DialogNotification(
-                'errorU', msg=msg, tException=e, parent=win)
+            cWindow.Notification('errorU', msg=msg, tException=e, parent=win)
             return False
         #endregion ----------------------------------------------------->
 
@@ -149,8 +147,7 @@ class MenuHelp(cMenu.BaseMenu):
             webbrowser.open_new(f'{mConfig.core.urlTutorial}/start')
         except Exception as e:
             msg = 'Failed to open the url with the tutorials for UMSAP.'
-            cWindow.DialogNotification(
-                'errorU', msg=msg, tException=e, parent=win)
+            cWindow.Notification('errorU', msg=msg, tException=e, parent=win)
             return False
         #endregion ------------------------------------------------>
 
@@ -191,11 +188,10 @@ class MenuHelp(cMenu.BaseMenu):
 
         #region -------------------------------------------------------->
         try:
-            hWindow.DialogPreference()
+            hWindow.Preference()
         except Exception as e:
             msg = 'Failed to show the Preferences window.'
-            cWindow.DialogNotification(
-                'errorU', msg=msg, tException=e, parent=win)
+            cWindow.Notification('errorU', msg=msg, tException=e, parent=win)
             return False
         #endregion ----------------------------------------------------->
 

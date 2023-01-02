@@ -23,15 +23,15 @@ from dataclasses import dataclass, field
 @dataclass
 class Configuration():
     """Configuration for the help module"""
-    #------------------------------> Names of Windows
-    nwAbout:str = 'About UMSAP'
-    #------------------------------> Names of Dialogs
-    ndCheckUpdateResDialog:str = 'Check for Updates'
-    ndPreferences:str          = 'Preferences'
-    #------------------------------> Names of Tabs
-    ntPrefUpdate:str = 'Updates'
-    #------------------------------> Names of Panes
-    npPrefUpdate:str = 'PrefUpdate'
+    #------------------------------> Name & Titles
+    nwAbout:str                = 'Window About UMSAP'
+    ndCheckUpdateResDialog:str = 'Dialog Check for Updates'
+    ndPreferences:str          = 'Dialog Preferences'
+    ntPrefUpdate:str           = 'Updates'
+    npPrefUpdate:str           = 'Pane Preference Update'
+    twAbout: str               = 'About UMSAP'
+    tdPrefUpdate:str           = 'Preferences'
+    tdCheckUpdate:str          = 'Check for Updates'
     #------------------------------> Converter for user options
     converter:dict = field(default_factory=lambda: {})
 #---

@@ -32,7 +32,7 @@ class BaseMenu(wx.Menu):
         rIDMap: dict
             Maps menu item's ID with function in window, e.g.
             {self.miSaveI.GetId() : mConfig.klToolExpImgAll,}
-        rKeyMap : dict
+        rKeyMap: dict
             Maps menu items's ID with the keywords of the corresponding
             functions in the win, e.g.
             {self.miMon.GetId(): 'mon',}
@@ -50,10 +50,10 @@ class BaseMenu(wx.Menu):
     def __init__(self) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        super().__init__()
-        #------------------------------>
         self.rIDMap  = {}
         self.rKeyMap = {}
+        #------------------------------>
+        super().__init__()
         #endregion --------------------------------------------> Initial Setup
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -225,18 +225,18 @@ class BaseMenuMainResult(BaseMenu):
 
         Parameters
         ----------
-        menuData : dict
+        menuData: dict
             Data to build the Tool menu of the window. It must contain at least
             a key - value pair like:
             'MenuDate' : ['20210324-123456 - bla',..., '20220730-105402 - bla2']
 
         Attributes
         ----------
-        cMenuData : dict
+        cMenuData: dict
             Data to build the Tool menu of the window. It must contain at least
             a key - value pair like:
             'MenuDate' : ['20210324-123456 - bla',..., '20220730-105402 - bla2']
-        rPlotDate : list[wx.MenuItems]
+        rPlotDate: list[wx.MenuItems]
             List of available menu items representing the analysis IDs.
     """
     #region -----------------------------------------------------> Class Setup
@@ -401,12 +401,8 @@ class BaseMenuMainResult(BaseMenu):
                 checkedFound = True
                 menuItem = k
                 break
-            else:
-                pass
         #------------------------------> Check first if not found
-        if checkedFound:
-            pass
-        else:
+        if not checkedFound:
             self.rPlotDate[0].Check(check=True)
             menuItem = self.rPlotDate[0]
         #endregion ----------------------------------------------------> Dates
@@ -439,8 +435,6 @@ class BaseMenuMainResult(BaseMenu):
         #region ---------------------------------------------------> Update GUI
         if updateGUI:
             self.OnMethodKey(wx.MenuEvent(id=tDate.GetId()))
-        else:
-            pass
         #endregion ------------------------------------------------> Update GUI
 
         return True
@@ -581,10 +575,10 @@ class BaseMenuFurtherAnalysis(BaseMenu):
             ----------
             tMethod: Callable
                 Method to call when the menu is selected.
-            idMap : str
-                Value for the self.rIDMap entry
+            idMap: str
+                Value for the self.rIDMap entry.
             idKey: str
-                Value for the self.rKeyMap entry
+                Value for the self.rKeyMap entry.
 
             Returns
             -------
@@ -601,16 +595,10 @@ class BaseMenuFurtherAnalysis(BaseMenu):
             if idMap:
                 rIDMap = {self.miNat.GetId():idMap}
                 self.rIDMap = self.rIDMap | rIDMap
-            else:
-                pass
             #------------------------------> KeyMap
             if idKey:
                 rKeyMap = {self.miNat.GetId(): idKey}
                 self.rKeyMap = self.rKeyMap | rKeyMap
-            else:
-                pass
-        else:
-            pass
         #endregion ------------------------------------------------> Add Entry
 
         return True

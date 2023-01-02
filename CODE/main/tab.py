@@ -32,18 +32,19 @@ class TabStart(wx.Panel):
     """
     #region -----------------------------------------------------> Class setup
     cName  = mConfig.main.ntStart
-    tTitle = mConfig.main.tStart
+    tTitle = mConfig.main.ttStart
     #------------------------------> Files
     cImg = mConfig.core.fImgStart
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: wx.Window, *args, **kwargs) -> None:             # pylint: disable=unused-argument
+    def __init__(self, parent:wx.Window, *args, **kwargs) -> None:              # pylint: disable=unused-argument
         """"""
         #region -----------------------------------------------> Initial setup
         self.cParent = parent
         #------------------------------>
-        super().__init__(parent=parent)
+        super().__init__(parent=parent, name=self.cName)
+        #------------------------------>
         self.SetBackgroundColour('white')
         #endregion --------------------------------------------> Initial setup
 

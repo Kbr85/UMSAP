@@ -30,57 +30,46 @@ class Configuration():
     """Configuration for the core module"""
     #region ---------------------------------------------------------> Options
     #------------------------------> Options for post_init
+    commOpen:str     = field(init=False)                                        # Root folder
+    copyShortCut:str = field(init=False)                                        # Tool place location
     deltaWin:int     = field(init=False)                                        # Command to open files
     res:Path         = field(init=False)                                        # Key for shortcuts
     root:Path        = field(init=False)                                        # Horizontal space between top of windows
     toolMenuIdx:int  = field(init=False)                                        # Path to the Resources folder
-    commOpen:str     = field(init=False)                                        # Root folder
-    copyShortCut:str = field(init=False)                                        # Tool place location
-    #------------------------------>
+    pImages:Path     = field(init=False)                                        # Path to Images
+    fImgAbout:Path   = field(init=False)                                        # Path to File
+    fImgIcon:Path    = field(init=False)                                        # Path to File
+    fImgStart:Path   = field(init=False)                                        # Path to File
+    fManual:Path     = field(init=False)                                        # Path to File
+    fConfigDef:Path  = field(init=False)                                        # Path to File
+    mOneRPlusNum:str = field(init=False)                                        # Error Message
+    #------------------------------> General Options
     development:bool = True                                                     # Development (True) or Production (False)
-    #------------------------------>
-    version:str      = '2.2.1 (beta)'                                           # String to write in the output files
     software:str     = 'UMSAP'                                                  # Software short name
     softwareF:str    = 'Utilities for Mass Spectrometry Analysis of Proteins'   # Software full name
+    version:str      = '2.2.1 (beta)'                                           # String to write in the output files
     dictVersion:dict = field(default_factory=lambda: {                          # To write into output files
         'Version': '2.2.1 (beta)',
     })
-    #------------------------------>
-    os:str   = platform.system()                                                # Current operating system
-    cwd:Path = Path(__file__)                                                   # Config file path
-    #------------------------------>
+    os:str         = platform.system()                                          # Current operating system
+    cwd:Path       = Path(__file__)                                             # Config file path
     winNumber:dict = field(default_factory=lambda: {})                          # Keys: Windows ID - Values: Total number of opened windows, except conf win
-    #------------------------------> Name for Windows
-    nwDef:str = 'Name Default Window'
-    #------------------------------> Name for Tabs
-    ntDef:str = 'Name Default Tab'
-    #------------------------------> Name for Panes
-    npDef:str = 'Name Default Pane'
-    #------------------------------>
-    tTitleDef:str = 'Tab'
-    #------------------------------> Label for Menu Items
-    lmNatSeq:str = 'Native Sequence'
-    #------------------------------> Label for wx.Button
-    lBtnTypeResCtrl:str = 'Type Values'
-    #------------------------------> Label for wx.StaticText
-    lStResultCtrl:str = 'Results - Control experiments'
-    #------------------------------> Label for Pane
-    lnPaneConf:str = 'Configuration Options'
-    #------------------------------> Label for Progress Dialog
-    lPdError:str = 'Fatal Error'
+    dtFormat:str   = '%Y%m%d-%H%M%S'                                            # Date Time format
+    #------------------------------> Name & Title
+    nwDef:str     = 'Name Default Window'
+    ntDef:str     = 'Name Default Tab'
+    npDef:str     = 'Name Default Pane'
+    tTabDef:str   = 'Tab'
+    tPaneConf:str = 'Configuration Options'
+    #------------------------------> Label for Widgets
+    lmNatSeq:str = 'Native Sequence'                                            # lm: Label for wx.MenuItem
+    lBtnTypeResCtrl:str = 'Type Values'                                         # lBtn: Label for wx.Button
+    lStResultCtrl:str = 'Results - Control experiments'                         # lSt: Label for wx.StaticText
+    lPdError:str = 'Fatal Error'                                                # lPd: Label for Progress Dialog
     #------------------------------> wx.ListCtrl Column names
     lLCtrlColNameI:list[str] = field(default_factory=lambda: ['#', 'Name'])
-    #------------------------------> DateTime Format
-    dtFormat:str = '%Y%m%d-%H%M%S'
-    #------------------------------> Options
-    oNumType:dict = field(default_factory=lambda: {
-        'int'  : int,
-        'float': float,
-    })
-    #------------------------------> Tooltips
-    ttSectionRightClick:str = ('The content of the Section can be deleted with '
-                               'a right click.')
     #------------------------------> Messages
+    mFileSelUMSAP:str   = 'Select the UMSAP File'
     mFileRead:str       = 'An error occurred when reading file:\n{}'
     mCopyFailedW:str    = "Copy operation failed. Try again."
     mPasteFailedW:str   = "Paste operation failed. Try again."
@@ -103,6 +92,8 @@ class Configuration():
     mNotImplementedFull:str = ('Option {} is not yet implemented. Valid '
                                'options for {} are: {}.')
     #------------------------------> Tooltips
+    ttSectionRightClick:str = ('The content of the Section can be deleted with '
+                               'a right click.')
     ttBtnHelp:str = 'Read tutorial at {}.'
     ttLCtrlCopyNoMod:str = (f"Selected rows can be copied ({copyShortCut}+C) "
                             "but the table cannot be modified.")
@@ -125,9 +116,8 @@ class Configuration():
     sWinFull:tuple[int,int] = (990, 775)                                        # Full size window
     sTc:tuple[int,int]      = (50, 22)                                          # wx.TextCtrl
     sLCtrlColI:list[int]    = field(default_factory=lambda: [50, 150])          # Size for # Name columns in a wx.ListCtrl
-    #------------------------------> Extensions
-    #--> For wx.Dialogs
-    elData:str         = 'txt files (*.txt)|*.txt'
+    #------------------------------> File Extensions
+    elData:str         = 'txt files (*.txt)|*.txt'                              # For wx.Dialogs
     elUMSAP:str        = 'UMSAP files (*.umsap)|*.umsap'
     elPDB:str          = 'PDB files (*.pdb)|*.pdb'
     elPDF:str          = 'PDF files (*.pdf)|*.pdf'
@@ -137,25 +127,26 @@ class Configuration():
                           'Portable Network Graphic (*.png)|*.png|'
                           'Scalable Vector Graphic (*.svg)|*.svg|'
                           'Tagged Image File (*.tif)|*.tif')
-    #-->  File extensions. First item is default
-    esData:list  = field(default_factory=lambda: ['.txt'])
+    esData:list  = field(default_factory=lambda: ['.txt'])                      # First item is default
     esPDB:list   = field(default_factory=lambda: ['.pdb'])
     esPDF:list   = field(default_factory=lambda: ['.pdf'])
     esSeq:list   = field(default_factory=lambda: ['.txt', '.fasta'])
     esUMSAP:list = field(default_factory=lambda: ['.umsap'])
-    #------------------------------> Messages
-    mFileSelUMSAP:str = 'Select the UMSAP File'
     #------------------------------> URLs
     urlHome     = 'https://www.umsap.nl'
-    urlUpdate   = f"{urlHome}/page/release-notes"
     urlTutorial = f"{urlHome}/tutorial/2-2-X"
+    urlUpdate   = f"{urlHome}/page/release-notes"
     #------------------------------> List
     ltDPKeys:list[str] = field(default_factory=lambda: ['dfF', 'dfT', 'dfN', 'dfIm'])
     #------------------------------> Options
-    oYesNo:dict = field(default_factory=lambda: {
-        ''   : '',
+    oYesNo:dict = field(default_factory=lambda: {                               # Cast to bool
+        ''   : False,
         'Yes': True,
         'No' : False,
+    })
+    oNumType:dict = field(default_factory=lambda: {                             # Cast Numbers
+        'int'  : int,
+        'float': float,
     })
     #------------------------------> Names for output folder and files
     fnInitial:str    = "{}_{}-Initial-Data.txt"
@@ -173,7 +164,7 @@ class Configuration():
     fTreeItem:Union[wx.Font, str]              = ''
     fTreeItemDataFile:Union[wx.Font, str]      = ''
     fTreeItemDataFileFalse:Union[wx.Font, str] = ''
-    #------------------------------>
+    #------------------------------> To Load user configuration options
     confUserFile:bool = True                                                    # User configuration file is Ok
     confUserFileException:Optional[Exception] = None                            # Exception thrown when reading conf file
     confUserWrongOptions:list = field(default_factory=lambda: [])               # List of wrong options in the file
@@ -188,6 +179,7 @@ class Configuration():
         'checkUpdate'  : bool,
         'DPI'          : int,
         'MatPlotMargin': float,
+        'cZebra'       : str,
     })
     #endregion ------------------------------------------------------> Options
 

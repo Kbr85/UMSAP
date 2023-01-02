@@ -37,7 +37,7 @@ class WindowMain(cWindow.BaseWindow):
 
         Parameters
         ----------
-        parent : wx widget or None
+        parent: wx.Window or None
             Parent of the main window.
 
         Attributes
@@ -47,6 +47,7 @@ class WindowMain(cWindow.BaseWindow):
     """
     #region -----------------------------------------------------> Class Setup
     cName = mConfig.main.nwMain
+    cTitle = mConfig.main.twMain
     #------------------------------>
     dTab = {
         mConfig.main.ntStart : mTab.TabStart,
@@ -59,7 +60,7 @@ class WindowMain(cWindow.BaseWindow):
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: Optional[wx.Window]=None) -> None:
+    def __init__(self, parent:Optional[wx.Window]=None) -> None:
         """"""
         #region -----------------------------------------------> Initial setup
         super().__init__(parent=parent)
@@ -171,12 +172,12 @@ class WindowMain(cWindow.BaseWindow):
     #endregion ------------------------------------------------> Class Methods
 
     #region ---------------------------------------------------> Event methods
-    def OnTabClose(self, event: wx.Event) -> bool:
+    def OnTabClose(self, event:wx.Event) -> bool:
         """Make sure to show the Start Tab if no other tab exists.
 
             Parameters
             ----------
-            event : wx.aui.Event
+            event: wx.aui.Event
                 Information about the event.
 
             Returns
@@ -210,7 +211,7 @@ class WindowMain(cWindow.BaseWindow):
         return True
     #---
 
-    def OnClose(self, event: wx.CloseEvent) -> bool:
+    def OnClose(self, event:wx.CloseEvent) -> bool:
         """Destroy window and set config.winMain to None.
 
             Parameters

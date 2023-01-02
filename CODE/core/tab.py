@@ -29,9 +29,9 @@ class BaseConfTab(wx.Panel):
 
         Parameters
         ----------
-        parent : wx.Window
+        parent: wx.Window
             Parent of the tab.
-        dataI : dict
+        dataI: dict
             Initial data provided by the user to redo a previous analysis.
 
         Attributes
@@ -51,18 +51,15 @@ class BaseConfTab(wx.Panel):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: wx.Window, dataI: dict={}) -> None:# pylint: disable=dangerous-default-value
+    def __init__(self, parent:wx.Window, dataI:dict={}) -> None:                # pylint: disable=dangerous-default-value
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cParent    = parent
         self.cName      = getattr(self, 'cName',      mConfig.core.ntDef)
-        self.tTitle     = getattr(self, 'cTitle',     mConfig.core.tTitleDef)
-        self.clPaneConf = getattr(self, 'clPaneConf', mConfig.core.lnPaneConf)
+        self.tTitle     = getattr(self, 'cTitle',     mConfig.core.tTabDef)
+        self.clPaneConf = getattr(self, 'clPaneConf', mConfig.core.tPaneConf)
         #------------------------------>
         super().__init__(parent, name=self.cName)
-
-        print(self.cName)
-        print(self.tTitle)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets

@@ -22,8 +22,8 @@ import requests
 import wx
 
 from config.config import config as mConfig
-from core import window as cWindow
 from core import check  as cCheck
+from core import window as cWindow
 from help import window as hWindow
 #endregion ----------------------------------------------------------> Imports
 
@@ -42,8 +42,8 @@ def UpdateCheck(
         ----------
         ori: str
             Origin of the request, 'menu' or 'main'
-        win : wx widget
-            To center the result window in this widget
+        win: wx.Window or None
+            To center the result window in this widget. Default is None.
 
         Return
         ------
@@ -111,10 +111,10 @@ def UpdateCheck(
     #------------------------------> Message
     if updateAvail:
         wx.CallAfter(
-            hWindow.DialogCheckUpdateResult, parent=win, checkRes=versionI)
+            hWindow.CheckUpdateResult, parent=win, checkRes=versionI)
     elif not updateAvail and ori == 'menu':
         wx.CallAfter(
-            hWindow.DialogCheckUpdateResult, parent=win, checkRes=None)
+            hWindow.CheckUpdateResult, parent=win, checkRes=None)
     #endregion --------------------------------------------> Compare & message
 
     return True

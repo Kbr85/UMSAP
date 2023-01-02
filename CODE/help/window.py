@@ -22,8 +22,8 @@ import wx.lib.agw.hyperlink as hl
 from wx import adv
 
 from config.config import config as mConfig
-from core import window as cWindow
 from core import file   as cFile
+from core import window as cWindow
 from help import pane   as hPane
 #endregion ----------------------------------------------------------> Imports
 
@@ -32,7 +32,8 @@ from help import pane   as hPane
 class WindowAbout(cWindow.BaseWindow):
     """About UMSAP window."""
     #region -----------------------------------------------------> Class setup
-    cName = mConfig.help.nwAbout
+    cName  = mConfig.help.nwAbout
+    cTitle = mConfig.help.twAbout
     #------------------------------>
     cSWindow = (600, 775)
     #endregion --------------------------------------------------> Class setup
@@ -95,13 +96,13 @@ class WindowAbout(cWindow.BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnButtonClose(self, event: wx.CommandEvent) -> bool:                    # pylint: disable=unused-argument
+    def OnButtonClose(self, event:wx.CommandEvent) -> bool:                     # pylint: disable=unused-argument
         """Close the window
 
             Parameters
             ----------
             event: wx.CommandEvent
-                Information about the event
+                Information about the event.
 
             Returns
             -------
@@ -116,10 +117,11 @@ class WindowAbout(cWindow.BaseWindow):
 
 
 #region -------------------------------------------------------------> Dialogs
-class DialogPreference(wx.Dialog):
+class Preference(wx.Dialog):
     """Set the UMSAP preferences."""
     #region -----------------------------------------------------> Class setup
     cName = mConfig.help.ndPreferences
+    cTitle = mConfig.help.tdPrefUpdate
     #------------------------------>
     cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
     #------------------------------>
@@ -132,7 +134,7 @@ class DialogPreference(wx.Dialog):
         #region -----------------------------------------------> Initial Setup
         super().__init__(
             None,
-            title = self.cName,
+            title = self.cTitle,
             style = self.cStyle,
             size  = self.cSize,
             name  = self.cName,
@@ -142,7 +144,7 @@ class DialogPreference(wx.Dialog):
         #region -----------------------------------------------------> Widgets
         self.wNoteBook = wx.Notebook(self, style=wx.NB_TOP)
         #------------------------------>
-        self.wUpdate = hPane.PanePrefUpdate(self.wNoteBook)
+        self.wUpdate = hPane.PrefUpdate(self.wNoteBook)
         self.wNoteBook.AddPage(self.wUpdate, self.wUpdate.cLTab)
         #------------------------------>
         self.sBtn = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.NO)
@@ -215,7 +217,7 @@ class DialogPreference(wx.Dialog):
             cFile.WriteJSON(mConfig.core.fConfig, data)
         except Exception as e:
             msg = 'Configuration options could not be saved.'
-            cWindow.DialogNotification('errorF', msg=msg, tException=e)
+            cWindow.Notification('errorF', msg=msg, tException=e)
             return False
         #endregion ------------------------------------------------>
 
@@ -283,7 +285,7 @@ class DialogPreference(wx.Dialog):
             data = cFile.ReadJSON(mConfig.core.fConfigDef)
         except Exception as e:
             msg = 'It was not possible to read the default configuration file.'
-            cWindow.DialogNotification('errorF', msg=msg, tException=e)
+            cWindow.Notification('errorF', msg=msg, tException=e)
             return {}
         #endregion ------------------------------------------------>
 
@@ -341,7 +343,7 @@ class DialogPreference(wx.Dialog):
             self.wUpdate.wRBox.SetSelection(val)
         except Exception as e:
             msg = 'Something went wrong when loading the configuration options.'
-            cWindow.DialogNotification('errorU', msg=msg, tException=e)
+            cWindow.Notification('errorU', msg=msg, tException=e)
             return False
         #endregion ------------------------------------------------>
 
@@ -351,18 +353,19 @@ class DialogPreference(wx.Dialog):
 #---
 
 
-class DialogCheckUpdateResult(wx.Dialog):
+class CheckUpdateResult(wx.Dialog):
     """Show a dialog with the result of the check for update operation.
 
         Parameters
         ----------
-        parent : wx widget or None
+        parent: wx widget or None
             To center the dialog in parent. Default None.
-        checkRes : str or None
+        checkRes: str or None
             Internet latest version. Default None.
     """
     #region -----------------------------------------------------> Class setup
-    cName = mConfig.help.ndCheckUpdateResDialog
+    cName  = mConfig.help.ndCheckUpdateResDialog
+    cTitle = mConfig.help.tdCheckUpdate
     #------------------------------> Style
     cStyle = wx.CAPTION|wx.CLOSE_BOX
     #endregion --------------------------------------------------> Class setup
@@ -376,7 +379,7 @@ class DialogCheckUpdateResult(wx.Dialog):
         """"""
         #region -----------------------------------------------> Initial setup
         super().__init__(
-            parent, title=self.cName, style=self.cStyle, name=self.cName)
+            parent, title=self.cTitle, style=self.cStyle, name=self.cName)
         #endregion --------------------------------------------> Initial setup
 
         #region -----------------------------------------------------> Widgets
@@ -391,8 +394,6 @@ class DialogCheckUpdateResult(wx.Dialog):
         if checkRes:
             self.wStLink = adv.HyperlinkCtrl(
                 self, label='Read the Release Notes.', url=mConfig.core.urlUpdate)
-        else:
-            pass
         #------------------------------> Img
         self.wImg = wx.StaticBitmap(
             self, bitmap=wx.Bitmap(str(mConfig.core.fImgIcon), wx.BITMAP_TYPE_PNG))
@@ -406,8 +407,6 @@ class DialogCheckUpdateResult(wx.Dialog):
         self.sText.Add(self.wMsg, 0, wx.ALIGN_LEFT|wx.ALL, 10)
         if checkRes:
             self.sText.Add(self.wStLink, 0, wx.ALIGN_CENTER|wx.ALL, 10)
-        else:
-            pass
         #------------------------------> Image Sizer
         self.sImg = wx.BoxSizer(wx.HORIZONTAL)
         self.sImg.Add(self.wImg, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
@@ -438,12 +437,12 @@ class DialogCheckUpdateResult(wx.Dialog):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnLink(self, event: wx.Event) -> bool:
+    def OnLink(self, event:wx.Event) -> bool:
         """Process the link event.
 
             Parameters
             ----------
-            event : wx.adv.HyperlinkEvent
+            event: wx.adv.HyperlinkEvent
                 Information about the event.
 
             Returns
