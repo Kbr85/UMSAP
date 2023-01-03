@@ -20,9 +20,11 @@ from pathlib import Path
 import wx
 
 from config.config import config as mConfig
-from core import pane      as cPane
-from core import widget    as cWidget
-from core import validator as cValidator
+from core     import method    as cMethod
+from core     import pane      as cPane
+from core     import validator as cValidator
+from core     import widget    as cWidget
+from dataprep import method    as dataMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -107,13 +109,14 @@ class DataPrep(cPane.BaseConfPanel):
     cTTColAnalysis = ('Columns on which to perform the Data Preparation.\ne.g. '
                       '8 10-12')
     #------------------------------> Needed to Run
-    cName        = mConfig.data.npDataPrep
-    cURL         = f'{mConfig.core.urlTutorial}/data-preparation'
-    cTTHelp      = mConfig.core.ttBtnHelp.format(cURL)
-    cSection     = mConfig.data.nUtil
-    cTitlePD     = f"Running {mConfig.data.nUtil} Analysis"
-    cGaugePD     = 20
-    rLLenLongest = len(cLColAnalysis)
+    cName           = mConfig.data.npDataPrep
+    cURL            = f'{mConfig.core.urlTutorial}/data-preparation'
+    cTTHelp         = mConfig.core.ttBtnHelp.format(cURL)
+    cSection        = mConfig.data.nUtil
+    cTitlePD        = f"Running {mConfig.data.nUtil} Analysis"
+    cGaugePD        = 20
+    rLLenLongest    = len(cLColAnalysis)
+    rAnalysisMethod = dataMethod.DataPreparation
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -254,134 +257,132 @@ class DataPrep(cPane.BaseConfPanel):
     #endregion ------------------------------------------------> Class Methods
 
     #region ---------------------------------------------------> Run methods
-    # def CheckInput(self) -> bool:
-    #     """Check user input
+    def CheckInput(self) -> bool:
+        """Check user input
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region -------------------------------------------------------> Super
-    #     if super().CheckInput():
-    #         pass
-    #     else:
-    #         return False
-    #     #endregion ----------------------------------------------------> Super
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Super
+        if super().CheckInput():
+            pass
+        else:
+            return False
+        #endregion ----------------------------------------------------> Super
 
-    #     #region ----------------------------------------------------> All None
-    #     a = self.wTransMethod.wCb.GetValue()
-    #     b = self.wNormMethod.wCb.GetValue()
-    #     c = self.wImputationMethod.wCb.GetValue()
-    #     #------------------------------>
-    #     if a == b == c == 'None':
-    #         self.rMsgError = (f'{self.cLTransMethod}, {self.cLNormMethod} and '
-    #             f'{self.cLImputation} methods are all set to None. There is '
-    #             f'nothing to be done.')
-    #         return False
-    #     else:
-    #         pass
-    #     #endregion -------------------------------------------------> All None
+        #region ----------------------------------------------------> All None
+        a = self.wTransMethod.wCb.GetValue()
+        b = self.wNormMethod.wCb.GetValue()
+        c = self.wImputationMethod.wCb.GetValue()
+        #------------------------------>
+        if a == b == c == 'None':
+            self.rMsgError = (f'{self.cLTransMethod}, {self.cLNormMethod} and '
+                f'{self.cLImputation} methods are all set to None. There is '
+                f'nothing to be done.')
+            return False
+        else:
+            pass
+        #endregion -------------------------------------------------> All None
 
-    #     return True
-    # #---
+        return True
+    #---
 
-    # def PrepareRun(self) -> bool:
-    #     """Set variable and prepare data for analysis.
+    def PrepareRun(self) -> bool:
+        """Set variable and prepare data for analysis.
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region -------------------------------------------------------> Input
-    #     msgStep = self.cLPdPrepare + 'User input, reading'
-    #     wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-    #     #------------------------------> Variables
-    #     impMethod = self.wImputationMethod.wCb.GetValue()
-    #     #------------------------------> As given
-    #     self.rDI = {
-    #         self.EqualLenLabel(self.cLiFile) : (
-    #             self.wIFile.wTc.GetValue()),
-    #         self.EqualLenLabel(self.cLId) : (
-    #             self.wId.wTc.GetValue()),
-    #         self.EqualLenLabel(self.cLCeroTreatD) : (
-    #             self.wCeroB.wCb.GetValue()),
-    #         self.EqualLenLabel(self.cLTransMethod) : (
-    #             self.wTransMethod.wCb.GetValue()),
-    #         self.EqualLenLabel(self.cLNormMethod) : (
-    #             self.wNormMethod.wCb.GetValue()),
-    #         self.EqualLenLabel(self.cLImputation) : (
-    #             impMethod),
-    #         self.EqualLenLabel(self.cLShift) : (
-    #             self.wShift.wTc.GetValue()),
-    #         self.EqualLenLabel(self.cLWidth) : (
-    #             self.wWidth.wTc.GetValue()),
-    #         self.EqualLenLabel(self.cLColAnalysis): (
-    #             self.wColAnalysis.wTc.GetValue()),
-    #     }
-    #     #------------------------------> Dict with all values
-    #     #-------------->
-    #     msgStep = self.cLPdPrepare + 'User input, processing'
-    #     wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-    #     #-------------->
-    #     colAnalysis = mMethod.Str2ListNumber(
-    #         self.wColAnalysis.wTc.GetValue(), sep=' ',
-    #     )
-    #     resCtrlFlat = [x for x in range(0, len(colAnalysis))]
-    #     #-------------->
-    #     self.rDO  = {
-    #         'iFile'      : Path(self.wIFile.wTc.GetValue()),
-    #         'uFile'      : Path(self.wUFile.wTc.GetValue()),
-    #         'ID'         : self.wId.wTc.GetValue(),
-    #         'Cero'       : mConfig.oYesNo[self.wCeroB.wCb.GetValue()],
-    #         'NormMethod' : self.wNormMethod.wCb.GetValue(),
-    #         'TransMethod': self.wTransMethod.wCb.GetValue(),
-    #         'ImpMethod'  : impMethod,
-    #         'Shift'      : float(self.wShift.wTc.GetValue()),
-    #         'Width'      : float(self.wWidth.wTc.GetValue()),
-    #         'oc'         : {
-    #             'ColAnalysis': colAnalysis,
-    #             'Column'     : colAnalysis,
-    #             'ColumnF'    : colAnalysis,
-    #         },
-    #         'df' : {
-    #             'ColumnR'    : resCtrlFlat,
-    #             'ResCtrlFlat': resCtrlFlat,
-    #             'ColumnF'    : resCtrlFlat,
-    #         },
-    #     }
-    #     #endregion ----------------------------------------------------> Input
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Input
+        msgStep = self.cLPdPrepare + 'User input, reading'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> Variables
+        impMethod = self.wImputationMethod.wCb.GetValue()
+        #------------------------------> As given
+        self.rDI = {
+            self.EqualLenLabel(self.cLiFile) : (
+                self.wIFile.wTc.GetValue()),
+            self.EqualLenLabel(self.cLId) : (
+                self.wId.wTc.GetValue()),
+            self.EqualLenLabel(self.cLCeroTreatD) : (
+                self.wCeroB.wCb.GetValue()),
+            self.EqualLenLabel(self.cLTransMethod) : (
+                self.wTransMethod.wCb.GetValue()),
+            self.EqualLenLabel(self.cLNormMethod) : (
+                self.wNormMethod.wCb.GetValue()),
+            self.EqualLenLabel(self.cLImputation) : (
+                impMethod),
+            self.EqualLenLabel(self.cLShift) : (
+                self.wShift.wTc.GetValue()),
+            self.EqualLenLabel(self.cLWidth) : (
+                self.wWidth.wTc.GetValue()),
+            self.EqualLenLabel(self.cLColAnalysis): (
+                self.wColAnalysis.wTc.GetValue()),
+        }
+        #------------------------------> Dict with all values
+        #-------------->
+        msgStep = self.cLPdPrepare + 'User input, processing'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #-------------->
+        colAnalysis = cMethod.Str2ListNumber(
+            self.wColAnalysis.wTc.GetValue(), sep=' ',
+        )
+        resCtrlFlat = [x for x in range(0, len(colAnalysis))]
+        #-------------->
+        self.rDO  = {
+            'iFile'      : Path(self.wIFile.wTc.GetValue()),
+            'uFile'      : Path(self.wUFile.wTc.GetValue()),
+            'ID'         : self.wId.wTc.GetValue(),
+            'Cero'       : mConfig.core.oYesNo[self.wCeroB.wCb.GetValue()],
+            'NormMethod' : self.wNormMethod.wCb.GetValue(),
+            'TransMethod': self.wTransMethod.wCb.GetValue(),
+            'ImpMethod'  : impMethod,
+            'Shift'      : float(self.wShift.wTc.GetValue()),
+            'Width'      : float(self.wWidth.wTc.GetValue()),
+            'oc'         : {
+                'ColAnalysis': colAnalysis,
+                'Column'     : colAnalysis,
+                'ColumnF'    : colAnalysis,
+            },
+            'df' : {
+                'ColumnR'    : resCtrlFlat,
+                'ResCtrlFlat': resCtrlFlat,
+                'ColumnF'    : resCtrlFlat,
+            },
+        }
+        #endregion ----------------------------------------------------> Input
 
-    #     #region ---------------------------------------------------> Super
-    #     if super().PrepareRun():
-    #         pass
-    #     else:
-    #         self.rMsgError = 'Something went wrong when preparing the analysis.'
-    #         return False
-    #     #endregion ------------------------------------------------> Super
+        #region ---------------------------------------------------> Super
+        if not super().PrepareRun():
+            self.rMsgError = 'Something went wrong when preparing the analysis.'
+            return False
+        #endregion ------------------------------------------------> Super
 
-    #     return True
-    # #---
+        return True
+    #---
 
-    # def WriteOutput(self) -> bool:
-    #     """Write output.
+    def WriteOutput(self) -> bool:
+        """Write output.
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region --------------------------------------------------> Data Steps
-    #     stepDict = self.SetStepDictDP()
-    #     stepDict['Files'] = {
-    #         mConfig.core.fnInitial.format(self.rDate, '01'): self.dfI,
-    #         mConfig.core.fnFloat.format(self.rDate, '02')  : self.dfF,
-    #         mConfig.core.fnTrans.format(self.rDate, '03')  : self.dfT,
-    #         mConfig.core.fnNorm.format(self.rDate, '04')   : self.dfN,
-    #         mConfig.core.fnImp.format(self.rDate, '05')    : self.dfIm,
-    #     }
-    #     #endregion -----------------------------------------------> Data Steps
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Data Steps
+        stepDict = self.SetStepDictDP()
+        stepDict['Files'] = {
+            mConfig.core.fnInitial.format(self.rDate, '01'): self.dfI,
+            mConfig.core.fnFloat.format(self.rDate, '02')  : self.dfF,
+            mConfig.core.fnTrans.format(self.rDate, '03')  : self.dfT,
+            mConfig.core.fnNorm.format(self.rDate, '04')   : self.dfN,
+            mConfig.core.fnImp.format(self.rDate, '05')    : self.dfIm,
+        }
+        #endregion -----------------------------------------------> Data Steps
 
-    #     return self.WriteOutputData(stepDict)
-    # #---
+        return self.WriteOutputData(stepDict)
+    #---
     #endregion ------------------------------------------------> Run methods
 #---
 #endregion ----------------------------------------------------------> Classes

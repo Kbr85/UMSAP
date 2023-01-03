@@ -61,7 +61,7 @@ class BaseConfTab(wx.Panel):
         self.tTitle     = getattr(self, 'cTitle',     mConfig.core.tTabDef)
         self.clPaneConf = getattr(self, 'clPaneConf', mConfig.core.tPaneConf)
         #------------------------------>
-        super().__init__(parent, name=self.cName)
+        super().__init__(parent, name=self.cName, size=(500,500))
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -148,13 +148,6 @@ class BaseConfListTab(BaseConfTab):
         #------------------------------>
         self._mgr.Update()
         #endregion ----------------------------------------------> Aui control
-
-        #region --------------------------------------------------------> TEST
-        if mConfig.core.development:
-            self.wConf.OnIFileLoad('fEvent')
-        else:
-            pass
-        #endregion -----------------------------------------------------> TEST
     #---
     #endregion -----------------------------------------------> Instance setup
 #---

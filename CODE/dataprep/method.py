@@ -15,38 +15,39 @@
 
 
 #region -------------------------------------------------------------> Imports
-from typing import Optional, Union, Literal, TYPE_CHECKING
+from typing import Optional, Union, Literal
 
 import numpy  as np
+import pandas as pd
 
 from config.config import config as mConfig
 from core import method as cMethod
-
-if TYPE_CHECKING:
-    import pandas as pd
 #endregion ----------------------------------------------------------> Imports
 
 
 #region -------------------------------------------------------------> Methods
 #region ----------------------------------------------------> Data Preparation
-def DataPreparation(
-    df:'pd.DataFrame',                                                   # pylint: disable=unused-argument
-    rDO:dict,
-    *args,
-    resetIndex: bool=True,
+def DataPreparation(                                                            # pylint: disable=dangerous-default-value
+    *args,                                                                      # pylint: disable=unused-argument
+    df:pd.DataFrame  = pd.DataFrame(),
+    rDO:dict         = {},
+    resetIndex: bool = True,
+    **kwargs
     ) -> tuple[dict, str, Optional[Exception]]:
     """Perform the data preparation steps.
 
         Parameters
         ----------
+        *args:
+            Ignore here but needed for compatibility.
         df: pd.DataFrame
             DataFrame read from CSV file.
         rDO: dict
             rDO dictionary from the PrepareRun step of the analysis.
-        *args:
-            Ignore here but needed for compatibility.
         resetIndex: bool
             Reset index of dfS (True) or not (False). Default is True.
+        **kwargs:
+            Ignore here but needed for  compatibility.
 
         Returns
         -------
@@ -70,6 +71,7 @@ def DataPreparation(
         Notes
         -----
         *args are ignored. They are needed for compatibility.
+        *kwargs are ignored. They are needed for compatibility.
     """
     # Test in test.unit.test_statistic.DataPreparation
     #region ----------------------------------------> Run Data Preparation
@@ -183,7 +185,7 @@ def DataPreparation(
 
 
 def DataPrep_Float(
-    df:'pd.DataFrame',
+    df:pd.DataFrame,
     cero:bool,
     col:list[int],
     colCero:list[int],
@@ -229,10 +231,10 @@ def DataPrep_Float(
 
 #region -------------------------------------------------> Data Transformation
 def _DataTransformation_None(
-    df:'pd.DataFrame',                                                         # pylint: disable=unused-argument
+    df:pd.DataFrame,                                                         # pylint: disable=unused-argument
     *args,
     **kwargs,
-    ) -> 'pd.DataFrame':
+    ) -> pd.DataFrame:
     """This will just return the original df.
 
         Parameters
@@ -251,10 +253,10 @@ def _DataTransformation_None(
 
 
 def _DataTransformation_Log2(                                                   # pylint: disable=dangerous-default-value
-    df:'pd.DataFrame',
+    df:pd.DataFrame,
     sel:list[int]                    = [],
     rep:Union[None, str, float, int] = None,
-    ) -> 'pd.DataFrame':
+    ) -> pd.DataFrame:
     """Performs a Log2 transformation of selected columns in df.
 
         Parameters
@@ -301,11 +303,11 @@ TRANS_METHOD = {
 
 
 def DataTransformation(                                                         # pylint: disable=dangerous-default-value
-    df:'pd.DataFrame',
+    df:pd.DataFrame,
     sel:list[int]                   = [],
     method:Literal['Log2', 'None']  = 'Log2',
     rep:Union[None, str, float, int]= None,
-    ) -> 'pd.DataFrame':
+    ) -> pd.DataFrame:
     """Performs a data transformation over the selected columns in the
         dataframe.
 
@@ -339,10 +341,10 @@ def DataTransformation(                                                         
 
 #region --------------------------------------------------> Data Normalization
 def _DataNormalization_None(
-    df:'pd.DataFrame',                                                          # pylint: disable=unused-argument
+    df:pd.DataFrame,                                                          # pylint: disable=unused-argument
     *args,
     **kwargs,
-    ) -> 'pd.DataFrame':
+    ) -> pd.DataFrame:
     """This will just return the original df.
 
         Parameters
@@ -361,9 +363,9 @@ def _DataNormalization_None(
 
 
 def _DataNormalization_Median(                                                  # pylint: disable=dangerous-default-value
-    df:'pd.DataFrame',
+    df:pd.DataFrame,
     sel:list[int] = []
-    ) -> 'pd.DataFrame':
+    ) -> pd.DataFrame:
     """Performs a Median normalization of selected columns in df.
 
         Parameters
@@ -406,10 +408,10 @@ NORM_METHOD = {
 
 
 def DataNormalization(                                                          # pylint: disable=dangerous-default-value
-    df:'pd.DataFrame',
+    df:pd.DataFrame,
     sel:list[int]=[],
     method:Literal['Median', 'None']='Median'
-    ) -> 'pd.DataFrame':
+    ) -> pd.DataFrame:
     """Perform a data normalization over the selected columns in the
         dataframe.
 
@@ -440,7 +442,7 @@ def DataNormalization(                                                          
 
 
 #region -----------------------------------------------------> Data Imputation
-def _DataImputation_None(df:'pd.DataFrame', *args, **kwargs) -> 'pd.DataFrame': # pylint: disable=unused-argument
+def _DataImputation_None(df:pd.DataFrame, *args, **kwargs) -> pd.DataFrame: # pylint: disable=unused-argument
     """This will just return the original df.
 
         Parameters
@@ -459,12 +461,12 @@ def _DataImputation_None(df:'pd.DataFrame', *args, **kwargs) -> 'pd.DataFrame': 
 
 
 def _DataImputation_NormalDistribution(                                         # pylint: disable=dangerous-default-value
-    df:'pd.DataFrame',                                                          # pylint: disable=unused-argument
+    df:pd.DataFrame,                                                          # pylint: disable=unused-argument
     sel:list[int]=[],
     shift:float=float(mConfig.data.Shift),
     width:float=float(mConfig.data.Width),
     **kwargs
-    ) -> 'pd.DataFrame':
+    ) -> pd.DataFrame:
     """Performs a Normal Distribution imputation of selected columns in df.
 
         Parameters
@@ -519,11 +521,11 @@ IMPUTATION_METHOD = {
 
 
 def DataImputation(                                                             # pylint: disable=dangerous-default-value
-    df:'pd.DataFrame',
+    df:pd.DataFrame,
     sel:list[int]=[],
     method:Literal['Normal Distribution', 'None']='Normal Distribution',
     **kwargs
-    ) -> 'pd.DataFrame':
+    ) -> pd.DataFrame:
     """Perform a data imputation over the selected columns in the
         dataframe.
 

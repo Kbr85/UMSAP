@@ -71,7 +71,7 @@ def CorrA(                                                                      
     """
     # Test in test.unit.test_method.Test_CorrA
     #region ------------------------------------------------> Data Preparation
-    tOut = dataMethod.DataPreparation(df, rDO, resetIndex=resetIndex)
+    tOut = dataMethod.DataPreparation(df=df, rDO=rDO, resetIndex=resetIndex)
     if not tOut[0]:
         return tOut
     #endregion ---------------------------------------------> Data Preparation
