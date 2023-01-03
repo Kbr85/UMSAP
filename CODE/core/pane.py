@@ -851,26 +851,18 @@ class BaseConfPanel(
         if (aaDict := stepDict.get('AA', False)):
             fileP = dataFolder/aaDict[f'{self.rDate}_{self.rDO["AA"]}']         # type: ignore
             cFile.WriteDF2CSV(fileP, self.dfAA)                                 # type: ignore
-        else:
-            pass
 
         if (histDict := stepDict.get('Hist', False)):
             fileP = dataFolder/histDict[f'{self.rDate}_{self.rDO["Hist"]}']     # type: ignore
             cFile.WriteDF2CSV(fileP, self.dfHist)                               # type: ignore
-        else:
-            pass
 
         if (fileN := stepDict.get('CpR', False)):
             fileP = dataFolder/fileN
             cFile.WriteDF2CSV(fileP, self.dfCpR)                                # type: ignore
-        else:
-            pass
 
         if (fileN := stepDict.get('CEvol', False)):
             fileP = dataFolder/fileN
             cFile.WriteDF2CSV(fileP, self.dfCEvol)                              # type: ignore
-        else:
-            pass
         #endregion -----------------------------------------> Further Analysis
 
         #region --------------------------------------------------> UMSAP File
@@ -893,8 +885,6 @@ class BaseConfPanel(
         #--------------> DataPrep Util does not have dfR
         if not self.dfR.empty:
             dateDict[self.rDateID]['R'] = stepDict['R']
-        else:
-            pass
         #-------------->
         if self.cName == mConfig.prot.nPane:
             #--------------> Filters in ProtProf
@@ -903,17 +893,11 @@ class BaseConfPanel(
             #--------------> TarProt
             dateDict[self.rDateID]['CpR'] = stepDict['CpR']
             dateDict[self.rDateID]['CEvol'] = stepDict['CEvol']
-        else:
-            pass
         #--------------> Further Analysis
         if stepDict.get('AA', None) is not None:
             dateDict[self.rDateID]['AA'] = stepDict['AA']
-        else:
-            pass
         if stepDict.get('Hist', None) is not None:
             dateDict[self.rDateID]['Hist'] = stepDict['Hist']
-        else:
-            pass
         #------------------------------> Append or not
         try:
             outData = self.SetOutputDict(dateDict)
@@ -1045,9 +1029,7 @@ class BaseConfPanel(
         #------------------------------> DateID
         self.rDateID = f'{self.rDate} - {self.rDO["ID"]}'
         #------------------------------> Remove Shift & Width if not needed
-        if self.wImputationMethod.wCb.GetValue() == 'Normal Distribution':
-            pass
-        else:
+        if self.wImputationMethod.wCb.GetValue() != 'Normal Distribution':
             del self.rDI[self.EqualLenLabel(self.cLShift)]
             del self.rDI[self.EqualLenLabel(self.cLWidth)]
 
@@ -1246,8 +1228,6 @@ class BaseConfPanel(
             self.wUFile.wTc.SetValue(str(self.rDFile[-1]))
             self.wIFile.wTc.SetValue(str(self.rDFile[0]))
             self.rDFile = []
-        else:
-            pass
         #endregion ----------------------------------------------------> Reset
 
         return True

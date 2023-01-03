@@ -118,7 +118,7 @@ class CorrA(cPane.BaseConfPanel):
     #region -----------------------------------------------------> Class Setup
     #------------------------------> Label
     cLCorrMethod  = 'Correlation Method'
-    cLColAnalysis = mConfig.corr.lStColAnalysis
+    cLColAnalysis = mConfig.core.lStColAnalysis
     cLNumName     = mConfig.core.lLCtrlColNameI
     cSNumName     = mConfig.core.sLCtrlColI
     cLPdRunText   = 'Calculating Correlation Coefficients'

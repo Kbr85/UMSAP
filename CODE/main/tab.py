@@ -22,7 +22,7 @@ from config.config import config as mConfig
 
 
 #region -------------------------------------------------------------> Classes
-class TabStart(wx.Panel):
+class Start(wx.Panel):
     """Start tab.
 
         Parameters
@@ -95,10 +95,10 @@ class TabStart(wx.Panel):
             wx.EVT_BUTTON,
             lambda event: mConfig.main.mainWin.CreateTab(mConfig.corr.nTab)     # type: ignore
         )
-        # self.wBtnDataPrep.Bind(
-        #     wx.EVT_BUTTON,
-        #     lambda event: mConfig.winMain.CreateTab(mConfig.ntDataPrep)         # type: ignore
-        # )
+        self.wBtnDataPrep.Bind(
+            wx.EVT_BUTTON,
+            lambda event: mConfig.main.mainWin.CreateTab(mConfig.data.ntDataPrep)         # type: ignore
+        )
         # self.wBtnLimProt.Bind(
         #     wx.EVT_BUTTON,
         #     lambda event: mConfig.winMain.CreateTab(mConfig.ntLimProt)          # type: ignore

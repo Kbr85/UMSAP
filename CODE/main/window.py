@@ -22,12 +22,13 @@ import wx
 from wx.lib.agw import aui
 
 from config.config import config as mConfig
-from core import window as cWindow
-from corr import tab    as corrTab
-from help import method as hMethod
-from main import menu   as mMenu
-from main import method as mMethod
-from main import tab    as mTab
+from core     import window as cWindow
+from corr     import tab    as corrTab
+from dataprep import tab    as dataTab
+from help     import method as hMethod
+from main     import menu   as mMenu
+from main     import method as mMethod
+from main     import tab    as mTab
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -50,9 +51,9 @@ class WindowMain(cWindow.BaseWindow):
     cTitle = mConfig.main.twMain
     #------------------------------>
     dTab = {
-        mConfig.main.ntStart : mTab.TabStart,
-        mConfig.corr.nTab    : corrTab.CorrA,
-        # mConfig.main.ntDataPrep: mTab.BaseConfListTab,
+        mConfig.main.ntStart   : mTab.Start,
+        mConfig.corr.nTab      : corrTab.CorrA,
+        mConfig.data.ntDataPrep: dataTab.DataPrep,
         # mConfig.main.ntLimProt : mTab.BaseConfListTab,
         # mConfig.main.ntProtProf: mTab.BaseConfListTab,
         # mConfig.main.ntTarProt : mTab.BaseConfListTab,

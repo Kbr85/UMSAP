@@ -19,7 +19,9 @@ import wx
 from wx import aui
 
 from config.config import config as mConfig
-from corr import pane as corrPane
+from core     import widget as cWidget
+from corr     import pane   as corrPane
+from dataprep import pane   as dataPane
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -42,8 +44,8 @@ class BaseConfTab(wx.Panel):
     """
     #region -----------------------------------------------------> Class setup
     dConfPanel = {
-        mConfig.corr.nTab : corrPane.CorrA,
-        # mConfig.ntDataPrep: mPane.PaneDataPrep,
+        mConfig.corr.nTab       : corrPane.CorrA,
+        mConfig.data.ntDataPrep : dataPane.DataPrep,
         # mConfig.ntLimProt : mPane.PaneLimProt,
         # mConfig.ntProtProf: mPane.PaneProtProf,
         # mConfig.ntTarProt : mPane.PaneTarProt,
@@ -91,6 +93,68 @@ class BaseConfTab(wx.Panel):
         #------------------------------>
         self._mgr.Update()
         #endregion ----------------------------------------------> Aui control
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
+
+
+class BaseConfListTab(BaseConfTab):
+    """Base class for a Tab containing a configuration panel and a right list
+        panel.
+
+        Parameters
+        ----------
+        parent: wx.Window
+            Parent of the tab.
+        dataI: dict or None
+            Initial data provided by the user to performed a previous analysis.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent:wx.Window, dataI:dict={}) -> None:                # pylint: disable=dangerous-default-value
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cLCColLabel  = getattr(self, 'cLCColLabel',  mConfig.core.lLCtrlColNameI)
+        self.cSColSize    = getattr(self, 'cLCColSize',   mConfig.core.sLCtrlColI)
+        self.cLCPaneTitle = getattr(self, 'cLCPaneTitle', mConfig.core.tListPane)
+        #------------------------------>
+        super().__init__(parent, dataI=dataI)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wLCtrl = cWidget.MyListCtrlZebraMaxWidth(
+            self, colLabel=self.cLCColLabel, colSize=self.cSColSize)
+        #----------------------------> Pointer to lc to load data file content
+        self.wConf.wLCtrlI = self.wLCtrl
+        self.wConf.rLCtrlL = [self.wLCtrl]
+        #endregion --------------------------------------------------> Widgets
+
+        #region -------------------------------------------------> Aui control
+        self._mgr.AddPane(
+            self.wLCtrl,
+            aui.AuiPaneInfo(
+                ).Right(
+                ).Caption(
+                    self.cLCPaneTitle
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------>
+        self._mgr.Update()
+        #endregion ----------------------------------------------> Aui control
+
+        #region --------------------------------------------------------> TEST
+        if mConfig.core.development:
+            self.wConf.OnIFileLoad('fEvent')
+        else:
+            pass
+        #endregion -----------------------------------------------------> TEST
     #---
     #endregion -----------------------------------------------> Instance setup
 #---

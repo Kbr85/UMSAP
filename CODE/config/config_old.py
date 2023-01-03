@@ -37,7 +37,7 @@ winUMSAP = {}
 nuReadF:str    = 'Read UMSAP File'
 #------------------------------> Title of Tabs
 
-tDataPrep:str = 'DataPrep'
+
 tLimProt:str  = 'LimProt'
 tProtProf:str = 'ProtProf'
 tTarProt:str  = 'TarProt'
@@ -59,7 +59,6 @@ ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Individual Panes
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npNPlot                 = 'NPlot'
-npDataPrep              = 'DataPrepPane'
 npLimProt               = 'LimProtPane'
 npResControlExpProtProf = 'ResControlExpPaneProtProf'
 npResControlExpLimProt  = 'ResControlExpPaneLimProt'
@@ -103,14 +102,7 @@ kwToolFAPDBMap         = 'PDB Map'
 
 
 #region --------------------------------------------------------------> Labels
-#------------------------------> Pane Title
-
-lnListPane = 'Data File Content'
-#------------------------------> wx.Button
-
-#------------------------------> wx.ListCtrl
-
-# #------------------------------> wx.StaticBox
+#------------------------------> wx.StaticBox
 lStProtProfCond = 'Conditions'
 lStProtProfRP   = 'Relevant Points'
 lStLimProtLane  = 'Lanes'
@@ -249,8 +241,7 @@ mOptField        = '\nThis field is optional.'
 #region ------------------------------------------------------------> Values
 mOneZPlusNumText = "Only a non-negative integer can be accepted here."
 mOne01NumText    = "Only one number between 0 and 1 can be accepted here."
-mNZPlusNumText   = (
-    "Only a list of unique non-negative integers can be accepted here.")
+
 #endregion ---------------------------------------------------------> Values
 
 #region ---------------------------------------------------------------> Files
@@ -264,8 +255,6 @@ mPDDataTypeCol    = 'The {} contains unexpected data type in columns {}.'
 #endregion ---------------------------------------------------------> Pandas
 
 #region ----------------------------------------------------> For CheckInput
-mColNumbers        = ('In addition, each value must be smaller than the total '
-                      'number of columns in the Data file.')
 mColNumber         = ('In addition, the value must be smaller than the total '
                       'number of columns in the Data file.')
 mAllTextFieldEmpty = 'All text fields are empty. Nothing will be done.'
@@ -273,8 +262,6 @@ mRepeatColNum      = 'There are repeated column numbers in the text fields.'
 mOneRealNum        = f"{mValueBad}{mOneRNumText}"
 mOneZPlusNum       = f"{mValueBad}{mOneZPlusNumText}"
 mOneZPlusNumCol    = f"{mOneZPlusNum} {mColNumber}"
-mNZPlusNum         = f"{mValueBad}{mNZPlusNumText}"
-mNZPlusNumCol      = f"{mNZPlusNum} {mColNumbers}"
 mOne01Num          = f"{mValueBad}{mOne01NumText}"
 mResCtrl           = (f"{mValueBad}Please use the {lBtnTypeResCtrl} button to "
                       f"provide a correct input.")

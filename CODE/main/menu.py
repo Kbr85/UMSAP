@@ -84,8 +84,6 @@ from help import menu   as hMenu
 #         #region -------------------------------------------------> Check MainW
 #         if mConfig.main.mainWin is None:
 #             mConfig.main.mainWin = mWindow.WindowMain()
-#         else:
-#             pass
 #         #endregion ----------------------------------------------> Check MainW
 
 #         #region --------------------------------------------------> Create Tab

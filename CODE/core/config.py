@@ -30,19 +30,21 @@ class Configuration():
     """Configuration for the core module"""
     #region ---------------------------------------------------------> Options
     #------------------------------> Options for post_init
-    commOpen:str     = field(init=False)                                        # Root folder
-    copyShortCut:str = field(init=False)                                        # Tool place location
-    deltaWin:int     = field(init=False)                                        # Command to open files
-    res:Path         = field(init=False)                                        # Key for shortcuts
-    root:Path        = field(init=False)                                        # Horizontal space between top of windows
-    toolMenuIdx:int  = field(init=False)                                        # Path to the Resources folder
-    pImages:Path     = field(init=False)                                        # Path to Images
-    fImgAbout:Path   = field(init=False)                                        # Path to File
-    fImgIcon:Path    = field(init=False)                                        # Path to File
-    fImgStart:Path   = field(init=False)                                        # Path to File
-    fManual:Path     = field(init=False)                                        # Path to File
-    fConfigDef:Path  = field(init=False)                                        # Path to File
-    mOneRPlusNum:str = field(init=False)                                        # Error Message
+    commOpen:str      = field(init=False)                                       # Root folder
+    copyShortCut:str  = field(init=False)                                       # Tool place location
+    deltaWin:int      = field(init=False)                                       # Command to open files
+    res:Path          = field(init=False)                                       # Key for shortcuts
+    root:Path         = field(init=False)                                       # Horizontal space between top of windows
+    toolMenuIdx:int   = field(init=False)                                       # Path to the Resources folder
+    pImages:Path      = field(init=False)                                       # Path to Images
+    fImgAbout:Path    = field(init=False)                                       # Path to File
+    fImgIcon:Path     = field(init=False)
+    fImgStart:Path    = field(init=False)
+    fManual:Path      = field(init=False)
+    fConfigDef:Path   = field(init=False)
+    mOneRPlusNum:str  = field(init=False)                                       # Error Message
+    mNZPlusNum:str    = field(init=False)
+    mNZPlusNumCol:str = field(init=False)
     #------------------------------> General Options
     development:bool = True                                                     # Development (True) or Production (False)
     software:str     = 'UMSAP'                                                  # Software short name
@@ -61,11 +63,13 @@ class Configuration():
     npDef:str     = 'Name Default Pane'
     tTabDef:str   = 'Tab'
     tPaneConf:str = 'Configuration Options'
+    tListPane:str = 'Data File Content'
     #------------------------------> Label for Widgets
-    lmNatSeq:str = 'Native Sequence'                                            # lm: Label for wx.MenuItem
+    lmNatSeq:str        = 'Native Sequence'                                     # lm: Label for wx.MenuItem
     lBtnTypeResCtrl:str = 'Type Values'                                         # lBtn: Label for wx.Button
-    lStResultCtrl:str = 'Results - Control experiments'                         # lSt: Label for wx.StaticText
-    lPdError:str = 'Fatal Error'                                                # lPd: Label for Progress Dialog
+    lStResultCtrl:str   = 'Results - Control experiments'                       # lSt: Label for wx.StaticText
+    lStColAnalysis:str  = 'Columns for Analysis'
+    lPdError:str        = 'Fatal Error'                                         # lPd: Label for Progress Dialog
     #------------------------------> wx.ListCtrl Column names
     lLCtrlColNameI:list[str] = field(default_factory=lambda: ['#', 'Name'])
     #------------------------------> Messages
@@ -79,6 +83,10 @@ class Configuration():
     mLCtrlNColPaste:str = ("The clipboard content cannot be pasted because the "
                            "number of columns being pasted is different to the "
                            "number of columns in the list.")
+    mNZPlusNumText:str  = ("Only a list of unique non-negative integers can be "
+                        "accepted here.")
+    mColNumbers:str     = ('In addition, each value must be smaller than the '
+                           'total number of columns in the Data file.')
     mRangeNumIE:str     = "Invalid range or number: {}"
     mInvalidValue:str   = "'{}' is an invalid value."
     mEmpty:str          = 'The field value cannot be empty.'
@@ -230,7 +238,9 @@ class Configuration():
         self.fManual    = self.res / 'MANUAL/manual.pdf'
         self.fConfigDef = self.res / 'CONFIG/config_def.json'
         #------------------------------> Messages
-        self.mOneRPlusNum = f"{self.mValueBad}{self.mOneRPlusNumText}"
+        self.mOneRPlusNum  = f"{self.mValueBad}{self.mOneRPlusNumText}"
+        self.mNZPlusNum    = f"{self.mValueBad}{self.mNZPlusNumText}"
+        self.mNZPlusNumCol = f"{self.mNZPlusNum} {self.mColNumbers}"
     #endregion ------------------------------------------------> Class Methods
 #---
 #endregion ----------------------------------------------------> Configuration

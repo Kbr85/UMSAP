@@ -188,6 +188,4 @@ class SplashWindow(wx.adv.SplashScreen):
 if __name__ == "__main__":
     app = UmsapApp()
     app.MainLoop()
-else:
-    pass
 #endregion --------------------------------------------------------> Start App

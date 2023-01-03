@@ -25,7 +25,10 @@ class Configuration():
     """Configuration for the dataprep module"""
     #region ---------------------------------------------------------> Options
     #------------------------------> Name & Title
-    nUtil:str = 'Data Preparation'                                              # Name of the Utility
+    nUtil:str      = 'Data Preparation'                                         # Name of the Utility
+    ntDataPrep:str = 'Tab Data Preparation'                                     # Name of Config Tab
+    npDataPrep:str = 'Pane Data Preparation'                                    # Name of Config Panel
+    ttDataPrep:str = 'DataPrep'                                                 # Title of the tab in Main Window
     #------------------------------> Normal distribution parameters
     Shift:str = '1.8'                                                           # Shifted center
     Width:str = '0.3'                                                           # Stdev

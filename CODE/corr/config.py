@@ -29,8 +29,6 @@ class Configuration():
     nTab:str    = 'Tab Correlation AnalysisA'                                   # Name for the Tab
     nPane:str   = 'Pane Correlation Analysis'                                   # Name for Conf Pane
     ttCorrA:str = 'CorrA'                                                       # Title of the Tab
-    #------------------------------> Label
-    lStColAnalysis:str = 'Columns for Analysis'                                 # lSt: Label for wx.StaticText
     #------------------------------> Options
     oCorrMethod:dict = field(default_factory=lambda: {                          # Correlation Methods
         ''        : '',
