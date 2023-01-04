@@ -43,6 +43,14 @@ class Configuration():
         'OCR'  : 'One Control per Row',
         'Ratio': 'Ratio of Intensities',
     })
+    #------------------------------> Messages
+    mRepNum:str = ('To perform a Proteome Profiling analysis using Raw '
+                   'Intensities and Paired Samples the number of replicates '
+                   'in experiments and the corresponding control must be '
+                   'the same.\n\nThe number of replicates in the following '
+                   'experiments does not match the number of replicates in '
+                   'the corresponding control.\n{}'
+    )
     #------------------------------> Converter for user options
     converter:dict = field(default_factory=lambda: {})
     #endregion ------------------------------------------------------> Options

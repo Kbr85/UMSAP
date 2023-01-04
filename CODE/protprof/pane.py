@@ -20,10 +20,12 @@ from pathlib import Path
 import wx
 
 from config.config import config as mConfig
-from core import pane      as cPane
-from core import validator as cValidator
-from core import widget    as cWidget
-from core import window    as cWindow
+from core     import method    as cMethod
+from core     import pane      as cPane
+from core     import validator as cValidator
+from core     import widget    as cWidget
+from core     import window    as cWindow
+from protprof import method    as protMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -188,6 +190,7 @@ class ProtProf(cPane.BaseConfPanelMod):
         'cLDFThreeCol'  : cLDFThreeCol,
         'cLDFThirdLevel': cLDFThirdLevel
     }
+    rAnalysisMethod = protMethod.ProtProf
     #------------------------------> Optional configuration
     cTTHelp = mConfig.core.ttBtnHelp.format(cURL)
     #endregion --------------------------------------------------> Class setup
@@ -200,10 +203,10 @@ class ProtProf(cPane.BaseConfPanelMod):
         super().__init__(parent)
         #------------------------------> Dict with methods
         self.dCheckRepNum = {
-            # self.cDCtrlType['OC']   : self.CheckRepNum_OC,
-            # self.cDCtrlType['OCC']  : self.CheckRepNum_OCC,
-            # self.cDCtrlType['OCR']  : self.CheckRepNum_OCR,
-            # self.cDCtrlType['Ratio']: self.CheckRepNum_Ratio,
+            self.cDCtrlType['OC']   : self.CheckRepNum_OC,
+            self.cDCtrlType['OCC']  : self.CheckRepNum_OCC,
+            self.cDCtrlType['OCR']  : self.CheckRepNum_OCR,
+            self.cDCtrlType['Ratio']: self.CheckRepNum_Ratio,
         }
         #endregion --------------------------------------------> Initial Setup
 
@@ -510,325 +513,306 @@ class ProtProf(cPane.BaseConfPanelMod):
             #------------------------------>
             self.OnIFileLoad('fEvent')
             self.OnImpMethod('fEvent')
-        else:
-            pass
         #endregion ----------------------------------------------> Fill Fields
 
         return True
     #---
 
-    # def CheckNumberReplicates(self) -> bool:
-    #     """Check the number of replicates when samples are paired and raw
-    #         intensities are used.
+    def CheckNumberReplicates(self) -> bool:
+        """Check the number of replicates when samples are paired and raw
+            intensities are used.
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region ---------------------------------------------------> ResCtrl
-    #     resCtrl = mMethod.ResControl2ListNumber(self.wTcResults.GetValue())
-    #     #endregion ------------------------------------------------> ResCtrl
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> ResCtrl
+        resCtrl = cMethod.ResControl2ListNumber(self.wTcResults.GetValue())
+        #endregion ------------------------------------------------> ResCtrl
 
-    #     #region ---------------------------------------------------> Check
-    #     if self.dCheckRepNum[self.rLbDict["ControlType"]](resCtrl):
-    #         return True
-    #     else:
-    #         return False
-    #     #endregion ------------------------------------------------> Check
-    # #---
+        #region ---------------------------------------------------> Check
+        if self.dCheckRepNum[self.rLbDict["ControlType"]](resCtrl):
+            return True
+        #------------------------------>
+        return False
+        #endregion ------------------------------------------------> Check
+    #---
 
-    # def CheckRepNum_OC(self, resCtrl: list[list[list[int]]]) -> bool:
-    #     """Check equal number of replicas.
+    def CheckRepNum_OC(self, resCtrl:list[list[list[int]]]) -> bool:
+        """Check equal number of replicas.
 
-    #         Parameters
-    #         ----------
-    #         resCtrl: list[list[list[int]]]
-    #             Result and Control as a list of list of list of int.
+            Parameters
+            ----------
+            resCtrl: list[list[list[int]]]
+                Result and Control as a list of list of list of int.
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region ---------------------------------------------------> Variables
-    #     badRep = []
-    #     #endregion ------------------------------------------------> Variables
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        badRep = []
+        #endregion ------------------------------------------------> Variables
 
-    #     #region ---------------------------------------------------> Check
-    #     #------------------------------>
-    #     ctrlL = len(resCtrl[0][0])
-    #     #------------------------------>
-    #     for row in resCtrl:
-    #         for col in row:
-    #             if len(col) == ctrlL:
-    #                 pass
-    #             else:
-    #                 badRep.append(col)
-    #     #endregion ------------------------------------------------> Check
+        #region ---------------------------------------------------> Check
+        #------------------------------>
+        ctrlL = len(resCtrl[0][0])
+        #------------------------------>
+        for row in resCtrl:
+            for col in row:
+                if len(col) != ctrlL:
+                    badRep.append(col)
+        #endregion ------------------------------------------------> Check
 
-    #     #region ---------------------------------------------------> Return
-    #     if not badRep:
-    #         return True
-    #     else:
-    #         self.rMsgError = mConfig.mRepNum
-    #         self.rException = mException.InputError(
-    #             mConfig.mRepNumProtProf.format(badRep))
-    #         return False
-    #     #endregion ------------------------------------------------> Return
-    # #---
+        #region ---------------------------------------------------> Return
+        if not badRep:
+            return True
+        #------------------------------>
+        self.rMsgError  = mConfig.core.mRepNum
+        self.rException = ValueError(mConfig.prot.mRepNum.format(badRep))
+        return False
+        #endregion ------------------------------------------------> Return
+    #---
 
-    # def CheckRepNum_Ratio(self, resCtrl: list[list[list[int]]]) -> bool:        # pylint: disable=unused-argument
-    #     """Check equal number of replicas. Only needed for completion.
+    def CheckRepNum_Ratio(self, resCtrl: list[list[list[int]]]) -> bool:        # pylint: disable=unused-argument
+        """Check equal number of replicas. Only needed for completion.
 
-    #         Parameters
-    #         ----------
-    #         resCtrl: list[list[list[int]]]
-    #             Result and Control as a list of list of list of int.
+            Parameters
+            ----------
+            resCtrl: list[list[list[int]]]
+                Result and Control as a list of list of list of int.
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     return True
-    # #---
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
 
-    # def CheckRepNum_OCC(self, resCtrl: list[list[list[int]]]) -> bool:
-    #     """Check equal number of replicas.
+    def CheckRepNum_OCC(self, resCtrl:list[list[list[int]]]) -> bool:
+        """Check equal number of replicas.
 
-    #         Parameters
-    #         ----------
-    #         resCtrl: list[list[list[int]]]
-    #             Result and Control as a list of list of list of int.
+            Parameters
+            ----------
+            resCtrl: list[list[list[int]]]
+                Result and Control as a list of list of list of int.
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region ---------------------------------------------------> Variables
-    #     badRep = []
-    #     rowL = len(resCtrl)
-    #     colL = len(resCtrl[0])
-    #     #endregion ------------------------------------------------> Variables
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        badRep = []
+        rowL   = len(resCtrl)
+        colL   = len(resCtrl[0])
+        #endregion ------------------------------------------------> Variables
 
-    #     #region ---------------------------------------------------> Check
-    #     for colI in range(0, colL):
-    #         ctrlL = len(resCtrl[0][colI])
-    #         for rowI in range(1,rowL):
-    #             if len(resCtrl[rowI][colI]) == ctrlL:
-    #                 pass
-    #             else:
-    #                 badRep.append(resCtrl[rowI][colI])
-    #     #endregion ------------------------------------------------> Check
+        #region ---------------------------------------------------> Check
+        for colI in range(0, colL):
+            ctrlL = len(resCtrl[0][colI])
+            for rowI in range(1,rowL):
+                if len(resCtrl[rowI][colI]) != ctrlL:
+                    badRep.append(resCtrl[rowI][colI])
+        #endregion ------------------------------------------------> Check
 
-    #     #region ---------------------------------------------------> Return
-    #     if not badRep:
-    #         return True
-    #     else:
-    #         self.rMsgError = mConfig.mRepNum
-    #         self.rException = mException.InputError(
-    #             mConfig.mRepNumProtProf.format(badRep))
-    #         return False
-    #     #endregion ------------------------------------------------> Return
-    # #---
+        #region ---------------------------------------------------> Return
+        if not badRep:
+            return True
+        #------------------------------>
+        self.rMsgError  = mConfig.core.mRepNum
+        self.rException = ValueError(mConfig.prot.mRepNum.format(badRep))
+        return False
+        #endregion ------------------------------------------------> Return
+    #---
 
-    # def CheckRepNum_OCR(self, resCtrl: list[list[list[int]]]) -> bool:
-    #     """Check equal number of replicas.
+    def CheckRepNum_OCR(self, resCtrl:list[list[list[int]]]) -> bool:
+        """Check equal number of replicas.
 
-    #         Parameters
-    #         ----------
-    #         resCtrl: list[list[list[int]]]
-    #             Result and Control as a list of list of list of int.
+            Parameters
+            ----------
+            resCtrl: list[list[list[int]]]
+                Result and Control as a list of list of list of int.
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region ---------------------------------------------------> Variables
-    #     badRep = []
-    #     #endregion ------------------------------------------------> Variables
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        badRep = []
+        #endregion ------------------------------------------------> Variables
 
-    #     #region ---------------------------------------------------> Check
-    #     for row in resCtrl:
-    #         #------------------------------>
-    #         ctrlL = len(row[0])
-    #         #------------------------------>
-    #         for col in row[1:]:
-    #             if len(col) == ctrlL:
-    #                 pass
-    #             else:
-    #                 badRep.append(col)
-    #     #endregion ------------------------------------------------> Check
+        #region ---------------------------------------------------> Check
+        for row in resCtrl:
+            #------------------------------>
+            ctrlL = len(row[0])
+            #------------------------------>
+            for col in row[1:]:
+                if len(col) != ctrlL:
+                    badRep.append(col)
+        #endregion ------------------------------------------------> Check
 
-    #     #region ---------------------------------------------------> Return
-    #     if not badRep:
-    #         return True
-    #     else:
-    #         self.rMsgError = mConfig.mRepNum
-    #         self.rException = mException.InputError(
-    #             mConfig.mRepNumProtProf.format(badRep))
-    #         return False
-    #     #endregion ------------------------------------------------> Return
-    # #---
+        #region ---------------------------------------------------> Return
+        if not badRep:
+            return True
+        #------------------------------>
+        self.rMsgError = mConfig.core.mRepNum
+        self.rException = ValueError(mConfig.prot.mRepNum.format(badRep))
+        return False
+        #endregion ------------------------------------------------> Return
+    #---
     #endregion ----------------------------------------------> Class Methods
 
     #region -----------------------------------------------------> Run Methods
-    # def CheckInput(self) -> bool:
-    #     """Check user input
+    def CheckInput(self) -> bool:
+        """Check user input
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region -------------------------------------------------------> Super
-    #     if super().CheckInput():
-    #         pass
-    #     else:
-    #         return False
-    #     #endregion ----------------------------------------------------> Super
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Super
+        if not super().CheckInput():
+            return False
+        #endregion ----------------------------------------------------> Super
 
-    #     #region ------------------------------------------------> Mixed Fields
-    #     #region ---------------------------------------------> # of Replicates
-    #     msgStep = self.cLPdCheck + 'Number of Replicates'
-    #     wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-    #     #------------------------------>
-    #     a = self.wSample.wCb.GetValue() == 'Paired Samples'
-    #     b = self.rLbDict['Control'] == mConfig.oControlTypeProtProf['Ratio']
-    #     if a and not b:
-    #         if self.CheckNumberReplicates():
-    #             pass
-    #         else:
-    #             return False
-    #     else:
-    #         pass
-    #     #endregion ------------------------------------------> # of Replicates
-    #     #endregion ---------------------------------------------> Mixed Fields
+        #region ------------------------------------------------> Mixed Fields
+        #region ---------------------------------------------> # of Replicates
+        msgStep = self.cLPdCheck + 'Number of Replicates'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------>
+        a = self.wSample.wCb.GetValue() == 'Paired Samples'
+        b = self.rLbDict['Control'] == mConfig.prot.oControlType['Ratio']
+        if a and not b:
+            if not self.CheckNumberReplicates():
+                return False
+        #endregion ------------------------------------------> # of Replicates
+        #endregion ---------------------------------------------> Mixed Fields
 
-    #     return True
-    # #---
+        return True
+    #---
 
-    # def PrepareRun(self) -> bool:
-    #     """Set variables and prepare data for analysis.
+    def PrepareRun(self) -> bool:
+        """Set variables and prepare data for analysis.
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #region -------------------------------------------------------> Input
-    #     msgStep = self.cLPdPrepare + 'User input, reading'
-    #     wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-    #     #------------------------------> As given
-    #     self.rDI = {
-    #         self.EqualLenLabel(self.cLiFile) : (
-    #             self.wIFile.wTc.GetValue()),
-    #         self.EqualLenLabel(self.cLId) : (
-    #             self.wId.wTc.GetValue()),
-    #         self.EqualLenLabel(self.cLCeroTreatD) : (
-    #             self.wCeroB.wCb.GetValue()),
-    #         self.EqualLenLabel(self.cLTransMethod) : (
-    #             self.wTransMethod.wCb.GetValue()),
-    #         self.EqualLenLabel(self.cLNormMethod) : (
-    #             self.wNormMethod.wCb.GetValue()),
-    #         self.EqualLenLabel(self.cLImputation) : (
-    #             self.wImputationMethod.wCb.GetValue()),
-    #         self.EqualLenLabel(self.cLShift) : (
-    #             self.wShift.wTc.GetValue()),
-    #         self.EqualLenLabel(self.cLWidth) : (
-    #             self.wWidth.wTc.GetValue()),
-    #         self.EqualLenLabel(self.cLScoreVal) : (
-    #             self.wScoreVal.wTc.GetValue()),
-    #         self.EqualLenLabel(self.cLSample) : (
-    #             self.wSample.wCb.GetValue()),
-    #         self.EqualLenLabel(self.cLAlpha) : (
-    #             self.wAlpha.wTc.GetValue()),
-    #         self.EqualLenLabel(self.cLCorrectP) : (
-    #             self.wCorrectP.wCb.GetValue()),
-    #         self.EqualLenLabel(self.cLDetectedProt) : (
-    #             self.wDetectedProt.wTc.GetValue()),
-    #         self.EqualLenLabel(self.cLGene) : (
-    #             self.wGeneName.wTc.GetValue()),
-    #         self.EqualLenLabel(self.cLScoreCol) : (
-    #             self.wScore.wTc.GetValue()),
-    #         self.EqualLenLabel(self.cLExcludeProt) : (
-    #             self.wExcludeProt.wTc.GetValue()),
-    #         self.EqualLenLabel(self.cLCond) : (
-    #             self.rLbDict[0]),
-    #         self.EqualLenLabel(self.cLRP) : (
-    #             self.rLbDict[1]),
-    #         self.EqualLenLabel(f"Control {self.cLCtrlType}") : (
-    #             self.rLbDict['ControlType']),
-    #         self.EqualLenLabel(f"Control {self.cLCtrlName}") : (
-    #             self.rLbDict['Control']),
-    #         self.EqualLenLabel(mConfig.lStResultCtrlS): (
-    #             self.wTcResults.GetValue()),
-    #     }
-    #     #------------------------------> Dict with all values
-    #     #-------------->
-    #     msgStep = self.cLPdPrepare + 'User input, processing'
-    #     wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-    #     #-------------->
-    #     a = self.rLbDict['ControlType'] == mConfig.oControlTypeProtProf['Ratio']
-    #     rawI = False if a else True
-    #     detectedProt = int(self.wDetectedProt.wTc.GetValue())
-    #     geneName     = int(self.wGeneName.wTc.GetValue())
-    #     scoreCol     = int(self.wScore.wTc.GetValue())
-    #     excludeProt  = mMethod.Str2ListNumber(
-    #         self.wExcludeProt.wTc.GetValue(), sep=' ')
-    #     resCtrl       = mMethod.ResControl2ListNumber(self.wTcResults.GetValue())
-    #     resCtrlFlat   = mMethod.ResControl2Flat(resCtrl)
-    #     resCtrlDF     = mMethod.ResControl2DF(resCtrl, 2+len(excludeProt)+1)
-    #     resCtrlDFFlat = mMethod.ResControl2Flat(resCtrlDF)
-    #     #-------------->
-    #     self.rDO  = {
-    #         'iFile'      : Path(self.wIFile.wTc.GetValue()),
-    #         'uFile'      : Path(self.wUFile.wTc.GetValue()),
-    #         'ID'         : self.wId.wTc.GetValue(),
-    #         'ScoreVal'   : float(self.wScoreVal.wTc.GetValue()),
-    #         'RawI'       : rawI,
-    #         'IndS'       : True if self.wSample.wCb.GetValue() == 'Independent Samples' else False,
-    #         'Cero'       : mConfig.oYesNo[self.wCeroB.wCb.GetValue()],
-    #         'NormMethod' : self.wNormMethod.wCb.GetValue(),
-    #         'TransMethod': self.wTransMethod.wCb.GetValue(),
-    #         'ImpMethod'  : self.wImputationMethod.wCb.GetValue(),
-    #         'Shift'      : float(self.wShift.wTc.GetValue()),
-    #         'Width'      : float(self.wWidth.wTc.GetValue()),
-    #         'Alpha'      : float(self.wAlpha.wTc.GetValue()),
-    #         'CorrectP'   : self.wCorrectP.wCb.GetValue(),
-    #         'Cond'       : self.rLbDict[0],
-    #         'RP'         : self.rLbDict[1],
-    #         'ControlT'   : self.rLbDict['ControlType'],
-    #         'ControlL'   : self.rLbDict['Control'],
-    #         'oc'         : {
-    #             'DetectedP' : detectedProt,
-    #             'GeneName'  : geneName,
-    #             'ScoreCol'  : scoreCol,
-    #             'ExcludeR'  : excludeProt,
-    #             'ResCtrl'   : resCtrl,
-    #             'ColumnF'   : [scoreCol] + resCtrlFlat,
-    #             'Column'    : (
-    #                 [geneName, detectedProt, scoreCol]+excludeProt+resCtrlFlat),# type: ignore
-    #         },
-    #         'df' : {
-    #             'DetectedP'  : 0,
-    #             'GeneName'   : 1,
-    #             'ScoreCol'   : 2,
-    #             'ExcludeR'   : [2+x for x in range(1, len(excludeProt)+1)],
-    #             'ResCtrl'    : resCtrlDF,
-    #             'ResCtrlFlat': resCtrlDFFlat,
-    #             'ColumnR'    : resCtrlDFFlat,
-    #             'ColumnF'    : [2] + resCtrlDFFlat,
-    #         },
-    #     }
-    #     #endregion ----------------------------------------------------> Input
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Input
+        msgStep = self.cLPdPrepare + 'User input, reading'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> As given
+        self.rDI = {
+            self.EqualLenLabel(self.cLiFile) : (
+                self.wIFile.wTc.GetValue()),
+            self.EqualLenLabel(self.cLId) : (
+                self.wId.wTc.GetValue()),
+            self.EqualLenLabel(self.cLCeroTreatD) : (
+                self.wCeroB.wCb.GetValue()),
+            self.EqualLenLabel(self.cLTransMethod) : (
+                self.wTransMethod.wCb.GetValue()),
+            self.EqualLenLabel(self.cLNormMethod) : (
+                self.wNormMethod.wCb.GetValue()),
+            self.EqualLenLabel(self.cLImputation) : (
+                self.wImputationMethod.wCb.GetValue()),
+            self.EqualLenLabel(self.cLShift) : (
+                self.wShift.wTc.GetValue()),
+            self.EqualLenLabel(self.cLWidth) : (
+                self.wWidth.wTc.GetValue()),
+            self.EqualLenLabel(self.cLScoreVal) : (
+                self.wScoreVal.wTc.GetValue()),
+            self.EqualLenLabel(self.cLSample) : (
+                self.wSample.wCb.GetValue()),
+            self.EqualLenLabel(self.cLAlpha) : (
+                self.wAlpha.wTc.GetValue()),
+            self.EqualLenLabel(self.cLCorrectP) : (
+                self.wCorrectP.wCb.GetValue()),
+            self.EqualLenLabel(self.cLDetectedProt) : (
+                self.wDetectedProt.wTc.GetValue()),
+            self.EqualLenLabel(self.cLGene) : (
+                self.wGeneName.wTc.GetValue()),
+            self.EqualLenLabel(self.cLScoreCol) : (
+                self.wScore.wTc.GetValue()),
+            self.EqualLenLabel(self.cLExcludeProt) : (
+                self.wExcludeProt.wTc.GetValue()),
+            self.EqualLenLabel(self.cLCond) : (
+                self.rLbDict[0]),
+            self.EqualLenLabel(self.cLRP) : (
+                self.rLbDict[1]),
+            self.EqualLenLabel(f"Control {self.cLCtrlType}") : (
+                self.rLbDict['ControlType']),
+            self.EqualLenLabel(f"Control {self.cLCtrlName}") : (
+                self.rLbDict['Control']),
+            self.EqualLenLabel(mConfig.core.lStResultCtrlS): (
+                self.wTcResults.GetValue()),
+        }
+        #------------------------------> Dict with all values
+        #-------------->
+        msgStep = self.cLPdPrepare + 'User input, processing'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #-------------->
+        a = self.rLbDict['ControlType'] == mConfig.prot.oControlType['Ratio']
+        rawI = False if a else True
+        detectedProt = int(self.wDetectedProt.wTc.GetValue())
+        geneName     = int(self.wGeneName.wTc.GetValue())
+        scoreCol     = int(self.wScore.wTc.GetValue())
+        excludeProt  = cMethod.Str2ListNumber(
+            self.wExcludeProt.wTc.GetValue(), sep=' ')
+        resCtrl       = cMethod.ResControl2ListNumber(self.wTcResults.GetValue())
+        resCtrlFlat   = cMethod.ResControl2Flat(resCtrl)
+        resCtrlDF     = cMethod.ResControl2DF(resCtrl, 2+len(excludeProt)+1)
+        resCtrlDFFlat = cMethod.ResControl2Flat(resCtrlDF)
+        #-------------->
+        self.rDO  = {
+            'iFile'      : Path(self.wIFile.wTc.GetValue()),
+            'uFile'      : Path(self.wUFile.wTc.GetValue()),
+            'ID'         : self.wId.wTc.GetValue(),
+            'ScoreVal'   : float(self.wScoreVal.wTc.GetValue()),
+            'RawI'       : rawI,
+            'IndS'       : True if self.wSample.wCb.GetValue() == 'Independent Samples' else False,
+            'Cero'       : mConfig.core.oYesNo[self.wCeroB.wCb.GetValue()],
+            'NormMethod' : self.wNormMethod.wCb.GetValue(),
+            'TransMethod': self.wTransMethod.wCb.GetValue(),
+            'ImpMethod'  : self.wImputationMethod.wCb.GetValue(),
+            'Shift'      : float(self.wShift.wTc.GetValue()),
+            'Width'      : float(self.wWidth.wTc.GetValue()),
+            'Alpha'      : float(self.wAlpha.wTc.GetValue()),
+            'CorrectP'   : self.wCorrectP.wCb.GetValue(),
+            'Cond'       : self.rLbDict[0],
+            'RP'         : self.rLbDict[1],
+            'ControlT'   : self.rLbDict['ControlType'],
+            'ControlL'   : self.rLbDict['Control'],
+            'oc'         : {
+                'DetectedP' : detectedProt,
+                'GeneName'  : geneName,
+                'ScoreCol'  : scoreCol,
+                'ExcludeR'  : excludeProt,
+                'ResCtrl'   : resCtrl,
+                'ColumnF'   : [scoreCol] + resCtrlFlat,
+                'Column'    : (
+                    [geneName, detectedProt, scoreCol]+excludeProt+resCtrlFlat),# type: ignore
+            },
+            'df' : {
+                'DetectedP'  : 0,
+                'GeneName'   : 1,
+                'ScoreCol'   : 2,
+                'ExcludeR'   : [2+x for x in range(1, len(excludeProt)+1)],
+                'ResCtrl'    : resCtrlDF,
+                'ResCtrlFlat': resCtrlDFFlat,
+                'ColumnR'    : resCtrlDFFlat,
+                'ColumnF'    : [2] + resCtrlDFFlat,
+            },
+        }
+        #endregion ----------------------------------------------------> Input
 
-    #     #region ---------------------------------------------------> Super
-    #     if super().PrepareRun():
-    #         pass
-    #     else:
-    #         self.rMsgError = 'Something went wrong when preparing the analysis.'
-    #         return False
-    #     #endregion ------------------------------------------------> Super
+        #region ---------------------------------------------------> Super
+        if not super().PrepareRun():
+            self.rMsgError = 'Something went wrong when preparing the analysis.'
+            return False
+        #endregion ------------------------------------------------> Super
 
-    #     return True
-    # #---
+        return True
+    #---
     #endregion --------------------------------------------------> Run Methods
 #---
 

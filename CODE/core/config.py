@@ -131,6 +131,8 @@ class Configuration():
     mAllTextFieldEmpty:str = 'All text fields are empty. Nothing will be done.'
     mRepeatColNum:str = 'There are repeated column numbers in the text fields.'
     mCtrlEmpty:str         = 'None of the Control fields can be empty.'
+    mRepNum:str    = ('The number of replicates in some experiments does not '
+                      'match the number of replicates in the control.')
     mOneRPlusNum:str  = f"{mValueBad}{mOneRPlusNumText}"
     #------------------------------> Tooltips
     ttSectionRightClick:str = ('The content of the Section can be deleted with '
