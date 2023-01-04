@@ -99,10 +99,10 @@ class Start(wx.Panel):
             wx.EVT_BUTTON,
             lambda event: mConfig.main.mainWin.CreateTab(mConfig.data.nTab)     # type: ignore
         )
-        # self.wBtnLimProt.Bind(
-        #     wx.EVT_BUTTON,
-        #     lambda event: mConfig.winMain.CreateTab(mConfig.ntLimProt)          # type: ignore
-        # )
+        self.wBtnLimProt.Bind(
+            wx.EVT_BUTTON,
+            lambda event: mConfig.main.mainWin.CreateTab(mConfig.limp.nTab)     # type: ignore
+        )
         self.wBtnProtProf.Bind(
             wx.EVT_BUTTON,
             lambda event: mConfig.main.mainWin.CreateTab(mConfig.prot.nTab)     # type: ignore

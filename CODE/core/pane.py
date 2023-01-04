@@ -1323,6 +1323,188 @@ class BaseConfPanelMod(BaseConfPanel, cWidget.ResControl):
 #---
 
 
+class BaseConfPanelMod2(BaseConfPanelMod):
+    """Base class for the LimProt and TarProt configuration panel.
+
+        Parameters
+        ----------
+        parent: wx.Window
+            Parent of the widgets.
+        rightDelete: Boolean
+            Enables clearing wx.StaticBox input with right click.
+    """
+    #region ---------------------------------------------------> Class Setup
+    rChangeKey = ['iFile', 'uFile', 'seqFile']
+    #endregion ------------------------------------------------> Class Setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent:wx.Window, rightDelete:bool=True) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        #------------------------------> Label
+        self.cLSeqFile    = getattr(self, 'cLSeqFile',    'Sequences')
+        self.cLTargetProt = getattr(self, 'cLTargetProt', 'Target Protein')
+        self.cLSeqCol     = getattr(self, 'cLSeqCol',     'Sequences')
+        #------------------------------> Hint
+        self.cHTargetProt = getattr(self, 'cHTargetProt', 'e.g. MisAlpha18')
+        self.cHSeqCol     = getattr(self, 'cHSeqCol',     'e.g. 1')
+        self.cHSeqFile    = getattr(
+            self, 'cHSeqFile', f"Path to the {self.cLSeqFile} file")
+        #------------------------------> Extensions
+        self.cESeqFile = getattr(self, 'cESeqFile', mConfig.core.elSeq)
+        #------------------------------> Tooltip
+        self.cTTSeqFile = getattr(
+            self, 'cTTSeqFile', f'Select the {self.cLSeqFile} file.')
+        self.cTTTargetProt = getattr(
+            self, 'cTTTargetProt', f'Set the name of the {self.cLTargetProt}.')
+        self.cTTSeqCol = getattr(
+            self, 'cTTSeqCol', ('Set the column number containing the '
+                                'Sequences.\ne.g. 0'))
+        #------------------------------>
+        super().__init__(parent, rightDelete=rightDelete)
+        #------------------------------>
+        self.rCopyFile = {
+            'iFile'  : self.cLiFile,
+            'seqFile': f'{self.cLSeqFile} File',
+        }
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> Files
+        self.wSeqFile = cWidget.ButtonTextCtrlFF(
+            self.wSbFile,
+            btnLabel   = self.cLSeqFile,
+            btnTooltip = self.cTTSeqFile,
+            tcHint     = self.cHSeqFile,
+            mode       = 'openO',
+            ext        = self.cESeqFile,
+            tcStyle    = wx.TE_READONLY,
+            validator  = cValidator.InputFF(fof='file'),
+            ownCopyCut = True,
+        )
+        #------------------------------> Values
+        self.wTargetProt = cWidget.StaticTextCtrl(
+            self.wSbValue,
+            stLabel   = self.cLTargetProt,
+            stTooltip = self.cTTTargetProt,
+            tcSize    = self.cSTc,
+            tcHint    = self.cHTargetProt,
+            validator = cValidator.IsNotEmpty()
+        )
+        #------------------------------> Columns
+        self.wSeqCol = cWidget.StaticTextCtrl(
+            self.wSbColumn,
+            stLabel   = self.cLSeqCol,
+            stTooltip = self.cTTSeqCol,
+            tcSize    = self.cSTc,
+            tcHint    = self.cHSeqCol,
+            validator = cValidator.NumberList(numType='int', nN=1, vMin=0),
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        #------------------------------> Sizer Files
+        #-------------->
+        self.sSbFileWid.Detach(self.wId.wSt)
+        self.sSbFileWid.Detach(self.wId.wTc)
+        #-------------->
+        self.sSbFileWid.Add(
+            self.wSeqFile.wBtn,
+            pos    = (2,0),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sSbFileWid.Add(
+            self.wSeqFile.wTc,
+            pos    = (2,1),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        self.sSbFileWid.Add(
+            self.wId.wSt,
+            pos    = (3,0),
+            flag   = wx.ALIGN_CENTER|wx.ALL,
+            border = 5
+        )
+        self.sSbFileWid.Add(
+            self.wId.wTc,
+            pos    = (3,1),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5
+        )
+        #------------------------------> Sizer Columns
+        self.sSbColumnWid.Add(
+            self.wSeqCol.wSt,
+            pos    = (0,0),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbColumnWid.Add(
+            self.wSeqCol.wTc,
+            pos    = (0,1),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbColumnWid.Add(
+            self.wDetectedProt.wSt,
+            pos    = (0,2),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbColumnWid.Add(
+            self.wDetectedProt.wTc,
+            pos    = (0,3),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbColumnWid.Add(
+            self.wScore.wSt,
+            pos    = (0,4),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbColumnWid.Add(
+            self.wScore.wTc,
+            pos    = (0,5),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbColumnWid.Add(
+            self.sRes,
+            pos    = (1,0),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND,
+            border = 0,
+            span   = (0,6),
+        )
+        self.sSbColumnWid.AddGrowableCol(1,1)
+        self.sSbColumnWid.AddGrowableCol(3,1)
+        self.sSbColumnWid.AddGrowableCol(5,1)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region -------------------------------------------------> Check Input
+        self.rCheckUserInput = { # New order is needed.
+            self.cLuFile       :[self.wUFile.wTc,           mConfig.core.mFileBad       , False],
+            self.cLiFile       :[self.wIFile.wTc,           mConfig.core.mFileBad       , False],
+            f'{self.cLSeqFile} file' :[self.wSeqFile.wTc,   mConfig.core.mFileBad       , False],
+            self.cLId          :[self.wId.wTc,              mConfig.core.mValueBad      , False],
+            self.cLCeroTreat   :[self.wCeroB.wCb,           mConfig.core.mOptionBad     , False],
+            self.cLTransMethod :[self.wTransMethod.wCb,     mConfig.core.mOptionBad     , False],
+            self.cLNormMethod  :[self.wNormMethod.wCb,      mConfig.core.mOptionBad     , False],
+            self.cLImputation  :[self.wImputationMethod.wCb,mConfig.core.mOptionBad     , False],
+            self.cLShift       :[self.wShift.wTc,           mConfig.core.mOneRPlusNum   , False],
+            self.cLWidth       :[self.wWidth.wTc,           mConfig.core.mOneRPlusNum   , False],
+            self.cLTargetProt  :[self.wTargetProt.wTc,      mConfig.core.mValueBad      , False],
+            self.cLScoreVal    :[self.wScoreVal.wTc,        mConfig.core.mOneRealNum    , False],
+        }
+        #------------------------------>
+        self.rCheckUnique = [self.wSeqCol.wTc, self.wDetectedProt.wTc,
+            self.wScore.wTc, self.wTcResults]
+        #endregion ----------------------------------------------> Check Input
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
+
+
 class BaseResControlExpConf(wx.Panel):
     """Parent class for the configuration panel in the dialog Results - Control
         Experiments.

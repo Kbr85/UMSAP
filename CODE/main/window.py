@@ -30,6 +30,7 @@ from main     import menu   as mMenu
 from main     import method as mMethod
 from main     import tab    as mTab
 from protprof import tab    as protTab
+from limprot  import tab    as limpTab
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -52,11 +53,11 @@ class WindowMain(cWindow.BaseWindow):
     cTitle = mConfig.main.twMain
     #------------------------------>
     dTab = {
-        mConfig.main.ntStart   : mTab.Start,
-        mConfig.corr.nTab      : corrTab.CorrA,
-        mConfig.data.nTab      : dataTab.DataPrep,
-        # mConfig.main.ntLimProt : mTab.BaseConfListTab,
-        mConfig.prot.nTab      : protTab.ProtProf,
+        mConfig.main.ntStart : mTab.Start,
+        mConfig.corr.nTab    : corrTab.CorrA,
+        mConfig.data.nTab    : dataTab.DataPrep,
+        mConfig.limp.nTab    : limpTab.LimProt,
+        mConfig.prot.nTab    : protTab.ProtProf,
         # mConfig.main.ntTarProt : mTab.BaseConfListTab,
     }
     #endregion --------------------------------------------------> Class Setup

@@ -15,7 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -25,6 +25,16 @@ class Configuration():
     """Configuration for the limprot module"""
     #region ---------------------------------------------------------> Options
     nMod:str = 'Limited Proteolysis'                                            # Name of the Module
+    nTab:str = 'LimProt Tab Configuration'                                      # Name of the Config Tab
+    nPane:str ='LimProt Pane Configuration'                                     # Name of the Config Pane
+    tTab:str = 'LimProt'                                                        # Title of the Config Tab
+    #------------------------------> Label
+    lStLane:str = 'Lanes'                                                       # lSt: LAbel for wx.StaticText
+    lStBand:str = 'Bands'
+    #------------------------------> DataFrame Columns
+    dfcolFirstPart:list[str] = field(default_factory=lambda:
+        ['Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF','CtermF', 'Delta'])
+    dfcolCLevel:list[str] = field(default_factory=lambda: ['Ptost'])
     #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration

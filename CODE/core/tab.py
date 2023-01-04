@@ -27,6 +27,7 @@ from core     import widget as cWidget
 from corr     import pane   as corrPane
 from dataprep import pane   as dataPane
 from protprof import pane   as protPane
+from limprot  import pane   as limpPane
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -51,7 +52,7 @@ class BaseConfTab(wx.Panel):
     dConfPanel = {
         mConfig.corr.nTab : corrPane.CorrA,
         mConfig.data.nTab : dataPane.DataPrep,
-        # mConfig.ntLimProt : mPane.PaneLimProt,
+        mConfig.limp.nTab : limpPane.LimProt,
         mConfig.prot.nTab : protPane.ProtProf,
         # mConfig.ntTarProt : mPane.PaneTarProt,
     }

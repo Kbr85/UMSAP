@@ -36,7 +36,6 @@ winUMSAP = {}
 #------------------------------> Name of Utilities
 nuReadF:str    = 'Read UMSAP File'
 #------------------------------> Title of Tabs
-tLimProt:str  = 'LimProt'
 tTarProt:str  = 'TarProt'
 #------------------------------> Windows
 nwUMSAPControl  = 'UMSAP Control'
@@ -55,7 +54,6 @@ ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Individual Panes
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npNPlot                 = 'NPlot'
-npLimProt               = 'LimProtPane'
 npResControlExpLimProt  = 'ResControlExpPaneLimProt'
 npResControlExpTarProt  = 'ResControlExpPaneTarProt'
 #------------------------------> Utilities
@@ -98,8 +96,6 @@ kwToolFAPDBMap         = 'PDB Map'
 
 #region --------------------------------------------------------------> Labels
 #------------------------------> wx.StaticBox
-lStLimProtLane  = 'Lanes'
-lStLimProtBand  = 'Bands'
 lStTarProtExp   = 'Experiments'
 #------------------------------> Filters
 lFilFCEvol   = 'FC Evolution'
@@ -132,9 +128,6 @@ litTestSide     = Literal['ts', 's', 'l']
 
 
 #region -----------------------------------------------------> DF Column names
-dfcolLimProtFirstPart   = ['Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF',
-                           'CtermF', 'Delta']
-dfcolLimProtCLevel      = ['Ptost']
 dfcolTarProtFirstPart   = ['Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF',
                            'CtermF']
 dfcolTarProtBLevel      = ['Int', 'P']
