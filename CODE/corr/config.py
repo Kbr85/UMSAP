@@ -25,10 +25,10 @@ class Configuration():
     """Configuration for the core module"""
     #region ---------------------------------------------------------> Options
     #------------------------------> Name & Title
-    nUtil:str   = 'Correlation Analysis'                                        # Name of the Utility
-    nTab:str    = 'Tab Correlation AnalysisA'                                   # Name for the Tab
-    nPane:str   = 'Pane Correlation Analysis'                                   # Name for Conf Pane
-    ttCorrA:str = 'CorrA'                                                       # Title of the Tab
+    nUtil:str = 'Correlation Analysis'                                          # Name of the Utility
+    nTab:str  = 'Tab Correlation AnalysisA'                                     # Name for the Tab
+    nPane:str = 'Pane Correlation Analysis'                                     # Name for Conf Pane
+    tTab:str  = 'CorrA'                                                         # Title of the Tab
     #------------------------------> Options
     oCorrMethod:dict = field(default_factory=lambda: {                          # Correlation Methods
         ''        : '',

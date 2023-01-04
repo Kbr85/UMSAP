@@ -36,10 +36,7 @@ winUMSAP = {}
 #------------------------------> Name of Utilities
 nuReadF:str    = 'Read UMSAP File'
 #------------------------------> Title of Tabs
-
-
 tLimProt:str  = 'LimProt'
-tProtProf:str = 'ProtProf'
 tTarProt:str  = 'TarProt'
 #------------------------------> Windows
 nwUMSAPControl  = 'UMSAP Control'
@@ -53,14 +50,12 @@ nwHistPlot      = 'HistPlot'
 nwCpRPlot       = 'CpRPlot'
 nwCEvolPlot     = 'CEvolPlot'
 #------------------------------> Dialogs
-ndResControlExp        = 'Results & Control Experiments'
 ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Tab for notebook windows
 #------------------------------> Individual Panes
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npNPlot                 = 'NPlot'
 npLimProt               = 'LimProtPane'
-npResControlExpProtProf = 'ResControlExpPaneProtProf'
 npResControlExpLimProt  = 'ResControlExpPaneLimProt'
 npResControlExpTarProt  = 'ResControlExpPaneTarProt'
 #------------------------------> Utilities
@@ -103,22 +98,9 @@ kwToolFAPDBMap         = 'PDB Map'
 
 #region --------------------------------------------------------------> Labels
 #------------------------------> wx.StaticBox
-lStProtProfCond = 'Conditions'
-lStProtProfRP   = 'Relevant Points'
 lStLimProtLane  = 'Lanes'
 lStLimProtBand  = 'Bands'
 lStTarProtExp   = 'Experiments'
-lStCtrlName     = 'Name'
-lStCtrlType     = 'Type'
-#------------------------------> wx.StaticText
-lStScoreVal    = 'Score Value'
-lStScoreCol    = 'Score'
-lStResultCtrlS = 'Results - Control'
-lStExcludeProt = 'Exclude Proteins'
-lStGeneName    = 'Gene Names'
-# #------------------------------> wx.ComboBox or wx.CheckBox
-lCbCorrectP    = 'P Correction'
-lCbSample      = 'Samples'
 #------------------------------> Filters
 lFilFCEvol   = 'FC Evolution'
 lFilHypCurve = 'Hyp Curve'
@@ -134,49 +116,11 @@ lmCorrAAllCol      = 'All Columns'
 #endregion -----------------------------------------------------------> Labels
 
 
-#region ------------------------------------------------------------> Tooltips
-#------------------------------> wx.StaticText
-ttStScoreVal    = 'Set the minimum acceptable Score value.\ne.g. -4'
-ttStScoreCol    = f'Set the column number containing the {lStScoreVal}.\ne.g. 4'
-ttStGenName     = f'Set the column number containing the {lStGeneName}.\ne.g. 3'
-ttStExcludeProt = ("Set the column number containing the data used to exclude "
-                   "proteins.\ne.g. 8 10-12")
-ttStCorrectP    = 'Select the p correction method.'
-ttStSample      = ("Specify if samples are independent or paired.\n"
-                   "For example, samples are paired when the same Petri dish "
-                   "is used for the control and experiment.")
-#endregion ---------------------------------------------------------> Tooltips
-
-
 #region -------------------------------------------------------------> Options
 oIntensities = {
     'Empty' : '',
     'RawI'  : 'Raw Intensities',
     'RatioI': 'Ratio of Intensities',
-}
-oSamples = {
-    '': '',
-    'Independent Samples': 'i',
-    'Paired Samples': 'p',
-}
-oCorrectP = {
-    ''                     : '',
-    'None'                 : 'None',
-    'Bonferroni'           : 'bonferroni',
-    'Sidak'                : 'sidak',
-    'Holm - Sidak'         : 'holm-sidak',
-    'Holm'                 : 'holm',
-    'Simes - Hochberg'     : 'simes-hochberg',
-    'Hommel'               : 'hommel',
-    'Benjamini - Hochberg' : 'fdr_bh',
-    'Benjamini - Yekutieli': 'fdr_by',
-}
-oControlTypeProtProf = {
-    'Empty': '',
-    'OC'   : 'One Control',
-    'OCC'  : 'One Control per Column',
-    'OCR'  : 'One Control per Row',
-    'Ratio': oIntensities['RatioI'],
 }
 #endregion ----------------------------------------------------------> Options
 
@@ -188,8 +132,6 @@ litTestSide     = Literal['ts', 's', 'l']
 
 
 #region -----------------------------------------------------> DF Column names
-dfcolProtprofFirstThree = ['Gene', 'Protein', 'Score']
-dfcolProtprofCLevel     = ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz']
 dfcolLimProtFirstPart   = ['Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF',
                            'CtermF', 'Delta']
 dfcolLimProtCLevel      = ['Ptost']
@@ -234,15 +176,7 @@ mCheckUpdate     = 'Check for Updates failed. Check again later.'
 #------------------------------> Sequences related errors
 mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
     "protein.")
-#------------------------------> Optional Field
-mOptField        = '\nThis field is optional.'
 #endregion ----------------------------------------------------------> Other
-
-#region ------------------------------------------------------------> Values
-mOneZPlusNumText = "Only a non-negative integer can be accepted here."
-mOne01NumText    = "Only one number between 0 and 1 can be accepted here."
-
-#endregion ---------------------------------------------------------> Values
 
 #region ---------------------------------------------------------------> Files
 mFileSelector = 'It was not possible to show the file selecting dialog.'
@@ -255,18 +189,6 @@ mPDDataTypeCol    = 'The {} contains unexpected data type in columns {}.'
 #endregion ---------------------------------------------------------> Pandas
 
 #region ----------------------------------------------------> For CheckInput
-mColNumber         = ('In addition, the value must be smaller than the total '
-                      'number of columns in the Data file.')
-mAllTextFieldEmpty = 'All text fields are empty. Nothing will be done.'
-mRepeatColNum      = 'There are repeated column numbers in the text fields.'
-mOneRealNum        = f"{mValueBad}{mOneRNumText}"
-mOneZPlusNum       = f"{mValueBad}{mOneZPlusNumText}"
-mOneZPlusNumCol    = f"{mOneZPlusNum} {mColNumber}"
-mOne01Num          = f"{mValueBad}{mOne01NumText}"
-mResCtrl           = (f"{mValueBad}Please use the {lBtnTypeResCtrl} button to "
-                      f"provide a correct input.")
-mResCtrlWin        = ("Value '{}' cannot be accepted as input.\n"
-                      f"{mNZPlusNumText}")
 mRepNum            = ('The number of replicates in some experiments does not '
                       'match the number of replicates in the control.')
 mRepNumProtProf    = ('To perform a Proteome Profiling analysis using Raw '
@@ -276,7 +198,6 @@ mRepNumProtProf    = ('To perform a Proteome Profiling analysis using Raw '
                       'experiments does not match the number of replicates in '
                       'the corresponding control.\n{}'
 )
-mCtrlEmpty         = 'None of the Control fields can be empty.'
 #endregion -------------------------------------------------> For CheckInput
 
 #------------------------------>

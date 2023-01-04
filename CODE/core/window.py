@@ -22,6 +22,7 @@ import wx
 
 from config.config import config as mConfig
 from core import method as cMethod
+from core import tab    as cTab
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -142,6 +143,99 @@ class BaseWindow(wx.Frame):
 
 
 #region -------------------------------------------------------------> Dialogs
+class BaseDialogOkCancel(wx.Dialog):
+    """Basic wx.Dialog with a Cancel Ok Button.
+
+        Parameters
+        ----------
+        title: str
+            Title of the wx.Dialog.
+        parent: wx.Window or None
+            To center the dialog on the parent.
+        size: wx.Size
+            Size of the wx.Dialog.
+
+        Attributes
+        ----------
+        sBtn: wx.Sizer
+            Sizer with the Cancel, OK buttons.
+        sSizer: wx.BoxSizer(wx.Vertical)
+            Main Sizer of the wx.Dialog
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self,
+        title:str                  = '',
+        parent:Optional[wx.Window] = None,
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cStyle = getattr(
+            self, 'cStyle', wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER)
+        self.cSize = getattr(self, 'cSize', (600, 900))
+        #------------------------------>
+        super().__init__(
+            parent, title=title, style=self.cStyle, size=self.cSize)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.sBtn = self.CreateButtonSizer(wx.CANCEL|wx.OK)
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sSizer = wx.BoxSizer(wx.VERTICAL)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_BUTTON, self.OnOK,     id = wx.ID_OK)
+        self.Bind(wx.EVT_BUTTON, self.OnCancel, id = wx.ID_CANCEL)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Event methods
+    def OnOK(self, event:wx.CommandEvent) -> bool:                              # pylint: disable=unused-argument
+        """Validate user information and close the window.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Basic implementation. Override as needed.
+        """
+        self.EndModal(1)
+        self.Close()
+        return True
+    #---
+
+    def OnCancel(self, event: wx.CommandEvent) -> bool:                         # pylint: disable=unused-argument
+        """The macOs implementation has a bug here that does not discriminate
+            between the Cancel and Ok button and always return self.EndModal(1).
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            True
+        """
+        self.EndModal(0)
+        self.Close()
+        return True
+    #---
+    #endregion ------------------------------------------------> Event methods
+#---
+
+
 class Progress(wx.Dialog):
     """Custom progress dialog.
 
@@ -581,6 +675,93 @@ class Notification(wx.Dialog):
         return True
     #---
     #endregion ------------------------------------------------> Class methods
+#---
+
+
+class ResControlExp(BaseDialogOkCancel):
+    """Creates the dialog to type values for Results - Control Experiments.
+
+        Parameters
+        ----------
+        parent: wx.Window
+            This is the pane calling the dialog.
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = mConfig.core.ndResControlExp
+    #------------------------------>
+    cSize = (900, 580)
+    #------------------------------>
+    cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent:wx.Window) -> None:
+        """ """
+        #region -------------------------------------------------> Check Input
+        if (iFile := parent.wIFile.wTc.GetValue())  == '': # type: ignore
+            #------------------------------>
+            dlg = FileSelect('openO', mConfig.core.elData, parent=parent)
+            #------------------------------>
+            if dlg.ShowModal() == wx.ID_OK:
+                iFile = dlg.GetPath()
+                parent.wIFile.wTc.SetValue(iFile) # type: ignore
+                dlg.Destroy()
+            else:
+                dlg.Destroy()
+                raise RuntimeError("No input file selected.")
+        else:
+            pass
+        #endregion ----------------------------------------------> Check Input
+
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(title=self.cName, parent=mConfig.main.mainWin)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wConf = cTab.ResControlExp(self, iFile, parent)
+        #endregion --------------------------------------------------> Widgets
+
+        #region -------------------------------------------------------> Sizer
+        self.sSizer.Add(self.wConf, 1, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        #------------------------------>
+        self.SetSizer(self.sSizer)
+        #endregion ----------------------------------------------------> Sizer
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_BUTTON, self.OnOK, id=wx.ID_OK)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        self.CenterOnParent()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Event methods
+    def OnOK(self, event: wx.CommandEvent) -> bool:
+        """Validate user information and close the window.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        if self.wConf.wConf.OnOK():
+            self.EndModal(1)
+            self.Close()
+        else:
+            pass
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event methods
 #---
 
 

@@ -24,8 +24,8 @@ from core import tab as cTab
 class DataPrep(cTab.BaseConfListTab):
     """Creates the Tab to setup a Correlation Analysis"""
     #region -----------------------------------------------------> Class Setup
-    cName  = mConfig.data.ntDataPrep
-    cTitle = mConfig.data.ttDataPrep
+    cName  = mConfig.data.nTab
+    cTitle = mConfig.data.tTab
     #endregion --------------------------------------------------> Class Setup
 #---
 #endregion ----------------------------------------------------------> Classes

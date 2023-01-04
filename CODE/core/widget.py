@@ -1965,30 +1965,30 @@ class ResControl():
         #endregion --------------------------------------------------> Tooltip
 
         #region --------------------------------------------------------> Bind
-        # self.wBtnResultsW.Bind(wx.EVT_BUTTON, self.OnResW)
+        self.wBtnResultsW.Bind(wx.EVT_BUTTON, self.OnResW)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event methods
-    # def OnResW(self, event: wx.CommandEvent) -> bool:                           # pylint: disable=unused-argument
-    #     """Open the window to write the results columns.
+    def OnResW(self, event: wx.CommandEvent) -> bool:                           # pylint: disable=unused-argument
+        """Open the window to write the results columns.
 
-    #         Parameters
-    #         ----------
-    #         event: wx.Event
-    #             Information about the event.
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
 
-    #         Returns
-    #         -------
-    #         bool
-    #     """
-    #     #------------------------------>
-    #     with cWindow.ResControlExp(self.cParent) as dlg:
-    #         dlg.ShowModal()
-    #     #------------------------------>
-    #     return True
-    # #---
+            Returns
+            -------
+            bool
+        """
+        #------------------------------>
+        with cWindow.ResControlExp(self.cParent) as dlg:
+            dlg.ShowModal()
+        #------------------------------>
+        return True
+    #---
     #endregion ------------------------------------------------> Event methods
 #---
 

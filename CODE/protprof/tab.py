@@ -11,7 +11,7 @@
 # ------------------------------------------------------------------------------
 
 
-"""Tabs for the corr module of the app"""
+"""Tabs for the protprof module of the app"""
 
 
 #region -------------------------------------------------------------> Imports
@@ -21,11 +21,11 @@ from core import tab as cTab
 
 
 #region -------------------------------------------------------------> Classes
-class CorrA(cTab.BaseConfTab):
-    """Creates the Tab to setup a Correlation Analysis"""
+class ProtProf(cTab.BaseConfListTab):
+    """Creates the Tab to setup a Proteome Profiling Analysis"""
     #region -----------------------------------------------------> Class Setup
-    cName  = mConfig.corr.nTab
-    cTitle = mConfig.corr.tTab
+    cName  = mConfig.prot.nTab
+    cTitle = mConfig.prot.tTab
     #endregion --------------------------------------------------> Class Setup
 #---
 #endregion ----------------------------------------------------------> Classes

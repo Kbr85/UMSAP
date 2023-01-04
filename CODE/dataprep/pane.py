@@ -109,7 +109,7 @@ class DataPrep(cPane.BaseConfPanel):
     cTTColAnalysis = ('Columns on which to perform the Data Preparation.\ne.g. '
                       '8 10-12')
     #------------------------------> Needed to Run
-    cName           = mConfig.data.npDataPrep
+    cName           = mConfig.data.nPane
     cURL            = f'{mConfig.core.urlTutorial}/data-preparation'
     cTTHelp         = mConfig.core.ttBtnHelp.format(cURL)
     cSection        = mConfig.data.nUtil

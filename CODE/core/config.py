@@ -30,21 +30,26 @@ class Configuration():
     """Configuration for the core module"""
     #region ---------------------------------------------------------> Options
     #------------------------------> Options for post_init
-    commOpen:str      = field(init=False)                                       # Root folder
-    copyShortCut:str  = field(init=False)                                       # Tool place location
-    deltaWin:int      = field(init=False)                                       # Command to open files
-    res:Path          = field(init=False)                                       # Key for shortcuts
-    root:Path         = field(init=False)                                       # Horizontal space between top of windows
-    toolMenuIdx:int   = field(init=False)                                       # Path to the Resources folder
-    pImages:Path      = field(init=False)                                       # Path to Images
-    fImgAbout:Path    = field(init=False)                                       # Path to File
-    fImgIcon:Path     = field(init=False)
-    fImgStart:Path    = field(init=False)
-    fManual:Path      = field(init=False)
-    fConfigDef:Path   = field(init=False)
-    mOneRPlusNum:str  = field(init=False)                                       # Error Message
-    mNZPlusNum:str    = field(init=False)
-    mNZPlusNumCol:str = field(init=False)
+    commOpen:str        = field(init=False)                                     # Root folder
+    copyShortCut:str    = field(init=False)                                     # Tool place location
+    deltaWin:int        = field(init=False)                                     # Command to open files
+    res:Path            = field(init=False)                                     # Key for shortcuts
+    root:Path           = field(init=False)                                     # Horizontal space between top of windows
+    toolMenuIdx:int     = field(init=False)                                     # Path to the Resources folder
+    pImages:Path        = field(init=False)                                     # Path to Images
+    fImgAbout:Path      = field(init=False)                                     # Path to File
+    fImgIcon:Path       = field(init=False)
+    fImgStart:Path      = field(init=False)
+    fManual:Path        = field(init=False)
+    fConfigDef:Path     = field(init=False)
+    mNZPlusNum:str      = field(init=False)                                     # Error Message
+    mNZPlusNumCol:str   = field(init=False)
+    mOneRealNum:str     = field(init=False)
+    mOne01Num:str       = field(init=False)
+    mOneZPlusNum:str    = field(init=False)
+    mOneZPlusNumCol:str = field(init=False)
+    mResCtrl:str        = field(init=False)
+    mResCtrlWin:str     = field(init=False)
     #------------------------------> General Options
     development:bool = True                                                     # Development (True) or Production (False)
     software:str     = 'UMSAP'                                                  # Software short name
@@ -58,21 +63,32 @@ class Configuration():
     winNumber:dict = field(default_factory=lambda: {})                          # Keys: Windows ID - Values: Total number of opened windows, except conf win
     dtFormat:str   = '%Y%m%d-%H%M%S'                                            # Date Time format
     #------------------------------> Name & Title
-    nwDef:str     = 'Name Default Window'
-    ntDef:str     = 'Name Default Tab'
-    npDef:str     = 'Name Default Pane'
-    tTabDef:str   = 'Tab'
-    tPaneConf:str = 'Configuration Options'
-    tListPane:str = 'Data File Content'
+    nwDef:str           = 'Name Default Window'
+    ndResControlExp:str = 'Results & Control Experiments'
+    ntDef:str           = 'Name Default Tab'
+    npDef:str           = 'Name Default Pane'
+    tTabDef:str         = 'Tab'
+    tPaneConf:str       = 'Configuration Options'
+    tListPane:str       = 'Data File Content'
     #------------------------------> Label for Widgets
     lmNatSeq:str        = 'Native Sequence'                                     # lm: Label for wx.MenuItem
     lBtnTypeResCtrl:str = 'Type Values'                                         # lBtn: Label for wx.Button
     lStResultCtrl:str   = 'Results - Control experiments'                       # lSt: Label for wx.StaticText
     lStColAnalysis:str  = 'Columns for Analysis'
+    lStScoreVal:str     = 'Score Value'
+    lStScoreCol:str     = 'Score'
+    lStResultCtrlS:str  = 'Results - Control'
+    lStExcludeProt:str  = 'Exclude Proteins'
+    lStGeneName:str     = 'Gene Names'
+    lStCtrlName:str     = 'Name'
+    lStCtrlType:str     = 'Type'
+    lCbCorrectP:str     = 'P Correction'                                        # lCb: Label for wx.ComboBox
+    lCbSample:str       = 'Samples'
     lPdError:str        = 'Fatal Error'                                         # lPd: Label for Progress Dialog
     #------------------------------> wx.ListCtrl Column names
     lLCtrlColNameI:list[str] = field(default_factory=lambda: ['#', 'Name'])
     #------------------------------> Messages
+    mOptField:str       = '\nThis field is optional.'
     mFileSelUMSAP:str   = 'Select the UMSAP File'
     mFileRead:str       = 'An error occurred when reading file:\n{}'
     mCopyFailedW:str    = "Copy operation failed. Try again."
@@ -108,6 +124,14 @@ class Configuration():
                              'used for data filtering by Score value: {}.')
     mNoDataLeft:str       = ('No data left for analysis after all filters '
                              '(Score, Target Protein, etc) were applied.')
+    mColNumber:str        = ('In addition, the value must be smaller than the '
+                             'total number of columns in the Data file.')
+    mOne01NumText:str = "Only one number between 0 and 1 can be accepted here."
+    mOneZPlusNumText:str = "Only a non-negative integer can be accepted here."
+    mAllTextFieldEmpty:str = 'All text fields are empty. Nothing will be done.'
+    mRepeatColNum:str = 'There are repeated column numbers in the text fields.'
+    mCtrlEmpty:str         = 'None of the Control fields can be empty.'
+    mOneRPlusNum:str  = f"{mValueBad}{mOneRPlusNumText}"
     #------------------------------> Tooltips
     ttSectionRightClick:str = ('The content of the Section can be deleted with '
                                'a right click.')
@@ -118,6 +142,17 @@ class Configuration():
                            f"the last selected element and existing ones "
                            f"cut/deleted ({copyShortCut}+X) or copied "
                            f"({copyShortCut}+C).")
+    ttStScoreVal:str    = 'Set the minimum acceptable Score value.\ne.g. -4'
+    ttStScoreCol:str    = (f'Set the column number containing the '
+                           f'{lStScoreVal}.\ne.g. 4')
+    ttStGenName:str     = (f'Set the column number containing the '
+                           f'{lStGeneName}.\ne.g. 3')
+    ttStExcludeProt:str = ("Set the column number containing the data used to "
+                           "exclude proteins.\ne.g. 8 10-12")
+    ttStCorrectP:str    = 'Select the p correction method.'
+    ttStSample:str      = ("Specify if samples are independent or paired.\n"
+                           "For example, samples are paired when the same "
+                           "Petri dish is used for the control and experiment.")
     #------------------------------> Keywords for Menu
     kwCheckDP:str      = 'General Tool Check DP'
     kwDupWin:str       = 'General Tool Duplicate Window'
@@ -164,6 +199,23 @@ class Configuration():
     oNumType:dict = field(default_factory=lambda: {                             # Cast Numbers
         'int'  : int,
         'float': float,
+    })
+    oSamples:dict = field(default_factory=lambda: {                             # Sample type for statistics
+        '': '',
+        'Independent Samples': 'i',
+        'Paired Samples': 'p',
+    })
+    oCorrectP:dict = field(default_factory=lambda: {                            # P Correction
+        ''                     : '',
+        'None'                 : 'None',
+        'Bonferroni'           : 'bonferroni',
+        'Sidak'                : 'sidak',
+        'Holm - Sidak'         : 'holm-sidak',
+        'Holm'                 : 'holm',
+        'Simes - Hochberg'     : 'simes-hochberg',
+        'Hommel'               : 'hommel',
+        'Benjamini - Hochberg' : 'fdr_bh',
+        'Benjamini - Yekutieli': 'fdr_by',
     })
     #------------------------------> Names for output folder and files
     fnInitial:str    = "{}_{}-Initial-Data.txt"
@@ -238,9 +290,17 @@ class Configuration():
         self.fManual    = self.res / 'MANUAL/manual.pdf'
         self.fConfigDef = self.res / 'CONFIG/config_def.json'
         #------------------------------> Messages
-        self.mOneRPlusNum  = f"{self.mValueBad}{self.mOneRPlusNumText}"
         self.mNZPlusNum    = f"{self.mValueBad}{self.mNZPlusNumText}"
         self.mNZPlusNumCol = f"{self.mNZPlusNum} {self.mColNumbers}"
+        self.mOneRealNum   = f"{self.mValueBad}{self.mOneRNumText}"
+        self.mOne01Num     = f"{self.mValueBad}{self.mOne01NumText}"
+        self.mOneZPlusNum  = f"{self.mValueBad}{self.mOneZPlusNumText}"
+        self.mOneZPlusNumCol = f"{self.mOneZPlusNum} {self.mColNumber}"
+        self.mResCtrl      = (f"{self.mValueBad} Please use the "
+                              f"{self.lBtnTypeResCtrl} button to provide a "
+                              f"correct input.")
+        self.mResCtrlWin   = ("Value '{}' cannot be accepted as input.\n"
+                              f"{self.mNZPlusNumText}")
     #endregion ------------------------------------------------> Class Methods
 #---
 #endregion ----------------------------------------------------> Configuration
