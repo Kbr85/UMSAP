@@ -26,8 +26,9 @@ from core     import method as cMethod
 from core     import widget as cWidget
 from corr     import pane   as corrPane
 from dataprep import pane   as dataPane
-from protprof import pane   as protPane
 from limprot  import pane   as limpPane
+from protprof import pane   as protPane
+from tarprot  import pane   as tarpPane
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -54,7 +55,7 @@ class BaseConfTab(wx.Panel):
         mConfig.data.nTab: dataPane.DataPrep,
         mConfig.limp.nTab: limpPane.LimProt,
         mConfig.prot.nTab: protPane.ProtProf,
-        # mConfig.ntTarProt : mPane.PaneTarProt,
+        mConfig.tarp.nTab: tarpPane.TarProt,
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -183,7 +184,7 @@ class ResControlExp(wx.Panel):
     dWidget = {
         mConfig.prot.nPane : protPane.ResControlExpConf,
         mConfig.limp.nPane : limpPane.ResControlExpConf,
-        # mConfig.npTarProt  : mPane.PaneResControlExpConfTarProt,
+        mConfig.tarp.nPane : tarpPane.ResControlExpConf,
     }
     #endregion --------------------------------------------------> Class setup
 

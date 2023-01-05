@@ -107,10 +107,10 @@ class Start(wx.Panel):
             wx.EVT_BUTTON,
             lambda event: mConfig.main.mainWin.CreateTab(mConfig.prot.nTab)     # type: ignore
         )
-        # self.wBtnTarProt.Bind(
-        #     wx.EVT_BUTTON,
-        #     lambda event: mConfig.winMain.CreateTab(mConfig.ntTarProt)          # type: ignore
-        # )
+        self.wBtnTarProt.Bind(
+            wx.EVT_BUTTON,
+            lambda event: mConfig.main.mainWin.CreateTab(mConfig.tarp.nTab)     # type: ignore
+        )
         #endregion -----------------------------------------------------> Bind
     #endregion -----------------------------------------------> Instance setup
 #---

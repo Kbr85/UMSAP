@@ -31,6 +31,7 @@ from main     import method as mMethod
 from main     import tab    as mTab
 from protprof import tab    as protTab
 from limprot  import tab    as limpTab
+from tarprot  import tab    as tarpTab
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -58,7 +59,7 @@ class WindowMain(cWindow.BaseWindow):
         mConfig.data.nTab    : dataTab.DataPrep,
         mConfig.limp.nTab    : limpTab.LimProt,
         mConfig.prot.nTab    : protTab.ProtProf,
-        # mConfig.main.ntTarProt : mTab.BaseConfListTab,
+        mConfig.tarp.nTab    : tarpTab.TarProt,
     }
     #endregion --------------------------------------------------> Class Setup
 

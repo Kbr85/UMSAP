@@ -35,8 +35,6 @@ winUMSAP = {}
 #region ---------------------------------------------------------------> Names
 #------------------------------> Name of Utilities
 nuReadF:str    = 'Read UMSAP File'
-#------------------------------> Title of Tabs
-tTarProt:str  = 'TarProt'
 #------------------------------> Windows
 nwUMSAPControl  = 'UMSAP Control'
 nwCorrAPlot     = 'CorrAPlot'
@@ -54,7 +52,6 @@ ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Individual Panes
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npNPlot                 = 'NPlot'
-npResControlExpTarProt  = 'ResControlExpPaneTarProt'
 #------------------------------> Utilities
 nuAA       = 'AA Distribution'
 nuHist     = 'Histograms'
@@ -94,8 +91,6 @@ kwToolFAPDBMap         = 'PDB Map'
 
 
 #region --------------------------------------------------------------> Labels
-#------------------------------> wx.StaticBox
-lStTarProtExp   = 'Experiments'
 #------------------------------> Filters
 lFilFCEvol   = 'FC Evolution'
 lFilHypCurve = 'Hyp Curve'
@@ -127,28 +122,11 @@ litTestSide     = Literal['ts', 's', 'l']
 
 
 #region -----------------------------------------------------> DF Column names
-dfcolTarProtFirstPart   = ['Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF',
-                           'CtermF']
-dfcolTarProtBLevel      = ['Int', 'P']
 dfcolSeqNC              = ['Sequence', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
 #endregion --------------------------------------------------> DF Column names
 
 
 #region -----------------------------------------------------> Important Lists
-lAA1 = [ # AA one letter codes
-    'A', 'I', 'L', 'V', 'M', 'F', 'W', 'Y', 'R', 'K', 'D', 'E', 'C', 'Q',
-    'H', 'S', 'T', 'N', 'G', 'P'
-]
-
-lAAGroups = [ # AA groups
-    ['A', 'I', 'L', 'V', 'M'],
-    ['F', 'W', 'Y'],
-    ['R', 'K'],
-    ['D', 'E'],
-    ['C', 'Q', 'H', 'S', 'T', 'N'],
-    ['G', 'P']
-]
-
 oAA3toAA = { # Three to one AA code translation
     'ALA': 'A', 'ARG': 'R', 'ASN': 'N', 'ASP': 'D',
     'CYS': 'C', 'GLU': 'E', 'GLN': 'Q', 'GLY': 'G',

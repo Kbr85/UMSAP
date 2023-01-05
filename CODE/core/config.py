@@ -198,6 +198,16 @@ class Configuration():
     urlUpdate   = f"{urlHome}/page/release-notes"
     #------------------------------> List
     ltDPKeys:list[str] = field(default_factory=lambda: ['dfF', 'dfT', 'dfN', 'dfIm'])
+    lAA1:list[str] = field(default_factory=lambda: [                            # AA one letter codes
+        'A', 'I', 'L', 'V', 'M', 'F', 'W', 'Y', 'R', 'K', 'D', 'E', 'C', 'Q',
+        'H', 'S', 'T', 'N', 'G', 'P'])
+    lAAGroups:list[list[str]] = field(default_factory=lambda: [                 # AA groups
+        ['A', 'I', 'L', 'V', 'M'],
+        ['F', 'W', 'Y'],
+        ['R', 'K'],
+        ['D', 'E'],
+        ['C', 'Q', 'H', 'S', 'T', 'N'],
+        ['G', 'P']])
     #------------------------------> Options
     oYesNo:dict = field(default_factory=lambda: {                               # Cast to bool
         ''   : False,

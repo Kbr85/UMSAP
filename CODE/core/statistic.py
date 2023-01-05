@@ -65,6 +65,7 @@ def CI_Sample(
     return dfOut
 #---
 
+
 def CI_Mean_Diff(
     dfA:pd.DataFrame,
     dfB:pd.DataFrame,
@@ -202,5 +203,139 @@ def Tost_delta(
     #endregion -----------------------------------------------> Check deltaMax
 
     return delta
+#---
+
+
+def Test_chi(df:pd.DataFrame, alpha:float, check5:bool=True) -> list:
+    """Performs a chi square test.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Data
+        alpha: float
+            Alpha level
+        check5: bool
+            Check correct number of values.
+
+        Returns
+        -------
+        list[int, sStats.chi2_contingency]
+
+        Notes
+        -----
+        Threshold of number of cells with values less than 5 from:
+        D. Yates, D. Moore, G. McCabe, The practice of Statistics
+        (Freeman, New York, 1999), p. 734.
+    """
+    # Test in test.unit.test_statistic.Test_chi
+    #region ---------------------------------------------------> Remove 0 rows
+    dfT = df[df.any(axis=1)]
+    #endregion ------------------------------------------------> Remove 0 rows
+
+    #region ---------------------------------------------------> Check < 5
+    if check5:
+        a,b = dfT.shape
+        n = np.count_nonzero(dfT < 5)
+        if not n/(a*b) < 0.2:
+            return [-1,[]]
+    #endregion ------------------------------------------------> Check < 5
+
+    #region ---------------------------------------------------> Calculate
+    try:
+        chi = stats.chi2_contingency(dfT)
+    except Exception:
+        return [-1,[]]
+    #endregion ------------------------------------------------> Calculate
+
+    return [1,chi] if chi[1] < alpha else [0, chi]
+#---
+
+
+def Test_slope(df:pd.DataFrame, nL:list[int]=[]) -> list[float]:                # pylint: disable=dangerous-default-value
+    """Perform a Test for Homogeneity of Regression.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            DataFrame with the x,y values for each regression line e.g.
+            X1 Y1 X2 Y2 Xn Yn
+        nL: list of int
+            Columns in df will be grouped with the size of each group given by
+            the elements in n and the total number of groups being equal to the
+            number of elements in n. If None only one group is created.
+
+        Returns
+        -------
+        list[float]
+            One P value for each group. See n in Parameters.
+
+        Notes
+        -----
+        The procedure used here is described in:
+        http://vassarstats.net/textbook/index.html Chapter 17.
+
+        If df has columns X1,Y1,X2,Y2,X3,Y3,X4,Y4,X5,Y5 and n is [3,2]
+        then two P values will be returned one for test performed with
+        X1,Y1,X2,Y2,X3,Y3 and one for X4,Y4,X5,Y5.
+
+        X,Y pairs in a group can be of different length but X and Y must have
+        the same number of elements.
+    """
+    # Test in test.unit.test_statistic.Test_test_slope
+    #region -------------------------------------------------------> Variables
+    p = []
+    nL = nL if nL else [1]
+    #endregion ----------------------------------------------------> Variables
+
+    #region --------------------------------------------------------> Run
+    #------------------------------> Number of points in each column N
+    n = df.notna().sum()
+    #------------------------------> SUM(X)
+    sumCol = df.sum(axis=0)
+    #------------------------------> SUM(X^2)
+    sumCol2 = (df.pow(2)).sum(axis=0)
+    #------------------------------> SUM(XY)
+    sumXY = pd.DataFrame(index=df.index)
+    for k in range(0, df.shape[1], 2):
+        sumXY[k] = df.iloc[:,k] * df.iloc[:,k+1]
+    sumXY = sumXY.sum(axis=0)
+    #------------------------------> SUM(X) - (SUM(X)^2)/N
+    ss = sumCol2 - sumCol.pow(2)/n
+    #------------------------------> SUM(XY) - SUM(X)SUM(Y)/N
+    sc = pd.Series(index=sumXY.index)
+    for k in range(0, df.shape[1], 2):
+        sc[k] = sumXY[k] - ((sumCol[k]*sumCol[k+1])/n.iloc[k])
+    #------------------------------>
+    k = 0
+    j = 0
+    for nG in nL:
+        try:
+            #------------------------------> SUM(SC) for Group
+            scwg = sc.iloc[j:j+nG].sum()
+            #------------------------------> SUM(SS) for Group
+            sswgx = ss.iloc[range(k,k+2*nG,2)].sum()                            # type: ignore
+            sswgy = ss.iloc[range(k+1,k+2*nG,2)].sum()                          # type: ignore
+            #------------------------------> SUM(SC^2/SS) - SCwg^2/SSwg
+            a = sc.iloc[j:j+nG].pow(2)
+            b = ss.iloc[range(k,k+2*nG,2)].set_axis(a.index.values)             # type: ignore
+            ssb_reg = (a/b).sum() - ((scwg*scwg)/sswgx)
+            #------------------------------>
+            ssy_rem = sswgy - ((scwg*scwg)/sswgx) - ssb_reg
+            #------------------------------>
+            dfb_reg = nG-1
+            dfy_rem = n.iloc[range(k,k+2*nG,2)].sum() - 2*nG                    # type: ignore
+            #------------------------------> F value
+            f = (ssb_reg/dfb_reg)/(ssy_rem/dfy_rem)
+            #------------------------------> P value
+            p.append(stats.f.sf(f, dfb_reg, dfy_rem))
+        except Exception:
+            p.append(np.nan)
+        #------------------------------> Next Group
+        k = k + 2*nG
+        j = j + nG
+    #endregion -----------------------------------------------------> Run
+
+    return p
 #---
 #endregion ----------------------------------------------------------> Methods
