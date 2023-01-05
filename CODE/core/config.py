@@ -42,14 +42,6 @@ class Configuration():
     fImgStart:Path      = field(init=False)
     fManual:Path        = field(init=False)
     fConfigDef:Path     = field(init=False)
-    mNZPlusNum:str      = field(init=False)                                     # Error Message
-    mNZPlusNumCol:str   = field(init=False)
-    mOneRealNum:str     = field(init=False)
-    mOne01Num:str       = field(init=False)
-    mOneZPlusNum:str    = field(init=False)
-    mOneZPlusNumCol:str = field(init=False)
-    mResCtrl:str        = field(init=False)
-    mResCtrlWin:str     = field(init=False)
     #------------------------------> General Options
     development:bool = True                                                     # Development (True) or Production (False)
     software:str     = 'UMSAP'                                                  # Software short name
@@ -88,6 +80,7 @@ class Configuration():
     #------------------------------> wx.ListCtrl Column names
     lLCtrlColNameI:list[str] = field(default_factory=lambda: ['#', 'Name'])
     #------------------------------> Messages
+    mUnexpectedError:str = 'UMSAP encountered an unexpected error.'
     mOptField:str       = '\nThis field is optional.'
     mFileSelUMSAP:str   = 'Select the UMSAP File'
     mFileRead:str       = 'An error occurred when reading file:\n{}'
@@ -133,7 +126,20 @@ class Configuration():
     mCtrlEmpty:str         = 'None of the Control fields can be empty.'
     mRepNum:str    = ('The number of replicates in some experiments does not '
                       'match the number of replicates in the control.')
-    mOneRPlusNum:str  = f"{mValueBad}{mOneRPlusNumText}"
+    mSeqPeptNotFound:str = ("The peptide '{}' was not found in the sequence of "
+                            "the {} protein.")
+    mOneRPlusNum:str    = f"{mValueBad}{mOneRPlusNumText}"
+    mNZPlusNum:str      = f"{mValueBad}{mNZPlusNumText}"
+    mNZPlusNumCol:str   = f"{mNZPlusNum} {mColNumbers}"
+    mOneRealNum:str     = f"{mValueBad}{mOneRNumText}"
+    mOne01Num:str       = f"{mValueBad}{mOne01NumText}"
+    mOneZPlusNum:str    = f"{mValueBad}{mOneZPlusNumText}"
+    mOneZPlusNumCol:str = f"{mOneZPlusNum} {mColNumber}"
+    mResCtrl:str        = (f"{mValueBad} Please use the "
+                          f"{lBtnTypeResCtrl} button to provide a "
+                          f"correct input.")
+    mResCtrlWin:str     = ("Value '{}' cannot be accepted as input.\n"
+                          f"{mNZPlusNumText}")
     #------------------------------> Tooltips
     ttSectionRightClick:str = ('The content of the Section can be deleted with '
                                'a right click.')
@@ -291,18 +297,6 @@ class Configuration():
         self.fImgStart  = self.pImages / 'MAIN-WINDOW/p97-2.png'
         self.fManual    = self.res / 'MANUAL/manual.pdf'
         self.fConfigDef = self.res / 'CONFIG/config_def.json'
-        #------------------------------> Messages
-        self.mNZPlusNum    = f"{self.mValueBad}{self.mNZPlusNumText}"
-        self.mNZPlusNumCol = f"{self.mNZPlusNum} {self.mColNumbers}"
-        self.mOneRealNum   = f"{self.mValueBad}{self.mOneRNumText}"
-        self.mOne01Num     = f"{self.mValueBad}{self.mOne01NumText}"
-        self.mOneZPlusNum  = f"{self.mValueBad}{self.mOneZPlusNumText}"
-        self.mOneZPlusNumCol = f"{self.mOneZPlusNum} {self.mColNumber}"
-        self.mResCtrl      = (f"{self.mValueBad} Please use the "
-                              f"{self.lBtnTypeResCtrl} button to provide a "
-                              f"correct input.")
-        self.mResCtrlWin   = ("Value '{}' cannot be accepted as input.\n"
-                              f"{self.mNZPlusNumText}")
     #endregion ------------------------------------------------> Class Methods
 #---
 #endregion ----------------------------------------------------> Configuration

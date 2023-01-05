@@ -851,67 +851,6 @@ def Test_tost(
     return dfo
 #---
 
-
-def Test_tost_delta(
-    df      : Union['pd.DataFrame', 'pd.Series'],
-    alpha   : float,
-    beta    : float,
-    gamma   : float,
-    d       : float=0,
-    deltaMax: Optional[float]=None,
-    ) -> Union[pd.Series, 'np.ndarray']:
-    """Calculate the delta values for a TOST test.
-
-        Parameters
-        ----------
-        df: pd.DataFrame
-            DataFrame with the values.
-        alpha: float
-            Alpha level.
-        beta: float
-            Beta level.
-        gamma: float
-            Gamma level.
-        d: float
-            Absolute difference. Default is 0.
-        deltaMax: float or None
-            Maximum allowed value for delta.
-
-        Returns
-        -------
-        pd.Series
-            Delta value for all peptides in df.
-
-        Notes
-        -----
-        Delta is calculated according to:
-        https://pubs.acs.org/doi/pdf/10.1021/ac053390m
-    """
-    # Test in test.unit.test_statistic.Test_tost_delta
-    #region -------------------------------------------------------> Variables
-    s = df.std(axis=1)                                                          # type: ignore
-    n = df.shape[1]
-    chi2 = sStats.chi2.ppf(1-gamma, (n-1))
-    #------------------------------>
-    sCorr = s * np.sqrt((n-1)/chi2)
-    #------------------------------>
-    ta1 = sStats.t.ppf(1 - alpha, 2*n - 2)
-    tb1 = sStats.t.ppf(1 - beta/2, 2*n -2)
-    #------------------------------>
-    delta = d + sCorr * (ta1 + tb1) * np.sqrt(2/n)
-    #endregion ----------------------------------------------------> Variables
-
-    #region --------------------------------------------------> Check deltaMax
-    if deltaMax is not None:
-        delta = np.where(delta > deltaMax, deltaMax, delta)
-    else:
-        pass
-    #endregion -----------------------------------------------> Check deltaMax
-
-    return delta
-#---
-
-
 def Test_slope(df: 'pd.DataFrame', nL: list[int]=[]) -> list[float]:            # pylint: disable=dangerous-default-value
     """Perform a Test for Homogeneity of Regression.
 

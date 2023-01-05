@@ -20,8 +20,9 @@ import itertools
 import traceback
 from datetime import datetime
 from pathlib  import Path
-from typing   import TYPE_CHECKING, Literal, Union
+from typing   import Literal, Union, Optional, TYPE_CHECKING
 
+import numpy as np
 import pandas as pd
 
 import wx
@@ -631,7 +632,7 @@ def DFReplace(                                                                  
 #endregion -----------------------------------------------------> pd.DataFrame
 
 
-#region -------------------------------------------------------------> Methods
+#region ---------------------------------------------------------> GUI Methods
 def GetDisplayInfo(win: 'cWindow.BaseWindow') -> dict[str, dict[str, int]]:
     """This will get the information needed to set the position of a window.
         Should be called after Fitting sizers for accurate window size
@@ -709,4 +710,116 @@ def LCtrlFillColNames(lc:wx.ListCtrl, fileP:Union[Path, str]) -> bool:
 
     return True
 #---
-#endregion ----------------------------------------------------------> Methods
+#endregion ------------------------------------------------------> GUI Methods
+
+
+#region --------------------------------------------------------------> Others
+def NCResNumbers(
+    dfR:pd.DataFrame,
+    rDO:dict,
+    rSeqFileObj:cFile.FastaFile,
+    seqNat:bool = True
+    ) -> tuple[pd.DataFrame, str, Optional[Exception]]:
+    """Find the residue numbers for the peptides in the sequence of the
+        Recombinant and Native protein.
+
+        Parameters
+        ----------
+        dfR: pd.DataFrame
+            DataFrame with the data.
+        rDO: dict
+            Options for the calculation of residue numbers.
+        rSeqFileObj: cFile.FastaFile
+            Fasta file object with the protein sequence.
+        seqNat: bool
+            Calculate N and C residue numbers also for the Native protein.
+
+        Returns
+        -------
+        bool
+
+        Notes
+        -----
+        At least the following key - values pairs must be present in rDO.
+            {
+                'df' : {
+                    'SeqCol' : int,
+                },
+                'dfo' : {
+                    'NC' : list[int],
+                    'NCF': list[int],
+                },
+            }
+    """
+    # Test in test.unit.test_method.Test_NCResNumbers
+    #region --------------------------------------------> Helper Functions
+    def NCTerm(
+        row:list[str],
+        seqObj:cFile.FastaFile,
+        seqType:str,
+        ) -> tuple[int, int]:
+        """Get the N and C terminal residue numbers for a given peptide.
+
+            Parameters
+            ----------
+            row: list[str]
+                List with two elements. The Sequence is in index 0.
+            seqObj: mFile.FastaFile
+                Object with the protein sequence and the method to search
+                the peptide sequence.
+            seqType: str
+                For the error message.
+            Returns
+            -------
+            (Nterm, Cterm)
+        """
+        #region -----------------------------------------------> Find pept
+        nc = seqObj.FindSeq(row[0])
+        #endregion --------------------------------------------> Find pept
+
+        #region ------------------------------------------------> Check ok
+        if nc[0] != -1:
+            return nc
+        #------------------------------>
+        msg = mConfig.core.mSeqPeptNotFound.format(row[0], seqType)
+        raise RuntimeError(msg)
+        #endregion ---------------------------------------------> Check ok
+    #---
+    #endregion -----------------------------------------> Helper Functions
+
+    #region -----------------------------------------------------> Rec Seq
+    try:
+        dfR.iloc[:,rDO['dfo']['NC']] = dfR.iloc[
+            :,[rDO['df']['SeqCol'], 1]].apply(
+                NCTerm,                                                     # type: ignore
+                axis        = 1,
+                raw         = True,
+                result_type = 'expand',                                     # type: ignore
+                args        = (rSeqFileObj, 'Recombinant'),
+            )
+    except RuntimeError as e:
+        return (pd.DataFrame(), str(e), e)
+    except Exception as e:
+        return (pd.DataFrame(), mConfig.core.mUnexpectedError, e)
+    #endregion --------------------------------------------------> Rec Seq
+
+    #region -----------------------------------------------------> Nat Seq
+    #------------------------------>
+    if seqNat and rSeqFileObj.rSeqNat:
+        #------------------------------>
+        delta = rSeqFileObj.GetSelfDelta()
+        protLoc = rSeqFileObj.GetNatProtLoc()
+        #------------------------------>
+        a = dfR.iloc[:,rDO['dfo']['NC']] + delta
+        dfR.iloc[:,rDO['dfo']['NCF']] = a
+        #------------------------------>
+        m = ((dfR.iloc[:,rDO['dfo']['NC']] >= protLoc[0]) &
+            (dfR.iloc[:,rDO['dfo']['NC']] <= protLoc[1])).to_numpy()
+        a = dfR.iloc[:,rDO['dfo']['NCF']].where(m, np.nan)
+        a = a.astype('Int64')
+        dfR.iloc[:,rDO['dfo']['NCF']] = a
+    #endregion --------------------------------------------------> Nat Seq
+
+    return (dfR, '', None)
+#---
+#endregion -----------------------------------------------------------> Others

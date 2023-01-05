@@ -1106,12 +1106,6 @@ class BaseConfPanel(
             self.rDO['ProtDelta'] = ProtDelta
         #endregion ---------------------------------------------> Seq Rec File
 
-        #region ---------------------------------------------------> Print Dev
-        if mConfig.core.development and self.rSeqFileObj is not None:
-            print("Rec Seq: ", self.rSeqFileObj.rSeqRec)
-            print("Nat Seq: ", self.rSeqFileObj.rSeqNat)
-        #endregion ------------------------------------------------> Print Dev
-
         return True
     #---
 

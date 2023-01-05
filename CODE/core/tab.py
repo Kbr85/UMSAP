@@ -50,10 +50,10 @@ class BaseConfTab(wx.Panel):
     """
     #region -----------------------------------------------------> Class setup
     dConfPanel = {
-        mConfig.corr.nTab : corrPane.CorrA,
-        mConfig.data.nTab : dataPane.DataPrep,
-        mConfig.limp.nTab : limpPane.LimProt,
-        mConfig.prot.nTab : protPane.ProtProf,
+        mConfig.corr.nTab: corrPane.CorrA,
+        mConfig.data.nTab: dataPane.DataPrep,
+        mConfig.limp.nTab: limpPane.LimProt,
+        mConfig.prot.nTab: protPane.ProtProf,
         # mConfig.ntTarProt : mPane.PaneTarProt,
     }
     #endregion --------------------------------------------------> Class setup
@@ -182,7 +182,7 @@ class ResControlExp(wx.Panel):
 
     dWidget = {
         mConfig.prot.nPane : protPane.ResControlExpConf,
-        # mConfig.npLimProt  : mPane.PaneResControlExpConfLimProt,
+        mConfig.limp.nPane : limpPane.ResControlExpConf,
         # mConfig.npTarProt  : mPane.PaneResControlExpConfTarProt,
     }
     #endregion --------------------------------------------------> Class setup

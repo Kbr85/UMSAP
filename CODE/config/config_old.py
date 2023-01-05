@@ -54,7 +54,6 @@ ndFilterRemoveAny      = 'Remove Filters'
 #------------------------------> Individual Panes
 npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
 npNPlot                 = 'NPlot'
-npResControlExpLimProt  = 'ResControlExpPaneLimProt'
 npResControlExpTarProt  = 'ResControlExpPaneTarProt'
 #------------------------------> Utilities
 nuAA       = 'AA Distribution'
@@ -162,13 +161,8 @@ oAA3toAA = { # Three to one AA code translation
 
 #region ------------------------------------------------------------> Messages
 #region -------------------------------------------------------------> Other
-#------------------------------> Unexpected Error
-mUnexpectedError = 'UMSAP encountered an unexpected error.'
 #------------------------------> Check for Update
 mCheckUpdate     = 'Check for Updates failed. Check again later.'
-#------------------------------> Sequences related errors
-mSeqPeptNotFound = ("The peptide '{}' was not found in the sequence of the {} "
-    "protein.")
 #endregion ----------------------------------------------------------> Other
 
 #region ---------------------------------------------------------------> Files
