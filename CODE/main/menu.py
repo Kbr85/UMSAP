@@ -18,165 +18,189 @@
 import wx
 
 from config.config import config as mConfig
-# from core import menu   as cMenu
-# from main import window as mWindow
+from core import menu   as cMenu
+from main import window as mWindow
 from help import menu   as hMenu
 #endregion ----------------------------------------------------------> Imports
 
 
 #region -------------------------------------------------------------> Classes
 #region ----------------------------------------------------------------> Menu
-# class MenuModule(cMenu.BaseMenu):
-#     """Menu with module entries."""
-#     #region -----------------------------------------------------> Class Setup
-#     #------------------------------> Labels
-#     cLLimProt  = mConfig.core.nmLimProt
-#     cLProtProf = mConfig.core.nmProtProf
-#     cLTarProt  = mConfig.core.nmTarProt
-#     #------------------------------> Key - Values
-#     cVLimProt  = mConfig.core.tLimProt
-#     cVProtProf = mConfig.core.tProtProf
-#     cVTarProt  = mConfig.core.tTarProt
-#     #endregion --------------------------------------------------> Class Setup
+class MenuModule(cMenu.BaseMenu):
+    """Menu with module entries."""
+    #region -----------------------------------------------------> Class Setup
+    #------------------------------> Labels
+    cLLimProt  = mConfig.limp.nMod
+    cLProtProf = mConfig.prot.nMod
+    cLTarProt  = mConfig.tarp.nMod
+    #------------------------------> Key - Values
+    cVLimProt  = mConfig.limp.nTab
+    cVProtProf = mConfig.prot.nTab
+    cVTarProt  = mConfig.tarp.nTab
+    #endregion --------------------------------------------------> Class Setup
 
-#     #region --------------------------------------------------> Instance setup
-#     def __init__(self) -> None:
-#         """ """
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+    #region --------------------------------------------------> Instance setup
+    def __init__(self) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu items
-#         self.miLimProt  = self.Append(-1, f'{self.cLLimProt}\tAlt+Ctrl+L')
-#         self.miProtProf = self.Append(-1, f'{self.cLProtProf}\tAlt+Ctrl+P')
-#         self.miTarProt  = self.Append(-1, f'{self.cLTarProt}\tAlt+Ctrl+T')
-#         #endregion -----------------------------------------------> Menu items
+        #region --------------------------------------------------> Menu items
+        self.miLimProt  = self.Append(-1, f'{self.cLLimProt}\tAlt+Ctrl+L')
+        self.miProtProf = self.Append(-1, f'{self.cLProtProf}\tAlt+Ctrl+P')
+        self.miTarProt  = self.Append(-1, f'{self.cLTarProt}\tAlt+Ctrl+T')
+        #endregion -----------------------------------------------> Menu items
 
-#         #region -------------------------------------------------------> Names
-#         self.rIDMap = { # Associate IDs with Tab names. Avoid manual IDs
-#             self.miLimProt.GetId() : self.cVLimProt,
-#             self.miProtProf.GetId(): self.cVProtProf,
-#             self.miTarProt.GetId() : self.cVTarProt,
-#         }
-#         #endregion ----------------------------------------------------> Names
+        #region -------------------------------------------------------> Names
+        self.rIDMap = { # Associate IDs with Tab names. Avoid manual IDs
+            self.miLimProt.GetId() : self.cVLimProt,
+            self.miProtProf.GetId(): self.cVProtProf,
+            self.miTarProt.GetId() : self.cVTarProt,
+        }
+        #endregion ----------------------------------------------------> Names
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miLimProt)
-#         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miProtProf)
-#         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miTarProt)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion ------------------------------------------------ Instance Setup
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miLimProt)
+        self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miProtProf)
+        self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miTarProt)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion ------------------------------------------------ Instance Setup
 
-#     #region ---------------------------------------------------> Class Methods
-#     def OnCreateTab(self, event:wx.CommandEvent) -> bool:
-#         """Creates a new tab in the main window.
+    #region ---------------------------------------------------> Class Methods
+    def OnCreateTab(self, event:wx.CommandEvent) -> bool:
+        """Creates a new tab in the main window.
 
-#             Parameters
-#             ----------
-#             event : wx.CommandEvent
-#                 Information about the event.
+            Parameters
+            ----------
+            event : wx.CommandEvent
+                Information about the event.
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region -------------------------------------------------> Check MainW
-#         if mConfig.main.mainWin is None:
-#             mConfig.main.mainWin = mWindow.WindowMain()
-#         #endregion ----------------------------------------------> Check MainW
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------> Check MainW
+        if mConfig.main.mainWin is None:
+            mConfig.main.mainWin = mWindow.WindowMain()
+        #endregion ----------------------------------------------> Check MainW
 
-#         #region --------------------------------------------------> Create Tab
-#         mConfig.main.mainWin.CreateTab(self.rIDMap[event.GetId()])
-#         #endregion -----------------------------------------------> Create Tab
+        #region --------------------------------------------------> Create Tab
+        mConfig.main.mainWin.CreateTab(self.rIDMap[event.GetId()])
+        #endregion -----------------------------------------------> Create Tab
 
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Class Methods
-# #---
+        return True
+    #---
+    #endregion ------------------------------------------------> Class Methods
+#---
 
 
-# class MenuUtility(cMenu.BaseMenu):
-#     """Menu with the utilities entries."""
-#     #region -----------------------------------------------------> Class Setup
-#     #------------------------------> Labels
-#     cLCorrA    = mConfig.core.nuCorrA
-#     cLDataPrep = mConfig.core.nuDataPrep
-#     cLReadF    = mConfig.core.nuReadF
-#     #------------------------------> Key - Values
-#     cVCorrA    = mConfig.core.tCorrA
-#     cVDataPrep = mConfig.core.tDataPrep
-#     #endregion --------------------------------------------------> Class Setup
+class MenuUtility(cMenu.BaseMenu):
+    """Menu with the utilities entries."""
+    #region -----------------------------------------------------> Class Setup
+    #------------------------------> Labels
+    cLCorrA    = mConfig.corr.nUtil
+    cLDataPrep = mConfig.data.nUtil
+    # cLReadF    = mConfig.core.nuReadF
+    #------------------------------> Key - Values
+    cVCorrA    = mConfig.corr.nTab
+    cVDataPrep = mConfig.data.nTab
+    #endregion --------------------------------------------------> Class Setup
 
-#     #region --------------------------------------------------> Instance Setup
-#     def __init__(self) -> None:
-#         """"""
-#         #region -----------------------------------------------> Initial Setup
-#         super().__init__()
-#         #endregion --------------------------------------------> Initial Setup
+    #region --------------------------------------------------> Instance Setup
+    def __init__(self) -> None:
+        """"""
+        #region -----------------------------------------------> Initial Setup
+        super().__init__()
+        #endregion --------------------------------------------> Initial Setup
 
-#         #region --------------------------------------------------> Menu items
-#         self.miCorrA    = self.Append(-1, self.cLCorrA)
-#         self.miDataPrep = self.Append(-1, self.cLDataPrep)
-#         self.AppendSeparator()
-#         self.miReadFile = self.Append(-1, f'{self.cLReadF}\tCtrl+R')
-#         #endregion -----------------------------------------------> Menu items
+        #region --------------------------------------------------> Menu items
+        self.miCorrA    = self.Append(-1, self.cLCorrA)
+        self.miDataPrep = self.Append(-1, self.cLDataPrep)
+        self.AppendSeparator()
+        # self.miReadFile = self.Append(-1, f'{self.cLReadF}\tCtrl+R')
+        #endregion -----------------------------------------------> Menu items
 
-#         #region -------------------------------------------------------> Names
-#         self.rIDMap = {
-#             self.miCorrA.GetId()   : self.cVCorrA,
-#             self.miDataPrep.GetId(): self.cVDataPrep,
-#         }
-#         #endregion ----------------------------------------------------> Names
+        #region -------------------------------------------------------> Names
+        self.rIDMap = {
+            self.miCorrA.GetId()   : self.cVCorrA,
+            self.miDataPrep.GetId(): self.cVDataPrep,
+        }
+        #endregion ----------------------------------------------------> Names
 
-#         #region --------------------------------------------------------> Bind
-#         self.Bind(wx.EVT_MENU, self.OnReadFile,  source=self.miReadFile)
-#         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miCorrA)
-#         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miDataPrep)
-#         #endregion -----------------------------------------------------> Bind
-#     #---
-#     #endregion -----------------------------------------------> Instance Setup
+        #region --------------------------------------------------------> Bind
+        # self.Bind(wx.EVT_MENU, self.OnReadFile,  source=self.miReadFile)
+        self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miCorrA)
+        self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miDataPrep)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance Setup
 
-#     #region ---------------------------------------------------> Event Methods
-#     def OnReadFile(self, event: wx.CommandEvent) -> bool:                       # pylint: disable=unused-argument
-#         """Read an UMSAP output file.
+    #region ---------------------------------------------------> Event Methods
+    def OnCreateTab(self, event:wx.CommandEvent) -> bool:
+        """Creates a new tab in the main window.
 
-#             Parameters
-#             ----------
-#             event : wx.CommandEvent
-#                 Information about the event.
+            Parameters
+            ----------
+            event : wx.CommandEvent
+                Information about the event.
 
-#             Returns
-#             -------
-#             bool
-#         """
-#         #region ------------------------------------------------------> Window
-#         win = self.GetWindow()
-#         #endregion ---------------------------------------------------> Window
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------> Check MainW
+        if mConfig.main.mainWin is None:
+            mConfig.main.mainWin = mWindow.WindowMain()
+        #endregion ----------------------------------------------> Check MainW
 
-#         #region ---------------------------------------------------> Get fileP
-#         # dlg = cWindow.DialogFileSelect(
-#         #     'openO',
-#         #     ext    = mConfig.core.elUMSAP,
-#         #     parent = win,
-#         #     msg    = mConfig.core.mFileSelUMSAP,
-#         # )
-#         #------------------------------>
-#         # if dlg.ShowModal() == wx.ID_OK:
-#         #     fileP = Path(dlg.GetPath())
-#         # else:
-#         #     return False
-#         #endregion ------------------------------------------------> Get fileP
+        #region --------------------------------------------------> Create Tab
+        mConfig.main.mainWin.CreateTab(self.rIDMap[event.GetId()])
+        #endregion -----------------------------------------------> Create Tab
 
-#         #region ---------------------------------------------------> Load file
-#         # gMethod.LoadUMSAPFile(fileP=fileP)
-#         #endregion ------------------------------------------------> Load file
+        return True
+    #---
 
-#         # dlg.Destroy()
-#         return True
-#     #---
-#     #endregion ------------------------------------------------> Event Methods
-# #---
+    def OnReadFile(self, event: wx.CommandEvent) -> bool:                       # pylint: disable=unused-argument
+        """Read an UMSAP output file.
+
+            Parameters
+            ----------
+            event : wx.CommandEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ------------------------------------------------------> Window
+        win = self.GetWindow()
+        #endregion ---------------------------------------------------> Window
+
+        #region ---------------------------------------------------> Get fileP
+        # dlg = cWindow.DialogFileSelect(
+        #     'openO',
+        #     ext    = mConfig.core.elUMSAP,
+        #     parent = win,
+        #     msg    = mConfig.core.mFileSelUMSAP,
+        # )
+        #------------------------------>
+        # if dlg.ShowModal() == wx.ID_OK:
+        #     fileP = Path(dlg.GetPath())
+        # else:
+        #     return False
+        #endregion ------------------------------------------------> Get fileP
+
+        #region ---------------------------------------------------> Load file
+        # gMethod.LoadUMSAPFile(fileP=fileP)
+        #endregion ------------------------------------------------> Load file
+
+        # dlg.Destroy()
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+#---
 #endregion -------------------------------------------------------------> Menu
 
 
@@ -191,14 +215,14 @@ class MenuBarMain(wx.MenuBar):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu items
-        # self.mModule  = MenuModule()
-        # self.mUtility = MenuUtility()
+        self.mModule  = MenuModule()
+        self.mUtility = MenuUtility()
         self.mHelp    = hMenu.MenuHelp()
         #endregion -----------------------------------------------> Menu items
 
         #region -------------------------------------------> Append to menubar
-        # self.Append(self.mModule,  '&Modules')
-        # self.Append(self.mUtility, '&Utilities')
+        self.Append(self.mModule,  '&Modules')
+        self.Append(self.mUtility, '&Utilities')
         self.Append(self.mHelp,    '&Help')
         #endregion ----------------------------------------> Append to menubar
     #---
