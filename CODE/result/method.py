@@ -11,35 +11,35 @@
 # ------------------------------------------------------------------------------
 
 
-""" GUI common methods """
+"""Methods for the result module of the app"""
 
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from typing  import Optional, Union
+from typing  import Optional
 
 import wx
 
-import config.config as mConfig
-import gui.window    as mWindow
-import data.file     as mFile
+from config.config import config as mConfig
+from core   import window as cWindow
+from result import window as resWindow
 #endregion ----------------------------------------------------------> Imports
 
 
 #region -------------------------------------------------------------> Methods
 def LoadUMSAPFile(
-    fileP: Optional[Path]      = None,
-    win  : Optional[wx.Window] = None,
+    fileP:Optional[Path]    = None,
+    win:Optional[wx.Window] = None,
     ) -> bool:
     """Load an UMSAP File either from Read UMSAP File menu, LoadResults
         method in Tab or Update File Content menu.
 
         Parameters
         ----------
-        fileP : Path or None
+        fileP: Path or None
             If None, it is assumed the method is called from Read UMSAP File
             menu. Default is None.
-        win : wx.Window or None
+        win: wx.Window or None
             If called from menu it is used to center the Select File wx.Dialog.
             Default is None.
 
@@ -49,11 +49,11 @@ def LoadUMSAPFile(
     """
     #region --------------------------------------------> Get file from Dialog
     if fileP is None:
-        dlg = mWindow.DialogFileSelect(
+        dlg = cWindow.FileSelect(
             'openO',
-            ext    = mConfig.elUMSAP,
+            ext    = mConfig.core.elUMSAP,
             parent = win,
-            msg    = mConfig.mFileSelUMSAP,
+            msg    = mConfig.core.mFileSelUMSAP,
         )
         #------------------------------>
         if dlg.ShowModal() == wx.ID_OK:
@@ -62,28 +62,30 @@ def LoadUMSAPFile(
             return False
     else:
         tFileP = fileP
+
+    print(tFileP)
     #endregion -----------------------------------------> Get file from Dialog
 
     #region ----------------------------> Raise window if file is already open
-    if mConfig.winUMSAP.get(tFileP, '') != '':
+    if mConfig.res.winUMSAP.get(tFileP, '') != '':
         #------------------------------>
         try:
-            mConfig.winUMSAP[tFileP].UpdateFileContent()
+            mConfig.res.winUMSAP[tFileP].UpdateFileContent()
         except Exception as e:
-            msg = mConfig.mFileRead.format(tFileP)
-            mWindow.DialogNotification('errorU', msg=msg, tException=e)
+            msg = mConfig.core.mFileRead.format(tFileP)
+            cWindow.Notification('errorU', msg=msg, tException=e)
             return False
         #------------------------------>
-        mConfig.winUMSAP[tFileP].Raise()
+        mConfig.res.winUMSAP[tFileP].Raise()
         #------------------------------>
         return True
-    else:
-        try:
-            mConfig.winUMSAP[tFileP] = mWindow.WindowUMSAPControl(tFileP)
-        except Exception as e:
-            msg = mConfig.mFileRead.format(tFileP)
-            mWindow.DialogNotification('errorU', msg=msg, tException=e)
-            return False
+    #------------------------------>
+    try:
+        mConfig.res.winUMSAP[tFileP] = resWindow.UMSAPControl(tFileP)
+    except Exception as e:
+        msg = mConfig.core.mFileRead.format(tFileP)
+        cWindow.Notification('errorU', msg=msg, tException=e)
+        return False
     #endregion -------------------------> Raise window if file is already open
 
     return True

@@ -25,6 +25,7 @@ from help     import config as hConfig
 from limprot  import config as limpConfig
 from main     import config as mConfig
 from protprof import config as protConfig
+from result   import config as resConfig
 from tarprot  import config as tarpConfig
 #endregion ----------------------------------------------------------> Imports
 
@@ -49,6 +50,7 @@ class Configuration():
     limp:limpConfig.Configuration
     main:mConfig.Configuration
     prot:protConfig.Configuration
+    res:resConfig.Configuration
     tarp:tarpConfig.Configuration
     #endregion ------------------------------------------------------> Options
 
@@ -114,6 +116,7 @@ config = Configuration(
     limpConfig.Configuration(),
     mConfig.Configuration(),
     protConfig.Configuration(),
+    resConfig.Configuration(),
     tarpConfig.Configuration(),
 )
 #endregion ----------------------------------------------------> Configuration

@@ -26,17 +26,11 @@ from typing  import Literal
 #------------------------------> Number of windows for screen positioning
 # Keys: Windows ID - Values: Total number of opened windows, except conf win
 winNumber = {}
-#------------------------------> Track open umsap files
-# Keys: UMSAP File path - Values: Reference to control window
-winUMSAP = {}
 #endregion ----------------------------------------------------------> Windows
 
 
 #region ---------------------------------------------------------------> Names
-#------------------------------> Name of Utilities
-nuReadF:str    = 'Read UMSAP File'
 #------------------------------> Windows
-nwUMSAPControl  = 'UMSAP Control'
 nwCorrAPlot     = 'CorrAPlot'
 nwProtProf      = 'ProtProfPlot'
 nwLimProt       = 'LimProtPlot'

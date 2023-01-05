@@ -18,9 +18,10 @@
 import wx
 
 from config.config import config as mConfig
-from core import menu   as cMenu
-from main import window as mWindow
-from help import menu   as hMenu
+from core   import menu   as cMenu
+from main   import window as mWindow
+from help   import menu   as hMenu
+from result import method as resMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -102,7 +103,7 @@ class MenuUtility(cMenu.BaseMenu):
     #------------------------------> Labels
     cLCorrA    = mConfig.corr.nUtil
     cLDataPrep = mConfig.data.nUtil
-    # cLReadF    = mConfig.core.nuReadF
+    cLReadF    = mConfig.res.nUtil
     #------------------------------> Key - Values
     cVCorrA    = mConfig.corr.nTab
     cVDataPrep = mConfig.data.nTab
@@ -119,7 +120,7 @@ class MenuUtility(cMenu.BaseMenu):
         self.miCorrA    = self.Append(-1, self.cLCorrA)
         self.miDataPrep = self.Append(-1, self.cLDataPrep)
         self.AppendSeparator()
-        # self.miReadFile = self.Append(-1, f'{self.cLReadF}\tCtrl+R')
+        self.miReadFile = self.Append(-1, f'{self.cLReadF}\tCtrl+R')
         #endregion -----------------------------------------------> Menu items
 
         #region -------------------------------------------------------> Names
@@ -130,7 +131,7 @@ class MenuUtility(cMenu.BaseMenu):
         #endregion ----------------------------------------------------> Names
 
         #region --------------------------------------------------------> Bind
-        # self.Bind(wx.EVT_MENU, self.OnReadFile,  source=self.miReadFile)
+        self.Bind(wx.EVT_MENU, self.OnReadFile,  source=self.miReadFile)
         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miCorrA)
         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miDataPrep)
         #endregion -----------------------------------------------------> Bind
@@ -162,41 +163,22 @@ class MenuUtility(cMenu.BaseMenu):
         return True
     #---
 
-    def OnReadFile(self, event: wx.CommandEvent) -> bool:                       # pylint: disable=unused-argument
+    def OnReadFile(self, event:wx.CommandEvent) -> bool:                        # pylint: disable=unused-argument
         """Read an UMSAP output file.
 
             Parameters
             ----------
-            event : wx.CommandEvent
+            event: wx.CommandEvent
                 Information about the event.
 
             Returns
             -------
             bool
         """
-        #region ------------------------------------------------------> Window
-        win = self.GetWindow()
-        #endregion ---------------------------------------------------> Window
-
-        #region ---------------------------------------------------> Get fileP
-        # dlg = cWindow.DialogFileSelect(
-        #     'openO',
-        #     ext    = mConfig.core.elUMSAP,
-        #     parent = win,
-        #     msg    = mConfig.core.mFileSelUMSAP,
-        # )
-        #------------------------------>
-        # if dlg.ShowModal() == wx.ID_OK:
-        #     fileP = Path(dlg.GetPath())
-        # else:
-        #     return False
-        #endregion ------------------------------------------------> Get fileP
-
         #region ---------------------------------------------------> Load file
-        # gMethod.LoadUMSAPFile(fileP=fileP)
+        resMethod.LoadUMSAPFile()
         #endregion ------------------------------------------------> Load file
 
-        # dlg.Destroy()
         return True
     #---
     #endregion ------------------------------------------------> Event Methods

@@ -331,8 +331,8 @@ class Progress(wx.Dialog):
         self.SetSizer(self.sSizer)
         self.Fit()
         #endregion ---------------------------------------------------> Sizers
-
-        self.CenterOnParent()
+        if parent is not None:
+            self.CenterOnParent()
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -635,7 +635,9 @@ class Notification(wx.Dialog):
         self.Fit()
         #endregion ---------------------------------------------------> Sizers
 
-        self.CenterOnParent()
+        if parent is not None:
+            self.CenterOnParent()
+        #------------------------------>
         self.ShowModal()
         self.Destroy()
     #---
@@ -733,7 +735,8 @@ class ResControlExp(BaseDialogOkCancel):
         #endregion -----------------------------------------------------> Bind
 
         #region ---------------------------------------------> Window position
-        self.CenterOnParent()
+        if parent is not None:
+            self.CenterOnParent()
         #endregion ------------------------------------------> Window position
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -825,7 +828,8 @@ class FileSelect(wx.FileDialog):
             defaultDir = '' if defPath is None else str(defPath),
         )
 
-        self.CenterOnParent()
+        if parent is not None:
+            self.CenterOnParent()
          #endregion ------------------------------------------> Create & Center
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -866,8 +870,8 @@ class DirSelect(wx.DirDialog):
             message     = msg,
             defaultPath = str(defPath),
         )
-
-        self.CenterOnParent()
+        if parent is not None:
+            self.CenterOnParent()
          #endregion ------------------------------------------> Create & Center
     #---
     #endregion -----------------------------------------------> Instance setup
