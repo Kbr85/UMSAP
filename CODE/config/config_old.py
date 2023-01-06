@@ -24,21 +24,15 @@ from typing  import Literal
 #region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
 #region ---------------------------------------------------------------> Names
 #------------------------------> Windows
-nwCorrAPlot     = 'CorrAPlot'
 nwProtProf      = 'ProtProfPlot'
 nwLimProt       = 'LimProtPlot'
 nwTarProt       = 'TarProtPlot'
-nwCheckDataPrep = 'Data Preparation'
 nwAAPlot        = 'AAPlot'
 nwHistPlot      = 'HistPlot'
 nwCpRPlot       = 'CpRPlot'
 nwCEvolPlot     = 'CEvolPlot'
 #------------------------------> Dialogs
 ndFilterRemoveAny      = 'Remove Filters'
-#------------------------------> Tab for notebook windows
-#------------------------------> Individual Panes
-npListCtrlSearchPlot    = 'ListCtrlSearchPlot'
-npNPlot                 = 'NPlot'
 #------------------------------> Utilities
 nuAA       = 'AA Distribution'
 nuHist     = 'Histograms'
@@ -51,8 +45,6 @@ nuCEvol    = 'Cleavage Evolution'
 #------------------------------> Tool Menu for Plot Window. General Items
 kwToolExpSeq             = 'GeneralTool Export Sequence'
 kwToolExportDataFiltered = 'GeneralTool Export Filtered Data'
-#------------------------------> Tool Menu for CorrA
-kwToolCorrACol  = 'ToolCorrA Select Column'
 #------------------------------> Tool Menu for LimProt
 kwToolLimProtBandLane = 'ToolLimProt Band/Lane Sel'
 kwToolLimProtShowAll  = 'ToolLimProt Show All'
@@ -81,9 +73,6 @@ lFilHypCurve = 'Hyp Curve'
 lFilFCLog    = 'Log2FC'
 lFilPVal     = 'P Val'
 lFilZScore   = 'Z Score'
-#------------------------------> wx.Menu
-lmCorrASelCol      = 'Select Columns'
-lmCorrAAllCol      = 'All Columns'
 #endregion -----------------------------------------------------------> Labels
 
 
@@ -144,7 +133,6 @@ mNotSupported       = "{} value '{}' is not supported."
 
 #region ---------------------------------------------------------------> Sizes
 #------------------------------> Plot Window
-sWinPlot    = (560, 560)
 sWinModPlot = (1100, 625)
 #endregion ------------------------------------------------------------> Sizes
 #endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS
@@ -160,15 +148,6 @@ colorFragments = [
 confColor = { # Colors for the app
     'RecProt' : 'gray',
     'NatProt' : '#c94c4c',
-    nuCorrA : { # Color for plot in Correlation Analysis
-        'CMAP' : { # CMAP colors and interval
-            'N' : 128,
-            'c1': (255, 0, 0),
-            'c2': (255, 255, 255),
-            'c3': (0, 0, 255),
-            'NA': '#90EE90',
-        },
-    },
     nwProtProf : {
         'Vol'    : ['#ff3333', '#d3d3d3', '#3333ff'],
         'VolSel' : '#6ac653',

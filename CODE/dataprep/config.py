@@ -26,6 +26,7 @@ class Configuration():
     #region ---------------------------------------------------------> Options
     #------------------------------> Name & Title
     nUtil:str = 'Data Preparation'                                              # Name of the Utility
+    nwRes:str = 'Data Preparation'                                              # Name of the Result Window
     nTab:str  = 'Tab Data Preparation'                                          # Name of Config Tab
     nPane:str = 'Pane Data Preparation'                                         # Name of Config Panel
     tTab:str  = 'DataPrep'                                                      # Title of the tab in Main Window
@@ -48,6 +49,8 @@ class Configuration():
         'None'               : 'None',
         'Normal Distribution': 'ND',
     })
+    #------------------------------> Converter for user options
+    converter:dict = field(default_factory=lambda: {})
     #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration

@@ -17,6 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 import shutil
+from math    import ceil
 from pathlib import Path
 from typing  import Optional, Union, Callable
 
@@ -2111,5 +2112,139 @@ class BaseResControlExpConf(wx.Panel):
         return n
     #---
     #endregion -----------------------------------------------> Manage methods
+#---
+
+
+class ListCtrlSearchPlot(wx.Panel):
+    """Creates a panel with a wx.ListCtrl and below it a wx.SearchCtrl.
+
+        Parameters
+        ----------
+        parent: wx.Window
+            Parent of the panel
+        colLabel: list of str or None
+            Name of the columns in the wx.ListCtrl. Default is None
+        colSize: list of int or None
+            Size of the columns in the wx.ListCtrl. Default is None
+        data: list[list]
+            Initial Data for the wx.ListCtrl.
+        style: wx.Style
+            Style of the wx.ListCtrl. Default is wx.LC_REPORT.
+        tcHint: str
+            Hint for the wx.SearchCtrl. Default is ''.
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = mConfig.core.npListCtrlSearchPlot
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(                                                               # pylint: disable=dangerous-default-value
+        self,
+        parent:wx.Window,
+        colLabel:list[str] = [],
+        colSize:list[int]  = [],
+        data:list[list]    = [],
+        style:int          = wx.LC_REPORT,
+        tcHint:str         = '',
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent, name=self.cName)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wLCS = cWidget.ListCtrlSearch(
+            self,
+            listT    = 2,
+            colLabel = colLabel,
+            colSize  = colSize,
+            canCut   = False,
+            canPaste = False,
+            style    = style,
+            data     = data,
+            tcHint   = tcHint,
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.SetSizer(self.wLCS.sSizer)
+        #endregion ---------------------------------------------------> Sizers
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
+
+
+class NPlots(wx.Panel):
+    """The panel will contain N plots distributed in a wx.FlexGridSizer.
+
+        Parameters
+        ----------
+        parent: wx.Window
+            Parent of the wx.Panel holding the plots.
+        tKeys: list of str
+            Keys for a dict holding a reference to the plots
+        nCol: int
+            Number of columns in the wx.FlexGridSizer holding the plots.
+            Number of needed rows will be automatically calculated.
+        dpi: int
+            DPI value for the Matplot plots.
+        statusbar: wx.StatusBar or None
+            StatusBar to display information about the plots.
+
+        Attributes
+        ----------
+        dPlot: dict
+            Keys are tKeys and values mWidget.MatPlotPanel
+        cName: str
+            Name of the panel holding the plots.
+        nCol: int
+            Number of columns in the sizer
+        nRow: int
+            Number of rows in the sizer.
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = mConfig.core.npNPlot
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self,
+        parent:wx.Window,
+        tKeys:list[str],
+        nCol:int,
+        dpi:int                          = mConfig.core.DPI,
+        statusbar:Optional[wx.StatusBar] = None,
+        ) -> None  :
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.nCol = nCol
+        self.nRow = ceil(len(tKeys)/nCol)
+        #------------------------------>
+        super().__init__(parent, name=self.cName)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region ------------------------------------------------------> Sizers
+        #------------------------------>
+        self.sSizer = wx.FlexGridSizer(self.nRow, self.nCol, 1,1)
+        #------------------------------>
+        for k in range(0, self.nCol):
+            self.sSizer.AddGrowableCol(k,1)
+        for k in range(0, self.nRow):
+            self.sSizer.AddGrowableRow(k,1)
+        #------------------------------>
+        self.SetSizer(self.sSizer)
+        #endregion ---------------------------------------------------> Sizers
+
+        #region -----------------------------------------------------> Widgets
+        self.dPlot = {}
+        for k in tKeys:
+            #------------------------------> Create
+            self.dPlot[k] = cWidget.MatPlotPanel(
+                self, dpi=dpi, statusbar=statusbar)
+            #------------------------------> Add to sizer
+            self.sSizer.Add(self.dPlot[k], 1, wx.EXPAND|wx.ALL, 5)
+        #endregion --------------------------------------------------> Widgets
+    #---
+    #endregion -----------------------------------------------> Instance setup
 #---
 #endregion ----------------------------------------------------------> Classes

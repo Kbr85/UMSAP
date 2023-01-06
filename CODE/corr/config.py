@@ -26,9 +26,15 @@ class Configuration():
     #region ---------------------------------------------------------> Options
     #------------------------------> Name & Title
     nUtil:str = 'Correlation Analysis'                                          # Name of the Utility
+    nwRes:str = 'CorrAPlot'                                                     # Name of the Result Window
     nTab:str  = 'Tab Correlation AnalysisA'                                     # Name for the Tab
     nPane:str = 'Pane Correlation Analysis'                                     # Name for Conf Pane
     tTab:str  = 'CorrA'                                                         # Title of the Tab
+    #------------------------------> Label
+    lmSelCol:str = 'Select Columns'                                             # lm: Label for wx.MenuItem
+    lmAllCol:str = 'All Columns'
+    #------------------------------> Keywords for Menu
+    kwCol:str = 'ToolCorrA Select Column'
     #------------------------------> Options
     oCorrMethod:dict = field(default_factory=lambda: {                          # Correlation Methods
         ''        : '',
@@ -36,6 +42,16 @@ class Configuration():
         'Kendall' : 'Kendall',
         'Spearman': 'Spearman',
     })
+    #------------------------------> Colors
+    CMAP:dict = field(default_factory=lambda : {                                # CMAP Colors
+        'N' : 128,
+        'c1': (255, 0, 0),
+        'c2': (255, 255, 255),
+        'c3': (0, 0, 255),
+        'NA': '#90EE90',
+    })
+    #------------------------------> Converter for user options
+    converter:dict = field(default_factory=lambda: {})
     #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration

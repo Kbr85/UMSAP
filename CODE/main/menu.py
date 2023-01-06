@@ -18,11 +18,13 @@
 import wx
 
 from config.config import config as mConfig
-from core   import menu   as cMenu
-from main   import window as mWindow
-from help   import menu   as hMenu
-from result import menu   as resMenu
-from result import method as resMethod
+from core     import menu   as cMenu
+from corr     import menu   as corrMenu
+from dataprep import menu   as dataMenu
+from help     import menu   as hMenu
+from main     import window as mWindow
+from result   import menu   as resMenu
+from result   import method as resMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -233,8 +235,8 @@ class MenuBarTool(MenuBarMain):
     #region -----------------------------------------------------> Class Setup
     dTool = { # Key are window name and values the corresponding tool menu
         mConfig.res.nwUMSAPControl : resMenu.ToolUmsapControl,
-        # mConfig.nwCorrAPlot    : MenuToolCorrA,
-        # mConfig.nwCheckDataPrep: MenuToolDataPrep,
+        mConfig.corr.nwRes         : corrMenu.ToolCorrA,
+        mConfig.data.nwRes         : dataMenu.ToolDataPrep,
         # mConfig.nwProtProf     : MenuToolProtProf,
         # mConfig.nwLimProt      : MenuToolLimProt,
         # mConfig.nwTarProt      : MenuToolTarProt,

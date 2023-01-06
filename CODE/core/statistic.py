@@ -23,6 +23,111 @@ from scipy import stats
 #endregion ----------------------------------------------------------> Imports
 
 
+#region ----------------------------------------------------> Data Description
+def DataRange(
+    x:Union[pd.Series, np.ndarray, list, tuple],
+    margin:float = 0,
+    ) -> list[float]:
+    """Return the range of x with an optional margin applied.
+        Useful to set the axes limit in a matplotlib plot.
+
+        Parameters
+        ----------
+        x: pd.Series, np.array, list or tuple of numbers.
+            Data.
+        margin: float
+            Expand the range by (max(x) - min(x)) * margin. Default is 0,
+            meaning that no expansion of the max(x) and min(x) is done.
+
+        Returns
+        -------
+        list of floats
+            [min value, max value]
+
+        Notes
+        -----
+        The return values will be calculated as:
+            dm = (max(x) - min(x)) * margin
+            [min(x) - dm, max(x) + dm]
+        When margin is 0 then the return will simply be [min(x), max(x)]
+    """
+    # Test in test.unit.test_statistic.Test_DataRange
+    #region -------------------------------------------------------> Variables
+    msg = 'x must contain only numbers.'
+    #endregion ----------------------------------------------------> Variables
+
+    #region -----------------------------------------------------> Check Input
+    #------------------------------> Type and Float
+    #-------------->
+    tType = type(x)
+    #-------------->
+    if tType == list or tType == tuple:
+        try:
+            nL = list(map(float, x))
+        except Exception as e:
+            raise ValueError(msg) from e
+    elif tType == pd.Series:
+        try:
+            nL = list(map(float, x.values.tolist()))                            # type: ignore
+        except Exception as e:
+            raise ValueError(msg) from e
+    elif tType == np.ndarray:
+        if x.ndim == 1:                                                         # type: ignore
+            try:
+                nL = list(map(float, x.tolist()))                               # type: ignore
+            except Exception as e:
+                raise ValueError(msg) from e
+        else:
+            msg = 'A one dimensional np.array is expected here.'
+            raise ValueError(msg)
+    else:
+        msg = 'x must be a tuple, list, numpy.ndarray or pandas.Series.'
+        raise ValueError(msg)
+    #------------------------------> Not empty
+    if not nL:
+        msg = 'x cannot be empty.'
+        raise ValueError(msg)
+    #endregion --------------------------------------------------> Check Input
+
+    #region ----------------------------------------------------------> Values
+    tMax = max(nL)
+    tMin = min(nL)
+    #------------------------------>
+    dm = (tMax - tMin) * margin
+    #endregion -------------------------------------------------------> Values
+
+    return [tMin - dm, tMax + dm]
+#---
+
+def HistBin(x: pd.Series) -> tuple[float, float]:
+    """Calculate the bin width for a histogram according to Freedman–Diaconis
+        rule.
+
+        Parameters
+        ----------
+        x: pd.Series
+            Values.
+
+        Returns
+        -------
+        tuple of float:
+            (number_of_bins, bind_width)
+    """
+    # No Test
+    #region --------------------------------------------------> Get Percentile
+    q25, q75 = np.percentile(x, [25, 75])
+    #endregion -----------------------------------------------> Get Percentile
+
+    #region -------------------------------------------------------------> Bin
+    width = 2 * (q75 - q25) * len(x) ** (-1/3)
+    n = round((x.max() - x.min()) / width)
+    #endregion ----------------------------------------------------------> Bin
+
+    return (n, width)
+#---
+#endregion -------------------------------------------------> Data Description
+
+
 #region -------------------------------------------------------------> Methods
 def CI_Sample(
     df:pd.DataFrame,

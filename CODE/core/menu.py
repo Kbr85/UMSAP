@@ -344,10 +344,10 @@ class BaseMenuMainResult(BaseMenu):
         #endregion -----------------------------------------------> Add rIDMap
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miDupWin)
-        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miZoomR)
-        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveD)
-        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miSaveI)
+        self.Bind(wx.EVT_MENU, self.OnMethod,        source=self.miDupWin)
+        self.Bind(wx.EVT_MENU, self.OnMethod,        source=self.miZoomR)
+        self.Bind(wx.EVT_MENU, self.OnMethod,        source=self.miSaveD)
+        self.Bind(wx.EVT_MENU, self.OnMethod,        source=self.miSaveI)
         self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miCheckDP)
         #endregion -----------------------------------------------------> Bind
 

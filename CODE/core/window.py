@@ -18,11 +18,19 @@
 from pathlib import Path
 from typing  import Optional, Union, Literal
 
+import pandas as pd
+
 import wx
+from wx import aui
 
 from config.config import config as mConfig
-from core import method as cMethod
-from core import tab    as cTab
+from core   import method as cMethod
+from core   import tab    as cTab
+from core   import widget as cWidget
+from core   import pane   as cPane
+from core   import file   as cFile
+from result import file   as resFile
+from data   import window as dataWindow
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -139,6 +147,757 @@ class BaseWindow(wx.Frame):
     #---
     #endregion ------------------------------------------------> Manage Methods
 #---
+
+
+class BaseWindowResult(BaseWindow):
+    """Base class for windows showing results.
+
+        Parameters
+        ----------
+        parent: wx.Window or None
+            Parent of the window. Default None.
+
+        Attributes
+        ----------
+        rData: dict
+            Keys are the elements in rDate and values the analysis data.
+        rDate: list[str]
+            List of available dates.
+        rDateC: str
+            Current selected date.
+        rDf: pd.DataFrame
+            DataFrame with the data for the currently selected date.
+
+        Notes
+        -----
+        At least one plot is expected in the window.
+    """
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent:Optional[wx.Window]=None) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cSWindow = getattr(self, 'cSWindow', mConfig.core.sWinPlot)
+        self.cSection = getattr(self, 'cSection', '')
+        #------------------------------>
+        self.cMsgExportFailed = getattr(
+            self, 'cMsgExportFailed', 'Export {} failed.')
+        #------------------------------>
+        self.rDate  = getattr(self, 'rDate', [])
+        self.rDateC = getattr(self, 'rDateC', '')
+        self.rData  = getattr(self, 'rData', {})
+        self.rDf    = getattr(self, 'rDf', pd.DataFrame())
+        self.rObj: resFile.UMSAPFile
+        #------------------------------>
+        super().__init__(parent=parent)
+        #------------------------------>
+        dKeyMethod = {
+            mConfig.core.kwWinUpdate   : self.UpdateResultWindow,
+            mConfig.core.kwDupWin      : self.DupWin,
+            mConfig.core.kwExpData     : self.ExportData,
+            mConfig.core.kwExpImgAll   : self.ExportImgAll,
+            mConfig.core.kwZoomResetAll: self.ZoomResetAll,
+            mConfig.core.kwCheckDP     : self.CheckDataPrep,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
+        #endregion --------------------------------------------> Initial Setup
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Event Methods
+    def OnClose(self, event:wx.CloseEvent) -> bool:
+        """Close window and uncheck section in UMSAPFile window. Assumes
+            self.cParent is an instance of UMSAPControl.
+
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Update parent
+        self.cParent.UnCheckSection(self.cSection, self) # type: ignore
+        #endregion --------------------------------------------> Update parent
+
+        #region ------------------------------------> Reduce number of windows
+        mConfig.core.winNumber[self.cName] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
+    #region ---------------------------------------------------> Class methods
+    def ReportPlotDataError(self) -> bool:
+        """Check that there is something to plot after reading a section in
+            an UMSAP Plot.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------> Nothing to Plot
+        if not len(self.rData.keys()) > 1:
+            msg = (f'All {self.cSection} in file {self.rObj.rFileP.name} are '  # type: ignore
+                f'corrupted or were not found.')
+            raise ValueError(msg)
+        #endregion ------------------------------------------> Nothing to Plot
+
+        #region -------------------------------------------------> Some Errors
+        if self.rData['Error']:
+            #------------------------------>
+            fileList = '\n'.join(self.rData['Error'])
+            #------------------------------>
+            if len(self.rData['Error']) == 1:
+                msg = (f'The data for analysis:\n{fileList}\n '
+                       f'contains errors or was not found.')
+            else:
+                msg = (f'The data for analysis:\n{fileList}\n '
+                       f'contain errors or were not found.')
+            #------------------------------>
+            Notification('warning', msg=msg)
+        #endregion ----------------------------------------------> Some Errors
+
+        return True
+    #---
+
+    def DupWin(self) -> bool:
+        """Duplicate window.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Duplicate
+        self.cParent.rWindow[self.cSection]['Main'].append(                     # type: ignore
+            self.cParent.dPlotMethod[self.cSection](self.cParent)               # type: ignore
+        )
+        #endregion ------------------------------------------------> Duplicate
+
+        return True
+    #---
+
+    def ExportData(self, df:Optional[pd.DataFrame]=None) -> bool:
+        """Export data to a csv file.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            It requires child class to define self.rDateC to catch the current
+            date being plotted.
+        """
+        #region --------------------------------------------------> Dlg window
+        dlg = FileSelect('save', mConfig.core.elData, parent=self)
+        #endregion -----------------------------------------------> Dlg window
+
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            tDF = self.rData[self.rDateC]['DF'] if df is None else df
+            #------------------------------> Export
+            try:
+                cFile.WriteDF2CSV(p, tDF)
+            except Exception as e:
+                Notification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed.format('Data'),
+                    tException = e,
+                    parent     = self,
+                )
+        #endregion ------------------------------------------------> Get Path
+
+        dlg.Destroy()
+        return True
+    #---
+
+    def ExportDataFiltered(self, df: Optional[pd.DataFrame]=None) -> bool:
+        """Export data to a csv file.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Dlg window
+        dlg = FileSelect('save', mConfig.core.elData, parent=self)
+        #endregion -----------------------------------------------> Dlg window
+
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            tDF = self.rDf if df is None else df
+            #------------------------------> Export
+            try:
+                cFile.WriteDF2CSV(p, tDF)
+            except Exception as e:
+                Notification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed.format('Data'),
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+
+        dlg.Destroy()
+        return True
+    #---
+
+    def ExportImgAll(self) -> bool:
+        """Create and image of all plots in the window.
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
+    def ZoomResetAll(self) -> bool:
+        """Reset the zoom of all plots in the window.
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
+    def UpdateResultWindow(self) -> bool:
+        """Update the result window.
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
+    def PlotTitle(self) -> bool:
+        """Set the title of a plot window.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Assumes child class has self.cSection and self.rDateC and the parent
+            is an UMSAPControl window
+        """
+        self.SetTitle(
+            f"{self.cParent.cTitle} - {self.cSection} - {self.rDateC}")         # type: ignore
+
+        return True
+    #---
+
+    def CheckDataPrep(self, tDate: str) -> bool:                                # pylint: disable=unused-argument
+        """Launch the Check Data Preparation Window.
+
+            Parameters
+            ----------
+            tDate: str
+                Date + ID to find the analysis in the umsap file.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        try:
+            dataWindow.ResDataPrep(
+                self,
+                f'{self.GetTitle()} - {mConfig.data.nUtil}',
+                tSection = self.cSection,
+                tDate    = self.rDateC,
+            )
+        except Exception as e:
+            Notification(
+                'errorU',
+                msg        = 'Data Preparation window failed to launch.',
+                tException = e,
+                parent     = self,
+            )
+            return False
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+
+    def SetDateMenuDate(self) -> tuple[list, dict]:
+        """Set the self.rDate list and the menuData dict needed to build the
+            Tool menu.
+
+            Returns
+            -------
+            tuple of list and dict
+            The list is a list of str with the dates in the analysis.
+            The dict has the following structure:
+                {
+                    'MenuDate' : [List of dates],
+                }
+        """
+        #region ---------------------------------------------------> Fill dict
+        date = [x for x in self.rData if x != 'Error']
+        #endregion ------------------------------------------------> Fill dict
+
+        return (date, {'MenuDate':date})
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class BaseWindowResultOnePlot(BaseWindowResult):
+    """Base class for windows showing results.
+
+        Parameters
+        ----------
+        parent : wx.Window or None
+            Parent of the window. Default None.
+
+        Notes
+        -----
+        At least one plot is expected in the window.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent:Optional[wx.Window]=None,) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent=parent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region ---------------------------------------------------> Widget
+        self.wPlot = {0:cWidget.MatPlotPanel(self)}
+        self.wPlot[0].SetStatBar(self.wStatBar, self.OnUpdateStatusBar)
+        #endregion ------------------------------------------------> Widget
+
+        #region ---------------------------------------------------> Sizers
+        self.sSizer.Add(self.wPlot[0], 1, wx.EXPAND|wx.ALL, 5)
+        self.SetSizer(self.sSizer)
+        #endregion ------------------------------------------------> Sizers
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def ExportImgAll(self) -> bool:
+        """Create and image of all plots in the window.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        try:
+            self.wPlot[0].SaveImage(
+                ext=mConfig.core.elMatPlotSaveI, parent=self)
+        except Exception as e:
+            msg = "The image of the plot could not be saved."
+            Notification('errorU', msg=msg, tException=e, parent=self)
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+
+    def ZoomResetAll(self) -> bool:
+        """Reset the zoom of all plots in the window.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        try:
+            self.wPlot[0].ZoomResetPlot()
+        except Exception as e:
+            msg = 'The zoom level of the plot could not be reset.'
+            Notification('errorU', msg=msg, tException=e, parent=self)
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+
+    def OnUpdateStatusBar(self, event) -> bool:                                 # pylint: disable=unused-argument
+        """Update the statusbar info.
+
+            Parameters
+            ----------
+            event: matplotlib event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class BaseWindowResultListText(BaseWindowResult):
+    """Base window for results with a wx.ListCtrl and wx.TextCtrl.
+
+        Parameters
+        ----------
+        parent: wx.Window or None
+            Parent of the window. Default None.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent:Optional[wx.Window]=None) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cLCol    = getattr(self, 'cLCol', ['#', 'Item'])
+        self.cSCol    = getattr(self, 'cSCol', [45, 100])
+        self.cHSearch = getattr(self, 'cHSearch', 'Table')
+        self.cLCStyle = getattr(
+            self, 'cLCStyle', wx.LC_REPORT|wx.LC_SINGLE_SEL|wx.LC_VIRTUAL)
+        self.rLCIdx   = getattr(self, 'rLCIdx', -1)
+        #------------------------------>
+        super().__init__(parent=parent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wText = wx.TextCtrl(
+            self, size=(100,100), style=wx.TE_READONLY|wx.TE_MULTILINE)
+        self.wText.SetFont(mConfig.core.fSeqAlign)
+        #------------------------------> wx.ListCtrl
+        self.wLC = cPane.ListCtrlSearchPlot(
+            self,
+            colLabel = self.cLCol,
+            colSize  = self.cSCol,
+            style    = self.cLCStyle,
+            tcHint   = f'Search {self.cHSearch}'
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ---------------------------------------------------------> AUI
+        #------------------------------> AUI control
+        self._mgr = aui.AuiManager()
+        #------------------------------> AUI which frame to use
+        self._mgr.SetManagedWindow(self)
+        #endregion ------------------------------------------------------> AUI
+
+        #region --------------------------------------------------------> Bind
+        self.wLC.wLCS.wLC.Bind(wx.EVT_LIST_ITEM_SELECTED, self.OnListSelect)
+        self.wLC.wLCS.wLC.Bind(wx.EVT_LEFT_UP, self.OnListSelectEmpty)
+        self.wLC.wLCS.wSearch.Bind(wx.EVT_SEARCH, self.OnSearch)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Event Methods
+    def OnSearch(self, event: wx.Event) -> bool:                                # pylint: disable=unused-argument
+        """Search for a given string in the wx.ListCtrl.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            See mWidget.MyListCtrl.Search for more details.
+        """
+        #region ---------------------------------------------------> Get index
+        tStr = self.wLC.wLCS.wSearch.GetValue()
+        iEqual, iSimilar = self.wLC.wLCS.wLC.Search(tStr)
+        #endregion ------------------------------------------------> Get index
+
+        #region ----------------------------------------------> Show 1 Results
+        if len(iEqual) == 1:
+            self.SearchSelect(iEqual[0])
+            return True
+        #------------------------------>
+        if len(iSimilar) == 1:
+            self.SearchSelect(iSimilar[0])
+            return True
+        #endregion -------------------------------------------> Show 1 Results
+
+        #region ----------------------------------------------> Show N Results
+        if iSimilar:
+            msg = (f'The string, {tStr}, was found in multiple rows.')
+            tException = (
+                f'The row numbers where the string was found are:\n '
+                f'{str(iSimilar)[1:-1]}')
+            Notification(
+                'warning',
+                msg        = msg,
+                setText    = True,
+                tException = tException,
+                parent     = self,
+            )
+        else:
+            msg = (f'The string, {tStr}, was not found.')
+            Notification(
+                'warning',
+                msg        = msg,
+                setText    = True,
+                parent     = self,
+            )
+        #endregion -------------------------------------------> Show N Results
+
+        return True
+    #---
+
+    def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:         # pylint: disable=unused-argument
+        """Processes a wx.ListCtrl event.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        self.rLCIdx = self.wLC.wLCS.wLC.GetLastSelected()
+        return True
+    #---
+
+    def OnListSelectEmpty(self, event: wx.CommandEvent) -> bool:
+        """What to do after selecting a row in the wx.ListCtrl.
+
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        idx = self.wLC.wLCS.wLC.GetFirstSelected()
+        #------------------------------>
+        if idx < 0 and self.rLCIdx is not None:
+            self.wLC.wLCS.wLC.Select(self.rLCIdx, on=1)
+        #endregion ------------------------------------------------>
+
+        event.Skip()
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
+    #region ---------------------------------------------------> Class Methods
+    def SearchSelect(self, tRow: int) -> bool:
+        """Select one of the row in the wx.ListCtrl.
+
+            Parameters
+            ----------
+            tRow: int
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Helper to OnSearch
+        """
+        self.wLC.wLCS.wLC.Select(tRow, on=1)
+        self.wLC.wLCS.wLC.EnsureVisible(tRow)
+        self.wLC.wLCS.wLC.SetFocus()
+        self.OnListSelect('fEvent')
+        return True
+    #---
+
+    def UpdateUMSAPData(self) -> bool:
+        """Update the window after the UMSAP file have been updated.
+
+            Parameters
+            ----------
+
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        self.rObj  = self.cParent.rObj                                          # type: ignore
+        self.rData = self.rObj.dConfigure[self.cSection]()
+        self.rDate, menuData = self.SetDateMenuDate()
+        menuBar = self.GetMenuBar()
+        menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(menuData)
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class Methods
+#---
+
+
+class BaseWindowResultListTextNPlot(BaseWindowResultListText):
+    """Base window for results with a wx.ListCtrl, wx.TextCtrl and mPane.NPlots.
+
+        Parameters
+        ----------
+        parent: wx.Window or None
+            Parent of the window. Default None.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent:Optional[wx.Window]=None) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cLNPlot   = getattr(self, 'cLNPlot',   ['Plot 1', 'Plot 2'])
+        self.cNPlotCol = getattr(self, 'cNPlotCol', 1)
+        self.cTPlot    = getattr(self, 'cTPlot',    'Plots')
+        self.cTText    = getattr(self, 'cTText',    'Details')
+        self.cTList    = getattr(self, 'cTList',    'Table')
+        #------------------------------>
+        super().__init__(parent=parent)
+        #------------------------------>
+        dKeyMethod = {
+            mConfig.core.kwExpImg   : self.ExportImg,
+            mConfig.core.kwZoomReset: self.ZoomReset,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wPlot = cPane.NPlots(
+            self, self.cLNPlot, self.cNPlotCol, statusbar=self.wStatBar)
+        #endregion --------------------------------------------------> Widgets
+
+        #region ---------------------------------------------------------> AUI
+        self._mgr.AddPane(
+            self.wPlot,
+            aui.AuiPaneInfo(
+                ).Center(
+                ).Caption(
+                    self.cTPlot
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        self._mgr.AddPane(
+            self.wText,
+            aui.AuiPaneInfo(
+                ).Bottom(
+                ).Layer(
+                    0
+                ).Caption(
+                    self.cTText
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        self._mgr.AddPane(
+            self.wLC,
+            aui.AuiPaneInfo(
+                ).Left(
+                ).Layer(
+                    1
+                ).Caption(
+                    self.cTList
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------>
+        self._mgr.Update()
+        #endregion ------------------------------------------------------> AUI
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class Methods
+    def ZoomResetAll(self) -> bool:
+        """Reset Zoom of all plots.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        for v in self.wPlot.dPlot.values():
+            v.ZoomResetPlot()
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+
+    def ExportImg(self, tKey: str) -> bool:
+        """Export an image of one of the plots in self.wPlot.dPlot.
+
+            Parameters
+            ----------
+            tKey: str
+                Key in self.wPlot.dPlot
+
+            Returns
+            -------
+            bool
+        """
+        try:
+            self.wPlot.dPlot[tKey].SaveImage(
+                mConfig.core.elMatPlotSaveI, parent=self)
+        except Exception as e:
+            Notification(
+                'errorU',
+                msg        = self.cMsgExportFailed.format('Image'),
+                tException = e,
+                parent     = self,
+                )
+            return False
+        return True
+    #---
+
+    def ZoomReset(self, tKey: str) -> bool:
+        """Reset the zoom of one of the plots in self.wPlot.dPlot.
+
+            Parameters
+            ----------
+            tKey: str
+                Key in self.wPlot.dPlot
+
+            Returns
+            -------
+            bool
+        """
+        try:
+            self.wPlot.dPlot[tKey].ZoomResetPlot()
+        except Exception as e:
+            msg = 'It was not possible to reset the zoom on the selected plot.'
+            Notification('errorU', msg=msg, tException=e, parent=self)
+            return False
+        return True
+    #---
+    #endregion ------------------------------------------------> Class Methods
+#---
 #endregion -----------------------------------------------------------> Frames
 
 
@@ -230,6 +989,208 @@ class BaseDialogOkCancel(wx.Dialog):
         """
         self.EndModal(0)
         self.Close()
+        return True
+    #---
+    #endregion ------------------------------------------------> Event methods
+#---
+
+
+class ListSelect(BaseDialogOkCancel):
+    """Select values from a list of options.
+
+        Parameters
+        ----------
+        color: str
+            Alternating color for the wx.ListCtrl
+        parent: wx.Window
+            Parent of the window
+        rightDelete: bool
+            Delete content of the right wx.ListCtrl with a right click
+        tBtnLabel: str
+            Label for the Add wx.Button
+        tColLabel: list[str]
+            Label for the name of the columns in the wx.ListCtrl. It is assumed
+            both wx.ListCtrl have the same column labels.
+        tColSize: list[int]
+            Size of the columns in the wx.ListCtrl. It is assumed both
+            wx.ListCtrl have the same size.
+        title: str
+            Title of the window
+        tOptions: list[list[str]]
+            Available options.
+        tSelOptions: list[list[str]]
+            Already selected options. Optional
+        tStLabel: list[str]
+            Label to show on top of the wx.ListCtrl.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(                                                               # pylint: disable=dangerous-default-value
+        self,
+        tOptions:list[list[str]],
+        tColLabel:list[str],
+        tColSize:list[int],
+        tSelOptions:list[list[str]] = [],
+        title:str                   = '',
+        tStLabel:list[str]          = [],
+        tBtnLabel:str               = '',
+        parent:Optional[wx.Window]  = None,
+        color:str                   = mConfig.core.cZebra,
+        rightDelete:bool            = True,
+        style:int                   = wx.LC_REPORT|wx.LC_VIRTUAL,
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        if tStLabel:
+            self.cStLabel = tStLabel
+        else:
+            self.cStLabel = ['Available options', 'Selected options']
+        #------------------------------>
+        if tBtnLabel:
+            self.cBtnLabel = tBtnLabel
+        else:
+            self.cBtnLabel = 'Add options'
+        #------------------------------>
+        if not title:
+            title = 'Select options'
+        #------------------------------>
+        super().__init__(parent=parent, title=title)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> wx.StaticText
+        self.wStListI = wx.StaticText(self, label=self.cStLabel[0])
+        self.wStListO = wx.StaticText(self, label=self.cStLabel[1])
+        #------------------------------> dtsWidget.ListZebra
+        self.wLCtrlI = cWidget.MyListCtrlZebra(self,
+            color           = color,
+            colLabel        = tColLabel,
+            colSize         = tColSize,
+            copyFullContent = True,
+            style           = style,
+        )
+        self.wLCtrlI.SetNewData(tOptions)
+
+        self.wLCtrlO = cWidget.MyListCtrlZebra(self,
+            color           = color,
+            colLabel        = tColLabel,
+            colSize         = tColSize,
+            canPaste        = True,
+            canCut          = True,
+            copyFullContent = True,
+        )
+        for r in tSelOptions:
+            self.wLCtrlO.Append(r)
+        #------------------------------> wx.Button
+        self.wAddCol = wx.Button(self, label=self.cBtnLabel)
+        self.wAddCol.SetBitmap(
+            wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD), dir = wx.RIGHT)
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sList = wx.FlexGridSizer(2,3,5,5)
+        self.sList.Add(self.wStListI, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.sList.AddStretchSpacer(1)
+        self.sList.Add(self.wStListO, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.sList.Add(self.wLCtrlI,  0, wx.EXPAND|wx.ALL,       5)
+        self.sList.Add(self.wAddCol,  0, wx.ALIGN_CENTER|wx.ALL, 5)
+        self.sList.Add(self.wLCtrlO,  0, wx.EXPAND|wx.ALL,       5)
+        self.sList.AddGrowableCol(0,1)
+        self.sList.AddGrowableCol(2,1)
+        self.sList.AddGrowableRow(1,1)
+        #------------------------------>
+        self.sSizer.Add(self.sList, 1, wx.EXPAND|wx.ALL,      5)
+        self.sSizer.Add(self.sBtn,  0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        #------------------------------>
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region ----------------------------------------------------> Tooltips
+        self.wStListI.SetToolTip(
+            f"Selected rows can be copied ({mConfig.core.copyShortCut}+C) but "
+            f"the list cannot be modified.")
+        self.wStListO.SetToolTip(
+            f"New rows can be pasted ({mConfig.core.copyShortCut}+V) after the "
+            f"last selected element and existing ones cut/deleted "
+            f"({mConfig.core.copyShortCut}+X) or copied "
+            f"({mConfig.core.copyShortCut}+C)." )
+        self.wAddCol.SetToolTip(
+            'Add selected rows in the left list to the '
+            'right list. New columns will be added after the last selected '
+            'row in the right list. Duplicate columns are discarded.')
+        #endregion -------------------------------------------------> Tooltips
+
+        #region --------------------------------------------------------> Bind
+        self.wAddCol.Bind(wx.EVT_BUTTON, self.OnAdd)
+        #------------------------------>
+        if rightDelete:
+            self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDelete)
+            self.wLCtrlO.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDelete)
+        #endregion -----------------------------------------------------> Bind
+
+        #region ---------------------------------------------> Window position
+        if parent is not None:
+            self.CenterOnParent()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Event methods
+    def OnOK(self, event:wx.CommandEvent) -> bool:
+        """Validate user information and close the window.
+
+            Parameters
+            ----------
+            event: wx.CommandEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------------> Validate
+        if self.wLCtrlO.GetItemCount() > 0:
+            self.EndModal(1)
+            self.Close()
+        else:
+            return False
+        #endregion -------------------------------------------------> Validate
+
+        return True
+    #---
+
+    def OnAdd(self, event:Union[wx.Event, str]) -> bool:                        # pylint: disable=unused-argument
+        """Add columns to analyze using the button.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Event information.
+
+            Returns
+            -------
+            bool
+        """
+        self.wLCtrlI.OnCopy('')
+        self.wLCtrlO.OnPaste('')
+
+        return True
+    #---
+
+    def OnRightDelete(self, event:Union[wx.Event, str]) -> bool:                # pylint: disable=unused-argument
+        """Delete list with a right click.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Event information.
+
+            Returns
+            -------
+            bool
+        """
+        self.wLCtrlO.DeleteAllItems()
+
         return True
     #---
     #endregion ------------------------------------------------> Event methods

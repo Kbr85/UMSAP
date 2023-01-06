@@ -29,6 +29,7 @@ from core   import window as cWindow
 from main   import menu   as mMenu
 from main   import window as mWindow
 from result import file   as resFile
+from corr   import window as corrWindow
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -73,7 +74,7 @@ class UMSAPControl(cWindow.BaseWindow):
     cFileLabelCheck = ['Data']
     #------------------------------>
     dPlotMethod = { # Methods to create plot windows
-        # mConfig.nuCorrA   : WindowResCorrA,
+        mConfig.corr.nUtil : corrWindow.ResCorrA,
         # mConfig.nuDataPrep: WindowResDataPrep,
         # mConfig.nmProtProf: WindowResProtProf,
         # mConfig.nmLimProt : WindowResLimProt,
@@ -126,7 +127,7 @@ class UMSAPControl(cWindow.BaseWindow):
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
-        self.Sizer.Add(self.wTrc, 1, wx.EXPAND|wx.ALL, 5)
+        self.Sizer.Add(self.wTrc, 1, wx.EXPAND|wx.ALL, 5)                       # pylint: disable=no-member
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Menu
@@ -161,11 +162,11 @@ class UMSAPControl(cWindow.BaseWindow):
         """
         #region -------------------------------------------------------> DateI
         dateI   = event.GetItem()
-        section = dateI.GetParent().GetText()
+        section = dateI.GetParent().GetText()                                   # type: ignore
         #endregion ----------------------------------------------------> DateI
 
         #region -------------------------------------------------------> DataI
-        dataI = self.rObj.GetDataUser(section, dateI.GetText())
+        dataI = self.rObj.GetDataUser(section, dateI.GetText())                 # type: ignore
         #endregion ----------------------------------------------------> DataI
 
         #region --------------------------------------------------> Create Tab

@@ -55,13 +55,15 @@ class Configuration():
     winNumber:dict = field(default_factory=lambda: {})                          # Keys: Windows ID - Values: Total number of opened windows, except conf win
     dtFormat:str   = '%Y%m%d-%H%M%S'                                            # Date Time format
     #------------------------------> Name & Title
-    nwDef:str           = 'Name Default Window'
-    ndResControlExp:str = 'Results & Control Experiments'
-    ntDef:str           = 'Name Default Tab'
-    npDef:str           = 'Name Default Pane'
-    tTabDef:str         = 'Tab'
-    tPaneConf:str       = 'Configuration Options'
-    tListPane:str       = 'Data File Content'
+    nwDef:str                = 'Name Default Window'
+    ndResControlExp:str      = 'Results & Control Experiments'
+    ntDef:str                = 'Name Default Tab'
+    npDef:str                = 'Name Default Pane'
+    npListCtrlSearchPlot:str = 'ListCtrlSearchPlot'
+    npNPlot:str              = 'NPlot'
+    tTabDef:str              = 'Tab'
+    tPaneConf:str            = 'Configuration Options'
+    tListPane:str            = 'Data File Content'
     #------------------------------> Label for Widgets
     lmNatSeq:str        = 'Native Sequence'                                     # lm: Label for wx.MenuItem
     lBtnTypeResCtrl:str = 'Type Values'                                         # lBtn: Label for wx.Button
@@ -173,7 +175,8 @@ class Configuration():
     #------------------------------> Files
     fConfig:Path = Path.home() / '.umsap_config.json'
     #------------------------------> Sizes
-    sWinFull:tuple[int,int] = (990, 775)                                        # Full size window
+    sWinFull:tuple[int,int] = (990, 775)                                        # Full window size
+    sWinPlot:tuple[int,int] = (560, 560)                                        # Result window size
     sTc:tuple[int,int]      = (50, 22)                                          # wx.TextCtrl
     sLCtrlColI:list[int]    = field(default_factory=lambda: [50, 150])          # Size for # Name columns in a wx.ListCtrl
     #------------------------------> File Extensions
