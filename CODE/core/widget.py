@@ -479,8 +479,6 @@ class ButtonRun():
             Run the actual analysis. Override as needed.
         WriteOutput()
             Write output files. Override as needed.
-        LoadResults()
-            Load results. Override as needed.
         EndRun()
             Restart GUI and variables. Override as needed.
     """
@@ -571,12 +569,6 @@ class ButtonRun():
             return False
         #endregion ---------------------------------------------> Write output
 
-        #region ------------------------------------------------> Load results
-        if not self.LoadResults():
-            wx.CallAfter(self.RunEnd)
-            return False
-        #endregion ---------------------------------------------> Load results
-
         #region --------------------------------------------------> Delta Time
         end = datetime.now()
         self.rDeltaT = datetime.utcfromtimestamp(
@@ -612,11 +604,6 @@ class ButtonRun():
 
     def WriteOutput(self) -> bool:
         """Write output."""
-        return True
-    #---
-
-    def LoadResults(self) -> bool:
-        """Load results."""
         return True
     #---
 

@@ -20,7 +20,8 @@ from typing  import Union, Optional
 
 import pandas as pd
 import numpy as np
-from scipy import stats
+from pubsub import pub
+from scipy  import stats
 
 import wx
 
@@ -30,6 +31,44 @@ from core import file      as cFile
 from core import statistic as cStatistic
 from main import menu      as mMenu
 #endregion ----------------------------------------------------------> Imports
+
+
+#region -------------------------------------------------------------> Methods
+def CreateResDataPrep(
+        parent:wx.Window,
+        title:str    = '',
+        tSection:str = '',
+        tDate:str    = '',
+    ) -> bool:
+    """Launch ResDataPrep from PubSub message.
+
+        Parameters
+        ----------
+        parent: wx.Window
+            Parent of the window.
+        title: str or None
+            Title of the window. Default is None.
+        tDate: str
+            Selected Date.
+        tSection: str
+            Section of the Analysis.
+
+        Return
+        ------
+        bool
+    """
+    #region --------------------------------------------------->
+    try:
+        ResDataPrep(parent,title=title, tSection=tSection, tDate=tDate)
+    except Exception as e:
+        msg = 'Failed to create the Data Preparation Result window.'
+        cWindow.Notification('errorU', msg=msg, tException=e, parent=parent)
+        return False
+    #endregion ------------------------------------------------>
+
+    return True
+#---
+#endregion ----------------------------------------------------------> Methods
 
 
 #region -------------------------------------------------------------> Classes
@@ -745,3 +784,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
     #endregion -----------------------------------------------> Manage Methods
 #---
 #endregion ----------------------------------------------------------> Classes
+
+#region ------------------------------------------------> PubSub Subscriptions
+pub.subscribe(CreateResDataPrep, mConfig.data.psResDataPrep)
+#endregion ---------------------------------------------> PubSub Subscriptions

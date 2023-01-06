@@ -49,7 +49,7 @@ class ToolCorrA(cMenu.BaseMenuMainResult):
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance Setup
-    def __init__(self, menuData: dict) -> None:
+    def __init__(self, menuData:dict) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(menuData)

@@ -30,6 +30,8 @@ class Configuration():
     nTab:str  = 'Tab Data Preparation'                                          # Name of Config Tab
     nPane:str = 'Pane Data Preparation'                                         # Name of Config Panel
     tTab:str  = 'DataPrep'                                                      # Title of the tab in Main Window
+    #------------------------------> PubSub Message
+    psResDataPrep: str = 'data.ResDataPrep'
     #------------------------------> Normal distribution parameters
     Shift:str = '1.8'                                                           # Shifted center
     Width:str = '0.3'                                                           # Stdev

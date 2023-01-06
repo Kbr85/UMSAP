@@ -22,17 +22,18 @@ from pathlib import Path
 from typing  import Optional, Union, Callable
 
 import pandas as pd
+from pubsub import pub
 
 import wx
 import wx.lib.scrolledpanel as scrolled
 
 from config.config import config as mConfig
-from core import check     as cCheck
-from core import file      as cFile
-from core import method    as cMethod
-from core import validator as cValidator
-from core import widget    as cWidget
-from core import window    as cWindow
+from core   import check     as cCheck
+from core   import file      as cFile
+from core   import method    as cMethod
+from core   import validator as cValidator
+from core   import widget    as cWidget
+from core   import window    as cWindow
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -1166,29 +1167,18 @@ class BaseConfPanel(
         return self.WriteOutputData(stepDict)
     #---
 
-    def LoadResults(self) -> bool:
-        """Load output file.
-
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------------> Load
-        wx.CallAfter(self.rDlg.UpdateStG, self.cLPdLoad)
-        #------------------------------>
-        # wx.CallAfter(gMethod.LoadUMSAPFile, fileP=self.rDO['uFile'])
-        #endregion -----------------------------------------------------> Load
-
-        return True
-    #---
-
     def RunEnd(self) -> bool:
-        """Restart GUI and needed variables.
+        """Load Results, restart GUI and needed variables.
 
             Returns
             -------
             bool
         """
+        #region -------------------------------------------------------->
+        # Here to avoid circular imports problems and thread limitations.
+        pub.sendMessage('load_umsap', fileP=self.rDO['uFile'])
+        #endregion ----------------------------------------------------->
+
         #region ---------------------------------------> Dlg progress dialogue
         if not self.rMsgError:
             self.rDFile.append(self.rDO['uFile'])

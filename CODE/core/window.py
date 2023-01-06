@@ -19,6 +19,7 @@ from pathlib import Path
 from typing  import Optional, Union, Literal
 
 import pandas as pd
+from pubsub  import pub
 
 import wx
 from wx import aui
@@ -30,7 +31,6 @@ from core   import widget as cWidget
 from core   import pane   as cPane
 from core   import file   as cFile
 from result import file   as resFile
-from data   import window as dataWindow
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -403,34 +403,23 @@ class BaseWindowResult(BaseWindow):
         return True
     #---
 
-    def CheckDataPrep(self, tDate: str) -> bool:                                # pylint: disable=unused-argument
+    def CheckDataPrep(self) -> bool:
         """Launch the Check Data Preparation Window.
-
-            Parameters
-            ----------
-            tDate: str
-                Date + ID to find the analysis in the umsap file.
 
             Returns
             -------
             bool
         """
+        # PubSub is used here to avoid a cyclic import when launching
+        # dataWindow.ResDataPrep
         #region --------------------------------------------------->
-        try:
-            dataWindow.ResDataPrep(
-                self,
-                f'{self.GetTitle()} - {mConfig.data.nUtil}',
-                tSection = self.cSection,
-                tDate    = self.rDateC,
-            )
-        except Exception as e:
-            Notification(
-                'errorU',
-                msg        = 'Data Preparation window failed to launch.',
-                tException = e,
-                parent     = self,
-            )
-            return False
+        pub.sendMessage(
+            mConfig.data.psResDataPrep,
+            parent   = self,
+            title    = f'{self.GetTitle()} - {mConfig.data.nUtil}',
+            tSection = self.cSection,
+            tDate    = self.rDateC
+        )
         #endregion ------------------------------------------------>
 
         return True

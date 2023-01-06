@@ -18,6 +18,7 @@
 from pathlib import Path
 from typing  import Optional
 
+from pubsub import pub
 import wx
 
 from config.config import config as mConfig
@@ -62,8 +63,6 @@ def LoadUMSAPFile(
             return False
     else:
         tFileP = fileP
-
-    print(tFileP)
     #endregion -----------------------------------------> Get file from Dialog
 
     #region ----------------------------> Raise window if file is already open
@@ -90,4 +89,7 @@ def LoadUMSAPFile(
 
     return True
 #---
+
+
+pub.subscribe(LoadUMSAPFile, 'load_umsap')
 #endregion ----------------------------------------------------------> Methods

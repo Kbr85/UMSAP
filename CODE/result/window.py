@@ -23,13 +23,14 @@ import wx
 import wx.lib.agw.customtreectrl as wxCT
 
 from config.config import config as mConfig
-from core   import file   as cFile
-from core   import method as cMethod
-from core   import window as cWindow
-from main   import menu   as mMenu
-from main   import window as mWindow
-from result import file   as resFile
-from corr   import window as corrWindow
+from core     import file   as cFile
+from core     import method as cMethod
+from core     import window as cWindow
+from main     import menu   as mMenu
+from main     import window as mWindow
+from result   import file   as resFile
+from corr     import window as corrWindow
+from dataprep import window as dataWindow
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -75,7 +76,7 @@ class UMSAPControl(cWindow.BaseWindow):
     #------------------------------>
     dPlotMethod = { # Methods to create plot windows
         mConfig.corr.nUtil : corrWindow.ResCorrA,
-        # mConfig.nuDataPrep: WindowResDataPrep,
+        mConfig.data.nUtil : dataWindow.ResDataPrep,
         # mConfig.nmProtProf: WindowResProtProf,
         # mConfig.nmLimProt : WindowResLimProt,
         # mConfig.nmTarProt : WindowResTarProt,
