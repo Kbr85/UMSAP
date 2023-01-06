@@ -22,13 +22,6 @@ from typing  import Literal
 
 
 #region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
-#region -------------------------------------------------------------> Windows
-#------------------------------> Number of windows for screen positioning
-# Keys: Windows ID - Values: Total number of opened windows, except conf win
-winNumber = {}
-#endregion ----------------------------------------------------------> Windows
-
-
 #region ---------------------------------------------------------------> Names
 #------------------------------> Windows
 nwCorrAPlot     = 'CorrAPlot'
@@ -55,9 +48,6 @@ nuCEvol    = 'Cleavage Evolution'
 
 
 #region ------------------------------------> Keywords for Menu - Method Links
-#------------------------------> Tool Menu for UMSAPCtrl
-kwToolUMSAPCtrlAddDelExp = 'ToolUMSAPCtrl Add Del Export Analysis'
-kwToolUMSAPCtrlReload    = 'ToolUMSAPCtrl Reload File'
 #------------------------------> Tool Menu for Plot Window. General Items
 kwToolExpSeq             = 'GeneralTool Export Sequence'
 kwToolExportDataFiltered = 'GeneralTool Export Filtered Data'
@@ -92,9 +82,6 @@ lFilFCLog    = 'Log2FC'
 lFilPVal     = 'P Val'
 lFilZScore   = 'Z Score'
 #------------------------------> wx.Menu
-lmToolUMSAPCtrlAdd = 'Add Analysis'
-lmToolUMSAPCtrlDel = 'Delete Analysis'
-lmToolUMSAPCtrlExp = 'Export Analysis'
 lmCorrASelCol      = 'Select Columns'
 lmCorrAAllCol      = 'All Columns'
 #endregion -----------------------------------------------------------> Labels

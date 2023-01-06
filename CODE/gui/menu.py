@@ -27,58 +27,6 @@ import gui.method    as gMethod
 
 
 #region ----------------------------------------------------> Individual menus
-class MenuToolFileControl(BaseMenu):
-    """Tool menu for the UMSAP file control window"""
-    #region -----------------------------------------------------> Class Setup
-    #------------------------------> Label
-    cLAdd    = mConfig.lmToolUMSAPCtrlAdd
-    cLDel    = mConfig.lmToolUMSAPCtrlDel
-    cLExp    = mConfig.lmToolUMSAPCtrlExp
-    cLUpdate = 'Reload File'
-    #------------------------------> Values
-    cVAddDelExp = mConfig.kwToolUMSAPCtrlAddDelExp
-    cVUpdate    = mConfig.kwToolUMSAPCtrlReload
-    #endregion --------------------------------------------------> Class Setup
-
-    #region --------------------------------------------------> Instance setup
-    def __init__(self, *args, **kwargs) -> None:                                # pylint: disable=unused-argument
-        """*args and **kwargs are needed to use this menu with ToolMenuBar.
-            All of them are ignored here.
-        """
-        #region -----------------------------------------------> Initial Setup
-        super().__init__()
-        #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------> Menu Items
-        self.miAddData = self.Append(-1, f'{self.cLAdd}\tCtrl+A')
-        self.AppendSeparator()
-        self.miDelData = self.Append(-1, f'{self.cLDel}\tCtrl+X')
-        self.AppendSeparator()
-        self.miExpData = self.Append(-1, f'{self.cLExp}\tCtrl+E')
-        self.AppendSeparator()
-        self.miUpdateFile = self.Append(-1, f'{self.cLUpdate}\tCtrl+U')
-        #endregion -----------------------------------------------> Menu Items
-
-        #region -------------------------------------------------------> Links
-        self.rIDMap = {
-            self.miAddData.GetId()   : self.cVAddDelExp,
-            self.miDelData.GetId()   : self.cVAddDelExp,
-            self.miExpData.GetId()   : self.cVAddDelExp,
-            self.miUpdateFile.GetId(): self.cVUpdate,
-        }
-        #endregion ----------------------------------------------------> Links
-
-        #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miAddData)
-        self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miDelData)
-        self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=self.miExpData)
-        self.Bind(wx.EVT_MENU, self.OnMethod,      source=self.miUpdateFile)
-        #endregion -----------------------------------------------------> Bind
-    #---
-    #endregion -----------------------------------------------> Instance setup
-#---
-
-
 class MenuToolCorrA(BaseMenuMainResult):
     """Creates the Tools menu for a Correlation Analysis Plot window
 

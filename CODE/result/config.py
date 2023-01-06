@@ -29,6 +29,13 @@ class Configuration():
     nwUMSAPControl:str = 'Window UMSAP Control'                                 # Name of window
     #------------------------------> Window Trackers
     winUMSAP:dict = field(default_factory=lambda: {})                           # Keys: UMSAP File path - Values: Reference to control window
+    #------------------------------> Labels
+    lmToolUMSAPCtrlAdd:str = 'Add Analysis'                                     # lm: Label for wx.MenuItem
+    lmToolUMSAPCtrlDel:str = 'Delete Analysis'
+    lmToolUMSAPCtrlExp:str = 'Export Analysis'
+    #------------------------------> Key words for Menu
+    kwToolUMSAPCtrlAddDelExp:str = 'ToolUMSAPCtrl Add Del Export Analysis'
+    kwToolUMSAPCtrlReload:str    = 'ToolUMSAPCtrl Reload File'
     #------------------------------> Converter for user options
     converter:dict = field(default_factory=lambda: {})
     #endregion ------------------------------------------------------> Options

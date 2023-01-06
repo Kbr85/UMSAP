@@ -21,6 +21,7 @@ from config.config import config as mConfig
 from core   import menu   as cMenu
 from main   import window as mWindow
 from help   import menu   as hMenu
+from result import menu   as resMenu
 from result import method as resMethod
 #endregion ----------------------------------------------------------> Imports
 
@@ -231,7 +232,7 @@ class MenuBarTool(MenuBarMain):
     """
     #region -----------------------------------------------------> Class Setup
     dTool = { # Key are window name and values the corresponding tool menu
-        # mConfig.nwUMSAPControl : MenuToolFileControl,
+        mConfig.res.nwUMSAPControl : resMenu.ToolUmsapControl,
         # mConfig.nwCorrAPlot    : MenuToolCorrA,
         # mConfig.nwCheckDataPrep: MenuToolDataPrep,
         # mConfig.nwProtProf     : MenuToolProtProf,
@@ -245,7 +246,7 @@ class MenuBarTool(MenuBarMain):
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------- Instance Setup
-    def __init__(self, cName: str, menuData: dict={}) -> None:                  # pylint: disable=dangerous-default-value
+    def __init__(self, cName:str, menuData:dict={}) -> None:                    # pylint: disable=dangerous-default-value
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__()

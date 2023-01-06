@@ -25,6 +25,7 @@ from config.config import config as mConfig
 from core import file   as cFile
 from core import window as cWindow
 from help import pane   as hPane
+from main import menu   as mMenu
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -83,6 +84,11 @@ class WindowAbout(cWindow.BaseWindow):
         self.sSizer.Add(self.wText,      1, wx.EXPAND|wx.ALL, 5)
         self.sSizer.Add(self.sBtn,       0, wx.EXPAND|wx.ALL, 5)
         #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Menu
+        self.mBar = mMenu.MenuBarTool(self.cName)
+        self.SetMenuBar(self.mBar)
+        #endregion -----------------------------------------------------> Menu
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_BUTTON, self.OnButtonClose, source=self.wBtn)

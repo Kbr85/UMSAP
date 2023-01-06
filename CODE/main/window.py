@@ -86,7 +86,7 @@ class WindowMain(cWindow.BaseWindow):
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Menu
-        self.mBar = mMenu.MenuBarTool(self.cName, {})
+        self.mBar = mMenu.MenuBarTool(self.cName)
         self.SetMenuBar(self.mBar)
         #endregion -----------------------------------------------------> Menu
 
@@ -196,7 +196,7 @@ class WindowMain(cWindow.BaseWindow):
         pageC = self.wNotebook.GetPageCount() - 1
         #------------------------------> Update tabs & close buttons
         if pageC == 1:
-            #------------------------------> Remove close button from Start tab
+            #-----------------------------> Remove close button from Start tab
             if (win := self.FindWindowByName(mConfig.main.ntStart)) is not None:
                 self.wNotebook.SetCloseButton(
                     self.wNotebook.GetPageIndex(win),
