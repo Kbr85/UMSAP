@@ -25,7 +25,6 @@ from typing  import Literal
 #region ---------------------------------------------------------------> Names
 #------------------------------> Windows
 nwProtProf      = 'ProtProfPlot'
-nwLimProt       = 'LimProtPlot'
 nwTarProt       = 'TarProtPlot'
 nwAAPlot        = 'AAPlot'
 nwHistPlot      = 'HistPlot'
@@ -43,11 +42,7 @@ nuCEvol    = 'Cleavage Evolution'
 
 #region ------------------------------------> Keywords for Menu - Method Links
 #------------------------------> Tool Menu for Plot Window. General Items
-kwToolExpSeq             = 'GeneralTool Export Sequence'
 kwToolExportDataFiltered = 'GeneralTool Export Filtered Data'
-#------------------------------> Tool Menu for LimProt
-kwToolLimProtBandLane = 'ToolLimProt Band/Lane Sel'
-kwToolLimProtShowAll  = 'ToolLimProt Show All'
 #------------------------------> Tool Menu for AA
 kwToolAAExp = 'ToolAA AA'
 kwToolAAPos = 'ToolAA Pos'
@@ -89,11 +84,6 @@ oIntensities = {
 litStartEnd     = Literal['end', 'start']
 litTestSide     = Literal['ts', 's', 'l']
 #endregion -----------------------------------------------------> Literal
-
-
-#region -----------------------------------------------------> DF Column names
-dfcolSeqNC              = ['Sequence', 'Nterm', 'Cterm', 'NtermF', 'CtermF']
-#endregion --------------------------------------------------> DF Column names
 
 
 #region -----------------------------------------------------> Important Lists
@@ -140,14 +130,9 @@ sWinModPlot = (1100, 625)
 
 #region ---------------------------------------------> CONFIGURABLE PARAMETERS
 #region --------------------------------------------------------------> Colors
-colorFragments = [
-    '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
-    '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e',
-]
+
 
 confColor = { # Colors for the app
-    'RecProt' : 'gray',
-    'NatProt' : '#c94c4c',
     nwProtProf : {
         'Vol'    : ['#ff3333', '#d3d3d3', '#3333ff'],
         'VolSel' : '#6ac653',

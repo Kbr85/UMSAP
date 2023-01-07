@@ -18,7 +18,8 @@
 from pathlib import Path
 from typing  import Optional, Union, Literal
 
-import pandas as pd
+import matplotlib.patches as mpatches
+import pandas             as pd
 from pubsub  import pub
 
 import wx
@@ -886,6 +887,547 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
         return True
     #---
     #endregion ------------------------------------------------> Class Methods
+#---
+
+
+class BaseWindowResultListText2Plot(BaseWindowResultListText):
+    """Base class to create a window like Limited Proteolysis.
+
+        Parameters
+        ----------
+        parent: wx.Window or None
+            Parent of the window. Default is None.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent:Optional[wx.Window]=None) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        #------------------------------> Labels
+        self.cLPaneMain = getattr(self, 'cLPaneMain', 'Protein Fragments')
+        self.cLPaneSec  = getattr(self, 'cLPaneSec', 'Gel Representation')
+        self.cLPaneText = getattr(self, 'cLPaneText', 'Selection Details')
+        self.cLPaneList = getattr(self, 'cLPaneList', 'Peptide List')
+        self.cLCol      = getattr(self, 'cLCol', ['#', 'Peptides'])
+        self.cImgName   = getattr(self, 'cImgName', {})
+        #------------------------------>
+        self.cGelLineWidth = getattr(self, 'cGelLineWidth', 0.5)
+        #------------------------------> Hints
+        self.cHSearch = getattr(self, 'cHSearch', 'Peptides')
+        #------------------------------>
+        super().__init__(parent)
+        #------------------------------>
+        dKeyMethod = {
+            mConfig.core.kwExpImg   : self.ExportImg,
+            mConfig.core.kwZoomReset: self.ZoomReset,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wPlot = {
+            'Main' : cWidget.MatPlotPanel(self),
+            'Sec'  : cWidget.MatPlotPanel(self),
+        }
+        #endregion --------------------------------------------------> Widgets
+
+        #region ---------------------------------------------------------> AUI
+        self._mgr.AddPane(
+            self.wPlot['Main'],
+            aui.AuiPaneInfo(
+                ).Center(
+                ).Caption(
+                    self.cLPaneMain
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------>
+        self._mgr.AddPane(
+            self.wPlot['Sec'],
+            aui.AuiPaneInfo(
+                ).Bottom(
+                ).Layer(
+                    0
+                ).Caption(
+                    self.cLPaneSec
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------>
+        self._mgr.AddPane(
+            self.wText,
+            aui.AuiPaneInfo(
+                ).Bottom(
+                ).Layer(
+                    0
+                ).Caption(
+                    self.cLPaneText
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------>
+        self._mgr.AddPane(
+            self.wLC,
+            aui.AuiPaneInfo(
+                ).Left(
+                ).Layer(
+                    2
+                ).Caption(
+                    self.cLPaneList
+                ).Floatable(
+                    b=False
+                ).CloseButton(
+                    visible=False
+                ).Movable(
+                    b=False
+                ).PaneBorder(
+                    visible=True,
+            ),
+        )
+        #------------------------------>
+        self._mgr.Update()
+        #endregion ------------------------------------------------------> AUI
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Event Methods
+    def ExportImg(self, tKey: str) -> bool:
+        """Save an image of the selected plot.
+
+            Parameters
+            ----------
+            tKey: str
+                Key in self.wPlot
+
+            Returns
+            -------
+            bool
+        """
+        return self.wPlot[tKey].SaveImage(
+            ext=mConfig.core.elMatPlotSaveI, parent=self)
+    #---
+
+    def ZoomReset(self, tKey: str) -> bool:
+        """Reset the Zoom of the selected plot.
+
+            Parameters
+            tKey: str
+                Key in self.wPlot.
+
+            Returns
+            -------
+            bool
+        """
+        return self.wPlot[tKey].ZoomResetPlot()
+    #---
+
+    def ExportImgAll(self) -> bool:
+        """Export all plots to a pdf image.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Dlg window
+        dlg = DirSelect(parent=self)
+        #endregion -----------------------------------------------> Dlg window
+
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            #------------------------------> Export
+            try:
+                for k, v in self.wPlot.items():
+                    fPath = p / self.cImgName[k].format(self.rDateC)
+                    #------------------------------> Write
+                    v.rFigure.savefig(fPath)
+            except Exception as e:
+                Notification(
+                    'errorF',
+                    msg        = self.cMsgExportFailed.format('Images'),
+                    tException = e,
+                    parent     = self,
+                )
+        else:
+            pass
+        #endregion ------------------------------------------------> Get Path
+
+        dlg.Destroy()
+        return True
+    #---
+
+    def ZoomResetAll(self) -> bool:
+        """Reset the zoom of all plots in the window.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        for v in self.wPlot.values():
+            v.ZoomResetPlot()
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+#---
+
+
+class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
+    """Base Window for results showing a Fragments panel.
+
+        Parameters
+        ----------
+        parent: wx.Window or None
+            Parent of the window. Default None
+        menuData : dict
+            Data to build the Tool menu of the window. See structure in child
+            class.
+    """
+    #region -----------------------------------------------------> Class Setup
+    cCNatProt = mConfig.core.cNatProt
+    cCRecProt = mConfig.core.cRecProt
+    #endregion --------------------------------------------------> Class Setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent:Optional[wx.Window]=None) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cSpot = getattr(self, 'cSpot', mConfig.core.cFragments)
+        #------------------------------>
+        self.rIdxP = getattr(self, 'rIdxP', pd.IndexSlice[:,:,'Ptost'])
+        self.rIdxSeqNC = getattr(
+            self, 'rIdxSeqNC', pd.IndexSlice[mConfig.core.dfcolSeqNC,:,:])
+        self.rAlpha       = getattr(self, 'rAlpha', 0.05)
+        self.rFragSelLine = None
+        self.rFragments   = {}
+        self.rProtLoc     = []
+        self.rProtLength  = None
+        self.rPeptide     = None
+        self.rFragSelC    = [None, None, None]
+        self.rRectsFrag   = []
+        #------------------------------>
+        super().__init__(parent)
+        #------------------------------>
+        dKeyMethod = {
+            mConfig.core.kwExpSeq : self.SeqExport,
+        }
+        self.dKeyMethod = self.dKeyMethod | dKeyMethod
+        #endregion --------------------------------------------> Initial Setup
+
+        #region --------------------------------------------------------> Bind
+        self.wPlot['Main'].rCanvas.mpl_connect(
+            'pick_event', self.OnPickFragment)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def GetDF4FragmentSearch(self) -> pd.DataFrame:
+        """Get the pd.Dataframe needed to create the fragments.
+
+            Returns
+            -------
+            pd.DataFrame
+            Seq Nrec Crec Nnat Cnat Col1 Col2 ColN
+
+            Notes
+            -----
+            Col1 to ColN is expected to hold the P values from the analysis.
+        """
+        a = self.rDf.loc[:,self.rIdxSeqNC]                                      # type: ignore
+        b = self.rDf.loc[:,self.rIdxP]                                          # type: ignore
+
+        return pd.concat([a,b], axis=1)
+    #---
+
+    def SetEmptyFragmentAxis(self) -> bool:
+        """Set the axis for an empty fragment state.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        if self.rFragSelLine is not None:
+            self.rFragSelLine[0].remove()
+        #------------------------------>
+        self.rFragSelLine = None
+        self.rFragSelC    = [None, None, None]
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        self.wPlot['Main'].rAxes.clear()
+        self.wPlot['Main'].rAxes.set_xticks([])
+        self.wPlot['Main'].rAxes.set_yticks([])
+        self.wPlot['Main'].rAxes.tick_params(length=0)
+        self.wPlot['Main'].rAxes.spines['top'].set_visible(False)
+        self.wPlot['Main'].rAxes.spines['right'].set_visible(False)
+        self.wPlot['Main'].rAxes.spines['bottom'].set_visible(False)
+        self.wPlot['Main'].rAxes.spines['left'].set_visible(False)
+        self.wPlot['Main'].rCanvas.draw()
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+
+    def FillListCtrl(self) -> bool:
+        """Update the protein list for the given analysis.
+
+            Attributes
+            ----------
+            tIDX: pd.IndexSlice
+                To select columns used to filter self.rDf by alpha value
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Entries are read from self.rDf
+        """
+        #region --------------------------------------------------> Delete old
+        self.wLC.wLCS.wLC.DeleteAllItems()
+        #endregion -----------------------------------------------> Delete old
+
+        #region ----------------------------------------------------> Get Data
+        col = [self.rDf.columns.get_loc(c) for c in self.rDf.loc[:,self.rIdxP].columns.values]      # type: ignore
+        data = cMethod.DFFilterByColN(self.rDf, col, self.rAlpha, 'le')
+        data = data.iloc[:,0:2].reset_index(drop=True)
+        data.insert(0, 'kbr', data.index.values.tolist())
+        data = data.astype(str)
+        data = data.iloc[:,0:2].values.tolist()
+        #endregion -------------------------------------------------> Get Data
+
+        #region ------------------------------------------> Set in wx.ListCtrl
+        self.wLC.wLCS.wLC.SetNewData(data)
+        #endregion ---------------------------------------> Set in wx.ListCtrl
+
+        #region ---------------------------------------> Update Protein Number
+        self._mgr.GetPane(self.wLC).Caption(f'{self.cLPaneList} ({len(data)})')
+        self._mgr.Update()
+        #endregion ------------------------------------> Update Protein Number
+
+        return True
+    #---
+
+    def DrawFragments(self, tKeyLabel:dict) -> bool:
+        """Draw the fragments associated with the given keys.
+
+            Parameters
+            ----------
+            tKeyLabel: dict
+                Keys are the key to plot and values the associated labels.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        self.rRectsFrag = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ----------------------------------------------------> Set Axis
+        self.SetFragmentAxis()
+        #endregion -------------------------------------------------> Set Axis
+
+        #region ---------------------------------------------------> Fragments
+        nc = len(self.cSpot)
+        #------------------------------>
+        k = 1
+        for k,v in enumerate(tKeyLabel, start=1):
+            for j,f in enumerate(self.rFragments[v]['Coord']):
+                self.rRectsFrag.append(mpatches.Rectangle(
+                    (f[0], k-0.2),
+                    (f[1]-f[0]),
+                    0.4,
+                    picker    = True,
+                    linewidth = self.cGelLineWidth,
+                    facecolor = self.cSpot[(k-1)%nc],
+                    edgecolor = 'black',
+                    label     = f'{tKeyLabel[v]}.{j}',
+                ))
+                self.wPlot['Main'].rAxes.add_patch(self.rRectsFrag[-1])
+        #endregion ------------------------------------------------> Fragments
+
+        #region -----------------------------------------------------> Protein
+        self.DrawProtein(k+1)
+        #endregion --------------------------------------------------> Protein
+
+        #region --------------------------------------------------------> Draw
+        self.wPlot['Main'].ZoomResetSetValues()
+
+        self.wPlot['Main'].rCanvas.draw()
+        #endregion -----------------------------------------------------> Draw
+
+        #region --------------------------------------------------->
+        if self.rPeptide is not None:
+            self.ShowPeptideLoc()
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+
+    def SetFragmentAxis(self, showAll: list[str]=[]) -> bool:                   # pylint: disable=unused-argument, dangerous-default-value
+        """Set the axis of the Fragments plot.
+
+            Parameters
+            ----------
+            showAll: list[str]
+                List of labels when selecting the entire gel.
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
+    def SeqExport(self) -> bool:
+        """Export the recombinant sequence
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
+    def OnPickFragment(self, event) -> bool:                     # pylint: disable=dangerous-default-value, unused-argument
+        """Display info about the selected fragment.
+
+            Parameters
+            ----------
+            event: matplotlib pick event.
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
+    def ShowPeptideLoc(self) -> bool:
+        """Show the location of the selected peptide.
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
+    def DrawProtein(self, y: int) -> bool:
+        """Draw the protein fragment
+
+            Parameters
+            ----------
+            y: int
+                Y coordinate to draw the protein.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        recProt = []
+        natProt = []
+        #endregion ------------------------------------------------> Variables
+
+        #region --------------------------------------------------->
+        if self.rProtLoc[0] is not None:
+            #------------------------------>
+            natProt.append(self.rProtLoc)
+            a, b = self.rProtLoc
+            #------------------------------>
+            if a == 1 and b == self.rProtLength:
+                pass
+            elif a == 1 and b < self.rProtLength:
+                recProt.append((b, self.rProtLength))
+            elif a > 1 and b == self.rProtLength:
+                recProt.append((1, a))
+            else:
+                recProt.append((1, a))
+                recProt.append((b, self.rProtLength))
+        else:
+            recProt.append((1, self.rProtLength))
+        #endregion ------------------------------------------------>
+
+        #region ---------------------------------------------------> Draw Rect
+        for r in natProt:
+            self.wPlot['Main'].rAxes.add_patch(mpatches.Rectangle(
+                (r[0], y-0.2),
+                r[1] - r[0],
+                0.4,
+                edgecolor = 'black',
+                facecolor = self.cCNatProt,
+            ))
+        #------------------------------>
+        for r in recProt:
+            self.wPlot['Main'].rAxes.add_patch(mpatches.Rectangle(
+                (r[0], y-0.2),
+                r[1] - r[0],
+                0.4,
+                edgecolor = 'black',
+                facecolor = self.cCRecProt,
+            ))
+        #endregion ------------------------------------------------> Draw Rect
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+
+    #region ---------------------------------------------------> Event Methods
+    def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:
+        """Process a wx.ListCtrl select event.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        self.rLCIdx = self.wLC.wLCS.wLC.GetFirstSelected()
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        self.rPeptide = self.wLC.wLCS.wLC.GetItemText(self.rLCIdx, col=1)
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        self.ShowPeptideLoc()
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
 #---
 #endregion -----------------------------------------------------------> Frames
 

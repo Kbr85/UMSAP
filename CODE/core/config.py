@@ -169,6 +169,7 @@ class Configuration():
     kwExpData:str      = 'General Tool Export Data'
     kwExpImg:str       = 'General Tool Export Image One'
     kwExpImgAll:str    = 'General Tool Export Image'
+    kwExpSeq:str       = 'GeneralTool Export Sequence'
     kwWinUpdate:str    = 'General Tool Update Result Window'
     kwZoomReset:str    = 'General Tool Reset Zoom One'
     kwZoomResetAll:str = 'General Tool Reset Zoom All'
@@ -200,6 +201,8 @@ class Configuration():
     urlTutorial = f"{urlHome}/tutorial/2-2-X"
     urlUpdate   = f"{urlHome}/page/release-notes"
     #------------------------------> List
+    dfcolSeqNC:list[str] = field(default_factory=lambda:                        # Column names in result dataframe
+        ['Sequence', 'Nterm', 'Cterm', 'NtermF', 'CtermF'])
     ltDPKeys:list[str] = field(default_factory=lambda: ['dfF', 'dfT', 'dfN', 'dfIm'])
     lAA1:list[str] = field(default_factory=lambda: [                            # AA one letter codes
         'A', 'I', 'L', 'V', 'M', 'F', 'W', 'Y', 'R', 'K', 'D', 'E', 'C', 'Q',
@@ -263,7 +266,14 @@ class Configuration():
     checkUpdate:bool    = True                                                  # True Check, False No check
     DPI:int             = 100                                                   # DPI for plot images
     MatPlotMargin:float = 0.025                                                 # Margin for the axes range
-    cZebra: str         = '#ffe6e6'                                             # Zebra style in wx.ListCrl
+    #--------------> Colors
+    cZebra: str          = '#ffe6e6'                                            # Zebra style in wx.ListCrl
+    cRecProt:str         = 'gray'                                               # Color in Fragment representation
+    cNatProt:str         = '#c94c4c'                                            # Color in Fragment representation
+    cFragments:list[str] = field(default_factory=lambda: [                      # Color for Exp/Cond in Fragments
+        '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
+        '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e',
+    ])
     #------------------------------> Converter for user options
     converter:dict = field(default_factory=lambda: {
         'checkUpdate'  : bool,

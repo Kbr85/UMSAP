@@ -236,54 +236,6 @@ class MenuToolProtProfLockPlotScale(BaseMenu):
 #---
 
 
-class MenuToolLimProtClearSel(BaseMenu):
-    """Clear the selection in a LimProt Result Window."""
-    #region -----------------------------------------------------> Class Setup
-    cLPept    = cVPept    = 'Peptide'
-    cLFrag    = cVFrag    = 'Fragment'
-    cLGelSpot = cVGelSpot = 'Gel Spot'
-    cLBL      = cVBL      = 'Band/Lane'
-    cLAll     = cVAll     = 'All'
-    #endregion --------------------------------------------------> Class Setup
-
-    #region --------------------------------------------------> Instance setup
-    def __init__(self) -> None:
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        super().__init__()
-        #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------> Menu Items
-        self.miNoPept = self.Append(-1, self.cLPept)
-        self.miNoFrag = self.Append(-1, self.cLFrag)
-        self.miNoGel  = self.Append(-1, self.cLGelSpot)
-        self.miNoBL   = self.Append(-1, self.cLBL)
-        self.AppendSeparator()
-        self.miNoSel  = self.Append(-1, f'{self.cLAll}\tCtrl+K')
-        #endregion -----------------------------------------------> Menu Items
-
-        #region --------------------------------------------------->
-        self.rIDMap = {
-            self.miNoPept.GetId(): self.cVPept,
-            self.miNoFrag.GetId(): self.cVFrag,
-            self.miNoGel.GetId() : self.cVGelSpot,
-            self.miNoBL.GetId()  : self.cVBL,
-            self.miNoSel.GetId() : self.cVAll,
-        }
-        #endregion ------------------------------------------------>
-
-        #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoPept)
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoFrag)
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoGel)
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoBL)
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miNoSel)
-        #endregion -----------------------------------------------------> Bind
-    #---
-    #endregion -----------------------------------------------> Instance setup
-#---
-
-
 class MenuToolTarProtClearSel(BaseMenu):
     """Clear the selection in a TarProtRes Window."""
     #region -----------------------------------------------------> Class Setup
@@ -832,80 +784,6 @@ class MenuToolProtProfVolcanoPlotColorScheme(BaseMenu):
 
 
 #region -----------------------------------------------------------> Mix menus
-class MenuToolLimProt(BaseMenuMainResult):
-    """Tool menu for the Limited Proteolysis window.
-
-        Parameters
-        ----------
-        menuData: dict
-            Data needed to build the menu.
-            {'MenuDate' : [List of dates as str],}
-    """
-    #region ------------------------------------------------------> Class Setup
-    cLLaneSel   = 'Lane Selection Mode'
-    cLShowAll   = 'Show All'
-    cLFrag      = 'Fragments'
-    cLGel       = 'Gel'
-    cLClearSel  = 'Clear Selection'
-    cLExportSeq = 'Export Sequences'
-    #------------------------------>
-    cVBandLane  = mConfig.kwToolLimProtBandLane
-    cVShowAll   = mConfig.kwToolLimProtShowAll
-    cVExportSeq = mConfig.kwToolExpSeq
-    #endregion ---------------------------------------------------> Class Setup
-
-    #region --------------------------------------------------> Instance setup
-    def __init__(self, menuData: dict) -> None:
-        """ """
-        #region -----------------------------------------------> Initial Setup
-        super().__init__(menuData)
-        #endregion --------------------------------------------> Initial Setup
-
-        #region --------------------------------------------------> Menu Items
-        self.miBandLane = self.Append(
-            -1, f'{self.cLLaneSel}\tCtrl+L', kind=wx.ITEM_CHECK)
-        self.AppendSeparator()
-        #------------------------------>
-        self.miShowAll = self.Append(-1, f'{self.cLShowAll}\tCtrl+A')
-        self.AppendSeparator()
-        #------------------------------>
-        self.mFragmentMenu = BaseMenuMainResultSubMenu('Shift')
-        self.AppendSubMenu(self.mFragmentMenu, self.cLFrag)
-        self.AppendSeparator()
-        #------------------------------>
-        self.mGelMenu = BaseMenuMainResultSubMenu('Alt')
-        self.AppendSubMenu(self.mGelMenu, self.cLGel)
-        self.AppendSeparator()
-        #------------------------------>
-        self.mClearMenu = MenuToolLimProtClearSel()
-        self.AppendSubMenu(self.mClearMenu, self.cLClearSel)
-        self.AppendSeparator()
-        #------------------------------> Last Items
-        self.AddLastItems(False)
-        #------------------------------> Add Export Sequence
-        pos = self.FindChildItem(self.miSaveD.GetId())[1]
-        self.miSaveSeq = self.Insert(pos+2, -1, self.cLExportSeq)
-        #endregion -----------------------------------------------> Menu Items
-
-        #region ---------------------------------------------------> rKeyID
-        rIDMap = {
-            self.miBandLane.GetId(): self.cVBandLane ,
-            self.miShowAll.GetId() : self.cVShowAll  ,
-            self.miSaveSeq.GetId() : self.cVExportSeq,
-        }
-        self.rIDMap = self.rIDMap | rIDMap
-        #endregion ------------------------------------------------> rKeyID
-
-        #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnMethodLabelBool, source=self.miBandLane)
-        self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miShowAll)
-        self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miSaveSeq)
-        #endregion -----------------------------------------------------> Bind
-    #---
-    #endregion -----------------------------------------------> Instance setup
-#---
-
-
 class MenuToolTarProt(BaseMenuMainResult):
     """Tool menu for the Targeted Proteolysis window.
 

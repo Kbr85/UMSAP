@@ -19,6 +19,7 @@ import copy
 import itertools
 import traceback
 from datetime import datetime
+from operator import itemgetter
 from pathlib  import Path
 from typing   import Literal, Union, Optional, TYPE_CHECKING
 
@@ -879,5 +880,313 @@ def MatplotLibCmap(
     #endregion ---------------------------------------------------------> CMAP
 
     return newMap
+#---
+
+
+def Fragments(
+    df:'pd.DataFrame',
+    val:float,
+    comp:LIT_Comp,
+    protL:int,
+    protLoc:list[int],
+    ) -> dict:
+    """Creates the dict holding the fragments identified in the analysis.
+
+        Parameters
+        ----------
+        df: pd.DataFrame with the data from the analysis. The columns in df are
+            expected to be:
+            Seq Nrec Crec Nnat Cnat Exp1 Exp2 ...... ExpN
+            Seq Nrec Crec Nnat Cnat    P    P           P
+        val: float
+            Threshold value to filter df and identify relevant peptides
+        comp: str
+            One of 'lt', 'le', 'e', 'ge', 'gt'
+        protL: int
+            Length of recombinant protein.
+        protLoc: list[int]
+            Location of the native protein in the recombinant sequence
+
+        Returns
+        -------
+        dict:
+            {
+                'Exp1' : {
+                    'Coord' : [(x1, x2),...., (xN, xM)],
+                    'CoordN': [(x1, x2),.(NaN, NaN)..., (xN, xM)]
+                    'Seq'   : [Aligned Seq1, ...., Aligned SeqN],
+                    'SeqL   : [Flat List with Seqs1, ...., Flat List with SeqsN],
+                    'Np'    : [Number of peptides1, ...., NpN],
+                    'NpNat  : [Number of native peptides1, ...., NpNatN],
+                    'Nc'    : [Number of cleavages1, ...., NcN],
+                    'NcNat' : [Number of native cleavages1, ....., NcNatN],
+                    'NFrag' : (Number of fragments, Number of fragments Nat),
+                    'NcT'   : (Number of cleavages for the Exp as a whole,
+                               Number of cleavages for the Exp as a whole Nat),
+                },
+                'ExpN' : {},
+            }
+        - All list inside each Exp have the same length
+        - NFrag and NcT are tuples with two values each.
+        - Keys Exp1,...,ExpN are variables and depend on the module calling the
+        method.
+    """
+    # Test in test.unit.test_method.Test_Fragments
+    #region -------------------------------------------------------> Variables
+    dictO = {}
+    #endregion ----------------------------------------------------> Variables
+
+    #region --------------------------------------------------->
+    for c in range(5, df.shape[1]):
+        colK = str(df.columns.values[c])
+        #------------------------------> Prepare dictO
+        dictO[colK]           = {}
+        dictO[colK]['Coord']  = []
+        dictO[colK]['CoordN'] = []
+        dictO[colK]['Seq']    = []
+        dictO[colK]['SeqL']   = []
+        dictO[colK]['Np']     = []
+        dictO[colK]['NpNat']  = []
+        dictO[colK]['Nc']     = []
+        dictO[colK]['NcNat']  = []
+        #------------------------------> Filter df
+        dfE = DFFilterByColN(df, [c], val, comp)
+        #------------------------------> Total cleavages for the experiment
+        nctL    = []
+        nctLNat = []
+        #------------------------------> First row
+        if dfE.shape[0] > 0:
+            #------------------------------> Values from dfE
+            seq    = dfE.iat[0,0]
+            n      = dfE.iat[0,1]
+            c      = dfE.iat[0,2]
+            nf     = dfE.iat[0,3]
+            cf     = dfE.iat[0,4]
+            ncL    = []
+            ncLNat = []
+            #------------------------------>
+            seqL = [seq]
+            #------------------------------> Number of peptides
+            nP = 1
+            if pd.isna(nf) and pd.isna(cf):
+                npNat = 0
+            else:
+                npNat = 1
+            #------------------------------> Cleavages Rec
+            if n != 1:
+                ncL.append(n-1)
+                nctL.append(n-1)
+            if c != protL:
+                ncL.append(c)
+                nctL.append(c)
+            #------------------------------> Cleavages Nat
+            if not pd.isna(nf):
+                if nf != 1:
+                    ncLNat.append(nf-1)
+                    nctLNat.append(nf-1)
+            if not pd.isna(cf):
+                if cf != protL != protLoc[1]:
+                    ncLNat.append(cf)
+                    nctLNat.append(cf)
+        else:
+            dictO[colK]['NcT'] = []
+            dictO[colK]['NFrag'] = []
+            continue
+        #------------------------------> Other rows
+        for r in range(1, dfE.shape[0]):
+            #------------------------------> Values from dfE
+            seqC = dfE.iat[r,0]
+            nc   = dfE.iat[r,1]
+            cc   = dfE.iat[r,2]
+            ncf  = dfE.iat[r,3]
+            ccf  = dfE.iat[r,4]
+            if nc <= c:
+                #------------------------------>
+                seq = f'{seq}\n{(nc-n)*" "}{seqC}'
+                seqL.append(seqC)
+                #------------------------------> Number of peptides
+                nP = nP + 1
+                if not pd.isna(ncf) and not pd.isna(ccf):
+                    npNat = npNat + 1
+                #------------------------------> Cleavages Rec
+                if nc != 1:
+                    ncL.append(nc-1)
+                    nctL.append(nc-1)
+                if cc != protL:
+                    ncL.append(cc)
+                    nctL.append(cc)
+                #------------------------------> Cleavages Nat
+                if not pd.isna(ncf):
+                    if ncf != 1:
+                        ncLNat.append(nc-1)
+                        nctLNat.append(nc-1)
+                if not pd.isna(ccf):
+                    if ccf != protL != protLoc[1]:
+                        ncLNat.append(ccf)
+                        nctLNat.append(ccf)
+                #------------------------------> Update c residue
+                if cc > c:
+                    c = cc
+                    cf = ccf
+            else:
+                #------------------------------> Add Fragment
+                dictO[colK]['Coord'].append((n,c))
+                dictO[colK]['CoordN'].append((nf,cf))
+                dictO[colK]['Seq'].append(seq)
+                dictO[colK]['SeqL'].append(seqL)
+                dictO[colK]['Np'].append(nP)
+                dictO[colK]['NpNat'].append(npNat)
+                dictO[colK]['Nc'].append(len(set(ncL)))
+                dictO[colK]['NcNat'].append(len(set(ncLNat)))
+                #------------------------------> Start new Fragment
+                seq    = seqC
+                n      = nc
+                c      = cc
+                nf     = ncf
+                cf     = ccf
+                ncL    = []
+                ncLNat = []
+                #------------------------------>
+                seqL = [seqC]
+                #------------------------------> Number of peptides
+                nP   = 1
+                if pd.isna(nf) and pd.isna(cf):
+                    npNat = 0
+                else:
+                    npNat = 1
+                #------------------------------> Cleavages Rec
+                if n != 1:
+                    ncL.append(n-1)
+                    nctL.append(n-1)
+                if c != protL:
+                    ncL.append(c)
+                    nctL.append(c)
+                #------------------------------> Cleavages Nat
+                if not pd.isna(nf):
+                    if nf != 1:
+                        ncLNat.append(nf-1)
+                        nctLNat.append(nf-1)
+                if not pd.isna(cf):
+                    if cf != protL != protLoc[1]:
+                        ncLNat.append(cf)
+                        nctLNat.append(cf)
+        #------------------------------> Catch the last line
+        dictO[colK]['Coord'].append((n,c))
+        dictO[colK]['CoordN'].append((nf,cf))
+        dictO[colK]['Seq'].append(seq)
+        dictO[colK]['SeqL'].append(seqL)
+        dictO[colK]['Np'].append(nP)
+        dictO[colK]['NpNat'].append(npNat)
+        dictO[colK]['Nc'].append(len(set(ncL)))
+        dictO[colK]['NcNat'].append(len(set(ncLNat)))
+        #------------------------------>
+        dictO[colK]['NcT'] = [len(set(nctL)), len(set(nctLNat))]
+        #------------------------------>
+        nFragN = [x for x in dictO[colK]['CoordN'] if not pd.isna(x[0]) or not pd.isna(x[1])]
+        dictO[colK]['NFrag'] = [len(dictO[colK]['Coord']), len(nFragN)]
+    #endregion ------------------------------------------------>
+
+    return dictO
+#---
+
+
+def Rec2NatCoord(
+    coord:list[tuple[int,int]],
+    protLoc:tuple[int,int],
+    delta:int,
+    ) -> Union[list[tuple[int,int]], list[str]]:
+    """Translate residue numbers from the recombinant sequence to the native
+        sequence.
+
+        Parameters
+        ----------
+        coord: list of tuples(int, int)
+            Residue numbers in the recombinant sequence.
+        protLoc: tuple(int, int)
+            Location of the native protein in the recombinant sequence.
+        delta: int
+            Difference in residue numbers.
+
+        Returns
+        -------
+        list of tuples(int. int)
+            Residue number in the native sequence.
+
+        Notes
+        -----
+        Returns ['NA'] if delta is None or any of the protLoc items is None.
+
+        Examples
+        --------
+        >>> Rec2NatCoord([(1,42), (38, 50), (201, 211), (247, 263)], (10, 300)), 10)
+        >>> [(48, 60), (211, 221), (257, 273)]
+        >>> Rec2NatCoord([(1,42), (38, 50), (201, 211), (247, 263)], (100, 230)), 10)
+        >>> [(211, 221)]
+    """
+    # Test in test.unit.test_method.Test_Rec2NatCoord
+    #region ---------------------------------------------------> Return NA
+    if delta is None or protLoc[0] is None or protLoc[1] is None:
+        return ['NA']
+    #endregion ------------------------------------------------> Return NA
+
+    #region ---------------------------------------------------> Calc
+    listO = []
+    for a,b in coord:
+        if protLoc[0] <= a <= protLoc[1] and protLoc[0] <= b <= protLoc[1]:
+            listO.append((a+delta, b+delta))
+    #endregion ------------------------------------------------> Calc
+
+    return listO
+#---
+
+
+def MergeOverlappingFragments(
+    coord:list[tuple[int, int]],
+    delta:int=0,
+    ) -> list[tuple[int, int]]:
+    """Merge overlapping fragments in a list of fragments coordinates.
+
+        Parameters
+        ----------
+        coord: list[tuple[int, int]]
+            Fragment coordinates lists.
+        delta: int
+            To adjust the merging of adjacent fragments.
+
+        Returns
+        -------
+        list[tuple[int, int]]
+
+        Notes
+        -----
+        An empty list is returned if coord is empty.
+    """
+    # Test in test.unit.test_method.Test_MergeOverlappingFragments
+    #region ---------------------------------------------------> Variables
+    coordO = []
+    #endregion ------------------------------------------------> Variables
+
+    #region ------------------------------------------------------> Sort & Dup
+    coordS = sorted(list(set(coord)), key=itemgetter(0,1))
+    #endregion ---------------------------------------------------> Sort & Dup
+
+    #region -------------------------------------> Merge Overlapping Intervals
+    try:
+        a,b = coordS[0]
+    except IndexError:
+        return []
+    for ac,bc in coordS[1:]:
+        if ac <= b+delta:
+            if bc > b:
+                b = bc
+        else:
+            coordO.append((a,b))
+            a = ac
+            b = bc
+    #------------------------------> Catch the last one
+    coordO.append((a,b))
+    #endregion ----------------------------------> Merge Overlapping Intervals
+
+    return coordO
 #---
 #endregion -----------------------------------------------------------> Others

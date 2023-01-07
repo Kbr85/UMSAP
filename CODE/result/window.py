@@ -31,6 +31,7 @@ from main     import window as mWindow
 from result   import file   as resFile
 from corr     import window as corrWindow
 from dataprep import window as dataWindow
+from limprot  import window as limpWindow
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -78,7 +79,7 @@ class UMSAPControl(cWindow.BaseWindow):
         mConfig.corr.nUtil : corrWindow.ResCorrA,
         mConfig.data.nUtil : dataWindow.ResDataPrep,
         # mConfig.nmProtProf: WindowResProtProf,
-        # mConfig.nmLimProt : WindowResLimProt,
+        mConfig.limp.nMod : limpWindow.ResLimProt,
         # mConfig.nmTarProt : WindowResTarProt,
     }
     # #------------------------------>

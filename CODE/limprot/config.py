@@ -25,6 +25,7 @@ class Configuration():
     """Configuration for the limprot module"""
     #region ---------------------------------------------------------> Options
     nMod:str             = 'Limited Proteolysis'                                # Name of the Module
+    nwRes:str            = 'Window Result LimProt'                              # Name for the Result Window
     nTab:str             = 'LimProt Tab Configuration'                          # Name of the Config Tab
     nPane:str            = 'LimProt Pane Configuration'                         # Name of the Config Pane
     npResControlExp:str  = 'ResControlExp Pane LimProt'                         # Name of the ResCtrl Config Pane
@@ -32,6 +33,9 @@ class Configuration():
     #------------------------------> Label
     lStLane:str = 'Lanes'                                                       # lSt: LAbel for wx.StaticText
     lStBand:str = 'Bands'
+    #------------------------------> Keywords for wx.Menu
+    kwBandLane:str = 'ToolLimProt Band/Lane Sel'
+    kwShowAll:str  = 'ToolLimProt Show All'
     #------------------------------> DataFrame Columns
     dfcolFirstPart:list[str] = field(default_factory=lambda:
         ['Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF','CtermF', 'Delta'])

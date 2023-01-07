@@ -25,6 +25,7 @@ from help     import menu   as hMenu
 from main     import window as mWindow
 from result   import menu   as resMenu
 from result   import method as resMethod
+from limprot  import menu   as limpMenu
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -238,7 +239,7 @@ class MenuBarTool(MenuBarMain):
         mConfig.corr.nwRes         : corrMenu.ToolCorrA,
         mConfig.data.nwRes         : dataMenu.ToolDataPrep,
         # mConfig.nwProtProf     : MenuToolProtProf,
-        # mConfig.nwLimProt      : MenuToolLimProt,
+        mConfig.limp.nwRes         : limpMenu.ToolLimProt,
         # mConfig.nwTarProt      : MenuToolTarProt,
         # mConfig.nwAAPlot       : MenuToolAA,
         # mConfig.nwHistPlot     : MenuToolHist,
