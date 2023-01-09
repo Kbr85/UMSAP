@@ -40,6 +40,7 @@ if TYPE_CHECKING:
 LIT_NumType = Literal['int', 'float']
 LIT_CompEq  = Literal['e', 'ne']
 LIT_Comp    = Literal['lt', 'le', 'e', 'ge', 'gt']
+LIT_Region  = Literal['start', 'end']
 
 
 #region ------------------------------------------------------> String Methods
@@ -202,6 +203,56 @@ def StrSetMessage(start:str, end:str, link:str='\n\nFurther details:\n') -> str:
         return f"{start}{link}{end}"
     #------------------------------>
     return f"{start} {end}"
+#---
+
+
+def StrEqualLength(
+    strL:list[str],
+    char:str       = ' ',
+    loc:LIT_Region = 'end',
+    ) -> list[str]:
+    """Return a list in which every string element has the same length.
+
+        Parameters
+        ----------
+        strL: list[str]
+            String with different length.
+        char: str
+            Fill character. Default is empty space ' '.
+        loc: str
+            Add filling character to start or end of the strings.
+
+        Returns
+        -------
+        list[str]
+            String with the same length with the same original order.
+
+        Notes
+        -----
+        Filling characters are added at the end or start of each str.
+    """
+    # Test in test.unit.test_method.Test_StrEqualLength
+    #region ---------------------------------------------------> Variables
+    long = len(max(strL, key=len))
+    lOut = []
+    #endregion ------------------------------------------------> Variables
+
+    #region ---------------------------------------------------> Fill lOut
+    if loc == 'end':
+        for x in strL:
+            space = (long-len(x))*char
+            lOut.append(f'{x}{space}')
+    elif loc == 'start':
+        for x in strL:
+            space = (long-len(x))*char
+            lOut.append(f'{space}{x}')
+    else:
+        msg = mConfig.core.mNotImplementedFull.format(
+            loc, 'loc', LIT_Region)
+        raise ValueError(msg)
+    #endregion ------------------------------------------------> Fill lOut
+
+    return lOut
 #---
 
 

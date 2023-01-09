@@ -16,15 +16,22 @@
 
 #region -------------------------------------------------------------> Imports
 from collections import namedtuple
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 import numpy  as np
 import pandas as pd
+
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus      import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles    import getSampleStyleSheet, ParagraphStyle
 
 from config.config import config as mConfig
 from core     import method    as cMethod
 from core     import statistic as cStatistic
 from dataprep import method    as dataMethod
+
+if TYPE_CHECKING:
+    from pathlib import Path
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -340,16 +347,16 @@ def R2AA(
     #region ---------------------------------------------------> Fill
     idx = pd.IndexSlice
     for l in df.columns.get_level_values(0)[1:]:
-        seqDF = df[df[idx[l,'P']] < alpha].iloc[:,0].to_list()
+        seqDF = df[df[idx[l,'P']] < alpha].iloc[:,0].to_list()                  # type: ignore
         for s in seqDF:
             #------------------------------>
             n = seq.find(s)
             if n > 0:
-                dfO = AddNewAA(dfO, n, pos, seq, l)
+                dfO = AddNewAA(dfO, n, pos, seq, l)                             # type: ignore
             #------------------------------>
             c = n+len(s)
             if c < protL:
-                dfO = AddNewAA(dfO, c, pos, seq, l)
+                dfO = AddNewAA(dfO, c, pos, seq, l)                             # type: ignore
     #endregion ------------------------------------------------> Fill
 
     #region ---------------------------------------------------> Random Cleavage
@@ -373,7 +380,7 @@ def R2AA(
 
     for l in df.columns.get_level_values(0)[1:]:
         for p in dfO.loc[:,idx[l,:]].columns.get_level_values(1):               # type: ignore
-            dfO.at['Chi', idx[l,p]] = cStatistic.Test_chi(
+            dfO.at['Chi', idx[l,p]] = cStatistic.Test_chi(                      # type: ignore
                 g.loc[:,idx[[l,c],p]], alpha)[0]                                # type: ignore
     #endregion ------------------------------------------------> Group
 
@@ -644,5 +651,151 @@ def R2CEvol(df:pd.DataFrame, alpha:float, protL:list[int]) -> pd.DataFrame:
     #endregion ------------------------------------------------>
 
     return dfO
+#---
+
+
+def R2SeqAlignment(
+    df:pd.DataFrame,
+    alpha:float,
+    seqR:str,
+    fileP:'Path',
+    tLength:int,
+    seqN:str = '',
+    ) -> bool:
+    """Sequence Alignment for the TarProt Module.
+
+        Parameters
+        ----------
+        df: pd.DataFrame
+            Full LimProt/TarProt DataFrame.
+        alpha: float
+            Significance level.
+        seqR: str
+            Sequence of the recombinant protein.
+        seqN: str
+            Sequence of the native protein.
+        fileP: Path
+            Output file path.
+        tLength: int
+            Residues per line.
+
+        Returns
+        -------
+        bool
+    """
+    # No Test
+    #region -------------------------------------------------> Helper Function
+    def GetString(
+        df:pd.DataFrame,
+        seq:str,
+        rec:bool,
+        alpha:float,
+        label:str,
+        lSeq:int,
+        ) -> tuple[int, list[str]]:
+        """Get line text.
+
+            Parameters
+            ----------
+            df: pd.DataFrame
+                Full LimProt/TarProt DataFrame.
+            seq: str
+                Sequence.
+            rec: bool
+                True if sequence is for the recombinant protein or False.
+            alpha: float
+                Significance level.
+            label: str
+                Experiment label.
+            lSeq: int
+                Length of the recombinant sequence.
+
+            Returns
+            -------
+            tuple(int, list[str])
+        """
+        #region -------------------------------------------------------->
+        idx     = pd.IndexSlice
+        df      = df[df.loc[:,idx[label,'P']] <= alpha].copy()                       # type: ignore
+        df      = df.reset_index(drop=True)
+        nCero   = len(str(df.shape[0]+1))
+        tString = [seq]
+        #endregion ----------------------------------------------------->
+
+        #region --------------------------------------------------->
+        for r in df.itertuples():
+            n = r[3] if rec else r[5]
+            tString.append((n-1)*' '+r[1]+(lSeq-n+1-len(r[1]))*' ')
+        #endregion ------------------------------------------------>
+        return (nCero, tString)
+    #---
+    #endregion ----------------------------------------------> Helper Function
+
+    #region ---------------------------------------------------> Variables
+    label   = df.columns.unique(level=0)[7:].tolist()
+    lenSeqR = len(seqR)
+    lenSeqN = len(seqN) if seqN else 0
+    end     = 0
+    #------------------------------> ReportLab
+    doc = SimpleDocTemplate(fileP, pagesize=A4, rightMargin=25,
+        leftMargin=25, topMargin=25, bottomMargin=25)
+    Story  = []
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='Seq', fontName='Courier', fontSize=8.5))
+    #endregion ------------------------------------------------> Variables
+
+    #region --------------------------------------------------->
+    for e in label:
+        #------------------------------>
+        Story.append(Paragraph(f'{e} Recombinant Sequence'))
+        Story.append(Spacer(1,20))
+        nCero, tString = GetString(df, seqR, True, alpha, e, lenSeqR)
+        for s in range(0, lenSeqR, tLength):
+            #------------------------------>
+            printString = ''
+            #------------------------------>
+            for k,v in enumerate(tString):
+                a = v[s:s+tLength]
+                if a.strip():
+                    end = k
+                    printString = f"{printString}{str(k).zfill(nCero)}-{a.replace(' ', '&nbsp;')}<br />"
+            #------------------------------>
+            Story.append(Paragraph(printString, style=styles['Seq']))
+            if end:
+                Story.append(Spacer(1,10))
+        if end:
+            Story.append(Spacer(1,10))
+        else:
+            Story.append(Spacer(1,20))
+    #endregion ------------------------------------------------>
+
+    #region --------------------------------------------------->
+    if seqN:
+        for e in label:
+            #------------------------------>
+            Story.append(Paragraph(f'{e} Native Sequence'))
+            Story.append(Spacer(1,20))
+            nCero, tString = GetString(df, seqN, False, alpha, e, lenSeqN)
+            for s in range(0, lenSeqN, tLength):
+                #------------------------------>
+                printString = ''
+                #------------------------------>
+                for k,v in enumerate(tString):
+                    a = v[s:s+tLength]
+                    if a.strip():
+                        end = k
+                        printString = f"{printString}{str(k).zfill(nCero)}-{a.replace(' ', '&nbsp;')}<br />"
+                #------------------------------>
+                Story.append(Paragraph(printString, style=styles['Seq']))
+                if end:
+                    Story.append(Spacer(1,10))
+            if end:
+                Story.append(Spacer(1,10))
+            else:
+                Story.append(Spacer(1,20))
+    #endregion ------------------------------------------------>
+
+    doc.build(Story)
+    return True
 #---
 #endregion ----------------------------------------------------------> Methods

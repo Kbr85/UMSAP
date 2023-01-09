@@ -26,6 +26,7 @@ from main     import window as mWindow
 from result   import menu   as resMenu
 from result   import method as resMethod
 from limprot  import menu   as limpMenu
+from tarprot  import menu   as tarpMenu
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -235,16 +236,16 @@ class MenuBarTool(MenuBarMain):
     """
     #region -----------------------------------------------------> Class Setup
     dTool = { # Key are window name and values the corresponding tool menu
-        mConfig.res.nwUMSAPControl : resMenu.ToolUmsapControl,
-        mConfig.corr.nwRes         : corrMenu.ToolCorrA,
-        mConfig.data.nwRes         : dataMenu.ToolDataPrep,
-        # mConfig.nwProtProf     : MenuToolProtProf,
-        mConfig.limp.nwRes         : limpMenu.ToolLimProt,
-        # mConfig.nwTarProt      : MenuToolTarProt,
-        # mConfig.nwAAPlot       : MenuToolAA,
-        # mConfig.nwHistPlot     : MenuToolHist,
-        # mConfig.nwCpRPlot      : MenuToolCpR,
-        # mConfig.nwCEvolPlot    : MenuToolCleavageEvol,
+        mConfig.res.nwUMSAPControl: resMenu.ToolUmsapControl,
+        mConfig.corr.nwRes        : corrMenu.ToolCorrA,
+        mConfig.data.nwRes        : dataMenu.ToolDataPrep,
+        mConfig.limp.nwRes        : limpMenu.ToolLimProt,
+        mConfig.tarp.nwRes        : tarpMenu.ToolTarProt,
+        mConfig.tarp.nwAAPlot     : tarpMenu.ToolAA,
+        mConfig.tarp.nwHistPlot   : tarpMenu.ToolHist,
+        mConfig.tarp.nwCpRPlot    : tarpMenu.ToolCpR,
+        mConfig.tarp.nwCEvolPlot  : tarpMenu.ToolCleavageEvol,
+        # mConfig.nwProtProf        : MenuToolProtProf,
     }
     #endregion --------------------------------------------------> Class Setup
 

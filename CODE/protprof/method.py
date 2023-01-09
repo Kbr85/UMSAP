@@ -15,7 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
-from typing import Optional
+from typing import Optional, Union
 
 import pandas as pd
 import numpy  as np
@@ -389,5 +389,29 @@ def ProtProf(                                                                   
     dictO['dfR'] = dfR
     return (dictO, '', None)
     #endregion ------------------------------------------------>
+#---
+
+
+def HCurve(x:Union[float,pd.DataFrame,pd.Series], t0:float, s0:float) -> float:
+    """Calculate the hyperbolic curve values according to:
+        doi: 10.1142/S0219720012310038
+
+        Parameters
+        ----------
+        x: float, pd.DataFrame or pd.Series
+            X value of the Hyperbolic Curve.
+        t0: float
+            T0 parameter.
+        s0: float
+            S0 parameter.
+
+        Returns
+        -------
+        float
+    """
+    # No test
+    #region ---------------------------------------------------> Calculate
+    return abs((abs(x)*t0)/(abs(x)-t0*s0))                                      # type: ignore
+    #endregion ------------------------------------------------> Calculate
 #---
 #endregion ----------------------------------------------------------> Methods

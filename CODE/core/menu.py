@@ -498,7 +498,7 @@ class BaseMenuMainResultSubMenu(BaseMenu):
 
         #region --------------------------------------------------> Menu Items
         self.miSaveI = self.Append(-1, f'{self.cLExpImg}\t{tKey}+I')
-        self.miZoomR = self.Append(-1, f'{self.cVZoomReset}\t{tKey}+Z')
+        self.miZoomR = self.Append(-1, f'{self.cLZoomReset}\t{tKey}+Z')
         #endregion -----------------------------------------------> Menu Items
 
         #region ---------------------------------------------------> rKeyID
@@ -549,7 +549,7 @@ class BaseMenuFurtherAnalysis(BaseMenu):
     cVDupWin       = mConfig.core.kwDupWin
     cVZoomResetAll = mConfig.core.kwZoomResetAll
     cVExpData      = mConfig.core.kwExpData
-    cVExpImg       = mConfig.core.kwExpImg
+    cVExpImg       = mConfig.core.kwExpImgAll
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup

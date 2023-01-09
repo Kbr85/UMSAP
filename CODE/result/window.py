@@ -32,6 +32,7 @@ from result   import file   as resFile
 from corr     import window as corrWindow
 from dataprep import window as dataWindow
 from limprot  import window as limpWindow
+from tarprot  import window as tarpWindow
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -80,7 +81,7 @@ class UMSAPControl(cWindow.BaseWindow):
         mConfig.data.nUtil : dataWindow.ResDataPrep,
         # mConfig.nmProtProf: WindowResProtProf,
         mConfig.limp.nMod : limpWindow.ResLimProt,
-        # mConfig.nmTarProt : WindowResTarProt,
+        mConfig.tarp.nMod : tarpWindow.ResTarProt,
     }
     # #------------------------------>
     dSectionTab = { # Section name and Tab name correlation

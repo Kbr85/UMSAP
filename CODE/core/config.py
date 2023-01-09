@@ -241,6 +241,13 @@ class Configuration():
         'Benjamini - Hochberg' : 'fdr_bh',
         'Benjamini - Yekutieli': 'fdr_by',
     })
+    oAA3toAA:dict = field(default_factory=lambda: {                             # Three to one AA code translation
+        'ALA': 'A', 'ARG': 'R', 'ASN': 'N', 'ASP': 'D',
+        'CYS': 'C', 'GLU': 'E', 'GLN': 'Q', 'GLY': 'G',
+        'HIS': 'H', 'ILE': 'I', 'LEU': 'L', 'LYS': 'K',
+        'MET': 'M', 'PHE': 'F', 'PRO': 'P', 'SER': 'S',
+        'THR': 'T', 'TRP': 'W', 'TYR': 'Y', 'VAL': 'V',
+    })
     #------------------------------> Names for output folder and files
     fnInitial:str    = "{}_{}-Initial-Data.txt"
     fnFloat:str      = "{}_{}-Floated-Data.txt"

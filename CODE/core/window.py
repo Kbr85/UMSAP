@@ -1429,6 +1429,86 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
     #---
     #endregion ------------------------------------------------> Event Methods
 #---
+
+
+class BaseWindowResultOnePlotFA(BaseWindowResultOnePlot):
+    """Base Window for Further Analysis with one Plot, e.g. AA.
+
+        Parameters
+        ----------
+        parent: wx.Window or None
+            Parent of the window. Default None
+        menuData: dict
+            Data to build the Tool menu of the window. See structure in child
+            class.
+
+        Attributes
+        ----------
+
+
+        Raises
+        ------
+
+
+        Methods
+        -------
+
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent:Optional[wx.Window]=None) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent=parent)
+        #endregion --------------------------------------------> Initial Setup
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def ExportData(self, df:Optional[pd.DataFrame]=None) -> bool:
+        """Export data to a csv file.
+
+            Returns
+            -------
+            bool
+        """
+        if df is None:
+            df = self.rData                                                     # type: ignore
+
+        return super().ExportData(df=df)
+    #---
+    #endregion ------------------------------------------------> Class methods
+
+    #region ---------------------------------------------------> Event Methods
+    def OnClose(self, event:wx.CloseEvent) -> bool:
+        """Close window and uncheck section in UMSAPFile window. Assumes
+            self.parent is an instance of UMSAPControl.
+            Override as needed.
+
+            Parameters
+            ----------
+            event: wx.CloseEvent
+                Information about the event
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Update parent
+        self.rUMSAP.rWindow[self.cParent.cSection]['FA'].remove(self)           # type: ignore
+        #endregion --------------------------------------------> Update parent
+
+        #region ------------------------------------> Reduce number of windows
+        mConfig.core.winNumber[self.cName] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+#---
 #endregion -----------------------------------------------------------> Frames
 
 
@@ -2367,5 +2447,366 @@ class DirSelect(wx.DirDialog):
          #endregion ------------------------------------------> Create & Center
     #---
     #endregion -----------------------------------------------> Instance setup
+#---
+
+
+class FABtnText(BaseDialogOkCancel):
+    """Further Analysis Dialog with a wx.Button and wx.TextCtrl.
+
+        Parameters
+        ----------
+        btnLabel: str
+            Label for the wx.Button.
+        btnHint: str
+            Hint for the wx.Button.
+        ext: str
+            Extension for selecting file.
+        btnValidator: wx.Validator
+            Validator for user input.
+        stLabel: str
+            Label for the wx.StaticText.
+        stHint: str
+            Hint for the wx.StaticText.
+        stValidator: wx.Validator
+            Validator for the wx.TextCtrl.
+        parent: wx.Window or None
+            Parent for the wx.Dialog.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self,
+        btnLabel:str,
+        btnHint:str,
+        ext:str,
+        btnValidator:wx.Validator,
+        stLabel:str,
+        stHint:str,
+        stValidator :wx.Validator,
+        parent:Optional[wx.Window] = None
+        ):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(title='Export Sequence Alignments', parent=parent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wBtnTc = cWidget.ButtonTextCtrlFF(
+            self,
+            btnLabel  = btnLabel,
+            tcHint    = btnHint,
+            ext       = ext,
+            mode      = 'save',
+            validator = btnValidator,
+        )
+        self.wLength = cWidget.StaticTextCtrl(
+            self,
+            stLabel   = stLabel,
+            tcHint    = stHint,
+            validator = stValidator,
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sFlex = wx.FlexGridSizer(2,2,1,1)
+        self.sFlex.Add(self.wBtnTc.wBtn, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.Add(self.wBtnTc.wTc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.Add(self.wLength.wSt, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        self.sFlex.Add(self.wLength.wTc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.AddGrowableCol(1,1)
+        #------------------------------>
+        self.sSizer.Add(self.sFlex, 1, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        #------------------------------>
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnOK(self, event: wx.CommandEvent) -> bool:
+        """Validate user information and close the window
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Basic implementation. Override as needed.
+        """
+        #region --------------------------------------------------->
+        errors = 0
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        if not self.wBtnTc.wTc.GetValidator().Validate()[0]:
+            errors += 1
+            self.wBtnTc.wTc.SetValue('')
+
+        if not self.wLength.wTc.GetValidator().Validate()[0]:
+            errors += 1
+            self.wLength.wTc.SetValue('')
+        #endregion ------------------------------------------------>
+
+        #region -------------------------------------------------------->
+        if not errors:
+            self.EndModal(1)
+            self.Close()
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class FA2Btn(BaseDialogOkCancel):
+    """Further Analysis Dialog with two wx.Buttons.
+
+        Parameters
+        ----------
+        btnLabel: list[str]
+            Label for the wx.Buttons.
+        btnHint: list[str]
+            Hints for the wx.Buttons.
+        ext: list[str]
+            Extensions for the files.
+        btnValidator: list[wx.Validator]
+            User input validators
+        parent: wx.Window or None
+            Parent of the wx.Dialog.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self,
+        btnLabel:list[str],
+        btnHint:list[str],
+        ext:list[str],
+        btnValidator:list[wx.Validator],
+        parent:Optional[wx.Window] = None
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(title='PDB Mapping', parent=parent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wBtnI = cWidget.ButtonTextCtrlFF(
+            self,
+            btnLabel  = btnLabel[0],
+            tcHint    = btnHint[0],
+            ext       = ext[0],
+            mode      = 'openO',
+            validator = btnValidator[0],
+        )
+
+        self.wBtnO = cWidget.ButtonTextCtrlFF(
+            self,
+            btnLabel  = btnLabel[1],
+            tcHint    = btnHint[1],
+            ext       = ext[1],
+            mode      = 'folder',
+            validator = btnValidator[1],
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sFlex = wx.FlexGridSizer(2,2,1,1)
+        self.sFlex.Add(self.wBtnI.wBtn, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.Add(self.wBtnI.wTc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.Add(self.wBtnO.wBtn, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
+        self.sFlex.Add(self.wBtnO.wTc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sFlex.AddGrowableCol(1,1)
+
+        self.sSizer.Add(self.sFlex, 1, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnOK(self, event:wx.CommandEvent) -> bool:
+        """Validate user information and close the window.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Basic implementation. Override as needed.
+        """
+        #region --------------------------------------------------->
+        errors = 0
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        if not self.wBtnI.wTc.GetValidator().Validate()[0]:
+            errors += 1
+            self.wBtnI.wTc.SetValue('')
+
+        if not self.wBtnO.wTc.GetValidator().Validate()[0]:
+            errors += 1
+            self.wBtnO.wTc.SetValue('')
+        #endregion ------------------------------------------------>
+
+        #region -------------------------------------------------------->
+        if not errors:
+            self.EndModal(1)
+            self.Close()
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class UserInputText(BaseDialogOkCancel):
+    """Present a modal window with N wx.TextCtrl for user input.
+
+        Parameters
+        ----------
+        title: str
+            Title of the dialog.
+        label: list[str]
+            Labels for the wx.StaticText in the dialog.
+        hint: list[str]
+            Hint for the wx.TextCtrl in the dialog.
+        parent: wx.Window or None
+            To center the dialog on the parent.
+        validator: list[wx.Validator]
+            The validator is expected to comply with the return of validators in
+            mValidator.
+        size: wx.Size
+            Size of the window. Default is (100, 70)
+
+        Attributes
+        ----------
+        rInput: list[mWidget.StaticTextCtrl]
+
+        Notes
+        -----
+        A valid input must be given for the wx.Dialog to be closed after
+        pressing the OK button.
+        The number of mWidget.StaticTextCtrl to be created is taken from
+        the label parameter.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(                                                               # pylint: disable=dangerous-default-value
+        self,
+        title:str,
+        label:list[str],
+        hint:list[str],
+        validator:list[wx.Validator],
+        parent:Union[wx.Window, None] = None,
+        values:list[str]              = [],
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent=parent, title=title)
+        #------------------------------>
+        self.rInput = []
+        if values:
+            self.rValues = values
+        else:
+            self.rValues = ['' for x in label]
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        for k,v in enumerate(label):
+            self.rInput.append(cWidget.StaticTextCtrl(
+                self,
+                stLabel   = v,
+                tcHint    = hint[k],
+                validator = validator[k],
+            ))
+            self.rInput[k].wTc.SetValue(self.rValues[k])
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sSizer = wx.BoxSizer(orient=wx.VERTICAL)
+        #------------------------------>
+        for k in self.rInput:
+            self.sSizer.Add(k.wSt, 0, wx.ALIGN_LEFT|wx.UP|wx.LEFT|wx.RIGHT, 5)
+            self.sSizer.Add(k.wTc, 0, wx.EXPAND|wx.DOWN|wx.LEFT|wx.RIGHT, 5)
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        #------------------------------>
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region ---------------------------------------------> Window position
+        if parent is not None:
+            self.CenterOnParent()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnOK(self, event:wx.CommandEvent) -> bool:
+        """Validate user information and close the window.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        wrong = []
+        #endregion ------------------------------------------------> Variables
+
+        #region ----------------------------------------------------> Validate
+        for k in self.rInput:
+            if not k.wTc.GetValidator().Validate()[0]:
+                wrong.append(k)
+                k.wTc.SetValue('')
+        #endregion -------------------------------------------------> Validate
+
+        #region ---------------------------------------------------> Return
+        if not wrong:
+            self.EndModal(1)
+            self.Close()
+            return True
+        else:
+            return False
+        #endregion ------------------------------------------------> Return
+    #---
+
+    def GetValue(self) -> list[str]:
+        """Get the values of the wx.TextCtrl.
+
+            Returns
+            -------
+            list[str]
+        """
+        #region --------------------------------------------------->
+        listO = []
+        #------------------------------>
+        for k in self.rInput:
+            listO.append(k.wTc.GetValue())
+        #endregion ------------------------------------------------>
+
+        return listO
+    #---
+    #endregion ------------------------------------------------> Class methods
 #---
 #endregion ----------------------------------------------------------> Dialogs
