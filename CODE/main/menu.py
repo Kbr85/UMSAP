@@ -22,10 +22,11 @@ from core     import menu   as cMenu
 from corr     import menu   as corrMenu
 from dataprep import menu   as dataMenu
 from help     import menu   as hMenu
+from limprot  import menu   as limpMenu
 from main     import window as mWindow
+from protprof import menu   as protMenu
 from result   import menu   as resMenu
 from result   import method as resMethod
-from limprot  import menu   as limpMenu
 from tarprot  import menu   as tarpMenu
 #endregion ----------------------------------------------------------> Imports
 
@@ -245,7 +246,7 @@ class MenuBarTool(MenuBarMain):
         mConfig.tarp.nwHistPlot   : tarpMenu.ToolHist,
         mConfig.tarp.nwCpRPlot    : tarpMenu.ToolCpR,
         mConfig.tarp.nwCEvolPlot  : tarpMenu.ToolCleavageEvol,
-        # mConfig.nwProtProf        : MenuToolProtProf,
+        mConfig.prot.nwRes        : protMenu.ToolProtProf,
     }
     #endregion --------------------------------------------------> Class Setup
 

@@ -15,6 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
+from math    import ceil
 from pathlib import Path
 from typing  import Optional, Union, Literal
 
@@ -2806,6 +2807,189 @@ class UserInputText(BaseDialogOkCancel):
         #endregion ------------------------------------------------>
 
         return listO
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
+
+
+class MultipleCheckBox(BaseDialogOkCancel):
+    """Present multiple choices as checkboxes.
+
+        Parameters
+        ----------
+        title: str
+            Title for the wx.Dialog.
+        items: dict
+            Keys are the name of the wx.CheckBox and values the label.
+            Keys are also used to return the checked elements.
+        nCol: int
+            wx.CheckBox will be distributed in a grid of nCol and as many as
+            needed rows.
+        label: str
+            Label for the wx.StaticBox.
+        multiChoice: bool
+            More than one wx.Checkbox can be selected (True) or not (False).
+        parent: wx.Window
+            Parent of the wx.Dialog.
+
+        Attributes
+        ----------
+        rDict: dict
+            Keys are 0 to N where N is the number of elements in items, nCol,
+            label and multiChoice.
+            {
+                0: {
+                    stBox  : wx.StaticBox,
+                    checkB : [wx.CheckBox],
+                    sFlex  : wx.FlexGridSizer,
+                    sStBox : wx.StaticBoxSizer,
+                },
+            }
+        checked : dict
+            Keys are int 0 to N and values the names of the checked wx.CheckBox
+            after pressing the OK button. The names are the keys in the
+            corresponding item group.
+
+        Notes
+        -----
+        At least one option must be selected for the OK button to close the
+        wx.Dialog.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(                                                               # pylint: disable=dangerous-default-value
+        self,
+        title:str,
+        items:list[dict[str, str]],
+        nCol:list[int],
+        label:list[str]            = ['Options'],
+        multiChoice:list[bool]     = [False],
+        parent:Optional[wx.Window] = None
+        ) -> None:
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rDict = {}
+        self.rChecked = {}
+        #------------------------------>
+        super().__init__(title=title, parent=parent)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        try:
+            for k,v in enumerate(label):
+                self.rDict[k] = {}
+                #------------------------------> wx.StaticBox
+                self.rDict[k]['stBox'] = wx.StaticBox(self, label=v)
+                #------------------------------> wx.CheckBox
+                self.rDict[k]['checkB'] = []
+                for j,i in items[k].items():
+                    self.rDict[k]['checkB'].append(
+                        wx.CheckBox(
+                            self.rDict[k]['stBox'],
+                            label = i,
+                            name  = f'{j}-{k}'
+                    ))
+                #------------------------------> wx.Sizer
+                self.rDict[k]['sFlex'] =(
+                    wx.FlexGridSizer(ceil(len(items[k])/nCol[k]), nCol[k], 1,1))
+                self.rDict[k]['sStBox'] = wx.StaticBoxSizer(
+                    self.rDict[k]['stBox'], orient=wx.VERTICAL)
+                #------------------------------> Bind
+                if not multiChoice[k]:
+                    [x.Bind(wx.EVT_CHECKBOX, self.OnCheck) for x in self.rDict[k]['checkB']] # pylint: disable=expression-not-assigned
+                else:
+                    pass
+        except IndexError as e:
+            msg = ('items, nCol, label and multiChoice must have the same '
+                   'number of elements.')
+            raise ValueError(msg) from e
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        for k,v in self.rDict.items():
+            #------------------------------> Add check to Flex
+            for c in v['checkB']:
+                v['sFlex'].Add(c, 0, wx.ALIGN_LEFT|wx.ALL, 7)
+            #------------------------------> Add Flex to StaticBox
+            v['sStBox'].Add(v['sFlex'], 0, wx.ALIGN_CENTER|wx.ALL, 5)
+            #------------------------------> Add to Sizer
+            self.sSizer.Add(v['sStBox'], 0, wx.EXPAND|wx.ALL, 5)
+        #------------------------------>
+        self.sSizer.Add(self.sBtn, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
+        self.SetSizer(self.sSizer)
+        self.Fit()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region ---------------------------------------------> Window position
+        if parent is not None:
+            self.CenterOnParent()
+        #endregion ------------------------------------------> Window position
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def OnCheck(self, event:wx.CommandEvent) -> bool:
+        """Deselect all other selected options.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------------> Deselect
+        if event.IsChecked():
+            #------------------------------>
+            tCheck = event.GetEventObject()
+            group = int(tCheck.GetName().split('-')[1])
+            #------------------------------>
+            [k.SetValue(False) for k in self.rDict[group]['checkB']]            # pylint: disable=expression-not-assigned
+            #------------------------------>
+            tCheck.SetValue(True)
+        #endregion -------------------------------------------------> Deselect
+
+        return True
+    #---
+
+    def OnOK(self, event:wx.CommandEvent) -> bool:
+        """Validate user information and close the window.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------------> Validate
+        #------------------------------>
+        for k in self.rDict:
+            for c in self.rDict[k]['checkB']:
+                if c.IsChecked():
+                    self.rChecked[k] = c.GetName().split('-')[0]
+        #------------------------------>
+        if self.rChecked and len(self.rChecked) == len(self.rDict):
+            self.EndModal(1)
+            self.Close()
+        #endregion -------------------------------------------------> Validate
+
+        return True
+    #---
+
+    def GetChoice(self) -> dict:
+        """Get the selected checkbox.
+
+            Returns
+            -------
+            dict
+                The keys are 0 to N and values the items corresponding to the
+                checked wx.CheckBox in each group.
+        """
+        return self.rChecked
     #---
     #endregion ------------------------------------------------> Class methods
 #---

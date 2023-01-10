@@ -26,12 +26,13 @@ from config.config import config as mConfig
 from core     import file   as cFile
 from core     import method as cMethod
 from core     import window as cWindow
-from main     import menu   as mMenu
-from main     import window as mWindow
-from result   import file   as resFile
 from corr     import window as corrWindow
 from dataprep import window as dataWindow
 from limprot  import window as limpWindow
+from main     import menu   as mMenu
+from main     import window as mWindow
+from protprof import window as protWindow
+from result   import file   as resFile
 from tarprot  import window as tarpWindow
 #endregion ----------------------------------------------------------> Imports
 
@@ -76,15 +77,15 @@ class UMSAPControl(cWindow.BaseWindow):
     #------------------------------>
     cFileLabelCheck = ['Data']
     #------------------------------>
-    dPlotMethod = { # Methods to create plot windows
-        mConfig.corr.nUtil : corrWindow.ResCorrA,
-        mConfig.data.nUtil : dataWindow.ResDataPrep,
-        # mConfig.nmProtProf: WindowResProtProf,
+    dPlotMethod = {                                                             # Methods to create plot windows
+        mConfig.corr.nUtil: corrWindow.ResCorrA,
+        mConfig.data.nUtil: dataWindow.ResDataPrep,
+        mConfig.prot.nMod : protWindow.ResProtProf,
         mConfig.limp.nMod : limpWindow.ResLimProt,
         mConfig.tarp.nMod : tarpWindow.ResTarProt,
     }
-    # #------------------------------>
-    dSectionTab = { # Section name and Tab name correlation
+    #------------------------------>
+    dSectionTab = {                                                             # Section name and Tab name correlation
         mConfig.corr.nUtil: mConfig.corr.nTab,
         mConfig.data.nUtil: mConfig.data.nTab,
         mConfig.prot.nMod : mConfig.prot.nTab,

@@ -167,6 +167,8 @@ def CI_Sample(
         })
     #endregion ------------------------------------------------>
 
+    print(dfOut.head(n=20))
+
     return dfOut
 #---
 
@@ -248,6 +250,8 @@ def CI_Mean_Diff(
     if roundN is not None:
         dfO = dfO.round(int(roundN))
     #endregion --------------------------------------------------------> Round
+
+    print(dfO.head(n=20))
 
     return dfO
 #---

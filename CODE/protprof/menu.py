@@ -11,32 +11,29 @@
 # ------------------------------------------------------------------------------
 
 
-"""Menus of the application"""
+"""Menu for the main module of the app"""
 
 
 #region -------------------------------------------------------------> Imports
-from pathlib import Path
-from typing  import Callable
-
 import wx
 
-import config.config as mConfig
-import gui.window    as mWindow
-import gui.method    as gMethod
+from config.config import config as mConfig
+from core     import menu   as cMenu
+
 #endregion ----------------------------------------------------------> Imports
 
 
-#region ----------------------------------------------------> Individual menus
-class MenuToolProtProfFCEvolution(BaseMenu):
+#region -------------------------------------------------------------> Classes
+class ToolProtProfFCEvolution(cMenu.BaseMenu):
     """Menu for a log2FC evolution along relevant points."""
     #region -----------------------------------------------------> Class Setup
     cLShowAll   = 'Show All'
     cLExpImg    = 'Export Image'
     cLZoomReset = 'Reset Zoom'
     #------------------------------>
-    cVExpImg    = mConfig.kwToolExpImg
-    cVZoomReset = mConfig.kwToolZoomReset
-    cVFCShowAll = mConfig.kwToolFCShowAll
+    cVExpImg    = mConfig.core.kwExpImg
+    cVZoomReset = mConfig.core.kwZoomReset
+    cVFCShowAll = mConfig.prot.kwFCShowAll
     #------------------------------>
     cVFC = 'FC'
     #endregion --------------------------------------------------> Class Setup
@@ -82,7 +79,7 @@ class MenuToolProtProfFCEvolution(BaseMenu):
 #---
 
 
-class MenuToolProtProfFilters(BaseMenu):
+class ToolProtProfFilters(cMenu.BaseMenu):
     """Menu for the ProtProfPlot Filters"""
     #region -----------------------------------------------------> Class Setup
     cLFCEvol    = 'FC Evolution'
@@ -100,11 +97,11 @@ class MenuToolProtProfFilters(BaseMenu):
     cLSave      = 'Save'
     cLLoad      = 'Load'
     #------------------------------>
-    cVFCEvol          = mConfig.lFilFCEvol
-    cVHypCurve        = mConfig.lFilHypCurve
-    cVFCLog           = mConfig.lFilFCLog
-    cVPVal            = mConfig.lFilPVal
-    cVZScore          = mConfig.lFilZScore
+    cVFCEvol          = mConfig.prot.lFilFCEvol
+    cVHypCurve        = mConfig.prot.lFilHypCurve
+    cVFCLog           = mConfig.prot.lFilFCLog
+    cVPVal            = mConfig.prot.lFilPVal
+    cVZScore          = mConfig.prot.lFilZScore
     cVApplyAll        = 'Apply All'
     cVRemL            = 'Remove Last'
     cVRemAny          = 'Remove Any'
@@ -186,7 +183,7 @@ class MenuToolProtProfFilters(BaseMenu):
 #---
 
 
-class MenuToolProtProfLockPlotScale(BaseMenu):
+class ToolProtProfLockPlotScale(cMenu.BaseMenu):
     """Lock the plots scale to the selected option."""
     #region -----------------------------------------------------> Class Setup
     cLNo       = cVNo       = 'No'
@@ -236,7 +233,7 @@ class MenuToolProtProfLockPlotScale(BaseMenu):
 #---
 
 
-class MenuToolProtProfClearSel(BaseMenu):
+class ToolProtProfClearSel(cMenu.BaseMenu):
     """Clear the selection in a ProtProf Res Window."""
     #region -----------------------------------------------------> Class Setup
     cLLabel = cVLabel = 'Labels'
@@ -277,7 +274,7 @@ class MenuToolProtProfClearSel(BaseMenu):
 #---
 
 
-class MenuToolProtProfVolcanoPlotColorScheme(BaseMenu):
+class ToolProtProfVolcanoPlotColorScheme(cMenu.BaseMenu):
     """Menu for Color Scheme in the Volcano Plot menu of ProtProf result window.
     """
     #region -----------------------------------------------------> Class Setup
@@ -286,10 +283,10 @@ class MenuToolProtProfVolcanoPlotColorScheme(BaseMenu):
     cLZScore   = 'Z Score'
     cLConf     = 'Configure'
     #------------------------------>
-    cVHypCurve = mConfig.kwToolVolPlotColorScheme
-    cVPLog2FC  = mConfig.kwToolVolPlotColorScheme
-    cVZScore   = mConfig.kwToolVolPlotColorScheme
-    cVConf     = mConfig.kwToolVolPlotColorConf
+    cVHypCurve = mConfig.prot.kwVolPlotColorScheme
+    cVPLog2FC  = mConfig.prot.kwVolPlotColorScheme
+    cVZScore   = mConfig.prot.kwVolPlotColorScheme
+    cVConf     = mConfig.prot.kwVolPlotColorConf
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
@@ -329,11 +326,9 @@ class MenuToolProtProfVolcanoPlotColorScheme(BaseMenu):
     #---
     #endregion -----------------------------------------------> Instance setup
 #---
-#endregion -------------------------------------------------> Individual menus
 
 
-#region -----------------------------------------------------------> Mix menus
-class MenuToolProtProfVolcanoPlot(BaseMenu):
+class ToolProtProfVolcanoPlot(cMenu.BaseMenu):
     """Menu for a Volcano Plot.
 
         Parameters
@@ -341,19 +336,19 @@ class MenuToolProtProfVolcanoPlot(BaseMenu):
         menuData: dict
             Available conditions and relevant point for the analysis.
             See Notes for more details.
-        ciDate : str
+        ciDate: str
             Initially selected date
 
         Attributes
         ----------
-        rCond : list of wx.MenuItems
+        rCond: list of wx.MenuItems
             Available conditions as wx.MenuItems for the current date.
-        rCrp : dict
+        rCrp: dict
             Available conditions and relevant point for the analysis.
             See Notes for more details.
-        rRp : list of wx.MenuItems
+        rRp: list of wx.MenuItems
             Available relevant points as wx.MenuItems for the current date.
-        rSep : wx.MenuItem
+        rSep: wx.MenuItem
             Separator between conditions and relevant points.
 
         Notes
@@ -376,12 +371,12 @@ class MenuToolProtProfVolcanoPlot(BaseMenu):
     cLExpImg      = 'Export Image'
     cLZoomReset   = 'Reset Zoom'
     #------------------------------>
-    cVWinUpdate = mConfig.kwToolWinUpdate
-    cVLabelPick = mConfig.kwToolVolPlotLabelPick
-    cVLabelProt = mConfig.kwToolVolPlotLabelProt
-    cVPCorr     = mConfig.kwToolWinUpdate
-    cVExpImg    = mConfig.kwToolExpImg
-    cVZoomReset = mConfig.kwToolZoomReset
+    cVWinUpdate = mConfig.core.kwWinUpdate
+    cVLabelPick = mConfig.prot.kwVolPlotLabelPick
+    cVLabelProt = mConfig.prot.kwVolPlotLabelProt
+    cVPCorr     = mConfig.core.kwWinUpdate
+    cVExpImg    = mConfig.core.kwExpImg
+    cVZoomReset = mConfig.core.kwZoomReset
     #------------------------------>
     cVPCorrKey = 'corrP'
     cVMenuKey  = 'Vol'
@@ -390,7 +385,7 @@ class MenuToolProtProfVolcanoPlot(BaseMenu):
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, menuData: dict, ciDate: str) -> None:
+    def __init__(self, menuData:dict, ciDate:str) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.rCrp = menuData
@@ -407,7 +402,7 @@ class MenuToolProtProfVolcanoPlot(BaseMenu):
         self.miLabelPick = self.Append(
             -1, f'{self.cLPickLabel}\tShift+P', kind=wx.ITEM_CHECK)
         self.AppendSeparator()
-        self.mColor = MenuToolProtProfVolcanoPlotColorScheme()
+        self.mColor = ToolProtProfVolcanoPlotColorScheme()
         self.AppendSubMenu(self.mColor, self.cLColorScheme)
         self.AppendSeparator()
         self.miPCorr = self.Append(-1, self.cLCorrP, kind=wx.ITEM_CHECK)
@@ -448,14 +443,14 @@ class MenuToolProtProfVolcanoPlot(BaseMenu):
     #region --------------------------------------------------> Manage methods
     def SetCondRPMenuItems(
         self,
-        tDate: str,
+        tDate:str,
         ) -> tuple[list[wx.MenuItem], list[wx.MenuItem]]:
         """Set the menu items for conditions and relevant points as defined for
             the current analysis date.
 
             Parameters
             ----------
-            tDate : str
+            tDate: str
                 Currently selected date.
 
             Returns
@@ -466,7 +461,7 @@ class MenuToolProtProfVolcanoPlot(BaseMenu):
         """
         #region -------------------------------------------------> Empty lists
         cond = []
-        rp = []
+        rp   = []
         #endregion ----------------------------------------------> Empty lists
 
         #region ------------------------------------------------> Add elements
@@ -501,12 +496,12 @@ class MenuToolProtProfVolcanoPlot(BaseMenu):
         return (cond, rp)
     #---
 
-    def UpdateCondRP(self, tDate: str, menuData: dict={}) -> bool:              # pylint: disable=dangerous-default-value
+    def UpdateCondRP(self, tDate:str, menuData:dict={}) -> bool:                # pylint: disable=dangerous-default-value
         """Update the conditions and relevant points when date changes.
 
             Parameters
             ----------
-            tDate : str
+            tDate: str
                 Selected date
             menuData: dict
                 Information for the menu item.
@@ -544,7 +539,7 @@ class MenuToolProtProfVolcanoPlot(BaseMenu):
 #---
 
 
-class MenuToolProtProf(BaseMenuMainResult):
+class ToolProtProf(cMenu.BaseMenuMainResult):
     """Tool menu for the Proteome Profiling Plot window.
 
         Parameters
@@ -571,7 +566,7 @@ class MenuToolProtProf(BaseMenuMainResult):
     cLCLear         = 'Clear Selection'
     cLExpDataFilter = 'Export Filtered Data'
     #------------------------------>
-    cVExpDataFilter = mConfig.kwToolExportDataFiltered
+    cVExpDataFilter = mConfig.prot.kwExportDataFiltered
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
@@ -582,25 +577,25 @@ class MenuToolProtProf(BaseMenuMainResult):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.mVolcano =  MenuToolProtProfVolcanoPlot(
+        self.mVolcano =  ToolProtProfVolcanoPlot(
                 self.cMenuData['crp'], self.rPlotDate[0].GetItemLabelText()
         )
         self.AppendSubMenu(self.mVolcano, self.cLVol)
         self.AppendSeparator()
         #------------------------------> Relevant Points
-        self.mFc = MenuToolProtProfFCEvolution()
+        self.mFc = ToolProtProfFCEvolution()
         self.AppendSubMenu(self.mFc, self.cLFC)
         self.AppendSeparator()
         #------------------------------> Filter
-        self.mFilter = MenuToolProtProfFilters()
+        self.mFilter = ToolProtProfFilters()
         self.AppendSubMenu(self.mFilter, self.cLFilter)
         self.AppendSeparator()
         #------------------------------> Lock scale
-        self.mLockScale = MenuToolProtProfLockPlotScale()
+        self.mLockScale = ToolProtProfLockPlotScale()
         self.AppendSubMenu(self.mLockScale, self.cLLock)
         self.AppendSeparator()
         #------------------------------> Clear Selection
-        self.mClearSel = MenuToolProtProfClearSel()
+        self.mClearSel = ToolProtProfClearSel()
         self.AppendSubMenu(self.mClearSel, self.cLCLear)
         self.AppendSeparator()
         #------------------------------>
@@ -624,7 +619,7 @@ class MenuToolProtProf(BaseMenuMainResult):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class Methods
-    def OnMethodKey(self, event: wx.CommandEvent):
+    def OnMethodKey(self, event:wx.MenuEvent):
         """Call the corresponding method in the window.
 
             Parameters
@@ -661,4 +656,4 @@ class MenuToolProtProf(BaseMenuMainResult):
     #---
     #endregion ------------------------------------------------> Class Methods
 #---
-#endregion --------------------------------------------------------> Mix menus
+#endregion ----------------------------------------------------------> Classes

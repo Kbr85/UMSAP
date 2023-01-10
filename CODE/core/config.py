@@ -176,10 +176,11 @@ class Configuration():
     #------------------------------> Files
     fConfig:Path = Path.home() / '.umsap_config.json'
     #------------------------------> Sizes
-    sWinFull:tuple[int,int] = (990, 775)                                        # Full window size
-    sWinPlot:tuple[int,int] = (560, 560)                                        # Result window size
-    sTc:tuple[int,int]      = (50, 22)                                          # wx.TextCtrl
-    sLCtrlColI:list[int]    = field(default_factory=lambda: [50, 150])          # Size for # Name columns in a wx.ListCtrl
+    sWinFull:tuple[int,int]    = (990, 775)                                     # Full window size
+    sWinPlot:tuple[int,int]    = (560, 560)                                     # Result window size
+    sWinModPlot:tuple[int,int] = (1100, 625)                                    # Result Window for a Module
+    sTc:tuple[int,int]         = (50, 22)                                       # wx.TextCtrl
+    sLCtrlColI:list[int]       = field(default_factory=lambda: [50, 150])       # Size for # Name columns in a wx.ListCtrl
     #------------------------------> File Extensions
     elData:str         = 'txt files (*.txt)|*.txt'                              # For wx.Dialogs
     elUMSAP:str        = 'UMSAP files (*.umsap)|*.umsap'

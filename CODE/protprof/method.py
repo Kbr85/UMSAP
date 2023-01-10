@@ -281,16 +281,16 @@ def ProtProf(                                                                   
             if rDO['IndS']:
                 dfR.loc[:,(cN, tN, 'CI')] = cStatistic.CI_Mean_Diff(             # type: ignore
                     dfLogI.iloc[:,colC], dfLogI.iloc[:,colD], rDO['Alpha']
-                )
+                ).to_numpy()
             else:
                 val = dfLogI.iloc[:,colC] - dfLogI.iloc[:,colD]
                 dfR.loc[:,(cN,tN,'CI')] = cStatistic.CI_Sample(                 # type: ignore
                     val, rDO['Alpha']
-                )
+                ).to_numpy()
         else:
             dfR.loc[:,(cN, tN, 'CI')] = cStatistic.CI_Sample(                  # type: ignore
                 dfLogI.iloc[:,colD], rDO['Alpha']
-            )
+            ).to_numpy()
         #endregion ------------------------------------------------> FC CI
 
         #region -----------------------------------------------------------> P

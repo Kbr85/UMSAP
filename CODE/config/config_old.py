@@ -22,37 +22,6 @@ from typing  import Literal
 
 
 #region -----------------------------------------> NON-CONFIGURABLE PARAMETERS
-#region ---------------------------------------------------------------> Names
-#------------------------------> Windows
-nwProtProf  = 'ProtProfPlot'
-#------------------------------> Dialogs
-ndFilterRemoveAny = 'Remove Filters'
-#endregion ------------------------------------------------------------> Names
-
-
-#region ------------------------------------> Keywords for Menu - Method Links
-#------------------------------> Tool Menu for Plot Window. General Items
-kwToolExportDataFiltered = 'GeneralTool Export Filtered Data'
-#------------------------------> Volcano Plot
-kwToolVolPlot            = 'ToolVol Plot CRP'
-kwToolVolPlotLabelPick   = 'ToolVol Plot Pick Label'
-kwToolVolPlotLabelProt   = 'ToolVol Plot Add Label'
-kwToolVolPlotColorScheme = 'ToolVol Plot Color Scheme'
-kwToolVolPlotColorConf   = 'ToolVol Plot Color Configure'
-#------------------------------> Fold Change Evolution
-kwToolFCShowAll = 'FC Plot Show All'
-#endregion ---------------------------------> Keywords for Menu - Method Links
-
-
-#region --------------------------------------------------------------> Labels
-#------------------------------> Filters
-lFilFCEvol   = 'FC Evolution'
-lFilHypCurve = 'Hyp Curve'
-lFilFCLog    = 'Log2FC'
-lFilPVal     = 'P Val'
-lFilZScore   = 'Z Score'
-#endregion -----------------------------------------------------------> Labels
-
 
 #region -------------------------------------------------------------> Options
 oIntensities = {
@@ -90,27 +59,4 @@ mPDFilterByCol      = "Filtering process failed."
 mNotImplemented     = 'Option {} is not yet implemented.'
 mNotSupported       = "{} value '{}' is not supported."
 #endregion ---------------------------------------------------------> Messages
-
-
-#region ---------------------------------------------------------------> Sizes
-#------------------------------> Plot Window
-sWinModPlot = (1100, 625)
-#endregion ------------------------------------------------------------> Sizes
 #endregion --------------------------------------> NON-CONFIGURABLE PARAMETERS
-
-
-#region ---------------------------------------------> CONFIGURABLE PARAMETERS
-#region --------------------------------------------------------------> Colors
-
-
-confColor = { # Colors for the app
-    nwProtProf : {
-        'Vol'    : ['#ff3333', '#d3d3d3', '#3333ff'],
-        'VolSel' : '#6ac653',
-        'FCAll'  : '#d3d3d3',
-        'FCLines': ['#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff'],
-        'CV'     : 'gray',
-    }
-}
-#endregion -----------------------------------------------------------> Colors
-#endregion ------------------------------------------> CONFIGURABLE PARAMETERS
