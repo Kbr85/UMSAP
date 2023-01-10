@@ -770,7 +770,7 @@ def LCtrlFillColNames(lc:wx.ListCtrl, fileP:Union[Path, str]) -> bool:
 def NCResNumbers(
     dfR:pd.DataFrame,
     rDO:dict,
-    rSeqFileObj:cFile.FastaFile,
+    rSeqFileObj:'cFile.FastaFile',
     seqNat:bool = True
     ) -> tuple[pd.DataFrame, str, Optional[Exception]]:
     """Find the residue numbers for the peptides in the sequence of the

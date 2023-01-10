@@ -11,7 +11,7 @@
 # ------------------------------------------------------------------------------
 
 
-"""Tests for data.file """
+"""Tests for core.file"""
 
 
 #region -------------------------------------------------------------> Imports
@@ -20,35 +20,31 @@ from pathlib import Path
 
 import pandas as pd
 
-import data.file      as mFile
-import data.exception as mException
+from core import file as cFile
 #endregion ----------------------------------------------------------> Imports
 
 
-# Test data lead to long lines, so this check will be disabled for this module
-# pylint: disable=line-too-long
-
-
 #region -------------------------------------------------------> File Location
-folder = Path(__file__).parent / 'test_files'
-fasta1Prot = folder / 'tarprot-seq-rec.txt'
-fasta2Prot = folder / 'tarprot-seq-both.txt'
-fastaNProt = folder / 'tarprot-seq-N.txt'
-pdb        = folder / '2y4f.pdb'
-csvFile    = folder / 'res-corrA-1.txt'
+folder  = Path(__file__).parent / 'files'
+fileA   = folder / 'fasta-tarprot-seq-rec.txt'
+fileB   = folder / 'fasta-tarprot-seq-both.txt'
+fileC   = folder / 'fasta-tarprot-seq-N.txt'
+fileD   = folder / 'fasta-sec-start.txt'
+fileE   = folder / 'fasta-sec-end.txt'
+fileF   = folder / 'fasta-sec-same.txt'
+fileCSV = folder / 'csv.txt'
+filePDB = folder / '2y4f.pdb'
 #endregion ----------------------------------------------------> File Location
 
 
 #region ---------------------------------------------------------> Class Setup
 class Test_ReadFileFirstLine(unittest.TestCase):
-    """Test for data.file.ReadFileFirstLine"""
+    """Test for core.file.ReadFileFirstLine"""
     #region -----------------------------------------------------> Class Setup
-    @classmethod
-    def setUp(cls):                                                             # pylint: disable=arguments-differ
+    def setUp(self):
         """Create class instances"""
-        cls.file = fasta1Prot
-        cls.firstLine = ['>sp|P31545|EFEB_ECOLI Recombinant']
-        cls.firstLineSpace = ['>sp|P31545|EFEB_ECOLI', 'Recombinant']
+        self.firstLine = ['>sp|P31545|EFEB_ECOLI Recombinant']
+        self.firstLineSpace = ['>sp|P31545|EFEB_ECOLI', 'Recombinant']
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -57,65 +53,15 @@ class Test_ReadFileFirstLine(unittest.TestCase):
         """Test for expected output"""
         #------------------------------>
         tInput = [
-            (self.file, '', False, self.firstLine),
-            (self.file, '',  True, self.firstLine),
-            (self.file, ' ', False, self.firstLineSpace),
+            (fileA, '',  False, self.firstLine),
+            (fileA, '',  True,  self.firstLine),
+            (fileA, ' ', False, self.firstLineSpace),
         ]
         #------------------------------>
         for a,b,c,d in tInput:
             msg = f"fileP={a}, char={b}, empty={c}"
             with self.subTest(msg):
-                result = mFile.ReadFileFirstLine(a, char=b, empty=c)
-                self.assertEqual(result, d)
-    #---
-    #endregion ----------------------------------------------> Expected Output
-#---
-
-
-class Test_CSVFile(unittest.TestCase):
-    """Test for data.file.CSVFile"""
-    #region -----------------------------------------------------> Class Setup
-    @classmethod
-    def setUp(cls):                                                             # pylint: disable=arguments-differ
-        """Create class instances"""
-        cls.csvFile = mFile.CSVFile(csvFile)
-        cls.header = [
-            'Unnamed: 0', 'Intensity 01', 'Intensity 02', 'Intensity 03',
-            'Intensity 04', 'Intensity 05']
-    #---
-    #endregion --------------------------------------------------> Class Setup
-
-    #region -------------------------------------------------> Expected Output
-    def test_Init(self):
-        """Test correct initialization"""
-        #------------------------------>
-        tInput = [
-            (self.csvFile.rFileP,  csvFile,     'File Path'),
-            (self.csvFile.rHeader, self.header, 'Data Header'),
-            (self.csvFile.rNRow,   5,           'Number of Rows'),
-            (self.csvFile.rNCol,   6,           'Number of Columns'),
-        ]
-        #------------------------------>
-        for a,b,c in tInput:
-            msg = f"{c}"
-            with self.subTest(msg):
-                self.assertEqual(a, b)
-    #---
-
-    def test_StrInCol(self):
-        """Test for StrInCol method"""
-        #------------------------------>
-        tInput = [
-            (self.csvFile, 'Intensity 04', 0, True),
-            (self.csvFile, 'Intensity 20', 0, False),
-        ]
-        #------------------------------>
-        for a,b,c,d in tInput:
-            msg = f"tStr={b}, col={c}"
-            with self.subTest(msg):
-                #------------------------------>
-                result = a.StrInCol(b, c)
-                #------------------------------>
+                result = cFile.ReadFileFirstLine(a, char=b, empty=c)
                 self.assertEqual(result, d)
     #---
     #endregion ----------------------------------------------> Expected Output
@@ -123,23 +69,25 @@ class Test_CSVFile(unittest.TestCase):
 
 
 class Test_FastaFile(unittest.TestCase):
-    """Test for data.file.FastaFile"""
+    """Test for core.file.FastaFile"""
     #region -----------------------------------------------------> Class Setup
-    @classmethod
-    def setUp(cls):                                                             # pylint: disable=arguments-differ
+    def setUp(self):
         """Create class instances"""
-        cls.f1Prot = mFile.FastaFile(fasta1Prot)
-        cls.f2Prot = mFile.FastaFile(fasta2Prot)
-        cls.fNProt = mFile.FastaFile(fastaNProt)
-        cls.seq1 = ('HHHHHHHHHHHHHHMKKTAIAIAVALAGFATVAQAASWSHPQFEKIEGRRDRGQKTQSAP'
+        self.f1Prot = cFile.FastaFile(fileA)
+        self.f2Prot = cFile.FastaFile(fileB)
+        self.fNProt = cFile.FastaFile(fileC)
+        self.fSecS  = cFile.FastaFile(fileD)
+        self.fSecE  = cFile.FastaFile(fileE)
+        self.fSecEq = cFile.FastaFile(fileF)
+        self.seq1 = ('HHHHHHHHHHHHHHMKKTAIAIAVALAGFATVAQAASWSHPQFEKIEGRRDRGQKTQSAP'
                     'FFALPGVKDANDYFGSALLRVMMMMMMMHHHHHHHHHH')
-        cls.head1 = '>sp|P31545|EFEB_ECOLI Recombinant'
-        cls.seq2 = ('MKKTAIAIAVALAGFATVAQAASWSHPQFEKIEGRRDRGQKTQSAPFFALPGVKDANDYF'
+        self.head1 = '>sp|P31545|EFEB_ECOLI Recombinant'
+        self.seq2 = ('MKKTAIAIAVALAGFATVAQAASWSHPQFEKIEGRRDRGQKTQSAPFFALPGVKDANDYF'
                     'GSALLRVM')
-        cls.head2 = '>sp|P31545|EFEB_ECOLI Native'
-        cls.seq3  = ('VLLQICANTQDTVIHALRDIIKHTPDLLSVRWKREGFISDHAARSKGKETPINLLGFKDG'
+        self.head2 = '>sp|P31545|EFEB_ECOLI Native'
+        self.seq3  = ('VLLQICANTQDTVIHALRDIIKHTPDLLSVRWKREGFISDHAARSKGKETPINLLGFKDG'
                      'TNSGQLDMGLLFVCYQHDL')
-        cls.head3 = '>sp|X|Other protein'
+        self.head3 = '>sp|X|Other protein'
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -205,8 +153,7 @@ class Test_FastaFile(unittest.TestCase):
         for a,b,c in tInput:
             msg = f"FindSeq: {b}, {c}"
             with self.subTest(msg):
-                self.assertRaises(
-                    mException.ExecutionError, a.FindSeq, b, c)
+                self.assertRaises(RuntimeError, a.FindSeq, b, c)
     #---
 
     def test_GetSelfDelta(self):
@@ -214,6 +161,9 @@ class Test_FastaFile(unittest.TestCase):
         #------------------------------>
         tInput = [
             (self.f2Prot, -14),
+            (self.fSecS,    0),
+            (self.fSecE,  -13),
+            (self.fSecEq,   0),
         ]
         #------------------------------>
         for a,b in tInput:
@@ -230,6 +180,9 @@ class Test_FastaFile(unittest.TestCase):
         #------------------------------>
         tInput = [
             (self.f2Prot, (15,82)),
+            (self.fSecS,  (1,88)),
+            (self.fSecE,  (14,98)),
+            (self.fSecEq, (1,98)),
         ]
         #------------------------------>
         for a,b in tInput:
@@ -252,20 +205,69 @@ class Test_FastaFile(unittest.TestCase):
         for a in tInput:
             msg = "Throw exception."
             with self.subTest(msg):
-                self.assertRaises(mException.ExecutionError, a)
+                self.assertRaises(RuntimeError, a)
+    #---
+    #endregion ----------------------------------------------> Expected Output
+#---
+
+
+class Test_CSVFile(unittest.TestCase):
+    """Test for core.file.CSVFile"""
+    #region -----------------------------------------------------> Class Setup
+    def setUp(self):
+        """Create class instances"""
+        self.csvFile = cFile.CSVFile(fileCSV)
+        self.header = [
+            'Unnamed: 0', 'Intensity 01', 'Intensity 02', 'Intensity 03',
+            'Intensity 04', 'Intensity 05']
+    #---
+    #endregion --------------------------------------------------> Class Setup
+
+    #region -------------------------------------------------> Expected Output
+    def test_Init(self):
+        """Test correct initialization"""
+        #------------------------------>
+        tInput = [
+            (self.csvFile.rFileP,  fileCSV,     'File Path'),
+            (self.csvFile.rHeader, self.header, 'Data Header'),
+            (self.csvFile.rNRow,   5,           'Number of Rows'),
+            (self.csvFile.rNCol,   6,           'Number of Columns'),
+        ]
+        #------------------------------>
+        for a,b,c in tInput:
+            msg = f"{c}"
+            with self.subTest(msg):
+                self.assertEqual(a, b)
+    #---
+
+    def test_StrInCol(self):
+        """Test for StrInCol method"""
+        #------------------------------>
+        tInput = [
+            (self.csvFile, 'Intensity 04', 0, True),
+            (self.csvFile, 'Intensity 20', 0, False),
+        ]
+        #------------------------------>
+        for a,b,c,d in tInput:
+            msg = f"tStr={b}, col={c}"
+            with self.subTest(msg):
+                #------------------------------>
+                result = a.StrInCol(b, c)
+                #------------------------------>
+                self.assertEqual(result, d)
     #---
     #endregion ----------------------------------------------> Expected Output
 #---
 
 
 class Test_PDBFile(unittest.TestCase):
-    """Test for data.file.PDB"""
+    """Test for core.file.PDB"""
+    # pylint: disable=protected-access
     #region -----------------------------------------------------> Class Setup
-    @classmethod
-    def setUp(cls):                                                             # pylint: disable=arguments-differ
+    def setUp(self):
         """Create class instances"""
-        cls.pdb = mFile.PDBFile(pdb)
-        cls.df = pd.DataFrame({
+        self.pdb = cFile.PDBFile(filePDB)
+        self.df = pd.DataFrame({
             'ATOM'      : 44*['ATOM'],
             'ANumber'   : [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,2991,2992,2993,2994,2995,2996,2997,2998,3000,3001,3002,3003,3004,3005,3006,3007,3008,3009,3010,3011,3012,3013,3014,3015,3016,3017],
             'AName'     : ['N','CA','C','O','CB','OG','N','CA','C','O','CB','N','CA','C','O','CB','CG','CD','N','CA','C','O','CB','CG1','CG2','OXT','N','CA','C','O','CB','OG','N','CA','C','O','CB','N','CA','C','O','CB','CG','CD'],
@@ -282,7 +284,7 @@ class Test_PDBFile(unittest.TestCase):
             'Segment'   : 44*[''],
             'Element'   : ['N','C','C','O','C','O','N','C','C','O','C','N','C','C','O','C','C','C','N','C','C','O','C','C','C','O','N','C','C','O','C','O','N','C','C','O','C','N','C','C','O','C','C','C'],
         })
-        cls.dfA = pd.DataFrame({
+        self.dfA = pd.DataFrame({
             'ATOM'      : 44*['ATOM'],
             'ANumber'   : [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,2991,2992,2993,2994,2995,2996,2997,2998,3000,3001,3002,3003,3004,3005,3006,3007,3008,3009,3010,3011,3012,3013,3014,3015,3016,3017],
             'AName'     : ['N','CA','C','O','CB','OG','N','CA','C','O','CB','N','CA','C','O','CB','CG','CD','N','CA','C','O','CB','CG1','CG2','OXT','N','CA','C','O','CB','OG','N','CA','C','O','CB','N','CA','C','O','CB','CG','CD'],
@@ -299,7 +301,7 @@ class Test_PDBFile(unittest.TestCase):
             'Segment'   : 44*[''],
             'Element'   : ['N','C','C','O','C','O','N','C','C','O','C','N','C','C','O','C','C','C','N','C','C','O','C','C','C','O','N','C','C','O','C','O','N','C','C','O','C','N','C','C','O','C','C','C'],
         })
-        cls.dfB = pd.DataFrame({
+        self.dfB = pd.DataFrame({
             'ATOM'      : 44*['ATOM'],
             'ANumber'   : [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,2991,2992,2993,2994,2995,2996,2997,2998,3000,3001,3002,3003,3004,3005,3006,3007,3008,3009,3010,3011,3012,3013,3014,3015,3016,3017],
             'AName'     : ['N','CA','C','O','CB','OG','N','CA','C','O','CB','N','CA','C','O','CB','CG','CD','N','CA','C','O','CB','CG1','CG2','OXT','N','CA','C','O','CB','OG','N','CA','C','O','CB','N','CA','C','O','CB','CG','CD'],
@@ -325,7 +327,6 @@ class Test_PDBFile(unittest.TestCase):
         #------------------------------>
         tInput = [
             (self.pdb.rChain.tolist(), ['A', 'B'], self.assertEqual,               'Chain'),
-            # pylint: disable-next=protected-access
             (self.pdb.rDFAtom,         self.df,    pd._testing.assert_frame_equal, 'DF'),           # type: ignore
         ]
         #------------------------------>
@@ -382,7 +383,6 @@ class Test_PDBFile(unittest.TestCase):
             with self.subTest(msg):
                 #------------------------------>
                 self.pdb.SetBeta(a, b)
-                # pylint: disable-next=protected-access
                 pd._testing.assert_frame_equal(self.pdb.rDFAtom, c)             # type: ignore
                 #------------------------------>
 

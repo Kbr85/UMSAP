@@ -1886,7 +1886,7 @@ class ResControl():
             Parent of the widgets.
     """
     #region -----------------------------------------------------> Class setup
-    cLResControl     = mConfig.core.lStResultCtrl
+    cLResControl     = mConfig.core.lStResCtrl
     cLBtnTypeResCtrl = mConfig.core.lBtnTypeResCtrl
     #endregion --------------------------------------------------> Class setup
 

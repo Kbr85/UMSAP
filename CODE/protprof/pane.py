@@ -184,7 +184,7 @@ class ProtProf(cPane.BaseConfPanelMod):
     cSection     = mConfig.prot.nMod
     cTitlePD     = f"Running {mConfig.prot.nMod} Analysis"
     cGaugePD     = 30
-    rLLenLongest = len(mConfig.core.lStResultCtrlS)
+    rLLenLongest = len(mConfig.core.lStResCtrlS)
     rMainData    = '{}_{}-ProteomeProfiling-Data.txt'
     rDExtra = {
         'cLDFThreeCol'  : cLDFThreeCol,
@@ -505,7 +505,7 @@ class ProtProf(cPane.BaseConfPanelMod):
             self.wGeneName.wTc.SetValue(dataI['I'][self.cLGene])
             self.wScore.wTc.SetValue(dataI['I'][self.cLScoreCol])
             self.wExcludeProt.wTc.SetValue(dataI['I'][self.cLExcludeProt])
-            self.wTcResults.SetValue(dataI['I'][mConfig.core.lStResultCtrlS])
+            self.wTcResults.SetValue(dataI['I'][mConfig.core.lStResCtrlS])
             self.rLbDict[1] = dataI['I'][self.cLCond]
             self.rLbDict[2] = dataI['I'][self.cLRP]
             self.rLbDict['ControlType'] = dataI['I'][f'Control {self.cLCtrlType}']
@@ -743,7 +743,7 @@ class ProtProf(cPane.BaseConfPanelMod):
                 self.rLbDict['ControlType']),
             self.EqualLenLabel(f"Control {self.cLCtrlName}") : (
                 self.rLbDict['Control']),
-            self.EqualLenLabel(mConfig.core.lStResultCtrlS): (
+            self.EqualLenLabel(mConfig.core.lStResCtrlS): (
                 self.wTcResults.GetValue()),
         }
         #------------------------------> Dict with all values

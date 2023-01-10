@@ -407,7 +407,7 @@ class TarProt(cPane.BaseConfPanelMod2):
             self.wSeqCol.wTc.SetValue(dataI['I'][f'{self.cLSeqCol} Column'])
             self.wDetectedProt.wTc.SetValue(dataI['I'][self.cLDetectedProt])
             self.wScore.wTc.SetValue(dataI['I'][self.cLScoreCol])
-            self.wTcResults.SetValue(dataI['I'][mConfig.core.lStResultCtrlS])
+            self.wTcResults.SetValue(dataI['I'][mConfig.core.lStResCtrlS])
             self.rLbDict[0] = dataI['I'][self.cLExp]
             self.rLbDict['Control'] = dataI['I'][f"Control {self.cLCtrlName}"]
             #------------------------------>
@@ -466,7 +466,7 @@ class TarProt(cPane.BaseConfPanelMod2):
                 self.wDetectedProt.wTc.GetValue()),
             self.EqualLenLabel(self.cLScoreCol) : (
                 self.wScore.wTc.GetValue()),
-            self.EqualLenLabel(mConfig.core.lStResultCtrlS): (
+            self.EqualLenLabel(mConfig.core.lStResCtrlS): (
                 self.wTcResults.GetValue()),
             self.EqualLenLabel(self.cLExp) : (
                 self.rLbDict[0]),

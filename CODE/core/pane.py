@@ -1259,7 +1259,7 @@ class BaseConfPanelMod(BaseConfPanel, cWidget.ResControl):
             self, 'cTTDetectedProtL', ('Set the column number containing the '
                                        'detected proteins.\ne.g. 7'))
         self.rLLenLongest = getattr(
-            self, 'rLLenLongest', len(mConfig.core.lStResultCtrlS))
+            self, 'rLLenLongest', len(mConfig.core.lStResCtrlS))
         #------------------------------> Parent class init
         BaseConfPanel.__init__(self, parent, rightDelete=rightDelete)
 
@@ -2124,7 +2124,7 @@ class ListCtrlSearchPlot(wx.Panel):
             Hint for the wx.SearchCtrl. Default is ''.
     """
     #region -----------------------------------------------------> Class setup
-    cName = mConfig.core.npListCtrlSearchPlot
+    cName = mConfig.core.npLCtrlSearchPlot
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup

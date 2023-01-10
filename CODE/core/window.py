@@ -2262,7 +2262,7 @@ class ResControlExp(BaseDialogOkCancel):
             This is the pane calling the dialog.
     """
     #region -----------------------------------------------------> Class setup
-    cName = mConfig.core.ndResControlExp
+    cName = mConfig.core.ndResCtrlExp
     #------------------------------>
     cSize = (900, 580)
     #------------------------------>

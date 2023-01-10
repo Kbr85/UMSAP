@@ -65,8 +65,8 @@ class BaseConfTab(wx.Panel):
         #region -----------------------------------------------> Initial Setup
         self.cParent    = parent
         self.cName      = getattr(self, 'cName',      mConfig.core.ntDef)
-        self.tTitle     = getattr(self, 'cTitle',     mConfig.core.tTabDef)
-        self.clPaneConf = getattr(self, 'clPaneConf', mConfig.core.tPaneConf)
+        self.tTitle     = getattr(self, 'cTitle',     mConfig.core.ttDef)
+        self.clPaneConf = getattr(self, 'clPaneConf', mConfig.core.tpConf)
         #------------------------------>
         super().__init__(parent, name=self.cName, size=(500,500))
         #endregion --------------------------------------------> Initial Setup
@@ -122,7 +122,7 @@ class BaseConfListTab(BaseConfTab):
         #region -----------------------------------------------> Initial Setup
         self.cLCColLabel  = getattr(self, 'cLCColLabel',  mConfig.core.lLCtrlColNameI)
         self.cSColSize    = getattr(self, 'cLCColSize',   mConfig.core.sLCtrlColI)
-        self.cLCPaneTitle = getattr(self, 'cLCPaneTitle', mConfig.core.tListPane)
+        self.cLCPaneTitle = getattr(self, 'cLCPaneTitle', mConfig.core.tpList)
         #------------------------------>
         super().__init__(parent, dataI=dataI)
         #endregion --------------------------------------------> Initial Setup
@@ -200,8 +200,8 @@ class ResControlExp(wx.Panel):
         #------------------------------> Label
         self.cLLCtrlColName = getattr(
             self, 'cLLCtrlColName', mConfig.core.lLCtrlColNameI)
-        self.cLPaneConf = getattr(self, 'cLPaneConf', mConfig.core.tPaneConf)
-        self.cLPaneList = getattr(self, 'cLPaneList', mConfig.core.tListPane)
+        self.cLPaneConf = getattr(self, 'cLPaneConf', mConfig.core.tpConf)
+        self.cLPaneList = getattr(self, 'cLPaneList', mConfig.core.tpList)
         #------------------------------> Size
         self.cSLCTrlCol = getattr(self, 'cSLCTrlCol', mConfig.core.sLCtrlColI)
         #------------------------------>

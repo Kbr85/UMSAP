@@ -19,8 +19,8 @@ import json
 from pathlib import Path
 from typing  import Union, Optional, Literal
 
-import pandas as pd
 import numpy  as np
+import pandas as pd
 
 from Bio       import pairwise2
 from Bio.Align import substitution_matrices
@@ -118,7 +118,7 @@ def ReadFileFirstLine(
           first line is returned independently of the line content.
         - If the file is empty an empty line is returned.
     """
-    # Test in test.unit.test_file.Test_ReadFileFirstLine
+    # Test in test.unit.core.test_file.Test_ReadFileFirstLine
     #region --------------------------------------------> Read and split lines
     with open(fileP, 'r', encoding="utf-8") as file:
         for line in file:
@@ -139,12 +139,12 @@ def ReadFileFirstLine(
 #---
 
 
-def WriteJSON(fileP: Union[Path, str], data: dict) -> bool:
-    """ Writes a JSON file.
+def WriteJSON(fileP:Union[Path, str], data:dict) -> bool:
+    """Writes a JSON file.
 
         Parameters
         ----------
-        fileP : str or Path
+        fileP: str or Path
             Path to the file.
         data: dict
             Data to be written.
@@ -265,7 +265,7 @@ class FastaFile():
         are discarded. It is assumed that the first sequence is the recombinant
         sequence and the second sequence is the native sequence.
     """
-    # Test in test.unit.test_file.Test_FastaFile
+    # Test in test.unit.core.test_file.Test_FastaFile
     #region --------------------------------------------------> Instance setup
     def __init__(self, fileP: Union[Path, str]) -> None:
         """ """
@@ -286,7 +286,7 @@ class FastaFile():
         except Exception as e:
             msg = (f'There was an unexpected error when parsing the fasta '
                 f'file.\n{fileP}')
-            raise RuntimeError(msg) from e
+            raise ValueError(msg) from e
         #endregion --------------------------------------------> Initial Setup
         #---
     #endregion -----------------------------------------------> Instance setup
@@ -381,7 +381,7 @@ class FastaFile():
         if not self.rSeqNat:
             msg = ('It is not possible to calculate the sequence alignment '
                    'because the Fasta file contains only one sequence.')
-            raise ValueError(msg)
+            raise RuntimeError(msg)
         #endregion ------------------------------------------------>
 
         #region ---------------------------------------------------> Alignment
@@ -506,7 +506,7 @@ class CSVFile():
         -----
         It is assumed the CSV file has column names in the first row.
         """
-    # Test in test.unit.test_file.Test_CSVFile
+    # Test in test.unit.core.test_file.Test_CSVFile
     #region --------------------------------------------------> Instance setup
     def __init__(self, fileP:Union[Path, str], sep:str="\t") -> None:
         """ """
@@ -570,7 +570,7 @@ class PDBFile():
         rFileP: Path or str
             Path to the PDB file.
     """
-    # Test in test.unit.test_file.Test_PDBFile
+    # Test in test.unit.core.test_file.Test_PDBFile
     #region -----------------------------------------------------> Class setup
     # Col names for the DF with the atom information in the pdb file
     cDFAtomCol = [
@@ -666,7 +666,7 @@ class PDBFile():
             -------
             bool
         """
-        def Line2PDBFormat(row: np.ndarray, buff):
+        def Line2PDBFormat(row:np.ndarray, buff):
             """Apply the correct format to the row in the DataFrame and write
                 the line to the buffer.
 
