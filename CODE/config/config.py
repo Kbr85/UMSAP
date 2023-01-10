@@ -37,11 +37,12 @@ class Configuration():
 
         Notes
         -----
-        Each configuration section must define a converter dict to properly
+        Each configuration class must define a converter dict to properly
         assign the correct type for each attribute that can be defined in a
         user configuration file, e.g.:
         converter = {'DPI': int, 'checkForUpdates': bool}
     """
+    # Test in test.unit.config.test_config.Test_Configuration
     #region ---------------------------------------------------------> Options
     core:cConfig.Configuration
     corr:corrConfig.Configuration
@@ -67,7 +68,6 @@ class Configuration():
             Method handles any exception raise since this will be reported by
             mWindow.MainWindow
         """
-        # Test in test.unit.test_method.Test_LoadUserConfig
         #region ---------------------------------------------------> Read File
         try:
             with open(self.core.fConfig, 'r', encoding="utf-8") as file:
@@ -88,7 +88,7 @@ class Configuration():
         for k in data:
             #------------------------------> Check config section exists
             if (sec := getattr(self, k, None)) is None:
-                badOpt.append(sec)
+                badOpt.append(k)
                 continue
             #------------------------------>
             for j,v in data[k].items():
