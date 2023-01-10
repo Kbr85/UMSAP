@@ -11,7 +11,19 @@
 # ------------------------------------------------------------------------------
 
 
-"""Core check methods of the app"""
+"""Core check methods of the app.
+
+    Methods returns a tuple with the following structure:
+        tuple[bool, Optional[tuple[str, Optional[str], str]]]
+    For example:
+    - (True, None) -> Everything checks
+    - (False, None) -> Something does not check but there is no single offending
+        value
+    - (False, (code, value/None, msg)) -> Something does not check.
+        code: is an app error code.
+        value: value triggering the check error.
+        msg: short explanation.
+"""
 
 
 #region -------------------------------------------------------------> Imports
@@ -34,7 +46,7 @@ LIT_NumType = Literal['int', 'float']
 def VersionCompare(
     strA:str,
     strB:str,
-    )-> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
+    ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
     """Basic version comparison.
 
         Parameters
@@ -47,10 +59,10 @@ def VersionCompare(
         Returns
         -------
         tuple
-            (True, None)
+            - (True, None)
             - (False, (code, value, msg))
                 code is:
-                - Exception, Input is not valid.
+                - Exception, An exception was raised during check.
                 - '', First version is lower than the second version.
 
         Notes
@@ -66,7 +78,7 @@ def VersionCompare(
         >>> VersionCompare('3.4.7 beta', '5.4.1')
         >>> False
     """
-    # Test in test.unit.test_check.Test_VersionCompare
+    # Test in test.unit.core.test_check.Test_VersionCompare
     #region -------------------------------------------------> Get number list
     try:
         xA, yA, zA = map(int, strA.strip().split(" ")[0].split("."))
@@ -128,7 +140,7 @@ def Path2FFOutput(
         >>> Path2FFOutput('', 'file', opt=False)
         >>> (False, (NoPath, '', The path '' is not valid.))
     """
-    # Test in test.unit.test_check.Test_Path2FFOutput
+    # Test in test.unit.core.test_check.Test_Path2FFOutput
     #region --------------------------------------------------------> Optional
     if value == '':
         if opt:
@@ -204,7 +216,7 @@ def Path2FFInput(
         >>> Path2FFInput('/Users/DAT4S/test.py', 'file')
         >>> (True, None)
     """
-    # Test in test.unit.test_check.Test_Path2FFInput
+    # Test in test.unit.core.test_check.Test_Path2FFInput
     #region --------------------------------------------------------> Optional
     if value == '':
         #------------------------------>
@@ -308,7 +320,7 @@ def NumberList(
         >>> NumberList('1,2,3, 2-10', numType='int', sep=',', unique=True)
         >>> (False, (NotUnique, val, msg))
     """
-    # Test in test.unit.test_check.Test_NumberList
+    # Test in test.unit.core.test_check.Test_NumberList
     #region -------------------------------------------------------> Variables
     value    = ' '.join(tStr.split())
     elements = value.split(sep)
@@ -317,7 +329,6 @@ def NumberList(
 
     #region --------------------------------------------------------> Optional
     if value == '':
-        #------------------------------>
         if opt:
             return (True, None)
         #------------------------------>
@@ -350,7 +361,7 @@ def NumberList(
     lN = len(numbers)                                                           # Number of Elements
     #------------------------------> Exact Number of Elements
     if nN is not None:
-        if not lN == nN:
+        if lN != nN:
             msg = (f'The number of elements in tStr ({lN}), after expanding '
                 f'ranges, is not equal to nN ({nN}).')
             return (False, ('ListLength', tStr, msg))
@@ -415,7 +426,7 @@ def AInRange(
         >>> AInRange('3', refMin=-10, refN=3, refMax=0)
         >>> (True, None)
     """
-    # Test in test.unit.test_check.Test_AInRange
+    # Test in test.unit.core.test_check.Test_AInRange
     #region -------------------------------------------------------> Variables
     a = float(a)
     b = float(refMin) if refMin is not None else float('-inf')
@@ -461,7 +472,7 @@ def ListUnique(
         >>> ListUnique([9,'A',1,2,6,'1','2','3',2,6,8,9])
         >>> (False, ('NotUnique', '9, 2, 6', 'Duplicated elements: 9, 2, 6'))
     """
-    # Test in test.unit.test_check.Test_ListUnique
+    # Test in test.unit.core.test_check.Test_ListUnique
     #region -------------------------------------------------------> Variables
     seen = set()
     dup  = []
@@ -533,7 +544,7 @@ def UniqueColNumbers(                                                           
         >>> UniqueColNumbers(['1 2 3', '3-5'], sepList=[' ', ',', ';'])
         >>> (False, ('NotUnique', '3', 'Duplicated element: 3'))
     """
-    # Test in test.unit.test_check.Test_UniqueColNumbers
+    # Test in test.unit.core.test_check.Test_UniqueColNumbers
     def _strip_split(tEle: Union[str, list[str]], sep: str) -> list[str]:
         """Strip individual elements in the given list/str
 
@@ -601,6 +612,100 @@ def UniqueColNumbers(                                                           
     except Exception as e:
         return (False, ('Exception', None, str(e)))
     #endregion -----------------------------------------------> Check Elements
+#---
+
+
+def Comparison(                                                                 # pylint: disable=dangerous-default-value
+    tStr:str,
+    numType:LIT_NumType  =  'int',
+    opt:bool             = False,
+    vMin:Optional[float] = None,
+    vMax:Optional[float] = None,
+    op:list[str]         = ['<', '>', '<=', '>=', '='],
+    ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
+    """Check tStr is like 'op val', e.g. '< 10.3'.
+
+        Parameters
+        ----------
+        tStr: str
+            String to check.
+        numType: One of int or float
+            Number type in tStr.
+        opt: bool
+            Input is optional (True) or not (False). Default is False.
+        vMin: float or None
+            Minimum acceptable value in tStr.
+        vMax: float or None
+            Maximum acceptable value in tStr.
+        op: list
+            List of acceptable operand in front of value for tStr.
+
+        Returns
+        -------
+        tuple
+            (True, None)
+            (False, (code, val, msg))
+            code val are:
+                - (NotOptional, None) : tStr cannot be an empty string.
+                - (BadElement, tStr) : Not a valid string
+                - (FalseOperand, operand) : Operand is not in the list of valid operand.
+
+        Examples
+        --------
+        >>> Comparison(
+            '< 1.4', numType='float', opt=False, vMin=0, vMax=100, op=['<', '>', '<=', '>=']
+        )
+        >>> (True, None)
+    """
+    # Test in test.unit.core.test_check.Test_Comparison
+    #region -------------------------------------------------------> Variables
+    value    = " ".join(tStr.split())
+    elements = [x.strip() for x in value.split()]
+    #endregion ----------------------------------------------------> Variables
+
+    #region --------------------------------------------------------> Optional
+    if value == '':
+        if opt:
+            return (True, None)
+        #------------------------------>
+        msg = "An empty string is not a valid input."
+        return (False, ('NotOptional', None, msg))
+    #endregion -----------------------------------------------------> Optional
+
+    #region ----------------------------------------------------------> Length
+    if len(elements) != 2:
+        msg = mConfig.core.mInvalidValue.format(tStr)
+        return (False, ('BadElement', tStr, msg))
+    #endregion -------------------------------------------------------> Length
+
+    #region ---------------------------------------------------------> Operand
+    if not elements[0] in op:
+        msg = (
+            f'The given operand ({elements[0]}) is not valid '
+            f'({str(op)[1:-1]}).')
+        return (False, ('FalseOperand', str(elements[0]), msg))
+    #endregion ------------------------------------------------------> Operand
+
+    #region ---------------------------------------------------------> NumType
+    try:
+        mConfig.core.oNumType[numType](elements[1])
+    except Exception:
+        msg = mConfig.core.mInvalidValue.format(tStr)
+        return (False, ('BadElement', tStr, msg))
+    #endregion ------------------------------------------------------> NumType
+
+    #region -----------------------------------------------------------> Range
+    if vMin is not None and vMax is not None:
+        try:
+            if not AInRange(elements[1], refMin=vMin, refMax=vMax)[0]:
+                msg = mConfig.core.mInvalidValue.format(tStr)
+                return (False, ('BadElement', tStr, msg))
+        except Exception:
+            msg = mConfig.core.mInvalidValue.format(tStr)
+            return (False, ('BadElement', tStr, msg))
+    #endregion --------------------------------------------------------> Range
+
+    return (True, None)
 #---
 
 
@@ -696,99 +801,5 @@ def AllTcEmpty(
     #------------------------------>
     return (True, None)
     #endregion --------------------------------------------------> Check empty
-#---
-
-
-def Comparison(                                                                 # pylint: disable=dangerous-default-value
-    tStr:str,
-    numType:LIT_NumType  =  'int',
-    opt:bool             = False,
-    vMin:Optional[float] = None,
-    vMax:Optional[float] = None,
-    op:list[str]         = ['<', '>', '<=', '>='],
-    ) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
-    """Check tStr is like 'op val', e.g. '< 10.3'.
-
-        Parameters
-        ----------
-        tStr: str
-            String to check.
-        numType: One of int or float
-            Number type in tStr.
-        opt: bool
-            Input is optional (True) or not (False). Default is False.
-        vMin: float or None
-            Minimum acceptable value in tStr.
-        vMax: float or None
-            Maximum acceptable value in tStr.
-        op: list
-            List of acceptable operand in front of value for tStr.
-
-        Returns
-        -------
-        tuple
-            (True, None)
-            (False, (code, val, msg))
-            code val are:
-                - (NotOptional, None) : tStr cannot be an empty string.
-                - (BadElement, tStr) : Not a valid string
-                - (FalseOperand, operand) : Operand is not in the list of valid operand.
-
-        Examples
-        --------
-        >>> Comparison(
-            '< 1.4', numType='float', opt=False, vMin=0, vMax=100, op=['<', '>', '<=', '>=']
-        )
-        >>> (True, None)
-    """
-    # Test in test.unit.test_check.Test_Comparison
-    #region -------------------------------------------------------> Variables
-    value    = " ".join(tStr.split())
-    elements = [x.strip() for x in value.split()]
-    #endregion ----------------------------------------------------> Variables
-
-    #region --------------------------------------------------------> Optional
-    if value == '':
-        if opt:
-            return (True, None)
-        #------------------------------>
-        msg = "An empty string is not a valid input."
-        return (False, ('NotOptional', None, msg))
-    #endregion -----------------------------------------------------> Optional
-
-    #region ----------------------------------------------------------> Length
-    if len(elements) != 2:
-        msg = mConfig.core.mInvalidValue.format(tStr)
-        return (False, ('BadElement', tStr, msg))
-    #endregion -------------------------------------------------------> Length
-
-    #region ---------------------------------------------------------> Operand
-    if not elements[0] in op:
-        msg = (
-            f'The given operand ({elements[0]}) is not valid '
-            f'({str(op)[1:-1]}).')
-        return (False, ('FalseOperand', str(elements[0]), msg))
-    #endregion ------------------------------------------------------> Operand
-
-    #region ---------------------------------------------------------> NumType
-    try:
-        mConfig.core.oNumType[numType](elements[1])
-    except Exception:
-        msg = mConfig.core.mInvalidValue.format(tStr)
-        return (False, ('BadElement', tStr, msg))
-    #endregion ------------------------------------------------------> NumType
-
-    #region -----------------------------------------------------------> Range
-    if vMin is not None and vMax is not None:
-        try:
-            if not AInRange(elements[1], refMin=vMin, refMax=vMax)[0]:
-                msg = mConfig.core.mInvalidValue.format(tStr)
-                return (False, ('BadElement', tStr, msg))
-        except Exception:
-            msg = mConfig.core.mInvalidValue.format(tStr)
-            return (False, ('BadElement', tStr, msg))
-    #endregion --------------------------------------------------------> Range
-
-    return (True, None)
 #---
 #endregion ----------------------------------------------------------> Methods

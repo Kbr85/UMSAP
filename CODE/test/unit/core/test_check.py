@@ -11,19 +11,25 @@
 # ------------------------------------------------------------------------------
 
 
-"""Tests for data.check """
+"""Tests for core.check"""
 
 
 #region -------------------------------------------------------------> Imports
 import unittest
 from pathlib import Path
 
-import data.check as mCheck
+from core import check as cCheck
 #endregion ----------------------------------------------------------> Imports
+
+
+#region -------------------------------------------------------> File Location
+folder = Path(__file__).parent / 'files'
+#endregion ----------------------------------------------------> File Location
+
 
 #region ---------------------------------------------------------> Class Setup
 class Test_VersionCompare(unittest.TestCase):
-    """Test for data.check.VersionCompare"""
+    """Test for core.check.VersionCompare"""
     #region -------------------------------------------------> Expected Output
     def test_expected_output(self):
         """Test for the first element of the expected output"""
@@ -49,7 +55,7 @@ class Test_VersionCompare(unittest.TestCase):
         for a,b,c in tInput:
             with self.subTest(f"strA={a}, strB={b}"):
                 #------------------------------>
-                result = mCheck.VersionCompare(a, b)[0]
+                result = cCheck.VersionCompare(a, b)[0]
                 #------------------------------>
                 self.assertIs(result, c)
     #---
@@ -58,7 +64,7 @@ class Test_VersionCompare(unittest.TestCase):
 
 
 class Test_Path2FFOutput(unittest.TestCase):
-    """Test for data.check.Path2FFOutput"""
+    """Test for core.check.Path2FFOutput"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
     def setUpClass(cls):
@@ -74,21 +80,21 @@ class Test_Path2FFOutput(unittest.TestCase):
         """Test for the first element of the expected output"""
         #------------------------------>
         tInput = [
-            (self.file,  'baInput',  True, False), # Bad Input
-            ('',            'file',  True,  True), # Optional
-            ('',            'file', False, False), #
-            ('',          'folder',  True,  True), #
-            ('',          'folder', False, False), #
-            (list(),        'file', False, False), # Path() fails
-            (self.file,     'file', False,  True), # File
-            (self.folder, 'folder', False,  True), # Folder
-            (self.noPerm, 'folder', False, False), # No Write Permission
+            (self.file,  'baInput',  True, False),                              # Bad Input
+            ('',            'file',  True,  True),                              # Optional
+            ('',            'file', False, False),                              #
+            ('',          'folder',  True,  True),                              #
+            ('',          'folder', False, False),                              #
+            (list(),        'file', False, False),                              # Path() fails
+            (self.file,     'file', False,  True),                              # File
+            (self.folder, 'folder', False,  True),                              # Folder
+            (self.noPerm, 'folder', False, False),                              # No Write Permission
         ]
         #------------------------------>
         for a,b,c,d in tInput:
             with self.subTest(f"value={a}, fof={b}, opt={c}"):
                 #------------------------------>
-                result = mCheck.Path2FFOutput(a, fof=b, opt=c)[0]
+                result = cCheck.Path2FFOutput(a, fof=b, opt=c)[0]
                 #------------------------------>
                 self.assertIs(result, d)
     #---
@@ -97,7 +103,7 @@ class Test_Path2FFOutput(unittest.TestCase):
 
 
 class Test_Path2FFInput(unittest.TestCase):
-    """Test for data.check.Path2FFInput"""
+    """Test for core.check.Path2FFInput"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
     def setUpClass(cls):
@@ -129,7 +135,7 @@ class Test_Path2FFInput(unittest.TestCase):
         for a,b,c,d in tInput:
             with self.subTest(f"value={a}, fof={b}, opt={c}"):
                 #------------------------------>
-                result = mCheck.Path2FFInput(a, fof=b, opt=c)[0]
+                result = cCheck.Path2FFInput(a, fof=b, opt=c)[0]
                 #------------------------------>
                 self.assertIs(result, d)
     #---
@@ -138,7 +144,7 @@ class Test_Path2FFInput(unittest.TestCase):
 
 
 class Test_NumberList(unittest.TestCase):
-    """Test for data.check.NumberList"""
+    """Test for core.check.NumberList"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
     def setUpClass(cls):
@@ -187,7 +193,7 @@ class Test_NumberList(unittest.TestCase):
             )
             with self.subTest(msg):
                 #------------------------------>
-                result = mCheck.NumberList(
+                result = cCheck.NumberList(
                     a,
                     numType = b,
                     unique  = c,
@@ -207,31 +213,31 @@ class Test_NumberList(unittest.TestCase):
 
 
 class Test_AInRange(unittest.TestCase):
-    """Test for data.check.AInRange"""
+    """Test for core.check.AInRange"""
     #region -------------------------------------------------> Expected output
     def test_expected_output(self):
         """Test for first element in expected result"""
         #------------------------------>
         tInput = [
-            (     6,  None,   None,  True), # Nothing to compare is True
-            (     6,   '3',     10,  True), #   3 <=    6 <=   10 is True
-            (  '-2',  '-4',      0,  True), #  -4 <=   -2 <=    0 is True
-            (   '3',   '3',     10,  True), #   3 <=    3 <=   10 is True
-            (  '10',   '3',   '10',  True), #   3 <=   10 <=   10 is True
-            (   '0',   '3',     10, False), #   3 <=    0 <=   10 is False
-            ('30.3', '3.5', '10.9', False), # 3.5 <= 30.3 <= 10.9 is False
-            (     6,   '3',   None,  True), #   3 <=    6         is True
-            (    '3',  '3',   None,  True), #   3 <=    3         is True
-            (     -3,  '3',   None, False), #   3 <=   -3         is False
-            (      3, None,    '6',  True), #   3 <=    6         is True
-            (    '3', None,    '3',  True), #           3 <=    3 is True
-            (     -1, None, '-3.9', False), #          -1 <= -3.9 is False
+            (     6,  None,   None,  True),                                     # Nothing to compare is True
+            (     6,   '3',     10,  True),                                     #   3 <=    6 <=   10 is True
+            (  '-2',  '-4',      0,  True),                                     #  -4 <=   -2 <=    0 is True
+            (   '3',   '3',     10,  True),                                     #   3 <=    3 <=   10 is True
+            (  '10',   '3',   '10',  True),                                     #   3 <=   10 <=   10 is True
+            (   '0',   '3',     10, False),                                     #   3 <=    0 <=   10 is False
+            ('30.3', '3.5', '10.9', False),                                     # 3.5 <= 30.3 <= 10.9 is False
+            (     6,   '3',   None,  True),                                     #   3 <=    6         is True
+            (    '3',  '3',   None,  True),                                     #   3 <=    3         is True
+            (     -3,  '3',   None, False),                                     #   3 <=   -3         is False
+            (      3, None,    '6',  True),                                     #   3 <=    6         is True
+            (    '3', None,    '3',  True),                                     #           3 <=    3 is True
+            (     -1, None, '-3.9', False),                                     #          -1 <= -3.9 is False
         ]
         #------------------------------>
         for a,b,c,d in tInput:
             with self.subTest(f"a={a}, refMin={b}, refMax={c}"):
                 #------------------------------>
-                result = mCheck.AInRange(a, refMin=b, refMax=c)[0]
+                result = cCheck.AInRange(a, refMin=b, refMax=c)[0]
                 #------------------------------>
                 self.assertIs(result, d)
     #---
@@ -240,7 +246,7 @@ class Test_AInRange(unittest.TestCase):
 
 
 class Test_ListUnique(unittest.TestCase):
-    """Test for data.check.ListUnique"""
+    """Test for core.check.ListUnique"""
     #region -------------------------------------------------> Expected Output
     def test_expected_output(self):
         """Test for first element in expected result"""
@@ -257,7 +263,7 @@ class Test_ListUnique(unittest.TestCase):
         for a,b,c in tInput:
             with self.subTest(f"tList={a}, opt={b}"):
                 #------------------------------>
-                result = mCheck.ListUnique(a, opt=b)[0]
+                result = cCheck.ListUnique(a, opt=b)[0]
                 #------------------------------>
                 self.assertIs(result, c)
     #---
@@ -266,7 +272,7 @@ class Test_ListUnique(unittest.TestCase):
 
 
 class Test_UniqueColNumbers(unittest.TestCase):
-    """Test for data.check.UniqueColNumbers"""
+    """Test for core.check.UniqueColNumbers"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
     def setUp(cls):                                                             # pylint: disable=arguments-differ
@@ -289,19 +295,19 @@ class Test_UniqueColNumbers(unittest.TestCase):
         """Test for expected output"""
         #------------------------------>
         tInput = [
-            (self.b, self.sepListC, False), # Bad Input
+            (self.b, self.sepListC, False),                                     # Bad Input
             (self.b, self.sepListD, False),
-            (self.e, self.sepListA, False), # Non-Integer
+            (self.e, self.sepListA, False),                                     # Non-Integer
             (self.b, self.sepListA,  True),
             (self.c, self.sepListA,  True),
-            (self.d, self.sepListA, False), # Not Unique
+            (self.d, self.sepListA, False),                                     # Not Unique
             (self.f, self.sepListA, False),
         ]
         #------------------------------>
         for a,b,c in tInput:
             with self.subTest(f'value={a}, sepList={b}'):
                 #------------------------------>
-                result = mCheck.UniqueColNumbers(a, sepList=b)[0]
+                result = cCheck.UniqueColNumbers(a, sepList=b)[0]
                 #------------------------------>
                 self.assertIs(result, c)
     #---
@@ -310,7 +316,7 @@ class Test_UniqueColNumbers(unittest.TestCase):
 
 
 class Test_Comparison(unittest.TestCase):
-    """Test for data.check.Comparison"""
+    """Test for core.check.Comparison"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
     def setUp(cls):                                                             # pylint: disable=arguments-differ
@@ -341,13 +347,11 @@ class Test_Comparison(unittest.TestCase):
                 f'tStr={a}, numType={b}, opt={c}, vMin={d}, vMax={e}, op={f}')
             with self.subTest(msg):
                 #------------------------------>
-                result = mCheck.Comparison(
+                result = cCheck.Comparison(
                     a, numType=b, opt=c, vMin=d, vMax=e, op=f)[0]
                 #------------------------------>
                 self.assertIs(result, g)
     #---
     #endregion ----------------------------------------------> Expected Output
 #---
-
-if __name__ == '__main__':
-    unittest.main()
+#endregion ------------------------------------------------------> Class Setup
