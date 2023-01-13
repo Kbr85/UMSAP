@@ -11,36 +11,35 @@
 # ------------------------------------------------------------------------------
 
 
-"""Tests for data.generator """
+"""Tests for core.generator """
 
 
 #region -------------------------------------------------------------> Imports
 import unittest
 from pathlib import Path
 
-import data.generator as mGenerator
+from core import generator as cGenerator
 #endregion ----------------------------------------------------------> Imports
 
 
 #region -------------------------------------------------------> File Location
-folder = Path(__file__).parent / 'test_files'
-fasta2Prot = folder / 'tarprot-seq-both.txt'
+folder = Path(__file__).parent / 'files'
+fileA  = folder / 'fasta-tarprot-seq-both.txt'
 #endregion ----------------------------------------------------> File Location
 
 
 #region ---------------------------------------------------------> Class Setup
 class Test_FastaSequence(unittest.TestCase):
-    """Test for data.generator.FastaSequence"""
+    """Test for core.generator.FastaSequence"""
     #region -----------------------------------------------------> Class Setup
-    @classmethod
-    def setUp(cls):                                                             # pylint: disable=arguments-differ
+    def setUp(self):
         """Create class instances"""
-        cls.file    = fasta2Prot
-        cls.header1 = '>sp|P31545|EFEB_ECOLI Recombinant'
-        cls.seq1    = ('HHHHHHHHHHHHHHMKKTAIAIAVALAGFATVAQAASWSHPQFEKIEGRRDRG'
-                      'QKTQSAPFFALPGVKDANDYFGSALLRVMMMMMMMHHHHHHHHHH')
-        cls.header2 = '>sp|P31545|EFEB_ECOLI Native'
-        cls.seq2    = ('MKKTAIAIAVALAGFATVAQAASWSHPQFEKIEGRRDRGQKTQSAPFFALPGV'
+        self.file    = fileA
+        self.header1 = '>sp|P31545|EFEB_ECOLI Recombinant'
+        self.seq1    = ('HHHHHHHHHHHHHHMKKTAIAIAVALAGFATVAQAASWSHPQFEKIEGRRDRG'
+                       'QKTQSAPFFALPGVKDANDYFGSALLRVMMMMMMMHHHHHHHHHH')
+        self.header2 = '>sp|P31545|EFEB_ECOLI Native'
+        self.seq2    = ('MKKTAIAIAVALAGFATVAQAASWSHPQFEKIEGRRDRGQKTQSAPFFALPGV'
                        'KDANDYFGSALLRVM')
     #---
     #endregion --------------------------------------------------> Class Setup
@@ -49,7 +48,7 @@ class Test_FastaSequence(unittest.TestCase):
     def test_expected_output(self):
         """Test for expected output"""
         #------------------------------>
-        gen = mGenerator.FastaSequence(self.file)
+        gen = cGenerator.FastaSequence(self.file)
         #------------------------------>
         self.assertEqual(next(gen), (self.header1, self.seq1))
         self.assertEqual(next(gen), (self.header2, self.seq2))

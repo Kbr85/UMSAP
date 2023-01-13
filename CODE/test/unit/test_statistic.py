@@ -38,11 +38,6 @@ tarprotData = folder / 'tarprot-data-file.txt'
 
 
 #region --------------------------------------------------------> pd.DataFrame
-DF_CI_Mean = pd.DataFrame({
-    'CI_l' : [-8.17, -1.88, 1.90, -1.30, -2.43, 0.3, -4.74],
-    'CI_u' : [16.17, 9.88, 6.10, 5.97, 7.43, 7.37, 12.40]
-})
-
 DF_DataPrep_Float = pd.DataFrame({
     'A' : [  2,  '',  8, 16,  0, 32,  64],
     'B' : [  4,   8, 16,  0, 32, 64, 128],
@@ -64,15 +59,6 @@ DF_DataPrep_Float_False = pd.DataFrame({
     'B' : [  4,   8, 16,   0,  32, 64, 128],
     'C' : ['a', 'b','c', 'd', 'e','f', 'g'],
     'F' : [nan, 128, 64,  0,  16,  8,   4],
-})
-
-DF_Log2 = pd.DataFrame({
-    'A' : [  2,   4,  8, 16,  0, 32,  64],
-    'B' : [  4,   8, 16,  0, 32, 64, 128],
-    'C' : [128,  64, 32, 16,  0,  8,   4],
-    'D' : [  0,   2,  4,  8, 16, 32,  64],
-    'E' : [ 64,  32, 16,  8,  4,  2,   0],
-    'F' : [256, 128, 64,  0, 16,  8,   4],
 })
 
 DF_Log2_Full_None = pd.DataFrame({
@@ -180,12 +166,6 @@ DF_fTest_PS_Out = pd.DataFrame({
     'S' : [  False,   False,   False,   False,   False,   False,   False],
 })
 
-DF_chiTest = pd.DataFrame({
-    'A' : [ 5, 6, 7, 8, 9],
-    'B' : [ 1, 2, 3,30,35],
-    'C' : [ 5, 6, 7, 8, 9],
-})
-
 DF_tTest_PS_Out = pd.DataFrame({
     't' : [0.91766, 0.75593, 0.00000, -0.32880, 0.71429, -1.00000, 62.00000],
     'P' : [0.45567, 0.52860, 1.00000,  0.77354, 0.54917,  0.42265,  0.00026],
@@ -202,22 +182,6 @@ DF_tTest_IS_Out_True = pd.DataFrame({
     't' : [0.43906, 0.31235, 0.00000, -0.40000, 0.92848, -1.14708, 19.60612],
     'P' : [0.68467, 0.77235, 1.00000,  0.71111, 0.43042,  0.31938,  0.00012],
     'S' : [  False,   False,   False,    False,   False,    False,     True],
-})
-
-DF_tost_delta = pd.DataFrame({
-    'A' : [90.8, 86.2],
-    'B' : [88.0, 87.4],
-    'C' : [90.5, 88.2],
-    'D' : [90.0, 89.7],
-    'E' : [91.0, 87.3],
-    'F' : [86.0, 87.6],
-    'G' : [88.3, 88.0],
-    'H' : [89.3, 86.5],
-    'I' : [88.9, 89.6],
-    'J' : [91.1, 89.1],
-    'K' : [86.2, 86.1],
-    'L' : [91.3, 86.2],
-    'M' : [89.3, 87.7],
 })
 
 DF_tost = pd.DataFrame({
@@ -269,25 +233,6 @@ DF_tost_IV = pd.DataFrame({
     's2': [  False,     True],
 })
 
-DF_test_slope = pd.DataFrame({
-    'Xa': [14,10, 7,18,14,16,13,15, 5,18,16,10, nan],
-    'Ya': [29,24,14,27,27,28,27,32,13,35,32,17, nan],
-    'Xb': [ 6,16, 9,19,13,14,15,18,17, 8,15,16, nan],
-    'Yb': [15,28,13,36,29,27,31,33,32,15,30,26, nan],
-    'Xc': [15, 9, 7,12,12, 9,12, 3,13,10,11, 8, nan],
-    'Yc': [32,27,15,23,26,17,25,14,29,22,30,25, nan],
-    'Xd': [14,10, 7,18,14,16,13,15, 5,18,16,10, nan],
-    'Yd': [29,24,14,27,27,28,27,32,13,35,32,17, nan],
-    'Xe': [ 6,16, 9,19,13,14,15,18,17, 8,15,16, nan],
-    'Ye': [15,28,13,36,29,27,31,33,32,15,30,26, nan],
-    'Xf': [15, 9, 7,12,12, 9,12, 3,13,10,11, 8, nan],
-    'Yf': [32,27,15,23,26,17,25,14,29,22,30,25, nan],
-    'Xg': [ 6,16, 9,19,13,14,15,18,17, 8,15,16, nan],
-    'Yg': [15,28,13,36,29,27,31,33,32,15,30,26, nan],
-    'Xh': [ 6,16, 9,19,13,14,15,18,17, 8,15,16, nan],
-    'Yh': [-10,-20,-15,-40,-25,-21,-34,-30,-38,-19,-24,-21, nan],
-})
-
 DF_DataPrep_1 = pd.DataFrame({
     'Intensity 01' : [0.000,16.694,19.152,19.221,17.323,0.000,0.000,16.440,16.691,0.000,0.000,0.000,0.000,0.000,0.000,0.000,16.571,0.000,14.962,0.000],
     'Intensity 02' : [0.000,18.312,19.212,19.240,17.257,17.063,0.000,18.122,17.542,0.000,0.000,0.000,17.390,0.000,16.018,0.000,16.108,0.000,16.291,0.000],
@@ -299,58 +244,6 @@ DF_DataPrep_1 = pd.DataFrame({
 
 
 #region ---------------------------------------------------------> Class Setup
-class Test_DataRange(unittest.TestCase):
-    """Test for data.statistic.DataRange"""
-    #region -----------------------------------------------------> Class Setup
-    @classmethod
-    def setUp(cls):                                                             # pylint: disable=arguments-differ
-        """Set test"""
-        cls.Tlist = [1,2,3,4,5]
-    #---
-    #endregion --------------------------------------------------> Class Setup
-
-    #region -----------------------------------------------------> Valid Input
-    def test_invalid_input(self):
-        """Test for invalid input"""
-        #------------------------------>
-        badInput = [
-            (DF_CI_Mean, 0),
-            (['a', 'b', 1, 2], 0.04),
-            ([], 0.04),
-        ]
-        #------------------------------>
-        for a,b in badInput:
-            with self.subTest(f'x={a}, margin={b}'):
-                self.assertRaises(
-                    mException.InputError,
-                    mStatistic.DataRange,
-                    a,
-                    margin=b,
-                )
-    #---
-    #endregion --------------------------------------------------> Valid Input
-
-    #region -------------------------------------------------> Expected Output
-    def test_expected_output(self):
-        """Test for expected output"""
-        #------------------------------>
-        tInput = [
-            (self.Tlist,     0, [  1,   5]),
-            (self.Tlist,   0.1, [0.6, 5.4]),
-            (DF_Log2['A'], 0.5, [-32,  96]),
-        ]
-        #------------------------------>
-        for a,b,c in tInput:
-            with self.subTest(f'x={a}, margin={b}'):
-                #------------------------------>
-                result = mStatistic.DataRange(a,margin=b)
-                #------------------------------>
-                self.assertEqual(result, c)
-    #---
-    #endregion ----------------------------------------------> Expected Output
-#---
-
-
 class Test_DataPrep_Float(unittest.TestCase):
     """Test for data.statistic.DataPrep_Float"""
     #region -------------------------------------------------> Expected Output
@@ -707,31 +600,6 @@ class Test_tost_delta(unittest.TestCase):
                 #------------------------------>
                 # pylint: disable=protected-access
                 pd._testing.assert_series_equal(r, g)                           # type: ignore
-    #---
-    #endregion ----------------------------------------------> Expected Output
-#---
-
-
-class Test_test_slope(unittest.TestCase):
-    """Test for data.statistic.Test_slope"""
-    #region -------------------------------------------------> Expected Output
-    def test_expected_output(self):
-        """Test for expected output"""
-        #------------------------------>
-        tInput = [
-            (DF_test_slope, [3,3,2]),
-        ]
-        #------------------------------>
-        for a,b in tInput:
-            msg = (f'df=DF_test_slope, nL={b}')
-            with self.subTest(msg):
-                #------------------------------>
-                r = mStatistic.Test_slope(a,b)
-                r[0] = int(f'{r[0]*100:.0f}')
-                r[1] = int(f'{r[1]*100:.0f}')
-                r[2] = int(f'{r[2]*100000000:.0f}')
-                #------------------------------>
-                self.assertEqual(r, [74, 74, 32])
     #---
     #endregion ----------------------------------------------> Expected Output
 #---

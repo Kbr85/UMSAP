@@ -37,9 +37,9 @@ if TYPE_CHECKING:
 #endregion ----------------------------------------------------------> Imports
 
 
-LIT_NumType = Literal['int', 'float']
-LIT_CompEq  = Literal['e', 'ne']
 LIT_Comp    = Literal['lt', 'le', 'e', 'ge', 'gt']
+LIT_CompEq  = Literal['e', 'ne']
+LIT_NumType = Literal['int', 'float']
 LIT_Region  = Literal['start', 'end']
 
 
@@ -150,7 +150,7 @@ def Str2ListNumber(
         >>> Str2ListNumber('1, 2, 3, 6-10,  4  ,  5, 6  , 7', sep=',', unique=True)
         >>> [1, 2, 3, 6, 7, 8, 9, 10, 4, 5]
     """
-    # Test in test.unit.test_method.Test_Str2ListNumber
+    # Test in test.unit.core.test_method.Test_Str2ListNumber
     #region -------------------------------------------------------> Variables
     lN = []
     values = tStr.strip().split(sep)
@@ -231,7 +231,7 @@ def StrEqualLength(
         -----
         Filling characters are added at the end or start of each str.
     """
-    # Test in test.unit.test_method.Test_StrEqualLength
+    # Test in test.unit.core.test_method.Test_StrEqualLength
     #region ---------------------------------------------------> Variables
     long = len(max(strL, key=len))
     lOut = []
@@ -283,7 +283,7 @@ def ResControl2ListNumber(                                                      
             '0 1 2, 3 4 5; 6 7 8, 9 10 11', sep=[' ', ',', ';'], numType='int')
         >>> [[[0,1,2], [3,4,5]], [[6,7,8], [9,10,11]]]
     """
-    # Test in test.unit.test_method.Test_ResControl2ListNumber
+    # Test in test.unit.core.test_method.Test_ResControl2ListNumber
     #region -------------------------------------------------------> Variables
     l = []
     #endregion ----------------------------------------------------> Variables
@@ -322,7 +322,7 @@ def ResControl2Flat(val:list[list[list[int]]]) -> list[int]:
         >>> ResControl2Flat([[[0,1,2], [3,4,5]], [[6,7,8], [9,10,11]]])
         >>> [0,1,2,3,4,5,6,7,8,9,10,11])
     """
-    # Test in test.unit.test_method.Test_ResControl2Flat
+    # Test in test.unit.core.test_method.Test_ResControl2Flat
     return list(itertools.chain(*(itertools.chain(*val))))
 #---
 
@@ -358,7 +358,7 @@ def ResControl2DF(
         >>> ResControl2DF([[[0,1,2], []], [[6,7,8], []]], 1)
         >>> [[[1,2,3],[]], [[4,5,6],[]]]
     """
-    # Test in test.unit.test_method.Test_ResControl2DF
+    # Test in test.unit.core.test_method.Test_ResControl2DF
     #region -------------------------------------------------------> Variables
     idx  = start
     outL = []
@@ -366,11 +366,9 @@ def ResControl2DF(
 
     #region --------------------------------------------------> Adjust col idx
     for row in val:
-        #------------------------------>
         outR = []
         #------------------------------>
         for col in row:
-            #------------------------------>
             outC = []
             #------------------------------>
             for _ in col:
@@ -417,12 +415,12 @@ def ExpandRange(
         >>> ExpandRange('-5.4', 'float')
         >>> [-5.4]
     """
-    # Test in test.unit.test_method.Test_ExpandRange
+    # Test in test.unit.core.test_method.Test_ExpandRange
     #region -------------------------------------------------> Expand & Return
     tr = r.strip()
     #------------------------------> Expand
     if '-' in tr:
-        #------------------------------> Catch more than one - in range
+        #------------------------------> Catch more than one - in range by raising ValueError
         a,b = tr.split('-')
         #------------------------------> Negative value
         if a == '':
@@ -434,7 +432,7 @@ def ExpandRange(
         a = int(a)
         b = int(b)
         if a < b:
-            return [x for x in range(a, b+1, 1)]
+            return list(range(a, b+1, 1))
         #------------------------------> Bad Input
         raise ValueError(mConfig.core.mRangeNumIE.format(r))
     #------------------------------> Positive number
@@ -475,7 +473,7 @@ def DictVal2Str(                                                                
         >>> DictVal2Str({1:Path('/k/d/c'), 'B':3}, changeKey=[1])
         >>> {1: '/k/d/c', 'B': 3}
     """
-    # Test in test.unit.test_method.Test_DictVal2Str
+    # Test in test.unit.core.test_method.Test_DictVal2Str
     #region -------------------------------------------------------> Variables
     if new:
         oDict = copy.deepcopy(iDict)
@@ -523,7 +521,7 @@ def DFFilterByColS(
         discarded, e.g. c[x] == 'refString'
         - Assumes all values in col are strings.
     """
-    # Test in test.unit.test_method.Test_DFFilterByColS
+    # Test in test.unit.core.test_method.Test_DFFilterByColS
     #region ----------------------------------------------------------> Filter
     #------------------------------>  Copy
     dfo = df.copy()
@@ -561,7 +559,7 @@ def DFExclude(df:pd.DataFrame, col:list[int]) -> 'pd.DataFrame':
         Rows with at least one value other than NA in the given columns are
         discarded.
     """
-    # Test in test.unit.test_method.Test_DFExclude
+    # Test in test.unit.core.test_method.Test_DFExclude
     #region ----------------------------------------------------------> Exclude
     #------------------------------>  Copy
     dfo = df.copy()
@@ -608,7 +606,7 @@ def DFFilterByColN(
 
         Assumes all values in col are numbers.
     """
-    # Test in test.unit.test_method.Test_DFFilterByColN
+    # Test in test.unit.core.test_method.Test_DFFilterByColN
     #region ----------------------------------------------------------> Filter
     #------------------------------>  Copy
     dfo = df.copy()
@@ -659,7 +657,7 @@ def DFReplace(                                                                  
 
         Raise
         -----
-        ValueError :
+        ValueError:
             - When selection is not found in df
             - When oriVal and repVal have different length
         RuntimeError :
@@ -669,7 +667,7 @@ def DFReplace(                                                                  
         -----
         Column selection in the df is done by column number.
     """
-    # Test in test.unit.test_method.Test_DFReplace
+    # Test in test.unit.core.test_method.Test_DFReplace
     #region ---------------------------------------------------------> Replace
     #------------------------------> Copy
     dfo = df.copy()
@@ -686,14 +684,14 @@ def DFReplace(                                                                  
 
 
 #region ---------------------------------------------------------> GUI Methods
-def GetDisplayInfo(win: 'cWindow.BaseWindow') -> dict[str, dict[str, int]]:
+def GetDisplayInfo(win:'cWindow.BaseWindow') -> dict[str, dict[str, int]]:
     """This will get the information needed to set the position of a window.
         Should be called after Fitting sizers for accurate window size
         information.
 
         Parameters
         ----------
-        win : wx.Frame
+        win: wx.Frame
             Window to be positioned
 
         Returns
@@ -704,6 +702,7 @@ def GetDisplayInfo(win: 'cWindow.BaseWindow') -> dict[str, dict[str, int]]:
                 'W' : {'N': N, 'w':W, 'h', H},        Info about win
             }
     """
+    # No test
     #region ----------------------------------------------------> Display info
     xd, yd, wd, hd =  wx.Display(win).GetClientArea()
     #endregion -------------------------------------------------> Display info
@@ -748,12 +747,12 @@ def LCtrlFillColNames(lc:wx.ListCtrl, fileP:Union[Path, str]) -> bool:
         This will delete the wx.ListCtrl before adding the new names.
         wx.ListCtrl is assumed to have at least two columns [#, Name,]
     """
+    # No test
     #region -------------------------------------------------------> Read file
     colNames = cFile.ReadFileFirstLine(fileP)
     #endregion ----------------------------------------------------> Read file
 
     #region -------------------------------------------------------> Fill List
-    #------------------------------> Del items
     lc.DeleteAllItems()
     #------------------------------> Fill
     for k, v in enumerate(colNames):
@@ -804,7 +803,7 @@ def NCResNumbers(
                 },
             }
     """
-    # Test in test.unit.test_method.Test_NCResNumbers
+    # Test in test.unit.core.test_method.Test_NCResNumbers
     #region --------------------------------------------> Helper Functions
     def NCTerm(
         row:list[str],
@@ -844,10 +843,10 @@ def NCResNumbers(
     try:
         dfR.iloc[:,rDO['dfo']['NC']] = dfR.iloc[
             :,[rDO['df']['SeqCol'], 1]].apply(
-                NCTerm,                                                     # type: ignore
+                NCTerm,                                                         # type: ignore
                 axis        = 1,
                 raw         = True,
-                result_type = 'expand',                                     # type: ignore
+                result_type = 'expand',                                         # type: ignore
                 args        = (rSeqFileObj, 'Recombinant'),
             )
     except RuntimeError as e:
@@ -860,12 +859,12 @@ def NCResNumbers(
     #------------------------------>
     if seqNat and rSeqFileObj.rSeqNat:
         #------------------------------>
-        delta = rSeqFileObj.GetSelfDelta()
+        delta   = rSeqFileObj.GetSelfDelta()
         protLoc = rSeqFileObj.GetNatProtLoc()
         #------------------------------>
         a = dfR.iloc[:,rDO['dfo']['NC']] + delta
         dfR.iloc[:,rDO['dfo']['NCF']] = a
-        #------------------------------>
+        #------------------------------> Remove Numbers not in the Native Protein
         m = ((dfR.iloc[:,rDO['dfo']['NC']] >= protLoc[0]) &
             (dfR.iloc[:,rDO['dfo']['NC']] <= protLoc[1])).to_numpy()
         a = dfR.iloc[:,rDO['dfo']['NCF']].where(m, np.nan)
@@ -982,7 +981,7 @@ def Fragments(
         - Keys Exp1,...,ExpN are variables and depend on the module calling the
         method.
     """
-    # Test in test.unit.test_method.Test_Fragments
+    # Test in test.unit.core.test_method.Test_Fragments
     #region -------------------------------------------------------> Variables
     dictO = {}
     #endregion ----------------------------------------------------> Variables
@@ -1174,7 +1173,7 @@ def Rec2NatCoord(
         >>> Rec2NatCoord([(1,42), (38, 50), (201, 211), (247, 263)], (100, 230)), 10)
         >>> [(211, 221)]
     """
-    # Test in test.unit.test_method.Test_Rec2NatCoord
+    # Test in test.unit.core.test_method.Test_Rec2NatCoord
     #region ---------------------------------------------------> Return NA
     if delta is None or protLoc[0] is None or protLoc[1] is None:
         return ['NA']
@@ -1212,7 +1211,7 @@ def MergeOverlappingFragments(
         -----
         An empty list is returned if coord is empty.
     """
-    # Test in test.unit.test_method.Test_MergeOverlappingFragments
+    # Test in test.unit.core.test_method.Test_MergeOverlappingFragments
     #region ---------------------------------------------------> Variables
     coordO = []
     #endregion ------------------------------------------------> Variables

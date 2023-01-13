@@ -51,7 +51,7 @@ def DataRange(
             [min(x) - dm, max(x) + dm]
         When margin is 0 then the return will simply be [min(x), max(x)]
     """
-    # Test in test.unit.test_statistic.Test_DataRange
+    # Test in test.unit.core.test_statistic.Test_DataRange
     #region -------------------------------------------------------> Variables
     msg = 'x must contain only numbers.'
     #endregion ----------------------------------------------------> Variables
@@ -61,7 +61,7 @@ def DataRange(
     #-------------->
     tType = type(x)
     #-------------->
-    if tType == list or tType == tuple:
+    if tType in (list, tuple):
         try:
             nL = list(map(float, x))
         except Exception as e:
@@ -100,8 +100,8 @@ def DataRange(
 #---
 
 def HistBin(x: pd.Series) -> tuple[float, float]:
-    """Calculate the bin width for a histogram according to Freedman–Diaconis
-        rule.
+    """Calculate the bin width for a histogram according to the
+        Freedman – Diaconis rule.
 
         Parameters
         ----------
@@ -132,8 +132,8 @@ def HistBin(x: pd.Series) -> tuple[float, float]:
 def CI_Sample(
     df:pd.DataFrame,
     alpha:float,
-    fullCI:bool       = False,
-    axis:Literal[0,1] = 1,
+    axis:Literal[0,1]    = 1,
+    roundN:Optional[int] = None,
     ) -> pd.DataFrame:
     """Calculate the confidence interval for a sample.
 
@@ -143,31 +143,41 @@ def CI_Sample(
             Dataframe with the data
         alpha: float
             Significance level. CI will be calculated for 1-alpha.
-        fullCI: bool
-            Full confidence interval (True) or not (False). Default is False.
         axis: int
             Calculate for row (1) in df or columns (0)
+        roundN: int
+            Round results to the given number of decimal.
+
+        Return
+        ------
+        pd.DataFrame
+            Columns in the dataframe are 'CI', 'LL', 'LU'
+
+        Notes
+        -----
+        http://www.biostathandbook.com/confidence.html
+        https://www.statskingdom.com/confidence-interval-calculator.html
     """
+    # Test in test.unit.core.test_statistic.Test_CI_Sample
     #region --------------------------------------------------->
     res = stats.t.interval(
         1-alpha,
         df.count(axis=axis)-1,                                                  # Exclude NA values
         loc   = df.mean(axis=axis, skipna=True),
-        scale = df.std(axis=axis,  skipna=True),
+        scale = df.sem(axis=axis,  skipna=True),
     )
     #------------------------------>
-    if fullCI:
-        dfOut = pd.DataFrame({
-            'LL' : res[0],
-            'UL' : res[1],
-        })
-    else:
-        dfOut = pd.DataFrame({
-            'CI' : (res[1] - res[0])/2,
-        })
+    dfOut = pd.DataFrame({
+        'CI' : (res[1] - res[0])/2,
+        'LL' : res[0],
+        'UL' : res[1],
+    })
     #endregion ------------------------------------------------>
 
-    print(dfOut.head(n=20))
+    #region -----------------------------------------------------------> Round
+    if roundN is not None:
+        dfOut = dfOut.round(int(roundN))
+    #endregion --------------------------------------------------------> Round
 
     return dfOut
 #---
@@ -177,8 +187,8 @@ def CI_Mean_Diff(
     dfA:pd.DataFrame,
     dfB:pd.DataFrame,
     alpha:float,
+    equal_var:bool       = True,
     axis:Literal[0,1]    = 1,
-    fullCI:bool          = False,
     roundN:Optional[int] = None,
     ) -> 'pd.DataFrame':
     """Calculate the confidence interval for the difference between means when
@@ -192,11 +202,10 @@ def CI_Mean_Diff(
             DataFrame with sample B.
         alpha: float
             Significance level
+        equal_var: bool
+            Assume equal variance (True) or not (False). Default is False.
         axis: int
             Axis to calculate on. 1 row based calculation, 0 column based.
-        fullCI: bool
-            Return full interval (True) or just (False) the CI value. Default is
-            to return full interval.
         roundN: int or None
             Round numbers to the given number of decimal places.
             Default is None.
@@ -204,64 +213,65 @@ def CI_Mean_Diff(
         Returns
         -------
         pd.Dataframe
-            With two columns CI_l and CI_u if fullCI is True else one column CI.
+            Columns in the dataframe are 'CI', 'LL', 'LU'
 
         Notes
         -----
-        Assumes samples does not have equal variance
         - Further details:
-            https://calcworkshop.com/confidence-interval/difference-in-means/
+            https://www.statskingdom.com/difference-confidence-interval-calculator.html
     """
-    # Test in test.unit.test_statistic.Test_CI_Mean_Diff_DF
+    # Test in test.unit.core.test_statistic.Test_CI_Mean_Diff_DF
     #region ----------------------------------------------------------> Values
+    if not axis:
+        dfB.set_axis(dfA.columns.values.tolist(), axis=1, inplace=True)         # type: ignore
+    #------------------------------>
     var1 = dfA.var(axis=axis, skipna=True)                                      # type: ignore
     var2 = dfB.var(axis=axis, skipna=True)                                      # type: ignore
-    n1   = dfA.count(axis=axis)
-    n2   = dfB.count(axis=axis)
-    dfT  = n1 + n2 - 2
+    n1   = dfA.count(axis=axis)                                                 # Remove NA values
+    n2   = dfB.count(axis=axis)                                                 # Remove NA values
+    #------------------------------> SEM & df
+    if equal_var:
+        dfT = n1 + n2 - 2
+        sem = np.sqrt((1/n1)+(1/n2))*np.sqrt(((n1-1)*var1+(n2-1)*var2)/dfT)
+    else:
+        dfT = ((var1/n1)+(var2/n2))**2/((var1**2/((n1-1)*n1**2))+(var2**2/((n2-1)*n2**2)))
+        sem = np.sqrt((var1/n1)+(var2/n2))
     #------------------------------>
     q = 1-(alpha/2)
     t = stats.t.ppf(q, dfT)
     #------------------------------>
-    ci = t*np.sqrt((1/n1)+(1/n2))*np.sqrt(((n1-1)*var1+(n2-1)*var2)/dfT)        # type: ignore
+    ci = t*sem        # type: ignore
     #endregion -------------------------------------------------------> Values
 
-    #region --------------------------------------------------------> Empty DF
-    if fullCI:
-        diffMean21 = (
-            dfA.mean(axis=axis, skipna=True)                                    # type: ignore
-           -dfB.mean(axis=axis, skipna=True)                                    # type: ignore
-        )
-        #------------------------------>
-        dfO = pd.DataFrame(
-            np.nan, columns=['CI_l', 'CI_u'], index=range(dfA.shape[0])          # type: ignore
-        )
-        #------------------------------>
-        dfO['CI_l'] = diffMean21 - ci
-        dfO['CI_u'] = diffMean21 + ci
-    else:
-        #------------------------------>
-        dfO = pd.DataFrame(np.nan, columns=['CI'], index=range(dfA.shape[0]))    # type: ignore
-        #------------------------------>
-        dfO['CI'] = ci
-    #endregion -----------------------------------------------------> Empty DF
+    #region --------------------------------------------------------------> DF
+    diffMean21 = (
+        dfA.mean(axis=axis, skipna=True)                                    # type: ignore
+       -dfB.mean(axis=axis, skipna=True)                                    # type: ignore
+    )
+    #------------------------------>
+    dfO = pd.DataFrame({
+        'CI' : ci,
+        'LL' : diffMean21 - ci,
+        'UL' : diffMean21 + ci,
+    })
+    dfO.reset_index(drop=True, inplace=True)
+    #endregion -----------------------------------------------------------> DF
 
     #region -----------------------------------------------------------> Round
     if roundN is not None:
         dfO = dfO.round(int(roundN))
     #endregion --------------------------------------------------------> Round
 
-    print(dfO.head(n=20))
-
     return dfO
 #---
 
 
 def Tost_delta(
-    df:Union[pd.DataFrame, pd.Series],
+    df:pd.DataFrame,
     alpha:float,
     beta:float,
     gamma:float,
+    axis:int                 = 0,
     d:float                  = 0,
     deltaMax:Optional[float] = None,
     ) -> Union[pd.Series, 'np.ndarray']:
@@ -277,6 +287,8 @@ def Tost_delta(
             Beta level.
         gamma: float
             Gamma level.
+        axis: int
+            Axis for the calculation, 0 by row 1 by column. Default is 0.
         d: float
             Absolute difference. Default is 0.
         deltaMax: float or None
@@ -292,10 +304,10 @@ def Tost_delta(
         Delta is calculated according to:
         https://pubs.acs.org/doi/pdf/10.1021/ac053390m
     """
-    # Test in test.unit.test_statistic.Test_tost_delta
+    # Test in test.unit.core.test_statistic.Test_tost_delta
     #region -------------------------------------------------------> Variables
-    s = df.std(axis=1)                                                          # type: ignore
-    n = df.shape[1]
+    s    = df.std(axis=axis)                                                    # type: ignore
+    n    = df.count(axis=axis)                                                  # type: ignore
     chi2 = stats.chi2.ppf(1-gamma, (n-1))
     #------------------------------>
     sCorr = s * np.sqrt((n-1)/chi2)
@@ -308,7 +320,7 @@ def Tost_delta(
 
     #region --------------------------------------------------> Check deltaMax
     if deltaMax is not None:
-        delta = np.where(delta > deltaMax, deltaMax, delta)
+        delta = pd.Series(np.where(delta > deltaMax, deltaMax, delta))
     #endregion -----------------------------------------------> Check deltaMax
 
     return delta
@@ -333,11 +345,12 @@ def Test_chi(df:pd.DataFrame, alpha:float, check5:bool=True) -> list:
 
         Notes
         -----
-        Threshold of number of cells with values less than 5 from:
+        - Threshold of number of cells with values less than 5 from:
         D. Yates, D. Moore, G. McCabe, The practice of Statistics
         (Freeman, New York, 1999), p. 734.
+        - https://www.statskingdom.com/doc_chi_squared.html
     """
-    # Test in test.unit.test_statistic.Test_chi
+    # Test in test.unit.core.test_statistic.Test_chi
     #region ---------------------------------------------------> Remove 0 rows
     dfT = df[df.any(axis=1)]
     #endregion ------------------------------------------------> Remove 0 rows
@@ -391,7 +404,7 @@ def Test_slope(df:pd.DataFrame, nL:list[int]=[]) -> list[float]:                
         X,Y pairs in a group can be of different length but X and Y must have
         the same number of elements.
     """
-    # Test in test.unit.test_statistic.Test_test_slope
+    # Test in test.unit.core.test_statistic.Test_test_slope
     #region -------------------------------------------------------> Variables
     p = []
     nL = nL if nL else [1]
