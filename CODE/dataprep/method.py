@@ -73,7 +73,7 @@ def DataPreparation(                                                            
         *args are ignored. They are needed for compatibility.
         *kwargs are ignored. They are needed for compatibility.
     """
-    # Test in test.unit.test_statistic.DataPreparation
+    # Test in test.unit.data.test_method.DataPreparation
     #region ----------------------------------------> Run Data Preparation
     #------------------------------> dfI & dfF
     try:
@@ -154,20 +154,6 @@ def DataPreparation(                                                            
         dfS.reset_index(drop=True, inplace=True)
     #endregion ----------------------------------------------> Reset index
 
-    #region -------------------------------------------------------> Print
-    # if mConfig.development:
-    #     #------------------------------>
-    #     dfList = [dfI, dfF, dfT, dfN, dfIm, dfTP, dfE, dfS]
-    #     dfName = ['dfI', 'dfF', 'dfT', 'dfN', 'dfIm', 'dfTP', 'dfE', 'dfS']
-    #     #------------------------------>
-    #     print('')
-    #     for i, a in enumerate(dfList):
-    #         if a is not None:
-    #             print(f'{dfName[i]}: {a.shape}')
-    #         else:
-    #             print(f'{dfName[i]}: None')
-    #endregion ----------------------------------------------------> Print
-
     #region --------------------------------------------------->
     dictO = {
         'dfI' : dfI,
@@ -212,7 +198,7 @@ def DataPrep_Float(
         list
             [dfI, dfF]
     """
-    # Test in test.unit.test_statistic.Test_DataPrep_Float
+    # Test in test.unit.data.test_method.Test_DataPrep_Float
     #region -------------------------------------------------------->
     dfI = df.iloc[:,col]
     #------------------------------>
@@ -247,7 +233,7 @@ def _DataTransformation_None(
         Dataframe
             Without any transformation.
     """
-    # Test in test.unit.test_statistic.Test_DataTransformation
+    # Test in test.unit.data.test_method.Test_DataTransformation
     return df
 #---
 
@@ -280,7 +266,7 @@ def _DataTransformation_Log2(                                                   
         - df is expected to be a copy whose values can be changed during
         transformation.
     """
-    # Test in test.unit.test_statistic.Test_DataTransformation
+    # Test in test.unit.data.test_method.Test_DataTransformation
     #region ---------------------------------------------> Log2 transformation
     #------------------------------> Log2
     if sel:
@@ -331,7 +317,7 @@ def DataTransformation(                                                         
         -----
         Correct data types in df are expected.
     """
-    # Test in test.unit.test_statistic.Test_DataTransformation
+    # Test in test.unit.data.test_method.Test_DataTransformation
     #region --------------------------------------------------> Transformation
     return TRANS_METHOD[method](df.copy(), sel=sel, rep=rep)
     #endregion -----------------------------------------------> Transformation
@@ -357,7 +343,7 @@ def _DataNormalization_None(
         Dataframe
             Without any normalization.
     """
-    # Test in test.unit.test_statistic.Test_DataNormalization
+    # Test in test.unit.data.test_method.Test_DataNormalization
     return df
 #---
 
@@ -387,7 +373,7 @@ def _DataNormalization_Median(                                                  
         - The median normalization is performed column wise.
         - NA values are skipped.
     """
-    # Test in test.unit.test_statistic.Test_DataNormalization
+    # Test in test.unit.data.test_method.Test_DataNormalization
     #region --------------------------------------------> Median Normalization
     if sel:
         median = df.iloc[:,sel].median(axis=0, skipna=True)
@@ -410,7 +396,7 @@ NORM_METHOD = {
 def DataNormalization(                                                          # pylint: disable=dangerous-default-value
     df:pd.DataFrame,
     sel:list[int]=[],
-    method:Literal['Median', 'None']='Median'
+    method:Literal['Median', 'None'] = 'Median'
     ) -> pd.DataFrame:
     """Perform a data normalization over the selected columns in the
         dataframe.
@@ -433,7 +419,7 @@ def DataNormalization(                                                          
         -----
         Correct data types in df are expected.
     """
-    # Test in test.unit.test_statistic.Test_DataNormalization
+    # Test in test.unit.data.test_method.Test_DataNormalization
     #region ---------------------------------------------------> Normalization
     return NORM_METHOD[method](df.copy(), sel=sel)
     #endregion ------------------------------------------------> Normalization
@@ -455,7 +441,7 @@ def _DataImputation_None(df:pd.DataFrame, *args, **kwargs) -> pd.DataFrame: # py
         Dataframe
             Without any imputation.
     """
-    # Test in test.unit.test_statistic.Test_DataImputation
+    # Test in test.unit.data.test_method.Test_DataImputation
     return df
 #---
 
@@ -522,8 +508,8 @@ IMPUTATION_METHOD = {
 
 def DataImputation(                                                             # pylint: disable=dangerous-default-value
     df:pd.DataFrame,
-    sel:list[int]=[],
-    method:Literal['Normal Distribution', 'None']='Normal Distribution',
+    sel:list[int]                                 = [],
+    method:Literal['Normal Distribution', 'None'] = 'Normal Distribution',
     **kwargs
     ) -> pd.DataFrame:
     """Perform a data imputation over the selected columns in the
@@ -548,7 +534,7 @@ def DataImputation(                                                             
         Correct data types in df are expected.
         For most methods, only np.nan values will be replaced.
     """
-    # Test in test.unit.test_statistic.Test_DataImputation
+    # Test in test.unit.data.test_method.Test_DataImputation
     #region ------------------------------------------------------> Imputation
     return IMPUTATION_METHOD[method](df.copy(), sel=sel, **kwargs)
     #endregion ---------------------------------------------------> Imputation

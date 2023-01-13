@@ -217,12 +217,12 @@ class DataPrep(cPane.BaseConfPanel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class Methods
-    def SetInitialData(self, dataI: dict={}) -> bool:                           # pylint: disable=dangerous-default-value
+    def SetInitialData(self, dataI:dict={}) -> bool:                            # pylint: disable=dangerous-default-value
         """Set initial data.
 
             Parameters
             ----------
-            dataI : dict or None
+            dataI: dict or None
                 Data to fill all fields and repeat an analysis. See Notes.
 
             Returns
@@ -265,9 +265,7 @@ class DataPrep(cPane.BaseConfPanel):
             bool
         """
         #region -------------------------------------------------------> Super
-        if super().CheckInput():
-            pass
-        else:
+        if not super().CheckInput():
             return False
         #endregion ----------------------------------------------------> Super
 
@@ -281,8 +279,6 @@ class DataPrep(cPane.BaseConfPanel):
                 f'{self.cLImputation} methods are all set to None. There is '
                 f'nothing to be done.')
             return False
-        else:
-            pass
         #endregion -------------------------------------------------> All None
 
         return True

@@ -26,19 +26,19 @@ from scipy  import stats
 import wx
 
 from config.config import config as mConfig
-from core import window    as cWindow
 from core import file      as cFile
 from core import statistic as cStatistic
+from core import window    as cWindow
 from main import menu      as mMenu
 #endregion ----------------------------------------------------------> Imports
 
 
 #region -------------------------------------------------------------> Methods
 def CreateResDataPrep(
-        parent:wx.Window,
-        title:str    = '',
-        tSection:str = '',
-        tDate:str    = '',
+    parent:wx.Window,
+    title:str    = '',
+    tSection:str = '',
+    tDate:str    = '',
     ) -> bool:
     """Launch ResDataPrep from PubSub message.
 
@@ -197,7 +197,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         """
         #region -----------------------------------------------> Update parent
         if self.rFromUMSAPFile:
-            self.cParent.UnCheckSection(self.cSection, self) # type: ignore
+            self.cParent.UnCheckSection(self.cSection, self)                    # type: ignore
         #endregion --------------------------------------------> Update parent
 
         #region ------------------------------------> Reduce number of windows
@@ -269,7 +269,8 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
     #endregion ------------------------------------------------> Event Methods
 
     #region --------------------------------------------------> Manage Methods
-    def SetWindow(self,
+    def SetWindow(
+        self,
         parent:wx.Window,
         tSection:str = '',
         tDate:str    = '',
@@ -344,7 +345,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             -------
             bool
         """
-        #------------------------------>
+        #region --------------------------------------------------->
         if self.rFromUMSAPFile:
             super().DupWin()
         else:
@@ -354,7 +355,8 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
                 tSection = self.tSection,
                 tDate    = self.tDate,
             )
-        #------------------------------>
+        #endregion ------------------------------------------------>
+
         return True
     #---
 
@@ -397,7 +399,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
 
             Parameters
             ----------
-            col : int
+            col: int
                 Column to plot.
 
             Returns
@@ -405,7 +407,6 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region ---------------------------------------------------> Variables
-        #------------------------------>
         x = self.rDataPlot['dfF'].iloc[:,col]
         x = x[np.isfinite(x)]
         #------------------------------>
@@ -435,7 +436,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
 
             Parameters
             ----------
-            col : int
+            col: int
                 Column to plot.
 
             Returns
@@ -443,7 +444,6 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region ---------------------------------------------------> Variables
-        #------------------------------>
         x = self.rDataPlot['dfT'].iloc[:,col]
         x = x[np.isfinite(x)]
         #------------------------------>
@@ -451,7 +451,6 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         #endregion ------------------------------------------------> Variables
 
         #region --------------------------------------------------------> Draw
-        #------------------------------>
         self.wPlot.dPlot['Transf'].rAxes.clear()
         #------------------------------> title
         self.wPlot.dPlot['Transf'].rAxes.set_title("Transformed")
@@ -492,7 +491,6 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region ---------------------------------------------------> Variables
-        #------------------------------>
         x = self.rDataPlot['dfN'].iloc[:,col]
         x = x[np.isfinite(x)]
         #------------------------------>
@@ -500,7 +498,6 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         #endregion ------------------------------------------------> Variables
 
         #region --------------------------------------------------------> Draw
-        #------------------------------>
         self.wPlot.dPlot['Norm'].rAxes.clear()
         #------------------------------> title
         self.wPlot.dPlot['Norm'].rAxes.set_title("Normalized")
@@ -541,7 +538,6 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region ---------------------------------------------------> Variables
-        #------------------------------>
         x = self.rDataPlot['dfIm'].iloc[:,col]
         x = x[np.isfinite(x)]
         #------------------------------>
@@ -549,7 +545,6 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         #endregion ------------------------------------------------> Variables
 
         #region --------------------------------------------------------> Draw
-        #------------------------------>
         self.wPlot.dPlot['Imp'].rAxes.clear()
         #------------------------------> title
         self.wPlot.dPlot['Imp'].rAxes.set_title("Imputed")
@@ -731,8 +726,6 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
                     tException = e,
                     parent     = self,
                 )
-        else:
-            pass
         #endregion ------------------------------------------------> Get Path
 
         dlg.Destroy()
