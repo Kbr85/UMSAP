@@ -185,12 +185,12 @@ class Preference(wx.Dialog):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnSave(self, event: wx.CommandEvent) -> bool:                           # pylint: disable=unused-argument
+    def OnSave(self, event:wx.CommandEvent) -> bool:                            # pylint: disable=unused-argument
         """Save the preferences.
 
             Parameters
             ----------
-            event : wx.CommandEvent
+            event: wx.CommandEvent
                 Information about the event.
 
             Returns
@@ -231,12 +231,12 @@ class Preference(wx.Dialog):
         return True
     #---
 
-    def OnCancel(self, event: wx.CommandEvent) -> bool:                         # pylint: disable=unused-argument
+    def OnCancel(self, event:wx.CommandEvent) -> bool:                          # pylint: disable=unused-argument
         """Close the window.
 
             Parameters
             ----------
-             event : wx.CommandEvent
+             event: wx.CommandEvent
                 Information about the event.
 
             Returns
@@ -247,12 +247,12 @@ class Preference(wx.Dialog):
         return True
     #---
 
-    def OnDefault(self, event: Union[wx.CommandEvent, str]) -> bool:
+    def OnDefault(self, event:Union[wx.CommandEvent, str]) -> bool:
         """Set default options.
 
             Parameters
             ----------
-             event : wx.CommandEvent
+             event: wx.CommandEvent
                 Information about the event.
 
             Returns
@@ -330,7 +330,7 @@ class Preference(wx.Dialog):
         return data
     #---
 
-    def SetConfValues(self, data: dict) -> bool:
+    def SetConfValues(self, data:dict) -> bool:
         """Set the default values.
 
             Parameters

@@ -53,6 +53,7 @@ def UpdateCheck(
         -----
         Always called from another thread.
     """
+    # No Test
     #region ---------------------------------> Get web page text from Internet
     try:
         r = requests.get(mConfig.core.urlUpdate, timeout=10)
