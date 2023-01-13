@@ -32,7 +32,7 @@ from tarprot  import config as tarpConfig
 
 
 #region -------------------------------------------------------> File Location
-folder = Path(__file__).parent / 'files'
+folder = Path(__file__).parent / 'file'
 #endregion ----------------------------------------------------> File Location
 
 

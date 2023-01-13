@@ -20,8 +20,8 @@ from typing import Optional, TYPE_CHECKING
 import matplotlib as mpl
 
 from config.config import config as mConfig
-from core import window as cWindow
 from core import method as cMethod
+from core import window as cWindow
 from main import menu   as mMenu
 
 if TYPE_CHECKING:
@@ -80,17 +80,17 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
     def __init__(self, parent:'resWindow.UMSAPControl') -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.rObj     = parent.rObj
-        self.rData    = self.rObj.dConfigure[self.cSection]()
+        self.rObj  = parent.rObj
+        self.rData = self.rObj.dConfigure[self.cSection]()
         self.rDate, menuData = self.SetDateMenuDate()
         #------------------------------> Nothing found
         self.ReportPlotDataError()
         #------------------------------>
-        self.rDateC   = self.rDate[0]
-        self.rBar     = False
-        self.rCol     = True
-        self.rNorm    = mpl.colors.Normalize(vmin=-1, vmax=1)
-        self.rCmap    = cMethod.MatplotLibCmap(
+        self.rDateC = self.rDate[0]
+        self.rBar   = False
+        self.rCol   = True
+        self.rNorm  = mpl.colors.Normalize(vmin=-1, vmax=1)
+        self.rCmap  = cMethod.MatplotLibCmap(
             N   = mConfig.corr.CMAP['N'],
             c1  = mConfig.corr.CMAP['c1'],
             c2  = mConfig.corr.CMAP['c2'],
@@ -208,7 +208,7 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         self.rSelColName = self.rData[tDate]['DF'].columns.values
         self.rSelColNum  = self.rData[tDate]['NumColList']
         self.rSelColIdx  = [x for x,_ in enumerate(self.rSelColNum)]
-
+        #------------------------------>
         return True
     #---
 

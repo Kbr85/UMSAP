@@ -23,7 +23,7 @@ from core import check as cCheck
 
 
 #region -------------------------------------------------------> File Location
-folder = Path(__file__).parent / 'files'
+folder = Path(__file__).parent / 'file'
 #endregion ----------------------------------------------------> File Location
 
 

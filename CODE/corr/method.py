@@ -35,7 +35,7 @@ def CorrA(                                                                      
 
         Parameters
         ----------
-        *args : These are ignores here.
+        *args: These are ignores here.
         df: pd.DataFrame
             DataFrame read from CSV file.
         rDO: dict
@@ -69,7 +69,7 @@ def CorrA(                                                                      
         *args are ignored. They are needed for compatibility.
         *kwargs are ignored. They are needed for compatibility.
     """
-    # Test in test.unit.test_method.Test_CorrA
+    # Test in test.unit.corr.test_method.Test_CorrA
     #region ------------------------------------------------> Data Preparation
     tOut = dataMethod.DataPreparation(df=df, rDO=rDO, resetIndex=resetIndex)
     if not tOut[0]:
@@ -82,7 +82,7 @@ def CorrA(                                                                      
     except Exception as e:
         return ({}, 'Correlation coefficients calculation failed.', e)
     else:
-        dictO = tOut[0]
+        dictO        = tOut[0]
         dictO['dfR'] = dfR
         return (dictO, '', None)
     #endregion --------------------------------------------------------> CorrA

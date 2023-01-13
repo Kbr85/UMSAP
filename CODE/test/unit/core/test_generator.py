@@ -23,7 +23,7 @@ from core import generator as cGenerator
 
 
 #region -------------------------------------------------------> File Location
-folder = Path(__file__).parent / 'files'
+folder = Path(__file__).parent / 'file'
 fileA  = folder / 'fasta-tarprot-seq-both.txt'
 #endregion ----------------------------------------------------> File Location
 

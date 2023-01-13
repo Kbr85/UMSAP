@@ -45,11 +45,6 @@ seqLimProt    = folder / 'limprot-seq-both.txt'
 tarprot_seq_1 = folder / 'tarprot-seq-both-1.txt'
 #------------------------------> Result Files
 #-------------->
-corrA_1 = folder / 'res-corrA-1.txt'
-corrA_2 = folder / 'res-corrA-2.txt'
-corrA_3 = folder / 'res-corrA-3.txt'
-corrA_4 = folder / 'res-corrA-4.txt'
-#-------------->
 protprof_1 = folder / 'res-protprof-1.txt'
 limprot_1  = folder / 'res-limprot-1.txt'
 tarprot_1  = folder / 'res-tarprot-1.txt'
@@ -65,111 +60,6 @@ DF_DFFilterByColN = pd.DataFrame({
 
 
 #region ---------------------------------------------------------> Class Setup
-class Test_CorrA(unittest.TestCase):
-    """Test for data.method.CorrA"""
-    #region -----------------------------------------------------> Class Setup
-    @classmethod
-    def setUp(cls):                                                             # pylint: disable=arguments-differ
-        """Set test"""
-        cls.df = mFile.ReadCSV2DF(tarprotData)
-        cls.dict1 = {
-            'Cero' : False,
-            'TransMethod' : 'Log2',
-            'NormMethod'  : 'Median',
-            'ImpMethod'   : 'None',
-            'Shift'       : 1.8,
-            'Width'       : 0.3,
-            'CorrMethod'  : 'Pearson',
-            'oc' : {
-                'Column' : [98,99,100,101,102],
-            },
-            'df' : {
-                'ColumnR'     : [0,1,2,3,4],
-                'ColumnF'     : [0,1,2,3,4],
-                'ResCtrlFlat' : [0,1,2,3,4],
-            }
-        }
-        cls.dict2 = {
-            'Cero' : False,
-            'TransMethod' : 'None',
-            'NormMethod'  : 'None',
-            'ImpMethod'   : 'None',
-            'Shift'       : 1.8,
-            'Width'       : 0.3,
-            'CorrMethod'  : 'Pearson',
-            'oc' : {
-                'Column' : [98,99,100,101,102],
-            },
-            'df' : {
-                'ColumnR'     : [0,1,2,3,4],
-                'ColumnF'     : [0,1,2,3,4],
-                'ResCtrlFlat' : [0,1,2,3,4],
-            }
-        }
-        cls.dict3 = {
-            'Cero' : True,
-            'TransMethod' : 'Log2',
-            'NormMethod'  : 'Median',
-            'ImpMethod'   : 'None',
-            'Shift'       : 1.8,
-            'Width'       : 0.3,
-            'CorrMethod'  : 'Pearson',
-            'oc' : {
-                'Column' : [98,99,100,101,102],
-            },
-            'df' : {
-                'ColumnR'     : [0,1,2,3,4],
-                'ColumnF'     : [0,1,2,3,4],
-                'ResCtrlFlat' : [0,1,2,3,4],
-            }
-        }
-        cls.dict4 = {
-            'Cero' : True,
-            'TransMethod' : 'Log2',
-            'NormMethod'  : 'Median',
-            'ImpMethod'   : 'None',
-            'Shift'       : 1.8,
-            'Width'       : 0.3,
-            'CorrMethod'  : 'Kendall',
-            'oc' : {
-                'Column' : [98,99,100,101,102],
-            },
-            'df' : {
-                'ColumnR'     : [0,1,2,3,4],
-                'ColumnF'     : [0,1,2,3,4],
-                'ResCtrlFlat' : [0,1,2,3,4],
-            }
-        }
-    #---
-    #endregion --------------------------------------------------> Class Setup
-
-    #region -------------------------------------------------> Expected Output
-    def test_output(self):
-        """Test method output"""
-        #------------------------------>
-        tInput = [
-            (self.df, self.dict1, True, corrA_1),
-            (self.df, self.dict2, True, corrA_2),
-            (self.df, self.dict3, True, corrA_3),
-            (self.df, self.dict4, True, corrA_4),
-        ]
-        #------------------------------>
-        for a,b,c,d in tInput:
-            with self.subTest(f"df={a}, rDO={b}, resetIndex={c}"):
-                #------------------------------>
-                result = mMethod.CorrA(
-                    a, b, resetIndex=c)[0]['dfR']
-                result = result.round(3)
-                #------------------------------>
-                dfF = pd.read_csv(d, sep='\t',index_col=0).round(3)
-                #------------------------------>
-                # pylint: disable=protected-access
-                pd._testing.assert_frame_equal(result, dfF)                     # type: ignore
-    #---
-    #endregion ----------------------------------------------> Expected Output
-#---
-
-
 class Test_ProtProf(unittest.TestCase):
     """Test for data.method.ProtProf"""
     #region -----------------------------------------------------> Class Setup

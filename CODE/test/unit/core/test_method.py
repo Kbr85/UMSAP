@@ -28,7 +28,7 @@ from core import file   as cFile
 
 
 #region -------------------------------------------------------> File Location
-folder = Path(__file__).parent / 'files'
+folder = Path(__file__).parent / 'file'
 fileA   = folder / 'fasta-tarprot-seq-both.txt'                                 # Fasta File with two seq
 #endregion ----------------------------------------------------> File Location
 
