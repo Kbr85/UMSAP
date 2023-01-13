@@ -11,7 +11,7 @@
 # ------------------------------------------------------------------------------
 
 
-"""Base Pane for the app"""
+"""Core Panes for the app"""
 
 
 #region -------------------------------------------------------------> Imports
@@ -525,7 +525,7 @@ class BaseConfPanel(
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnIFileLoad(self, event: Union[wx.CommandEvent, str]) -> bool:          # pylint: disable=unused-argument
+    def OnIFileLoad(self, event:Union[wx.CommandEvent, str]) -> bool:           # pylint: disable=unused-argument
         """Clear GUI elements when Data Folder is ''.
 
             Parameters
@@ -543,7 +543,7 @@ class BaseConfPanel(
         return self.IFileEnter(fileP)
     #---
 
-    def OnImpMethod(self, event: Union[wx.CommandEvent, str])-> bool:           # pylint: disable=unused-argument
+    def OnImpMethod(self, event:Union[wx.CommandEvent, str])-> bool:            # pylint: disable=unused-argument
         """Show/Hide the Imputation options.
 
             Parameters
@@ -555,7 +555,7 @@ class BaseConfPanel(
             -------
             bool
         """
-        if self.wImputationMethod.wCb.GetValue() == 'Normal Distribution':
+        if self.wImputationMethod.wCb.GetValue() == mConfig.data.lONormDist:
             self.sSizer.Show(self.sImpNorm, show=True, recursive=True)
             self.sSizer.Layout()
             self.SetupScrolling()
@@ -569,7 +569,7 @@ class BaseConfPanel(
         return True
     #---
 
-    def OnClear(self, event: wx.CommandEvent) -> bool:
+    def OnClear(self, event:wx.CommandEvent) -> bool:
         """Clear all input, including the Imputation options.
 
             Parameters
@@ -650,13 +650,13 @@ class BaseConfPanel(
         return True
     #---
 
-    def EqualLenLabel(self, label: str) -> str:
+    def EqualLenLabel(self, label:str) -> str:
         """Add empty space to the end of label to match the length of
             self.rLLenLongest.
 
             Parameters
             ----------
-            label : str
+            label: str
                 Original label
 
             Returns
@@ -703,13 +703,11 @@ class BaseConfPanel(
             dict
         """
         #region --------------------------------------------------->
-        stepDict = {
-            'DP': {
-                mConfig.core.ltDPKeys[0] : mConfig.core.fnFloat.format(self.rDate, '02'),
-                mConfig.core.ltDPKeys[1] : mConfig.core.fnTrans.format(self.rDate, '03'),
-                mConfig.core.ltDPKeys[2] : mConfig.core.fnNorm.format(self.rDate, '04'),
-                mConfig.core.ltDPKeys[3] : mConfig.core.fnImp.format(self.rDate, '05'),
-            },
+        dpDict = self.SetStepDictDP()
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        resDict = {
             'Files' : {
                 mConfig.core.fnInitial.format(self.rDate, '01')   : self.dfI,
                 mConfig.core.fnFloat.format(self.rDate, '02')     : self.dfF,
@@ -725,15 +723,15 @@ class BaseConfPanel(
         }
         #endregion ------------------------------------------------>
 
-        return stepDict
+        return dpDict | resDict
     #---
 
-    def SetOutputDict(self, dateDict) -> dict:
+    def SetOutputDict(self, dateDict:dict) -> dict:
         """Creates the output dictionary to be written to the output file.
 
             Parameters
             ----------
-            dateDict : dict
+            dateDict: dict
                 {
                     date : {
                         'V' : config.dictVersion,
@@ -778,12 +776,12 @@ class BaseConfPanel(
         return outData
     #---
 
-    def WriteOutputData(self, stepDict: dict) -> bool:
+    def WriteOutputData(self, stepDict:dict) -> bool:
         """Write output.
 
             Parameters
             ----------
-            stepDict : dict
+            stepDict: dict
                 Dict with the data to write the step by step data files
                 Keys are file names and values pd.DataFrame with the values
 
@@ -792,7 +790,6 @@ class BaseConfPanel(
             bool
         """
         #region -----------------------------------------------> Create folder
-        #------------------------------>
         msgStep = self.cLPdWrite + 'Creating needed folders, Data-Steps folder'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         dataFolder = f"{self.rDate}_{self.cSection.replace(' ', '-')}"
@@ -923,7 +920,7 @@ class BaseConfPanel(
     #endregion ------------------------------------------------> Class Methods
 
     #region ----------------------------------------------------> Run Analysis
-    def OnRun(self, event: wx.CommandEvent) -> bool:
+    def OnRun(self, event:wx.CommandEvent) -> bool:
         """Start analysis of the module/utility.
 
             Parameter
@@ -1055,7 +1052,6 @@ class BaseConfPanel(
                 }
         """
         #region ---------------------------------------------------> Data file
-        #------------------------------>
         msgStep = self.cLPdReadFile + f"{self.cLiFile}, reading"
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------>
@@ -1118,24 +1114,6 @@ class BaseConfPanel(
             -------
             bool
         """
-        #region -------------------------------------------------------> Print
-        # if mConfig.core.development:
-        #     print('RunAnalysis')
-        #     print('d:')
-        #     for k,v in self.rDI.items():
-        #         print(str(k)+': '+str(v))
-        #     print('')
-        #     print('do:')
-        #     for k,v in self.rDO.items():
-        #         if k not in ['df', 'oc', 'dfo']:
-        #             print(str(k)+': '+str(v))
-        #         else:
-        #             print(k)
-        #             for j,w in v.items():
-        #                 print(f'\t{j}: {w}')
-        #     print('')
-        #endregion ----------------------------------------------------> Print
-
         #region ----------------------------------------------------> Analysis
         msgStep = self.cLPdRun + self.cLPdRunText
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
@@ -1653,12 +1631,12 @@ class BaseResControlExpConf(wx.Panel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event methods
-    def OnCreate(self, event: Union[wx.CommandEvent, str]) -> bool:             # pylint: disable=unused-argument
+    def OnCreate(self, event:Union[wx.CommandEvent, str]) -> bool:              # pylint: disable=unused-argument
         """Create the fields in the white panel.
 
             Parameters
             ----------
-            event : wx.CommandEvent
+            event: wx.CommandEvent
                 Information about the event.
 
             Returns
@@ -1668,12 +1646,12 @@ class BaseResControlExpConf(wx.Panel):
         return True
     #---
 
-    def OnLabelNumber(self, event: Union[wx.Event, str]) -> bool:
+    def OnLabelNumber(self, event:Union[wx.Event, str]) -> bool:
         """Creates fields for names when the total wx.TextCtrl looses focus.
 
             Parameters
             ----------
-            event : wx.Event
+            event: wx.Event
                 Information about the event.
 
             Returns
@@ -1738,14 +1716,12 @@ class BaseResControlExpConf(wx.Panel):
         #region --------------------------------------------------> Event Skip
         if isinstance(event, wx.Event):
             event.Skip()
-        else:
-            pass
         #endregion -----------------------------------------------> Event Skip
 
         return True
     #---
 
-    def OnOK(self, export: bool=True) -> tuple[bool, str]:
+    def OnOK(self, export:bool=True) -> tuple[bool, str]:
         """Validate and set the Results - Control Experiments text.
 
             Parameters
@@ -1775,9 +1751,7 @@ class BaseResControlExpConf(wx.Panel):
                 oText = f"{oText}{j.GetValue()}, "
                 #--------------> Check
                 a, b = j.GetValidator().Validate()
-                if a:
-                    pass
-                else:
+                if not a:
                     msg = mConfig.core.mResCtrlWin.format(b[1])
                     e = RuntimeError(b[2])
                     cWindow.Notification(
@@ -1788,17 +1762,13 @@ class BaseResControlExpConf(wx.Panel):
             oText = f"{oText[0:-2]}; "
         #------------------------------> All cannot be empty
         a, b = cCheck.AllTcEmpty(tcList)
-        if not a:
-            pass
-        else:
+        if a:
             cWindow.Notification(
                 'errorF', msg=mConfig.core.mAllTextFieldEmpty, parent=self)
             return (False, '')
         #------------------------------> All unique
         a, b = cCheck.TcUniqueColNumbers(tcList)
-        if a:
-            pass
-        else:
+        if not a:
             e = RuntimeError(b[2]) # type: ignore
             cWindow.Notification(
                 'errorF',
@@ -1817,12 +1787,12 @@ class BaseResControlExpConf(wx.Panel):
         return (True, oText)
     #---
 
-    def OnClear(self, event: wx.Event) -> bool:                                 # pylint: disable=unused-argument
+    def OnClear(self, event:wx.Event) -> bool:                                  # pylint: disable=unused-argument
         """Clear all input in the wx.Dialog.
 
             Parameters
             ----------
-            event : wx.Event
+            event: wx.Event
                 Information about the event.
 
             Returns
@@ -1859,7 +1829,7 @@ class BaseResControlExpConf(wx.Panel):
     #endregion ------------------------------------------------> Event methods
 
     #region --------------------------------------------------> Manage methods
-    def Export2TopParent(self, oText) -> bool:
+    def Export2TopParent(self, oText:str) -> bool:
         """Export the data to the top parent.
 
             Parameters
@@ -1898,11 +1868,8 @@ class BaseResControlExpConf(wx.Panel):
         #------------------------------> Control Name
         self.cTopParent.rLbDict['Control'] = [self.wControlN.wTc.GetValue()]    # type: ignore
         #------------------------------> Control type if needed
-        print(self.rPName)
         if self.rPName == mConfig.prot.nPane :
             self.cTopParent.rLbDict['ControlType'] = self.rControlVal           # type: ignore
-        else:
-            pass
         #endregion -------------------------------------> Set parent variables
 
         #region -----------------------------------------------> Set tcResults

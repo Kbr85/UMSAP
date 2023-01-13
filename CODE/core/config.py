@@ -113,7 +113,7 @@ class Configuration():
     kwZoomReset:str    = 'General Tool Reset Zoom One'
     kwZoomResetAll:str = 'General Tool Reset Zoom All'
     #------------------------------> Sizes
-    sLCtrlColI:tuple[int,int]  = (50, 150)                                      # Size for # Name columns in a wx.ListCtrl
+    sLCtrlColI:list[int] = field(default_factory=lambda: [50, 150])             # Size for # Name columns in a wx.ListCtrl
     sTc:tuple[int,int]         = (50, 22)                                       # wx.TextCtrl
     sWinFull:tuple[int,int]    = (990, 775)                                     # Full window size
     sWinModPlot:tuple[int,int] = (1100, 625)                                    # Result Window for a Module

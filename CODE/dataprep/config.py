@@ -30,6 +30,8 @@ class Configuration():
     nTab:str  = 'Tab Data Preparation'                                          # Name of Config Tab
     nPane:str = 'Pane Data Preparation'                                         # Name of Config Panel
     tTab:str  = 'DataPrep'                                                      # Title of the tab in Main Window
+    #------------------------------> Label
+    lONormDist: str = 'Normal Distribution'
     #------------------------------> PubSub Message
     psResDataPrep: str = 'data.ResDataPrep'
     #------------------------------> Normal distribution parameters

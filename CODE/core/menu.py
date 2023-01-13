@@ -257,7 +257,7 @@ class BaseMenuMainResult(BaseMenu):
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, menuData: dict) -> None:
+    def __init__(self, menuData:dict) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cMenuData = menuData
@@ -273,7 +273,7 @@ class BaseMenuMainResult(BaseMenu):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class Methods
-    def AddDateItems(self, menuDate: list[str]) -> bool:
+    def AddDateItems(self, menuDate:list[str]) -> bool:
         """Add and bind the analysis ID items.
 
             Parameters
@@ -354,7 +354,7 @@ class BaseMenuMainResult(BaseMenu):
         return True
     #---
 
-    def UpdateDateItems(self, menuData: dict) -> bool:
+    def UpdateDateItems(self, menuData:dict) -> bool:
         """Update the Analysis ID items when the analyses are modified.
 
             Parameters
@@ -417,7 +417,7 @@ class BaseMenuMainResult(BaseMenu):
         return True
     #---
 
-    def UpdateOtherItems(self, tDate: wx.MenuItem, updateGUI: bool) -> bool:
+    def UpdateOtherItems(self, tDate:wx.MenuItem, updateGUI:bool) -> bool:
         """Update specific items in the menu after the Analysis IDs were
             updated. Override as needed.
 
@@ -440,7 +440,7 @@ class BaseMenuMainResult(BaseMenu):
         return True
     #---
 
-    def GetCheckedRadioItem(self, lMenuItem: list[wx.MenuItem]) -> wx.MenuItem: # type: ignore
+    def GetCheckedRadioItem(self, lMenuItem:list[wx.MenuItem]) -> wx.MenuItem:  # type: ignore
         """Get the checked item in a list of radio menu items.
 
             Parameters
@@ -490,7 +490,7 @@ class BaseMenuMainResultSubMenu(BaseMenu):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, tKey: str) -> None:
+    def __init__(self, tKey:str) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__()
@@ -553,10 +553,11 @@ class BaseMenuFurtherAnalysis(BaseMenu):
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, menuData: dict) -> None:
+    def __init__(self, menuData:dict) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.rMenuData = menuData
+        #------------------------------>
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
     #---
@@ -718,6 +719,7 @@ class BaseMenuFurtherAnalysisEntry(BaseMenu):
         self.cMenuData  = menuData
         self.rDictKey   = dictKey
         self.rItemLabel = itemLabel
+        #------------------------------>
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
 
@@ -728,7 +730,7 @@ class BaseMenuFurtherAnalysisEntry(BaseMenu):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def SetItems(self, tDate: str) -> list[wx.MenuItem]:
+    def SetItems(self, tDate:str) -> list[wx.MenuItem]:
         """Set the menu items.
 
             Parameters
@@ -764,7 +766,7 @@ class BaseMenuFurtherAnalysisEntry(BaseMenu):
         return itemList
     #---
 
-    def Update(self, tDate: str, menuData: dict={}) -> bool:                    # pylint: disable=dangerous-default-value
+    def Update(self, tDate:str, menuData:dict={}) -> bool:                      # pylint: disable=dangerous-default-value
         """Update the menu items.
 
             Parameters
@@ -781,7 +783,7 @@ class BaseMenuFurtherAnalysisEntry(BaseMenu):
         #region -------------------------------------------------------->
         for x in self.rItemList:
             self.Delete(x)
-
+        #------------------------------>
         if self.rSep is not None:
             self.Delete(self.rSep)
         #endregion ----------------------------------------------------->

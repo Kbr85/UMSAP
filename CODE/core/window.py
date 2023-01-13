@@ -11,7 +11,7 @@
 # ------------------------------------------------------------------------------
 
 
-"""Bases Windows for the app"""
+"""Core Windows for the app"""
 
 
 #region -------------------------------------------------------------> Imports
@@ -27,11 +27,11 @@ import wx
 from wx import aui
 
 from config.config import config as mConfig
+from core   import file   as cFile
 from core   import method as cMethod
+from core   import pane   as cPane
 from core   import tab    as cTab
 from core   import widget as cWidget
-from core   import pane   as cPane
-from core   import file   as cFile
 from result import file   as resFile
 #endregion ----------------------------------------------------------> Imports
 
@@ -46,12 +46,12 @@ class BaseWindow(wx.Frame):
 
         Parameters
         ----------
-        parent : wx.Window or None
+        parent: wx.Window or None
             Parent of the window. Default None.
 
         Attributes
         ----------
-        dKeyMethod : dict
+        dKeyMethod: dict
             Keys are str and values classes or methods. Link menu items to
             windows methods.
     """
@@ -94,7 +94,7 @@ class BaseWindow(wx.Frame):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnClose(self, event: wx.CloseEvent) -> bool:                            # pylint: disable=unused-argument
+    def OnClose(self, event:wx.CloseEvent) -> bool:                             # pylint: disable=unused-argument
         """Destroy window.
 
             Parameters
@@ -185,10 +185,10 @@ class BaseWindowResult(BaseWindow):
         self.cMsgExportFailed = getattr(
             self, 'cMsgExportFailed', 'Export {} failed.')
         #------------------------------>
-        self.rDate  = getattr(self, 'rDate', [])
+        self.rDate  = getattr(self, 'rDate',  [])
         self.rDateC = getattr(self, 'rDateC', '')
-        self.rData  = getattr(self, 'rData', {})
-        self.rDf    = getattr(self, 'rDf', pd.DataFrame())
+        self.rData  = getattr(self, 'rData',  {})
+        self.rDf    = getattr(self, 'rDf',    pd.DataFrame())
         self.rObj: resFile.UMSAPFile
         #------------------------------>
         super().__init__(parent=parent)
@@ -221,7 +221,7 @@ class BaseWindowResult(BaseWindow):
             bool
         """
         #region -----------------------------------------------> Update parent
-        self.cParent.UnCheckSection(self.cSection, self) # type: ignore
+        self.cParent.UnCheckSection(self.cSection, self)                        # type: ignore
         #endregion --------------------------------------------> Update parent
 
         #region ------------------------------------> Reduce number of windows
@@ -349,8 +349,6 @@ class BaseWindowResult(BaseWindow):
                     tException = e,
                     parent     = self,
                 )
-        else:
-            pass
         #endregion ------------------------------------------------> Get Path
 
         dlg.Destroy()
@@ -455,7 +453,7 @@ class BaseWindowResultOnePlot(BaseWindowResult):
 
         Parameters
         ----------
-        parent : wx.Window or None
+        parent: wx.Window or None
             Parent of the window. Default None.
 
         Notes
@@ -589,12 +587,12 @@ class BaseWindowResultListText(BaseWindowResult):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnSearch(self, event: wx.Event) -> bool:                                # pylint: disable=unused-argument
+    def OnSearch(self, event:wx.Event) -> bool:                                 # pylint: disable=unused-argument
         """Search for a given string in the wx.ListCtrl.
 
             Parameters
             ----------
-            event:wx.Event
+            event: wx.Event
                 Information about the event.
 
             Returns
@@ -646,7 +644,7 @@ class BaseWindowResultListText(BaseWindowResult):
         return True
     #---
 
-    def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:         # pylint: disable=unused-argument
+    def OnListSelect(self, event:Union[wx.CommandEvent, str]) -> bool:          # pylint: disable=unused-argument
         """Processes a wx.ListCtrl event.
 
             Parameters
@@ -706,15 +704,12 @@ class BaseWindowResultListText(BaseWindowResult):
         self.wLC.wLCS.wLC.EnsureVisible(tRow)
         self.wLC.wLCS.wLC.SetFocus()
         self.OnListSelect('fEvent')
+        #------------------------------>
         return True
     #---
 
     def UpdateUMSAPData(self) -> bool:
         """Update the window after the UMSAP file have been updated.
-
-            Parameters
-            ----------
-
 
             Returns
             -------
@@ -1012,7 +1007,7 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def ExportImg(self, tKey: str) -> bool:
+    def ExportImg(self, tKey:str) -> bool:
         """Save an image of the selected plot.
 
             Parameters
@@ -1028,7 +1023,7 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
             ext=mConfig.core.elMatPlotSaveI, parent=self)
     #---
 
-    def ZoomReset(self, tKey: str) -> bool:
+    def ZoomReset(self, tKey:str) -> bool:
         """Reset the Zoom of the selected plot.
 
             Parameters
@@ -1070,8 +1065,6 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
                     tException = e,
                     parent     = self,
                 )
-        else:
-            pass
         #endregion ------------------------------------------------> Get Path
 
         dlg.Destroy()
@@ -1160,7 +1153,7 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         """
         a = self.rDf.loc[:,self.rIdxSeqNC]                                      # type: ignore
         b = self.rDf.loc[:,self.rIdxP]                                          # type: ignore
-
+        #------------------------------>
         return pd.concat([a,b], axis=1)
     #---
 
@@ -1402,12 +1395,12 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
     #endregion ------------------------------------------------> Class methods
 
     #region ---------------------------------------------------> Event Methods
-    def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:
+    def OnListSelect(self, event:Union[wx.CommandEvent, str]) -> bool:
         """Process a wx.ListCtrl select event.
 
             Parameters
             ----------
-            event:wx.Event
+            event: wx.Event
                 Information about the event.
 
             Returns
@@ -1442,18 +1435,6 @@ class BaseWindowResultOnePlotFA(BaseWindowResultOnePlot):
         menuData: dict
             Data to build the Tool menu of the window. See structure in child
             class.
-
-        Attributes
-        ----------
-
-
-        Raises
-        ------
-
-
-        Methods
-        -------
-
     """
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent:Optional[wx.Window]=None) -> None:
@@ -1474,7 +1455,7 @@ class BaseWindowResultOnePlotFA(BaseWindowResultOnePlot):
         """
         if df is None:
             df = self.rData                                                     # type: ignore
-
+        #------------------------------>
         return super().ExportData(df=df)
     #---
     #endregion ------------------------------------------------> Class methods
@@ -1583,10 +1564,11 @@ class BaseDialogOkCancel(wx.Dialog):
         """
         self.EndModal(1)
         self.Close()
+        #------------------------------>
         return True
     #---
 
-    def OnCancel(self, event: wx.CommandEvent) -> bool:                         # pylint: disable=unused-argument
+    def OnCancel(self, event:wx.CommandEvent) -> bool:                          # pylint: disable=unused-argument
         """The macOs implementation has a bug here that does not discriminate
             between the Cancel and Ok button and always return self.EndModal(1).
 
@@ -1601,6 +1583,7 @@ class BaseDialogOkCancel(wx.Dialog):
         """
         self.EndModal(0)
         self.Close()
+        #------------------------------>
         return True
     #---
     #endregion ------------------------------------------------> Event methods
@@ -1785,7 +1768,7 @@ class ListSelect(BaseDialogOkCancel):
         """
         self.wLCtrlI.OnCopy('')
         self.wLCtrlO.OnPaste('')
-
+        #------------------------------>
         return True
     #---
 
@@ -1802,7 +1785,7 @@ class ListSelect(BaseDialogOkCancel):
             bool
         """
         self.wLCtrlO.DeleteAllItems()
-
+        #------------------------------>
         return True
     #---
     #endregion ------------------------------------------------> Event methods
@@ -2071,20 +2054,20 @@ class Notification(wx.Dialog):
 
         Parameters
         ----------
-        mode : str
+        mode: str
             One of 'errorF', 'errorU', 'warning', 'success', 'question'
-        msg : str
+        msg: str
             General message to place below the Notification type. This cannot be
             copied by the user.
-        tException : str, Exception or None
+        tException: str, Exception or None
             The message and traceback to place in the wx.TextCtrl. This
             can be copied by the user. If str then only an error message will
             be placed in the wx.TextCtrl.
-        parent : wx widget or None
+        parent: wx widget or None
             Parent of the dialog.
-        button : int
+        button: int
             Kind of buttons to show. 1 is wx.OK else wx.OK|wx.CANCEL
-        setText : bool
+        setText: bool
             Set wx.TextCtrl for message independently of the mode of the window.
             Default is False.
     """
@@ -2315,7 +2298,7 @@ class ResControlExp(BaseDialogOkCancel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event methods
-    def OnOK(self, event: wx.CommandEvent) -> bool:
+    def OnOK(self, event:wx.CommandEvent) -> bool:
         """Validate user information and close the window.
 
             Parameters
@@ -2331,8 +2314,6 @@ class ResControlExp(BaseDialogOkCancel):
         if self.wConf.wConf.OnOK():
             self.EndModal(1)
             self.Close()
-        else:
-            pass
         #endregion ------------------------------------------------>
 
         return True
@@ -2472,6 +2453,8 @@ class FABtnText(BaseDialogOkCancel):
             Validator for the wx.TextCtrl.
         parent: wx.Window or None
             Parent for the wx.Dialog.
+        title: str
+            Title of the wx.Dialog.
     """
     #region --------------------------------------------------> Instance setup
     def __init__(
@@ -2483,11 +2466,12 @@ class FABtnText(BaseDialogOkCancel):
         stLabel:str,
         stHint:str,
         stValidator :wx.Validator,
-        parent:Optional[wx.Window] = None
+        parent:Optional[wx.Window] = None,
+        title:str = 'Export Sequence Alignments',
         ):
         """ """
         #region -----------------------------------------------> Initial Setup
-        super().__init__(title='Export Sequence Alignments', parent=parent)
+        super().__init__(title=title, parent=parent)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -2525,13 +2509,13 @@ class FABtnText(BaseDialogOkCancel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnOK(self, event: wx.CommandEvent) -> bool:
+    def OnOK(self, event:wx.CommandEvent) -> bool:
         """Validate user information and close the window
 
             Parameters
             ----------
-            event:wx.Event
-                Information about the event
+            event: wx.Event
+                Information about the event.
 
             Returns
             -------
@@ -2582,6 +2566,8 @@ class FA2Btn(BaseDialogOkCancel):
             User input validators
         parent: wx.Window or None
             Parent of the wx.Dialog.
+        title: str
+            Title of the wx.Dialog.
     """
     #region --------------------------------------------------> Instance setup
     def __init__(
@@ -2590,11 +2576,12 @@ class FA2Btn(BaseDialogOkCancel):
         btnHint:list[str],
         ext:list[str],
         btnValidator:list[wx.Validator],
-        parent:Optional[wx.Window] = None
+        parent:Optional[wx.Window] = None,
+        title:str = 'PDB Mapping',
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        super().__init__(title='PDB Mapping', parent=parent)
+        super().__init__(title=title, parent=parent)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -2867,7 +2854,7 @@ class MultipleCheckBox(BaseDialogOkCancel):
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.rDict = {}
+        self.rDict    = {}
         self.rChecked = {}
         #------------------------------>
         super().__init__(title=title, parent=parent)

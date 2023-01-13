@@ -11,7 +11,7 @@
 # ------------------------------------------------------------------------------
 
 
-"""Base Widgets of the app"""
+"""Core Widgets of the app"""
 
 
 #region -------------------------------------------------------------> Imports
@@ -58,7 +58,7 @@ def StatusBarUpdate(statusbar:wx.StatusBar, msg:str, field:int=0) -> bool:
 #---
 
 
-def ClearInput(parent: wx.Window) -> bool:
+def ClearInput(parent:wx.Window) -> bool:
     """Set all user input to '' and delete all items in wx.ListCtrl.
 
         Parameters
@@ -147,7 +147,6 @@ class StaticBoxes():
         """"""
         #region ----------------------------------------------> File & Folders
         if labelF:
-            #------------------------------>
             self.wSbFile = wx.StaticBox(parent, label=labelF)
             #------------------------------>
             self.sSbFile    = wx.StaticBoxSizer(self.wSbFile, wx.VERTICAL)
@@ -161,7 +160,6 @@ class StaticBoxes():
 
         #region --------------------------------------------> Data Preparation
         if labelD:
-            #------------------------------>
             self.wSbData = wx.StaticBox(parent, label=labelD)
             #------------------------------>
             self.sSbData    = wx.StaticBoxSizer(self.wSbData, wx.VERTICAL)
@@ -175,7 +173,6 @@ class StaticBoxes():
 
         #region ------------------------------------------------------> Values
         if labelV:
-            #------------------------------>
             self.wSbValue  = wx.StaticBox(parent, label=labelV)
             #------------------------------>
             self.sSbValue    = wx.StaticBoxSizer(self.wSbValue, wx.VERTICAL)
@@ -189,7 +186,6 @@ class StaticBoxes():
 
         #region -----------------------------------------------------> Columns
         if labelC:
-            #------------------------------>
             self.wSbColumn = wx.StaticBox(parent, label=labelC)
             #------------------------------>
             self.sSbColumn = wx.StaticBoxSizer(self.wSbColumn, wx.VERTICAL)
@@ -205,12 +201,12 @@ class StaticBoxes():
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnRightDelete(self, event: wx.MouseEvent) -> bool:
+    def OnRightDelete(self, event:wx.MouseEvent) -> bool:
         """Reset content of all children of the widgets calling the event.
 
             Parameters
             ----------
-            event : wx.MouseEvent
+            event: wx.MouseEvent
                 Information about the event
         """
         return ClearInput(event.GetEventObject())
@@ -259,7 +255,7 @@ class StaticTextCtrl():
     #region --------------------------------------------------> Instance setup
     def __init__(
         self,
-        parent: wx.Window,
+        parent:wx.Window,
         setSizer:bool                          = False,
         stLabel:str                            = 'Text',
         stTooltip:str                          = '',
@@ -427,7 +423,7 @@ class ButtonClearAll():
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnClear(self, event: wx.CommandEvent) -> bool:                          # pylint: disable=unused-argument
+    def OnClear(self, event:wx.CommandEvent) -> bool:                           # pylint: disable=unused-argument
         """Set the values of all child widgets of delParent to '' and delete
             all items of wx.ListCtrl.
 
@@ -485,7 +481,7 @@ class ButtonRun():
     #region --------------------------------------------------> Instance setup
     def __init__(
         self,
-        parent: wx.Window,
+        parent:wx.Window,
         label:   str = 'Run',
         tooltip: str = '',
         ) -> None:
@@ -506,7 +502,7 @@ class ButtonRun():
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event methods
-    def OnRun(self, event: wx.CommandEvent) -> bool:                            # pylint: disable=unused-argument
+    def OnRun(self, event:wx.CommandEvent) -> bool:                            # pylint: disable=unused-argument
         """Start new thread to run the analysis. Override as needed.
 
             Parameter
@@ -532,8 +528,10 @@ class ButtonRun():
 
             Notes
             -----
-            Messages to the status bar of the app can be set in the individual
-            step methods.
+            - Messages to the Progress dialog of the app can be set in the
+            individual step methods.
+            - Function self.RunEnd should load the calculated results to avoid
+            circular import errors and thread safety issues in pubsub.
         """
         #region --------------------------------------------------->
         start = datetime.now()
@@ -608,8 +606,7 @@ class ButtonRun():
     #---
 
     def RunEnd(self) -> bool:
-        """Restart GUI and needed variables.
-        """
+        """Restart GUI and needed variables."""
         #region -------------------------------------------> Restart variables
         self.rDeltaT = None
         #endregion ----------------------------------------> Restart variables
@@ -666,7 +663,7 @@ class ButtonOnlineHelp():
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnHelp(self, event: wx.CommandEvent) -> bool:                           # pylint: disable=unused-argument
+    def OnHelp(self, event:wx.CommandEvent) -> bool:                            # pylint: disable=unused-argument
         """Leads to self.rUrl
 
             Parameters
@@ -836,17 +833,17 @@ class ButtonTextCtrlFF():
     def __init__(
         self,
         parent:wx.Window,
-        ext:str                         =  '',
-        setSizer:bool                   = False,
-        btnLabel:str                    = 'Button',
-        btnTooltip:str                  = '',
-        tcStyle:int                     = wx.TE_PROCESS_ENTER|wx.TE_READONLY,
-        tcHint:str                      = '',
-        tcSize:tuple[int, int]          = (300, 22),
-        validator:Optional[wx.Validator]= None,
-        ownCopyCut:bool                 = False,
-        mode:LIT_FFSelect               = 'openO',
-        afterBtn:Optional[Callable]     = None,
+        ext:str                          =  '',
+        setSizer:bool                    = False,
+        btnLabel:str                     = 'Button',
+        btnTooltip:str                   = '',
+        tcStyle:int                      = wx.TE_PROCESS_ENTER|wx.TE_READONLY,
+        tcHint:str                       = '',
+        tcSize:tuple[int, int]           = (300, 22),
+        validator:Optional[wx.Validator] = None,
+        ownCopyCut:bool                  = False,
+        mode:LIT_FFSelect                = 'openO',
+        afterBtn:Optional[Callable]      = None,
         ) -> None:
         """"""
         #region -----------------------------------------------> Initial Setup
@@ -894,19 +891,19 @@ class ButtonTextCtrlFF():
             self.wTc.Bind(wx.EVT_MENU, self.OnCut,  id=accel['Cut'].GetCommand())
             #------------------------------>
             self.wTc.SetAcceleratorTable(
-                wx.AcceleratorTable([x for x in accel.values()])
+                wx.AcceleratorTable(list(accel.values()))
             )
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnBtn(self, event: wx.CommandEvent) -> bool:                            # pylint: disable=unused-argument
+    def OnBtn(self, event:wx.CommandEvent) -> bool:                             # pylint: disable=unused-argument
         """Action to perform when button is clicked.
 
             Parameter
             ---------
-            event : wx.CommandEvent
+            event: wx.CommandEvent
                 Event information.
         """
         #region ------------------------------------------> Select file/folder
@@ -936,7 +933,7 @@ class ButtonTextCtrlFF():
         return True
     #---
 
-    def OnCopy(self, event: wx.Event) -> bool:                                  # pylint: disable=unused-argument
+    def OnCopy(self, event:wx.Event) -> bool:                                   # pylint: disable=unused-argument
         """Copy wx.TextCtrl content.
 
             Parameters
@@ -962,7 +959,7 @@ class ButtonTextCtrlFF():
         return True
     #---
 
-    def OnCut(self, event: 'wx.Event') -> bool:
+    def OnCut(self, event:wx.Event) -> bool:
         """Cut wx.TextCtrl content.
 
             Parameters
@@ -1142,14 +1139,14 @@ class MyListCtrl(wx.ListCtrl):
             )
         #------------------------------>
         self.SetAcceleratorTable(
-            wx.AcceleratorTable([x for x in accel.values()])
+            wx.AcceleratorTable(list(x for x in accel.values()))
         )
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnAll(self, event: wx.Event) -> bool:                                   # pylint: disable=unused-argument
+    def OnAll(self, event:wx.Event) -> bool:                                    # pylint: disable=unused-argument
         """Select all rows.
 
             Parameters
@@ -1201,7 +1198,7 @@ class MyListCtrl(wx.ListCtrl):
                 self.GetSelectedRows(content=self.rCopyFullContent))
         else:
             data = self.GetSelectedRows(content=self.rCopyFullContent)
-            data = self.rSep.join(map(str, [x for x in data]))
+            data = self.rSep.join(map(str, list(data)))
         dataObj = wx.TextDataObject(data)
         #endregion -------------------------------------------------> Get data
 
@@ -1251,12 +1248,12 @@ class MyListCtrl(wx.ListCtrl):
         return True
     #---
 
-    def OnPaste(self, event:Union[wx.Event, str]) -> bool:                     # pylint: disable=unused-argument
+    def OnPaste(self, event:Union[wx.Event, str]) -> bool:                      # pylint: disable=unused-argument
         """Paste selected rows in the wx.ListCtrl from the clipboard.
 
             Parameters
             ----------
-            event:
+            event: wx.Event, str
                 Information about the event.
 
             Returns
@@ -1294,11 +1291,11 @@ class MyListCtrl(wx.ListCtrl):
         if data is not None:
             for v in data.values():
                 if len(v) == self.GetColumnCount():
-                    break
-                else:
-                    cWindow.Notification(
-                        'warning', parent=self, msg=mConfig.core.mLCtrlNColPaste)
-                    return False
+                    continue
+                #------------------------------>
+                cWindow.Notification(
+                    'warning', parent=self, msg=mConfig.core.mLCtrlNColPaste)
+                return False
         else:
             return False
         #endregion -----------------------------------------------> Check Data
@@ -1370,7 +1367,7 @@ class MyListCtrl(wx.ListCtrl):
 
             Notes
             -----
-            All occurrence of tStr are found.
+            All rows containing tStr are found.
         """
         #region ---------------------------------------------------> Variables
         iEqual   = []
@@ -1411,7 +1408,7 @@ class MyListCtrl(wx.ListCtrl):
 
             Notes
             -----
-            All occurrence of tStr are found.
+            All rows containing tStr are found.
         """
         #region ---------------------------------------------------> Variables
         iEqual   = []
@@ -1551,7 +1548,7 @@ class MyListCtrl(wx.ListCtrl):
         return item
     #---
 
-    def RowInList(self, row:list[str]) -> bool:
+    def RowInList(self, row:list) -> bool:
         """Check if row is already in the wx.ListCtrl.
 
             Parameters
@@ -1567,35 +1564,19 @@ class MyListCtrl(wx.ListCtrl):
                 False otherwise.
         """
         #region ---------------------------------------------------> Variables
+        rowC = list(map(str, row))
         item = 0
         #endregion ------------------------------------------------> Variables
 
         #region ------------------------------------------------> Search items
         while item > -1:
-            #------------------------------> Find item or not
+            #------------------------------> # Find row in wx.ListCtrl containing the first element in row
             item = self.FindItem(item, row[0])
+            #------------------------------> # Check the rest of elements in the row
             if item > -1:
-                #------------------------------> New row comparison
-                comp = []
-                #------------------------------> Check each element in row
-                #--> Get elements
-                for k,e in enumerate(row):
-                    #-------------->  Make sure element in row is string like
-                    try:
-                        strE = str(e)
-                    except Exception as e:
-                        msg = (
-                            f'row element ({e}) cannot be turned into string.'
-                        )
-                        raise RuntimeError(msg) from e
-                    #------------------------------> Compare
-                    if strE == self.GetItemText(item, col=k):
-                        comp.append(True)
-                    else:
-                        comp.append(False)
-                        break
-                #--> Check all
-                if all(comp):
+                rowList = self.GetRowContent(item)
+                #------------------------------>
+                if rowList == rowC:
                     return True
             else:
                 break
@@ -1681,8 +1662,8 @@ class MyListCtrl(wx.ListCtrl):
         """
         if item % 2 == 0:
             return self.attr1
-        else:
-            return None
+        #------------------------------>
+        return None
     #---
 
     def SetNewData(self, data:list[list[str]]) -> bool:
@@ -1894,7 +1875,7 @@ class ResControl():
     def __init__(self, parent: wx.Window) -> None:
         """ """
         #region -------------------------------------------------------->
-        self.cParent = parent.GetParent()
+        self.cParent = parent.GetTopLevelParent()
         #endregion ----------------------------------------------------->
 
         #region -----------------------------------------------------> Widgets
@@ -1917,7 +1898,6 @@ class ResControl():
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
-        #------------------------------>
         self.sRes = wx.GridBagSizer(1,1)
         #------------------------------>
         self.sRes.Add(
@@ -1958,7 +1938,7 @@ class ResControl():
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event methods
-    def OnResW(self, event: wx.CommandEvent) -> bool:                           # pylint: disable=unused-argument
+    def OnResW(self, event:wx.CommandEvent) -> bool:                           # pylint: disable=unused-argument
         """Open the window to write the results columns.
 
             Parameters
@@ -2050,7 +2030,7 @@ class MatPlotPanel(wx.Panel):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.rFigure  = mpl.figure.Figure( # type: ignore
+        self.rFigure  = mpl.figure.Figure(                                      # type: ignore
             dpi          = self.rDPI,
             figsize      = (2, 2),
             tight_layout = True,
