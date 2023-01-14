@@ -17,6 +17,7 @@
 #region -------------------------------------------------------------> Imports
 from dataclasses import dataclass, field
 from typing import Optional, TYPE_CHECKING
+
 if TYPE_CHECKING:
     from main import window as mWindow
 #endregion ----------------------------------------------------------> Imports

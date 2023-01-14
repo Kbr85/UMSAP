@@ -22,7 +22,7 @@ from core import window as cWindow
 
 
 #region -------------------------------------------------------------> Classes
-def BadUserConfFile(tException: Exception) -> bool:
+def BadUserConfFile(tException:Exception) -> bool:
     """Show error message when user configuration file could not be read.
 
         Parameters
@@ -38,8 +38,10 @@ def BadUserConfFile(tException: Exception) -> bool:
         -----
         Always called from another thread.
     """
+    # No Test
     msg = 'It was not possible to read the user configuration file.'
     wx.CallAfter(cWindow.Notification,'errorU', msg=msg, tException=tException)
+    #------------------------------>
     return True
 #---
 
@@ -60,6 +62,7 @@ def BadUserConfOptions(badOpt: list[str]) -> bool:
         -----
         Always called from another thread.
     """
+    # No Test
     #region -------------------------------------------------------->
     msg = 'The configuration file contains unknown options.'
     badOptList = ('The following options, present in the configuration file, '

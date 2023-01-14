@@ -27,7 +27,7 @@ class Start(wx.Panel):
 
         Parameters
         ----------
-        parent : wx.Window
+        parent: wx.Window
             Direct parent of the widgets in the tab.
     """
     #region -----------------------------------------------------> Class setup

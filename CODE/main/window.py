@@ -26,11 +26,11 @@ from core     import window as cWindow
 from corr     import tab    as corrTab
 from dataprep import tab    as dataTab
 from help     import method as hMethod
+from limprot  import tab    as limpTab
 from main     import menu   as mMenu
 from main     import method as mMethod
 from main     import tab    as mTab
 from protprof import tab    as protTab
-from limprot  import tab    as limpTab
 from tarprot  import tab    as tarpTab
 #endregion ----------------------------------------------------------> Imports
 
@@ -54,10 +54,10 @@ class WindowMain(cWindow.BaseWindow):
     cTitle = mConfig.main.twMain
     #------------------------------>
     dTab = {
-        mConfig.main.ntStart : mTab.Start,
         mConfig.corr.nTab    : corrTab.CorrA,
         mConfig.data.nTab    : dataTab.DataPrep,
         mConfig.limp.nTab    : limpTab.LimProt,
+        mConfig.main.ntStart : mTab.Start,
         mConfig.prot.nTab    : protTab.ProtProf,
         mConfig.tarp.nTab    : tarpTab.TarProt,
     }
@@ -121,12 +121,12 @@ class WindowMain(cWindow.BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class Methods
-    def CreateTab(self, name: str, dataI: Optional[dict]=None) -> bool:
+    def CreateTab(self, name:str, dataI:Optional[dict]=None) -> bool:
         """Create a tab.
 
             Parameters
             ----------
-            name : str
+            name: str
                 One of the values in section Names of config for tabs
             dataI: dict or None
                 Initial data for the tab
@@ -167,9 +167,9 @@ class WindowMain(cWindow.BaseWindow):
                 )
         #endregion ------------------------------------------------> Start Tab
 
-        #region ---------------------------------------------------> Raise
+        #region -------------------------------------------------------> Raise
         self.Raise()
-        #endregion ------------------------------------------------> Raise
+        #endregion ----------------------------------------------------> Raise
 
         return True
     #---
