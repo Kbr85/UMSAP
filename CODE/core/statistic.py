@@ -144,7 +144,8 @@ def CI_Sample(
         alpha: float
             Significance level. CI will be calculated for 1-alpha.
         axis: int
-            Calculate for row (1) in df or columns (0)
+            Axis for the calculation, 0 for each column 1 for each row.
+            Default is 1.
         roundN: int
             Round results to the given number of decimal.
 
@@ -205,7 +206,8 @@ def CI_Mean_Diff(
         equal_var: bool
             Assume equal variance (True) or not (False). Default is False.
         axis: int
-            Axis to calculate on. 1 row based calculation, 0 column based.
+            Axis for the calculation, 0 for each column 1 for each row.
+            Default is 0.
         roundN: int or None
             Round numbers to the given number of decimal places.
             Default is None.
@@ -271,7 +273,7 @@ def Tost_delta(
     alpha:float,
     beta:float,
     gamma:float,
-    axis:int                 = 0,
+    axis:int                 = 1,
     d:float                  = 0,
     deltaMax:Optional[float] = None,
     ) -> Union[pd.Series, 'np.ndarray']:
@@ -288,7 +290,8 @@ def Tost_delta(
         gamma: float
             Gamma level.
         axis: int
-            Axis for the calculation, 0 by row 1 by column. Default is 0.
+            Axis for the calculation, 0 for each column 1 for each row.
+            Default is 1.
         d: float
             Absolute difference. Default is 0.
         deltaMax: float or None

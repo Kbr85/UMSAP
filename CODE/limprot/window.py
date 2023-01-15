@@ -31,8 +31,8 @@ from reportlab.platypus.flowables import KeepTogether
 from reportlab.lib.styles         import getSampleStyleSheet, ParagraphStyle
 
 from config.config import config as mConfig
-from core import window as cWindow
 from core import method as cMethod
+from core import window as cWindow
 from main import menu   as mMenu
 
 if TYPE_CHECKING:
@@ -129,7 +129,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: 'resWindow.UMSAPControl') -> None:
+    def __init__(self, parent:'resWindow.UMSAPControl') -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cTitle          = f'{parent.cTitle} - {self.cSection}'
@@ -218,7 +218,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
     #endregion -----------------------------------------------> Instance setup
 
     #region --------------------------------------------------> Manage Methods
-    def LaneBandSel(self, state: bool) -> bool:
+    def LaneBandSel(self, state:bool) -> bool:
         """Change Band/Lane selection mode.
 
             Parameters
@@ -315,8 +315,6 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         #region --------------------------------------------> Reselect peptide
         if idx is not None:
             self.wLC.wLCS.wLC.Select(idx, on=1)
-        else:
-            pass
         #endregion -----------------------------------------> Reselect peptide
 
         #region ---------------------------------------------------> Show Text
@@ -440,14 +438,10 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         if self.rSpotSelLine is not None:
             self.rSpotSelLine[0].remove()
             self.rSpotSelLine = None
-        else:
-            pass
-
+        #------------------------------>
         if self.rBlSelRect is not None:
             self.rBlSelRect.remove()
             self.rBlSelRect = None
-        else:
-            pass
         #endregion ------------------------------------> Remove Old Selections
 
         #region --------------------------------------------------------> Axis
@@ -609,7 +603,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         return True
     #---
 
-    def DrawFragments(self, x:int, y:int) -> bool:
+    def DrawFragments(self, x:int, y:int) -> bool:                              # pylint: disable=arguments-differ
         """Draw the fragments associated with the selected band/lane.
 
             Parameters
@@ -993,12 +987,12 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         n, c = self.rFragments[tKey]["Coord"][fragC[2]]
         #------------------------------>
         if self.rProtLoc[0] is not None:
-            if n >= self.rProtLoc[0] and n <= self.rProtLoc[1]:
+            if self.rProtLoc[0] <= n <= self.rProtLoc[1]:
                 nnat = n + self.rProtDelta
             else:
                 nnat = 'NA'
         #------------------------------>
-            if c >= self.rProtLoc[0] and c <= self.rProtLoc[1]:
+            if self.rProtLoc[0] <= c <= self.rProtLoc[1]:
                 cnat = c + self.rProtDelta
             else:
                 cnat = 'NA'
@@ -1642,7 +1636,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
     #endregion -----------------------------------------------> Manage Methods
 
     #region ---------------------------------------------------> Event Methods
-    def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:
+    def OnListSelect(self, event:Union[wx.CommandEvent, str]) -> bool:
         """Process a wx.ListCtrl select event.
 
             Parameters
@@ -1672,7 +1666,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
             bool
         """
         #region ---------------------------------------------------> Variables
-        art = event.artist
+        art   = event.artist
         fragC = list(map(int, art.get_label().split('.')))
         #------------------------------>
         if self.rFragSelC != fragC:
@@ -1792,7 +1786,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
 
             Parameters
             ----------
-            event:wx.Event
+            event: wx.Event
                 Information about the event.
 
             Returns

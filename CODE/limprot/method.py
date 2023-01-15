@@ -35,6 +35,7 @@ def LimProt(                                                                    
     rDO:dict         = {},
     rDExtra:dict     = {},
     resetIndex: bool = True,
+    equal_var:bool   = False,
     **kwargs,
     ) -> tuple[dict, str, Optional[Exception]]:
     """Perform a Limited Proteolysis analysis.
@@ -51,6 +52,8 @@ def LimProt(                                                                    
             Extra parameters.
         resetIndex: bool
             Reset index of dfS (True) or not (False). Default is True.
+        equal_var: bool
+            Assume variances are equal (True) or not (False). Default is False.
         **kwargs:
             These are ignored here. Needed for compatibility.
 
@@ -78,7 +81,7 @@ def LimProt(                                                                    
         -----
         *args and **kwargs are ignores. But they are needed for compatibility.
     """
-    # Test in test.unit.test_method.Test_LimProt
+    # Test in test.unit.limp.test_method.Test_LimProt
     #region ------------------------------------------------> Helper Functions
     def EmptyDFR() -> 'pd.DataFrame':
         """Creates the empty df for the results.
@@ -106,7 +109,7 @@ def LimProt(                                                                    
 
         #region ----------------------------------------------------> Empty DF
         df = pd.DataFrame(
-            np.nan, columns=idx, index=range(dfS.shape[0]), # type: ignore
+            np.nan, columns=idx, index=range(dfS.shape[0]),                     # type: ignore
         )
         #endregion -------------------------------------------------> Empty DF
 
@@ -123,6 +126,7 @@ def LimProt(                                                                    
         lN:str,
         colC:list[int],
         colD:list[int],
+        equal_var:bool = False,
         ) -> bool:
         """Performed the tost test.
 
@@ -136,6 +140,8 @@ def LimProt(                                                                    
                 Column numbers of the control.
             colD: list int
                 Column numbers of the gel spot.
+            equal_var: bool
+                Assume variances are equal (True) or not. Default is False.
 
             Returns
             -------
@@ -162,7 +168,7 @@ def LimProt(                                                                    
                 dfS.iloc[:,colC].add(dfR[('Delta', 'Delta', 'Delta')], axis=0),
                 dfS.iloc[:,colD],
                 axis        = 1,
-                equal_var   = False,
+                equal_var   = equal_var,
                 nan_policy  = 'omit',
                 alternative = 'greater',
             ).pvalue
@@ -170,11 +176,13 @@ def LimProt(                                                                    
                 dfS.iloc[:,colC].sub(dfR[('Delta', 'Delta', 'Delta')], axis=0),
                 dfS.iloc[:,colD],
                 axis        = 1,
-                equal_var   = False,
+                equal_var   = equal_var,
                 nan_policy  = 'omit',
                 alternative = 'less',
             ).pvalue
         #------------------------------>
+        pG = pG.filled(fill_value=np.nan)
+        pL = pL.filled(fill_value=np.nan)
         pR = np.where(pG >= pL, pG, pL)
         dfR[(bN, lN, 'Ptost')] = pR
         #endregion -------------------------------------------> Delta and TOST
@@ -222,7 +230,7 @@ def LimProt(                                                                    
             #------------------------------> Calculate data
             if colD:
                 try:
-                    CalcOutData(bN, lN, colC, colD)
+                    CalcOutData(bN, lN, colC, colD, equal_var=equal_var)
                 except Exception as e:
                     msg = (f'Calculation of the Limited Proteolysis data for '
                            f'point {bN} - {lN} failed.')

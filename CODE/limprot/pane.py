@@ -20,10 +20,10 @@ from pathlib import Path
 import wx
 
 from config.config import config as mConfig
-from core    import pane      as cPane
-from core    import widget    as cWidget
-from core    import validator as cValidator
 from core    import method    as cMethod
+from core    import pane      as cPane
+from core    import validator as cValidator
+from core    import widget    as cWidget
 from limprot import method    as limpMethod
 #endregion ----------------------------------------------------------> Imports
 
@@ -201,7 +201,7 @@ class LimProt(cPane.BaseConfPanelMod2):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, dataI: dict={}) -> None:                         # pylint: disable=dangerous-default-value
+    def __init__(self, parent, dataI:dict={}) -> None:                          # pylint: disable=dangerous-default-value
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(parent)
@@ -443,7 +443,7 @@ class LimProt(cPane.BaseConfPanelMod2):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class Event
-    def SetInitialData(self, dataI: dict={}) -> bool:                           # pylint: disable=dangerous-default-value
+    def SetInitialData(self, dataI:dict={}) -> bool:                            # pylint: disable=dangerous-default-value
         """Set initial data.
 
             Parameters
@@ -711,7 +711,7 @@ class LimProt(cPane.BaseConfPanelMod2):
             mConfig.core.fnImp.format(self.rDate, '05')       : self.dfIm,
             mConfig.core.fnTargetProt.format(self.rDate, '06'): self.dfTP,
             mConfig.core.fnScore.format(self.rDate, '07')     : self.dfS,
-            self.rMainData.format(self.rDate, '08')     : self.dfR,
+            self.rMainData.format(self.rDate, '08')           : self.dfR,
         }
         stepDict['R'] = self.rMainData.format(self.rDate, '08')
         #endregion -----------------------------------------------> Data Steps
@@ -783,12 +783,12 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnCreate(self, event: wx.CommandEvent) -> bool:
+    def OnCreate(self, event:wx.CommandEvent) -> bool:
         """Create the fields in the white panel.
 
             Parameters
             ----------
-            event : wx.Event
+            event: wx.Event
                 Information about the event.
 
             Return
@@ -925,7 +925,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         return True
     #---
 
-    def OnOK(self, export: bool=True) -> bool:
+    def OnOK(self, export:bool=True) -> bool:
         """Check wx.Dialog content and send values to topParent.
 
             Returns

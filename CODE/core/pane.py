@@ -717,7 +717,7 @@ class BaseConfPanel(
                 mConfig.core.fnTargetProt.format(self.rDate, '06'): self.dfTP,
                 mConfig.core.fnExclude.format(self.rDate, '07')   : self.dfE,
                 mConfig.core.fnScore.format(self.rDate, '08')     : self.dfS,
-                self.rMainData.format(self.rDate, '09')     : self.dfR,
+                self.rMainData.format(self.rDate, '09')           : self.dfR,
             },
             'R' : self.rMainData.format(self.rDate, '09'),
         }

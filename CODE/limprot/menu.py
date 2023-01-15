@@ -26,11 +26,18 @@ from core import menu as cMenu
 class ToolLimProtClearSel(cMenu.BaseMenu):
     """Clear the selection in a LimProt Result Window."""
     #region -----------------------------------------------------> Class Setup
-    cLPept    = cVPept    = 'Peptide'
-    cLFrag    = cVFrag    = 'Fragment'
-    cLGelSpot = cVGelSpot = 'Gel Spot'
-    cLBL      = cVBL      = 'Band/Lane'
-    cLAll     = cVAll     = 'All'
+    #------------------------------> Label
+    cLPept    = mConfig.limp.lmClearPeptide
+    cLFrag    = mConfig.limp.lmClearFragment
+    cLGelSpot = mConfig.limp.lmClearGelSpot
+    cLBL      = mConfig.limp.lmClearBandLane
+    cLAll     = mConfig.limp.lmClearAll
+    #------------------------------> Values
+    cVPept    = mConfig.limp.kwClearPeptide
+    cVFrag    = mConfig.limp.kwClearFragment
+    cVGelSpot = mConfig.limp.kwClearGelSpot
+    cVBL      = mConfig.limp.kwClearBandLane
+    cVAll     = mConfig.limp.kwClearAll
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
@@ -81,12 +88,12 @@ class ToolLimProt(cMenu.BaseMenuMainResult):
             {'MenuDate' : [List of dates as str],}
     """
     #region ------------------------------------------------------> Class Setup
-    cLLaneSel   = 'Lane Selection Mode'
-    cLShowAll   = 'Show All'
-    cLFrag      = 'Fragments'
-    cLGel       = 'Gel'
-    cLClearSel  = 'Clear Selection'
-    cLExportSeq = 'Export Sequences'
+    cLLaneSel   = mConfig.limp.lmToolLaneSel
+    cLShowAll   = mConfig.limp.lmToolShowAll
+    cLFrag      = mConfig.limp.lmToolFrag
+    cLGel       = mConfig.limp.lmToolGel
+    cLClearSel  = mConfig.limp.lmToolClearSel
+    cLExportSeq = mConfig.limp.lmToolExportSeq
     #------------------------------>
     cVBandLane  = mConfig.limp.kwBandLane
     cVShowAll   = mConfig.limp.kwShowAll
