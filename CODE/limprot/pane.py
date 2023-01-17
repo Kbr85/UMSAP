@@ -189,7 +189,7 @@ class LimProt(cPane.BaseConfPanelMod2):
     cURL         = f"{mConfig.core.urlTutorial}/limited-proteolysis"
     cSection     = mConfig.limp.nMod
     cTitlePD     = f"Running {mConfig.limp.nMod} Analysis"
-    cGaugePD     = 35
+    cGaugePD     = 34
     rMainData    = '{}_{}-LimitedProteolysis-Data.txt'
     rDExtra: dict = {
         'cLDFFirstThree' : cLDFFirstThree,

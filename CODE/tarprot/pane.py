@@ -173,7 +173,7 @@ class TarProt(cPane.BaseConfPanelMod2):
     cURL         = f"{mConfig.core.urlTutorial}/targeted-proteolysis"
     cSection     = mConfig.tarp.nMod
     cTitlePD     = f"Running {mConfig.tarp.nMod} Analysis"
-    cGaugePD     = 35
+    cGaugePD     = 34
     rMainData    = '{}_{}-TargetedProteolysis-Data.txt'
     rDExtra:dict = {
         'cLDFFirst' : cLDFFirst,

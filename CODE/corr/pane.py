@@ -127,7 +127,7 @@ class CorrA(cPane.BaseConfPanel):
     cURL            = f'{mConfig.core.urlTutorial}/correlation-analysis'
     cSection        = mConfig.corr.nUtil
     cTitlePD        = 'Calculating Correlation Coefficients'
-    cGaugePD        = 21
+    cGaugePD        = 20
     cTTHelp         = mConfig.core.ttBtnHelp.format(cURL)
     rLLenLongest    = len(cLCorrMethod)
     rMainData       = '{}_{}-CorrelationCoefficients-Data.txt'

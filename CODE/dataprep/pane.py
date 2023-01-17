@@ -114,7 +114,7 @@ class DataPrep(cPane.BaseConfPanel):
     cTTHelp         = mConfig.core.ttBtnHelp.format(cURL)
     cSection        = mConfig.data.nUtil
     cTitlePD        = f"Running {mConfig.data.nUtil} Analysis"
-    cGaugePD        = 20
+    cGaugePD        = 19
     rLLenLongest    = len(cLColAnalysis)
     rAnalysisMethod = dataMethod.DataPreparation
     #endregion --------------------------------------------------> Class setup

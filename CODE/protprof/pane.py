@@ -183,7 +183,7 @@ class ProtProf(cPane.BaseConfPanelMod):
     cURL         = f'{mConfig.core.urlTutorial}/proteome-profiling'
     cSection     = mConfig.prot.nMod
     cTitlePD     = f"Running {mConfig.prot.nMod} Analysis"
-    cGaugePD     = 30
+    cGaugePD     = 29
     rLLenLongest = len(mConfig.core.lStResCtrlS)
     rMainData    = '{}_{}-ProteomeProfiling-Data.txt'
     rDExtra = {
