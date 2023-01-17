@@ -65,6 +65,7 @@ class Configuration():
     tpConf:str            = 'Configuration Options'                             # Titles, shown to user
     tpList:str            = 'Data File Content'
     ttDef:str             = 'Tab'
+    twResCtrl:str         = 'Result & Control Experiments'
     #------------------------------> Label for Widgets
     lBtnTypeResCtrl:str = 'Type Values'                                         # lBtn: Label for wx.Button
     lCbCorrectP:str     = 'P Correction'                                        # lCb: Label for wx.ComboBox

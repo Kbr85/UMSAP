@@ -1872,10 +1872,10 @@ class ResControl():
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: wx.Window) -> None:
+    def __init__(self, parent:wx.Window) -> None:
         """ """
         #region -------------------------------------------------------->
-        self.cParent = parent.GetTopLevelParent()
+        self.cParent = parent.GetParent()
         #endregion ----------------------------------------------------->
 
         #region -----------------------------------------------------> Widgets

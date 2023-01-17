@@ -2246,6 +2246,7 @@ class ResControlExp(BaseDialogOkCancel):
     """
     #region -----------------------------------------------------> Class setup
     cName = mConfig.core.ndResCtrlExp
+    cTitle = mConfig.core.twResCtrl
     #------------------------------>
     cSize = (900, 580)
     #------------------------------>
@@ -2272,7 +2273,7 @@ class ResControlExp(BaseDialogOkCancel):
         #endregion ----------------------------------------------> Check Input
 
         #region -----------------------------------------------> Initial Setup
-        super().__init__(title=self.cName, parent=mConfig.main.mainWin)
+        super().__init__(title=self.cTitle, parent=mConfig.main.mainWin)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
