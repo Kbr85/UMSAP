@@ -1152,14 +1152,12 @@ class BaseConfPanel(
             -------
             bool
         """
-        #region -------------------------------------------------------->
-        # Here to avoid circular imports problems and thread limitations.
-        pub.sendMessage('load_umsap', fileP=self.rDO['uFile'])
-        #endregion ----------------------------------------------------->
-
         #region ---------------------------------------> Dlg progress dialogue
         if not self.rMsgError:
             self.rDFile.append(self.rDO['uFile'])
+            #--> Here to avoid circular imports problems and thread limitations.
+            pub.sendMessage('load_umsap', fileP=self.rDO['uFile'])
+            #------------------------------>
             self.rDlg.SuccessMessage(
                 self.cLPdDone, eTime=f"{self.cLPdElapsed} {self.rDeltaT}")
         else:

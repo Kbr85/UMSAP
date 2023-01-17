@@ -181,8 +181,10 @@ def LimProt(                                                                    
                 alternative = 'less',
             ).pvalue
         #------------------------------>
-        pG = pG.filled(fill_value=np.nan)
-        pL = pL.filled(fill_value=np.nan)
+        if isinstance(pG, np.ma.core.MaskedArray):                              # type: ignore In test is a masked array
+            pG = pG.filled(fill_value=np.nan)                                   #              In module a regular array
+        if isinstance(pL, np.ma.core.MaskedArray):                              # type: ignore Why?
+            pL = pL.filled(fill_value=np.nan)
         pR = np.where(pG >= pL, pG, pL)
         dfR[(bN, lN, 'Ptost')] = pR
         #endregion -------------------------------------------> Delta and TOST
