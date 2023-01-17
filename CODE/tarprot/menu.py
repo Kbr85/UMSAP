@@ -18,8 +18,7 @@
 import wx
 
 from config.config import config as mConfig
-from core     import menu   as cMenu
-
+from core import menu as cMenu
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -27,9 +26,14 @@ from core     import menu   as cMenu
 class ToolClearSel(cMenu.BaseMenu):
     """Clear the selection in a TarProtRes Window."""
     #region -----------------------------------------------------> Class Setup
-    cLPept = cVPept = 'Peptide'
-    cLFrag = cVFrag = 'Fragment'
-    cLAll  = cVAll  = 'All'
+    #------------------------------> Label
+    cLPept = mConfig.tarp.lmClearPeptide
+    cLFrag = mConfig.tarp.lmClearFragment
+    cLAll  = mConfig.tarp.lmClearAll
+    #------------------------------> Keyword value
+    cVPept = mConfig.tarp.kwClearPeptide
+    cVFrag = mConfig.tarp.kwClearFragment
+    cVAll  = mConfig.tarp.kwClearAll
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
@@ -82,7 +86,7 @@ class ToolAA(cMenu.BaseMenuFurtherAnalysis):
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, menuData) -> None:
+    def __init__(self, menuData:dict) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.rItems = []
@@ -117,7 +121,7 @@ class ToolAA(cMenu.BaseMenuFurtherAnalysis):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnLabel(self, event: wx.MenuEvent) -> bool:
+    def OnLabel(self, event:wx.MenuEvent) -> bool:
         """Change between Experiments.
 
             Parameters
@@ -167,7 +171,7 @@ class ToolHist(cMenu.BaseMenuFurtherAnalysis):
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, menuData) -> None:
+    def __init__(self, menuData:dict) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(menuData)
@@ -257,7 +261,7 @@ class ToolCpR(cMenu.BaseMenuFurtherAnalysis):
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, menuData):
+    def __init__(self, menuData:dict):
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(menuData)
@@ -285,8 +289,7 @@ class ToolCpR(cMenu.BaseMenuFurtherAnalysis):
             self.miProtLoc.Check(True)
             #------------------------------>
             self.Bind(wx.EVT_MENU, self.OnLabel, source=self.miProtLoc)
-        else:
-            pass
+        #------------------------------>
         self.AppendSeparator()
         #------------------------------>
         self.AddLastItems()
@@ -295,7 +298,7 @@ class ToolCpR(cMenu.BaseMenuFurtherAnalysis):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnLabel(self, event: wx.CommandEvent) -> bool:
+    def OnLabel(self, event:wx.CommandEvent) -> bool:
         """Change between Experiments.
 
             Parameters
@@ -342,7 +345,7 @@ class ToolCpR(cMenu.BaseMenuFurtherAnalysis):
         return True
     #---
 
-    def OnClear(self, event: wx.CommandEvent) -> bool:
+    def OnClear(self, event:wx.CommandEvent) -> bool:
         """Change between Experiments.
 
             Parameters
@@ -405,7 +408,7 @@ class ToolCleavageEvol(cMenu.BaseMenuFurtherAnalysis):
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, menuData):
+    def __init__(self, menuData:dict):
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(menuData)
@@ -494,7 +497,7 @@ class ToolTarProt(cMenu.BaseMenuMainResult):
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, menuData: dict) -> None:
+    def __init__(self, menuData:dict) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(menuData)
@@ -598,7 +601,7 @@ class ToolFurtherAnalysis(cMenu.BaseMenu):
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, menuData: dict, ciDate:str) -> None:
+    def __init__(self, menuData:dict, ciDate:str) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__()

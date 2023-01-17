@@ -85,7 +85,7 @@ def TarProt(                                                                    
         -----
         *args and **kwargs are ignored here but needed for compatibility.
     """
-    # Test in test.unit.test_method.Test_TarProt
+    # Test in test.unit.tarprot.test_method.Test_TarProt
     #region ------------------------------------------------> Helper Functions
     def EmptyDFR() -> pd.DataFrame:
         """Creates the empty df for the results.
@@ -164,8 +164,6 @@ def TarProt(                                                                    
                 xC.append(1)
                 xCt.append(5)
                 yC.append(row[r])
-            else:
-                pass
         #--------------> Add to self.dfR
         dfR.at[rowC,(rDO['ControlL'],'Int')] = str(yC)
         #------------------------------> Points
@@ -282,7 +280,7 @@ def R2AA(
             AA Label1       LabelN
             AA -2 -1 1 2 P  -2 -1 1 2 P
     """
-    # Test in test.unit.test_method.Test_R2AA
+    # Test in test.unit.tarprot.test_method.Test_R2AA
     #region ---------------------------------------------------> Helper Method
     def AddNewAA(
         dfO:pd.DataFrame,
@@ -364,9 +362,9 @@ def R2AA(
     aL  = 2*pos*[c]
     bL  = [f'P{x}' for x in range(pos, 0, -1)] + [f"P{x}'" for x in range(1, pos+1,1)]
     idx = pd.MultiIndex.from_arrays([aL[:],bL[:]])
-    dfT = pd.DataFrame(0, columns=idx, index=mConfig.core.lAA1+['Chi'])              # type: ignore
+    dfT = pd.DataFrame(0, columns=idx, index=mConfig.core.lAA1+['Chi'])         # type: ignore
     dfO = pd.concat([dfO, dfT], axis=1)
-    for k,_ in enumerate(seq[1:-1], start=1): # Exclude first and last residue
+    for k,_ in enumerate(seq[1:-1], start=1):                                   # Exclude first and last residue
         dfO = AddNewAA(dfO, k, pos, seq, c)
     #endregion ------------------------------------------------> Random Cleavage
 
@@ -412,7 +410,7 @@ def R2Hist(
         -------
         pd.DataFrame
     """
-    # Test in test.unit.test_method.Test_R2Hist
+    # Test in test.unit.tarprot.test_method.Test_R2Hist
     #region ---------------------------------------------------> Variables
     tBin = []
     if len(win) == 1:
@@ -492,7 +490,7 @@ def R2CpR(df:pd.DataFrame, alpha:float, protL:list[int]) -> pd.DataFrame:
         -------
         pd.DataFrame
     """
-    # Test in test.unit.test_method.Test_R2CpR
+    # Test in test.unit.tarprot.test_method.Test_R2CpR
     #region -------------------------------------------------------------> dfO
     label = df.columns.unique(level=0).tolist()[4:]
     nL    = len(label)
@@ -515,7 +513,7 @@ def R2CpR(df:pd.DataFrame, alpha:float, protL:list[int]) -> pd.DataFrame:
         l = dfR.to_numpy().flatten()
         # No Cleavage in 1 and last residue
         lastR = protL[0] - 1
-        l = [x for x in l if x > -1 and x < lastR]
+        l = [x for x in l if -1 < x < lastR]
         for x in l:
             dfO.at[x, idx['Rec',e]] = dfO.at[x, idx['Rec',e]] + 1
         #------------------------------> Nat
@@ -553,7 +551,7 @@ def R2CEvol(df:pd.DataFrame, alpha:float, protL:list[int]) -> pd.DataFrame:
         -------
         pd.DataFrame
     """
-    # Test in test.unit.test_method.Test_R2CEvol
+    # Test in test.unit.tarprot.test_method.Test_R2CEvol
     #region -------------------------------------------------> Helper Function
     def IntL2MeanI(a:list, alpha:float) -> float:
         """Calculate the intensity average.

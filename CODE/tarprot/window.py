@@ -28,12 +28,12 @@ from Bio.Align import substitution_matrices
 import wx
 
 from config.config import config as mConfig
-from core import method     as cMethod
-from core import file       as cFile
-from core import validator  as cValidator
-from core import window     as cWindow
-from main import menu       as mMenu
-from tarprot import method  as tarpMethod
+from core    import file      as cFile
+from core    import method    as cMethod
+from core    import validator as cValidator
+from core    import window    as cWindow
+from main    import menu      as mMenu
+from tarprot import method    as tarpMethod
 
 if TYPE_CHECKING:
     from result import window as resWindow
@@ -108,7 +108,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: 'resWindow.UMSAPControl') -> None:
+    def __init__(self, parent:'resWindow.UMSAPControl') -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cTitle = f'{parent.cTitle} - {self.cSection}'
@@ -162,7 +162,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             bool
         """
         #region ---------------------------------------------------> Variables
-        info = super().WinPos()
+        info = super().WinPos()                                                 # pylint: disable=unused-variable
         #endregion ------------------------------------------------> Variables
 
         #region ------------------------------------------------> Set Position
@@ -279,7 +279,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         return True
     #---
 
-    def DrawFragments(self) -> bool:
+    def DrawFragments(self) -> bool:                                            # pylint: disable=arguments-differ
         """Draw the fragments associated with the date.
 
             Returns
@@ -302,7 +302,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         return True
     #---
 
-    def SetFragmentAxis(self) -> bool:
+    def SetFragmentAxis(self) -> bool:                                          # pylint: disable=arguments-differ
         """Set the axis for the plot showing the fragments.
 
             Returns
@@ -484,7 +484,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         clSite = (f'{self.rFragments[tKey]["Nc"][fragC[1]]}'
                   f'({self.rFragments[tKey]["NcNat"][fragC[1]]})')
         #------------------------------> Labels
-        expL, fragL = cMethod.StrEqualLength(
+        expL, fragL = cMethod.StrEqualLength(                                   # pylint: disable=unbalanced-tuple-unpacking
             [self.rExp[fragC[0]], f'Fragment {fragC[1]+1}'])
         emptySpace = (2+ len(expL))*' '
         #endregion ------------------------------------------------> Info
@@ -685,11 +685,11 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
 
         #region -----------------------------------------------> Save & Update
         #------------------------------> File
-        date = f'{self.rDateC.split(" - ")[0]}'
+        date    = f'{self.rDateC.split(" - ")[0]}'
         section = f'{self.cSection.replace(" ", "-")}'
-        folder = f'{date}_{section}'
-        fileN = f'{dateC}_AA-{pos}.txt'
-        fileP = self.rObj.rStepDataP/folder/fileN
+        folder  = f'{date}_{section}'
+        fileN   = f'{dateC}_AA-{pos}.txt'
+        fileP   = self.rObj.rStepDataP/folder/fileN
         cFile.WriteDF2CSV(fileP, dfO)
         #------------------------------> Umsap
         self.rObj.rData[self.cSection][self.rDateC]['AA'][f'{date}_{pos}'] = fileN
@@ -1093,8 +1093,8 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
             dict
         """
         menuData = {}
-        menuData['Label'] = [k for k in self.rData.columns.unique(level=0)[1:-1]]
-        menuData['Pos'] = [k for k in self.rData[menuData['Label'][0]].columns.unique(level=0)]
+        menuData['Label'] = list(self.rData.columns.unique(level=0)[1:-1])
+        menuData['Pos'] = list(self.rData[menuData['Label'][0]].columns.unique(level=0))
 
         return menuData
     #---
@@ -1207,7 +1207,7 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
     #---
 
     def SetAxisPos(self) -> bool:
-        """ General details of the plot area.
+        """General details of the plot area.
 
             Returns
             -------
@@ -1438,9 +1438,8 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
             #------------------------------>
             if self.rExp:
                 return self.UpdateStatusBarExp(x,y)
-            else:
-                #------------------------------> Position
-                return self.UpdateStatusBarPos(x,y)
+            #------------------------------> Position
+            return self.UpdateStatusBarPos(x,y)
         else:
             self.wStatBar.SetStatusText('')
         #endregion -------------------------------------------> Statusbar Text
@@ -1452,7 +1451,7 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
 
 
 class ResHist(cWindow.BaseWindowResultOnePlotFA):
-    """Plot hte results for a cleavage histogram.
+    """Plot the results for a cleavage histogram.
 
         Parameters
         ----------
@@ -1859,7 +1858,7 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
         return menuData
     #---
 
-    def UpdateResultWindow(
+    def UpdateResultWindow(                                                     # pylint: disable=arguments-differ
         self,
         nat:bool,
         label:str,
@@ -2286,7 +2285,7 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
         return True
     #---
 
-    def ExportData(self) -> bool:
+    def ExportData(self) -> bool:                                               # pylint: disable=arguments-differ
         """Export data to a csv file.
 
             Returns

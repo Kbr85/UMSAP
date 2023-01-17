@@ -22,10 +22,10 @@ import pandas as pd
 import wx
 
 from config.config import config as mConfig
-from core    import pane      as cPane
-from core    import widget    as cWidget
-from core    import validator as cValidator
 from core    import method    as cMethod
+from core    import pane      as cPane
+from core    import validator as cValidator
+from core    import widget    as cWidget
 from tarprot import method    as tarpMethod
 #endregion ----------------------------------------------------------> Imports
 
@@ -153,12 +153,12 @@ class TarProt(cPane.BaseConfPanelMod2):
     #region -----------------------------------------------------> Class setup
     cName = mConfig.tarp.nPane
     #------------------------------> Label
-    cLAAPos    = 'AA Positions'
-    cLHist     = 'Histogram Windows'
-    cLExp      = mConfig.tarp.lStExp
-    cLCtrlName = mConfig.core.lStCtrlName
-    cLDFFirst  = mConfig.tarp.dfcolFirstPart
-    cLDFSecond = mConfig.tarp.dfcolBLevel
+    cLAAPos     = 'AA Positions'
+    cLHist      = 'Histogram Windows'
+    cLExp       = mConfig.tarp.lStExp
+    cLCtrlName  = mConfig.core.lStCtrlName
+    cLDFFirst   = mConfig.tarp.dfcolFirstPart
+    cLDFSecond  = mConfig.tarp.dfcolBLevel
     cLPdRunText = 'Targeted Proteolysis Analysis'
     #------------------------------> Hint
     cHAAPos = 'e.g. 5'
@@ -175,7 +175,7 @@ class TarProt(cPane.BaseConfPanelMod2):
     cTitlePD     = f"Running {mConfig.tarp.nMod} Analysis"
     cGaugePD     = 35
     rMainData    = '{}_{}-TargetedProteolysis-Data.txt'
-    rDExtra: dict= {
+    rDExtra:dict = {
         'cLDFFirst' : cLDFFirst,
         'cLDFSecond': cLDFSecond,
     }
@@ -185,7 +185,7 @@ class TarProt(cPane.BaseConfPanelMod2):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, dataI: dict={}) -> None:                         # pylint: disable=dangerous-default-value
+    def __init__(self, parent, dataI:dict={}) -> None:                          # pylint: disable=dangerous-default-value
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(parent)
@@ -294,7 +294,7 @@ class TarProt(cPane.BaseConfPanelMod2):
             border = 5,
             span   = (2, 0),
         )
-
+        #------------------------------>
         self.sSbValueWid.AddGrowableCol(0, 1)
         self.sSbValueWid.AddGrowableCol(2, 1)
         self.sSbValueWid.AddGrowableCol(4, 1)
@@ -367,7 +367,7 @@ class TarProt(cPane.BaseConfPanelMod2):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class Event
-    def SetInitialData(self, dataI: dict={}) -> bool:                           # pylint: disable=dangerous-default-value
+    def SetInitialData(self, dataI:dict={}) -> bool:                            # pylint: disable=dangerous-default-value
         """Set initial data.
 
             Parameters
@@ -589,8 +589,8 @@ class TarProt(cPane.BaseConfPanelMod2):
         msgStep = (f'{self.cLPdRun} Cleavage Evolution')
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------>
-        a = self.cLDFFirst[2:]+self.rDO['Exp']
-        b = self.cLDFFirst[2:]+['Int', 'P']
+        a    = self.cLDFFirst[2:]+self.rDO['Exp']
+        b    = self.cLDFFirst[2:]+['Int', 'P']
         tIdx = idx[a,b]
         #------------------------------>
         try:
@@ -624,8 +624,6 @@ class TarProt(cPane.BaseConfPanelMod2):
                 self.rMsgError = 'Amino acid distribution calculation failed.'
                 self.rException = e
                 return False
-        else:
-            pass
         #endregion -------------------------------------------------------> AA
 
         #region --------------------------------------------------------> Hist
@@ -645,8 +643,6 @@ class TarProt(cPane.BaseConfPanelMod2):
                 self.rMsgError = 'The Histogram generation method failed.'
                 self.rException = e
                 return False
-        else:
-            pass
         #endregion -----------------------------------------------------> Hist
 
         return True
@@ -726,7 +722,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
     #region -----------------------------------------------------> Class setup
     cName = mConfig.tarp.npResControlExp
     #------------------------------> Needed by ResControlExpConfBase
-    cStLabel = [f"{mConfig.tarp.lStExp}:"]
+    cStLabel   = [f"{mConfig.tarp.lStExp}:"]
     cLabelText = ['Exp']
     #------------------------------> Tooltips
     cTTTotalField = [f'Set the number of {cStLabel[0]}.']
@@ -759,7 +755,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnCreate(self, event: wx.CommandEvent) -> bool:
+    def OnCreate(self, event:wx.CommandEvent) -> bool:
         """Create the fields in the white panel.
 
             Parameters
@@ -871,7 +867,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         return True
     #---
 
-    def OnOK(self, export: bool=True) -> bool:
+    def OnOK(self, export:bool=True) -> bool:
         """Check wx.Dialog content and send values to topParent.
 
             Returns
@@ -881,8 +877,8 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         #region ---------------------------------------------------> Super
         if super().OnOK()[0]:
             return True
-        else:
-            return False
+        #------------------------------>
+        return False
         #endregion ------------------------------------------------> Super
     #---
     #endregion ------------------------------------------------> Class methods

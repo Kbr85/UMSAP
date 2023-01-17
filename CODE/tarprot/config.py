@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 class Configuration():
     """Configuration for the tarprot module"""
     #region ---------------------------------------------------------> Options
+    #------------------------------> Names & Titles
     nMod:str            = 'Targeted Proteolysis'                                # Name of the Module
     nuAA:str            = 'AA Distribution'                                     # Name of the AA Utility
     nuHist:str          = 'Histograms'
@@ -39,13 +40,19 @@ class Configuration():
     npResControlExp:str = 'ResControlExpPaneTarProt'                            # Name of the ResCtrl Conf Pane
     tTab:str            = 'TarProt'                                             # Title of the Conf Tab
     #------------------------------> Label
-    lStExp:str = 'Experiments'                                                  # lSt: Label for wx.StaticText
+    lStExp:str          = 'Experiments'                                         # lSt: Label for wx.StaticText
+    lmClearPeptide:str  = 'Peptide'                                             # lm: Label for wx.MenuItem
+    lmClearFragment:str = 'Fragment'
+    lmClearAll:str      = 'All'
     #------------------------------> Keywords for wx.MenuItems
-    kwFACleavageEvol   = 'Tool Further Analysis Cleavage Evolution'
-    kwFACleavagePerRes = 'Tool Further Analysis Cleavage per Residue'
-    kwFAPDBMap         = 'Tool Further Analysis PDB Map'
-    kwAAExp:str        = 'Tool AA AA'
-    kwAAPos:str        = 'Tool AA Pos'
+    kwClearPeptide:str     = 'Tool Clear Peptide'
+    kwClearFragment:str    = 'Tool Clear Fragment'
+    kwClearAll:str         = 'Tool Clear All'
+    kwFACleavageEvol:str   = 'Tool Further Analysis Cleavage Evolution'
+    kwFACleavagePerRes:str = 'Tool Further Analysis Cleavage per Residue'
+    kwFAPDBMap             = 'Tool Further Analysis PDB Map'
+    kwAAExp:str            = 'Tool AA AA'
+    kwAAPos:str            = 'Tool AA Pos'
     #------------------------------> DF Columns
     dfcolFirstPart:list[str] = field(default_factory=lambda:
         ['Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF','CtermF'])
