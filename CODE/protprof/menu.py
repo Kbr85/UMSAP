@@ -18,8 +18,7 @@
 import wx
 
 from config.config import config as mConfig
-from core     import menu   as cMenu
-
+from core import menu as cMenu
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -27,9 +26,9 @@ from core     import menu   as cMenu
 class ToolProtProfFCEvolution(cMenu.BaseMenu):
     """Menu for a log2FC evolution along relevant points."""
     #region -----------------------------------------------------> Class Setup
-    cLShowAll   = 'Show All'
-    cLExpImg    = 'Export Image'
-    cLZoomReset = 'Reset Zoom'
+    cLShowAll   = mConfig.prot.lmFCEvolShowAll
+    cLExpImg    = mConfig.prot.lmFCEvolExpImg
+    cLZoomReset = mConfig.prot.lmFCEvolZoomReset
     #------------------------------>
     cVExpImg    = mConfig.core.kwExpImg
     cVZoomReset = mConfig.core.kwZoomReset
@@ -82,35 +81,35 @@ class ToolProtProfFCEvolution(cMenu.BaseMenu):
 class ToolProtProfFilters(cMenu.BaseMenu):
     """Menu for the ProtProfPlot Filters"""
     #region -----------------------------------------------------> Class Setup
-    cLFCEvol    = 'FC Evolution'
-    cLHypCurve  = 'Hyperbolic Curve'
-    cLLog2FC    = 'Log2(FC)'
-    cLPVal      = 'P Value'
-    cLZScore    = 'Z Score'
-    cLApplyAll  = 'Apply All'
-    cLAutoApply = 'Auto Apply'
-    cLRemove    = 'Remove'
-    cLRemoveL   = 'Remove Last'
-    cLRemoveA   = 'Remove All'
-    cLCopy      = 'Copy'
-    cLPaste     = 'Paste'
-    cLSave      = 'Save'
-    cLLoad      = 'Load'
+    cLFCEvol    = mConfig.prot.lmFilterFcEvol
+    cLHypCurve  = mConfig.prot.lmFilterHypCurve
+    cLLog2FC    = mConfig.prot.lmFilterLog2FC
+    cLPVal      = mConfig.prot.lmFilterPVal
+    cLZScore    = mConfig.prot.lmFilterZScore
+    cLApplyAll  = mConfig.prot.lmFilterApplyAll
+    cLAutoApply = mConfig.prot.lmFilterApplyAuto
+    cLRemove    = mConfig.prot.lmFilterRemove
+    cLRemoveL   = mConfig.prot.lmFilterRemoveLast
+    cLRemoveA   = mConfig.prot.lmFilterRemoveAll
+    cLCopy      = mConfig.prot.lmFilterCopy
+    cLPaste     = mConfig.prot.lmFilterPaste
+    cLSave      = mConfig.prot.lmFilterSave
+    cLLoad      = mConfig.prot.lmFilterLoad
     #------------------------------>
-    cVFCEvol          = mConfig.prot.lFilFCEvol
-    cVHypCurve        = mConfig.prot.lFilHypCurve
-    cVFCLog           = mConfig.prot.lFilFCLog
-    cVPVal            = mConfig.prot.lFilPVal
-    cVZScore          = mConfig.prot.lFilZScore
-    cVApplyAll        = 'Apply All'
-    cVRemL            = 'Remove Last'
-    cVRemAny          = 'Remove Any'
-    cVRemAll          = 'Remove All'
-    cVCopy            = 'Copy'
-    cVPaste           = 'Paste'
-    cVSave            = 'Save Filter'
-    cVLoad            = 'Load Filter'
-    cVAutoApplyFilter = 'AutoApplyFilter'
+    cVFCEvol    = mConfig.prot.kwFilterFCEvol
+    cVHypCurve  = mConfig.prot.kwFilterHypCurve
+    cVFCLog     = mConfig.prot.kwFilterFCLog
+    cVPVal      = mConfig.prot.kwFilterPVal
+    cVZScore    = mConfig.prot.kwFilterZScore
+    cVApplyAll  = mConfig.prot.kwFilterApplyAll
+    cVApplyAuto = mConfig.prot.kwFilterApplyAuto
+    cVRemL      = mConfig.prot.kwFilterRemoveLast
+    cVRemAny    = mConfig.prot.kwFilterRemoveAny
+    cVRemAll    = mConfig.prot.kwFilterRemoveAll
+    cVCopy      = mConfig.prot.kwFilterCopy
+    cVPaste     = mConfig.prot.kwFilterPaste
+    cVSave      = mConfig.prot.kwFilterSave
+    cVLoad      = mConfig.prot.kwFilterLoad
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
@@ -157,7 +156,7 @@ class ToolProtProfFilters(cMenu.BaseMenu):
             self.miPaste.GetId()     : self.cVPaste,
             self.miSave.GetId()      : self.cVSave,
             self.miLoad.GetId()      : self.cVLoad,
-            self.miUpdate.GetId()    : self.cVAutoApplyFilter,
+            self.miUpdate.GetId()    : self.cVApplyAuto,
         }
         self.rIDMap = self.rIDMap | rIDMap
         #endregion ------------------------------------------------> rKeyID
@@ -186,11 +185,14 @@ class ToolProtProfFilters(cMenu.BaseMenu):
 class ToolProtProfLockPlotScale(cMenu.BaseMenu):
     """Lock the plots scale to the selected option."""
     #region -----------------------------------------------------> Class Setup
-    cLNo       = cVNo       = 'No'
-    cLAnalysis = cVAnalysis = 'Analysis'
-    cLProject  = cVProject  = 'Project'
+    cLNo       = mConfig.prot.lmScaleNo
+    cLAnalysis = mConfig.prot.lmScaleAnalysis
+    cLProject  = mConfig.prot.lmScaleProject
     #------------------------------>
-    cVMode     = 'mode'
+    cVMode     = mConfig.prot.kwScaleMode
+    cVNo       = mConfig.prot.kwScaleNo
+    cVAnalysis = mConfig.prot.kwScaleAnalysis
+    cVProject  = mConfig.prot.kwScaleProject
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
@@ -236,9 +238,13 @@ class ToolProtProfLockPlotScale(cMenu.BaseMenu):
 class ToolProtProfClearSel(cMenu.BaseMenu):
     """Clear the selection in a ProtProf Res Window."""
     #region -----------------------------------------------------> Class Setup
-    cLLabel = cVLabel = 'Labels'
-    cLSel   = cVSel   = 'Selection'
-    cLAll   = cVAll   = 'All'
+    cLLabel = mConfig.prot.lmClearSelLabel
+    cLSel   = mConfig.prot.lmClearSelSel
+    cLAll   = mConfig.prot.lmClearSelAll
+    #------------------------------>
+    cVLabel = mConfig.prot.kwClearSelLabel
+    cVSel   = mConfig.prot.kwClearSelSel
+    cVAll   = mConfig.prot.kwClearSelAll
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
@@ -278,10 +284,10 @@ class ToolProtProfVolcanoPlotColorScheme(cMenu.BaseMenu):
     """Menu for Color Scheme in the Volcano Plot menu of ProtProf result window.
     """
     #region -----------------------------------------------------> Class Setup
-    cLHypCurve = 'Hyperbolic Curve'
-    cLPLog2FC  = 'P - Log2FC'
-    cLZScore   = 'Z Score'
-    cLConf     = 'Configure'
+    cLHypCurve = mConfig.prot.lmFilterHypCurve
+    cLPLog2FC  = mConfig.prot.lmColorSchemePLog2
+    cLZScore   = mConfig.prot.lmFilterZScore
+    cLConf     = mConfig.prot.lmColorSchemeConf
     #------------------------------>
     cVHypCurve = mConfig.prot.kwVolPlotColorScheme
     cVPLog2FC  = mConfig.prot.kwVolPlotColorScheme
@@ -364,12 +370,12 @@ class ToolProtProfVolcanoPlot(cMenu.BaseMenu):
             }
     """
     #region -----------------------------------------------------> Class Setup
-    cLAddLabel    = 'Add Label'
-    cLPickLabel   = 'Pick Label'
-    cLColorScheme = 'Color Scheme'
-    cLCorrP       = 'Corrected P Values'
-    cLExpImg      = 'Export Image'
-    cLZoomReset   = 'Reset Zoom'
+    cLAddLabel    = mConfig.prot.lmVolLabelAdd
+    cLPickLabel   = mConfig.prot.lmVolLabelPick
+    cLColorScheme = mConfig.prot.lmVolColor
+    cLCorrP       = mConfig.prot.lmVolPCorrected
+    cLExpImg      = mConfig.prot.lmVolExpImg
+    cLZoomReset   = mConfig.prot.lmVolZoomReset
     #------------------------------>
     cVWinUpdate = mConfig.core.kwWinUpdate
     cVLabelPick = mConfig.prot.kwVolPlotLabelPick
@@ -378,10 +384,10 @@ class ToolProtProfVolcanoPlot(cMenu.BaseMenu):
     cVExpImg    = mConfig.core.kwExpImg
     cVZoomReset = mConfig.core.kwZoomReset
     #------------------------------>
-    cVPCorrKey = 'corrP'
-    cVMenuKey  = 'Vol'
-    cVCond     = 'cond'
-    cVRP       = 'rp'
+    cVPCorrKey = mConfig.prot.kwVolMenuPCorrected
+    cVMenuKey  = mConfig.prot.kwVolMenuVol
+    cVCond     = mConfig.prot.kwVolMenuCond
+    cVRP       = mConfig.prot.kwVolMenuRP
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
@@ -559,18 +565,18 @@ class ToolProtProf(cMenu.BaseMenuMainResult):
             }
     """
     #region -----------------------------------------------------> Class Setup
-    cLVol           = 'Volcano Plot'
-    cLFC            = 'FC Evolution'
-    cLFilter        = 'Filters'
-    cLLock          = 'Lock Plot Scale'
-    cLCLear         = 'Clear Selection'
-    cLExpDataFilter = 'Export Filtered Data'
+    cLVol           = mConfig.prot.lmToolVolPlot
+    cLFC            = mConfig.prot.lmToolFCEvol
+    cLFilter        = mConfig.prot.lmToolFilter
+    cLLock          = mConfig.prot.lmToolLockScale
+    cLCLear         = mConfig.prot.lmToolClearSel
+    cLExpDataFilter = mConfig.prot.lmToolExpFilterData
     #------------------------------>
     cVExpDataFilter = mConfig.prot.kwExportDataFiltered
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, menuData: dict) -> None:
+    def __init__(self, menuData:dict) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(menuData)

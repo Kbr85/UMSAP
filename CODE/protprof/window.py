@@ -161,7 +161,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         cLFCAll : cLFCAll,
     }
     #--------------> Id of the plots
-    cLNPlot   = ['Vol', 'FC']
+    cLNPlot = ['Vol', 'FC']
     #------------------------------> Title
     cTList = 'Protein List'
     cTText = 'Profiling Details'
@@ -248,24 +248,24 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             'P - Log2FC Line'      : self.DrawLinesPLog2FC,
             'Z Score Line'         : self.DrawLinesZScore,
             #------------------------------> Filter methods
-            mConfig.prot.lFilFCEvol  : self.Filter_FCChange,
-            mConfig.prot.lFilHypCurve: self.Filter_HCurve,
-            mConfig.prot.lFilFCLog   : self.Filter_Log2FC,
-            mConfig.prot.lFilPVal    : self.Filter_PValue,
-            mConfig.prot.lFilZScore  : self.Filter_ZScore,
-            'Apply All'              : self.FilterApply,
-            'Remove Last'            : self.FilterRemoveLast,
-            'Remove Any'             : self.FilterRemoveAny,
-            'Remove All'             : self.FilterRemoveAll,
-            'Copy'                   : self.FilterCopy,
-            'Paste'                  : self.FilterPaste,
-            'Save Filter'            : self.FilterSave,
-            'Load Filter'            : self.FilterLoad,
-            'AutoApplyFilter'        : self.AutoFilter,
+            mConfig.prot.kwFilterApplyAll  : self.FilterApply,
+            mConfig.prot.kwFilterApplyAuto : self.AutoFilter,
+            mConfig.prot.kwFilterCopy      : self.FilterCopy,
+            mConfig.prot.kwFilterFCEvol    : self.Filter_FCChange,
+            mConfig.prot.kwFilterFCLog     : self.Filter_Log2FC,
+            mConfig.prot.kwFilterHypCurve  : self.Filter_HCurve,
+            mConfig.prot.kwFilterLoad      : self.FilterLoad,
+            mConfig.prot.kwFilterPaste     : self.FilterPaste,
+            mConfig.prot.kwFilterPVal      : self.Filter_PValue,
+            mConfig.prot.kwFilterRemoveAll : self.FilterRemoveAll,
+            mConfig.prot.kwFilterRemoveAny : self.FilterRemoveAny,
+            mConfig.prot.kwFilterRemoveLast: self.FilterRemoveLast,
+            mConfig.prot.kwFilterSave      : self.FilterSave,
+            mConfig.prot.kwFilterZScore    : self.Filter_ZScore,
             #------------------------------>
-            'Labels'   : self.ClearLabel,
-            'Selection': self.ClearSel,
-            'AllClear' : self.ClearAll,
+            mConfig.prot.kwClearSelLabel: self.ClearLabel,
+            mConfig.prot.kwClearSelSel  : self.ClearSel,
+            mConfig.prot.kwClearSelAll  : self.ClearAll,
             #------------------------------>
             mConfig.prot.kwVolPlotLabelPick : self.LabelPick,
             mConfig.prot.kwVolPlotLabelProt : self.ProtLabel,
@@ -1277,9 +1277,9 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
 
             Parameters
             ----------
-            x : pd.Series or list
+            x: pd.Series or list
                 Values for x.
-            y : pd.Series or list
+            y: pd.Series or list
                 Values for y.
 
             Returns
@@ -2070,7 +2070,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             self.StatusBarFilterText(f'{choice0} ({choice1[0:3]})')
             #------------------------------>
             self.rFilterList.append(
-                [mConfig.prot.lFilFCEvol,
+                [mConfig.prot.kwFilterFCEvol,
                  {'choice':choice, 'updateL': False},
                  f'{choice0} ({choice1[0:3]})']
             )
@@ -2094,7 +2094,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region ---------------------------------------------------> Variables
-        filterText = mConfig.prot.lFilHypCurve
+        filterText = mConfig.prot.kwFilterHypCurve
         lim        = self.rT0 * self.rS0
         fc         = self.rDf.loc[:,[(self.rCondC,self.rRpC,'FC')]]
         p          = -np.log10(self.rDf.loc[:,[(self.rCondC,self.rRpC,'P')]])
@@ -2189,7 +2189,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             self.StatusBarFilterText(f'{self.cLFLog2FC} {op} {val}')
             #------------------------------>
             self.rFilterList.append(
-                [mConfig.prot.lFilFCLog,
+                [mConfig.prot.kwFilterFCLog,
                  {'gText': uText, 'updateL': False},
                  f'{self.cLFLog2FC} {op} {val}']
             )
@@ -2272,7 +2272,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             self.StatusBarFilterText(f'{label} {op} {val}')
             #------------------------------>
             self.rFilterList.append(
-                [mConfig.prot.lFilPVal,
+                [mConfig.prot.kwFilterPVal,
                  {'gText': uText, 'absB': absB, 'updateL': False},
                  f'{label} {op} {val}']
             )
@@ -2340,7 +2340,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             self.StatusBarFilterText(f'{self.cLFZscore} {op} {val}')
             #------------------------------>
             self.rFilterList.append(
-                [mConfig.prot.lFilZScore,
+                [mConfig.prot.kwFilterZScore,
                  {'gText': uText, 'updateL': False},
                  f'{self.cLFZscore} {op} {val}']
             )
@@ -2701,12 +2701,12 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnOK(self, event: wx.CommandEvent) -> bool:
+    def OnOK(self, event:wx.CommandEvent) -> bool:
         """Validate user information and close the window.
 
             Parameters
             ----------
-            event:wx.Event
+            event: wx.Event
                 Information about the event.
 
             Returns
@@ -2844,7 +2844,7 @@ class FilterPValue(cWindow.UserInputText):
         return True
     #---
 
-    def OnCheck(self, event: wx.CommandEvent) -> bool:
+    def OnCheck(self, event:wx.CommandEvent) -> bool:
         """Allow only one check box to be marked at any given time.
 
             Parameters
@@ -2869,7 +2869,7 @@ class FilterPValue(cWindow.UserInputText):
         return True
     #---
 
-    def OnOK(self, event: wx.CommandEvent) -> bool:
+    def OnOK(self, event:wx.CommandEvent) -> bool:
         """Validate user information and close the window.
 
             Parameters

@@ -196,7 +196,7 @@ class ProtProf(cPane.BaseConfPanelMod):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, dataI: dict={}):                                 # pylint: disable=dangerous-default-value
+    def __init__(self, parent, dataI:dict={}):                                 # pylint: disable=dangerous-default-value
         """ """
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Base attributes and setup
@@ -467,7 +467,7 @@ class ProtProf(cPane.BaseConfPanelMod):
     #endregion -----------------------------------------------> Instance setup
 
     #region --------------------------------------------------> Class Methods
-    def SetInitialData(self, dataI: dict={}) -> bool:                           # pylint: disable=dangerous-default-value
+    def SetInitialData(self, dataI:dict={}) -> bool:                            # pylint: disable=dangerous-default-value
         """Set initial data.
 
             Parameters
@@ -574,7 +574,7 @@ class ProtProf(cPane.BaseConfPanelMod):
         #endregion ------------------------------------------------> Return
     #---
 
-    def CheckRepNum_Ratio(self, resCtrl: list[list[list[int]]]) -> bool:        # pylint: disable=unused-argument
+    def CheckRepNum_Ratio(self, resCtrl:list[list[list[int]]]) -> bool:         # pylint: disable=unused-argument
         """Check equal number of replicas. Only needed for completion.
 
             Parameters
@@ -823,11 +823,11 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
 
         Parameters
         ----------
-        parent : wx.Widget
+        parent: wx.Widget
             Parent of the panel
-        topParent : wx.Widget
+        topParent: wx.Widget
             Top parent window
-        NColF : int
+        NColF: int
             Total number of columns present in the Data File
 
         Attributes
@@ -840,7 +840,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
     #------------------------------>
     cCtrlType = mConfig.prot.oControlType
     #------------------------------> Needed by ResControlExpConfBase
-    cStLabel = [f"{mConfig.prot.lStCond}:", f"{mConfig.prot.lStRP}:"]
+    cStLabel   = [f"{mConfig.prot.lStCond}:", f"{mConfig.prot.lStRP}:"]
     cLabelText = ['C', 'RP']
     #------------------------------>
     cTTTotalField = [
@@ -852,9 +852,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(
-        self, parent: wx.Window, topParent: wx.Window, NColF: int
-        ) -> None:
+    def __init__(self, parent:wx.Window, topParent:wx.Window, NColF:int)->None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.dAddWidget = {
@@ -921,7 +919,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event methods
-    def OnControl(self, event: wx.CommandEvent) -> bool:                        # pylint: disable=unused-argument
+    def OnControl(self, event:wx.CommandEvent) -> bool:                         # pylint: disable=unused-argument
         """Enable/Disable the Control name when selecting control type.
 
             Parameters
@@ -948,12 +946,12 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         return True
     #---
 
-    def OnCreate(self, event: wx.CommandEvent) -> bool:
+    def OnCreate(self, event:wx.CommandEvent) -> bool:
         """Create the widgets in the white panel.
 
             Parameters
             ----------
-            event:wx.Event
+            event: wx.Event
                 Information about the event.
 
             Returns
@@ -969,10 +967,10 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         control = self.wCbControl.GetValue()
         #------------------------------>
         if control == self.cCtrlType['OCR']:
-            Nc   = n[0]     # Number of rows of tc needed
-            Nr   = n[1] + 1 # Number of tc needed for each row
-            NCol = n[1] + 2 # Number of columns in the sizer
-            NRow = n[0] + 1 # Number of rows in the sizer
+            Nc   = n[0]                                                         # Number of rows of tc needed
+            Nr   = n[1] + 1                                                     # Number of tc needed for each row
+            NCol = n[1] + 2                                                     # Number of columns in the sizer
+            NRow = n[0] + 1                                                     # Number of rows in the sizer
         elif control == self.cCtrlType['Ratio']:
             Nc   = n[0]
             Nr   = n[1]
@@ -1097,7 +1095,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         return True
     #---
 
-    def OnOK(self, export: bool=True) -> bool:
+    def OnOK(self, export:bool=True) -> bool:
         """Check wx.Dialog content and send values to topParent.
 
             Returns
@@ -1106,7 +1104,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         """
         #region ---------------------------------------------------> Variables
         ctrlType = self.wCbControl.GetValue()
-        ctrl = True
+        ctrl     = True
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> Super
@@ -1304,9 +1302,9 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
 
             Parameters
             ----------
-            NCol : int
+            NCol: int
                 Number of columns in the sizer.
-            NRow : int
+            NRow: int
                 Number of rows in the sizer.
 
             Returns

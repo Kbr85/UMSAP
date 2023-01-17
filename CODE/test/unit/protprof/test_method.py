@@ -11,7 +11,7 @@
 # ------------------------------------------------------------------------------
 
 
-"""Tests for data.method """
+"""Tests for protprof.method"""
 
 
 #region -------------------------------------------------------------> Imports
@@ -19,59 +19,32 @@ import unittest
 from pathlib import Path
 
 import pandas as pd
-from numpy  import nan
-from pandas import NA
 
-import config.config  as mConfig
-import data.method    as mMethod
-import data.exception as mException
-import data.file      as mFile
+from config.config import config as mConfig
+from core     import file   as cFile
+from protprof import method as protMethod
 #endregion ----------------------------------------------------------> Imports
 
 
-# Test data lead to long lines, so this check will be disabled for this module
-# pylint: disable=line-too-long
+#region -------------------------------------------------------> File Location
+folder = Path(__file__).parent / 'file'
+fileA  = folder / 'protprof-data-file.txt'
+fileB  = folder / 'res-protprof-1.txt'
+#endregion ----------------------------------------------------> File Location
 
 
-#region ---------------------------------------------------------------> Files
-folder      = Path(__file__).parent / 'test_files'
-#------------------------------> Input Files
-tarprotData   = folder / 'tarprot-data-file.txt'   # For CorrA
-tarprotData1  = folder / 'tarprot-data-file-1.txt' # For TarProt
-protprofData  = folder / 'protprof-data-file.txt'  # For ProtProf
-limprotData   = folder / 'limprot-data-file.txt'   # For LimProt
-seqFileBoth   = folder / 'tarprot-seq-both.txt'    # Fasta File with two seq
-seqLimProt    = folder / 'limprot-seq-both.txt'
-tarprot_seq_1 = folder / 'tarprot-seq-both-1.txt'
-#------------------------------> Result Files
-#-------------->
-protprof_1 = folder / 'res-protprof-1.txt'
-limprot_1  = folder / 'res-limprot-1.txt'
-tarprot_1  = folder / 'res-tarprot-1.txt'
-#endregion ------------------------------------------------------------> Files
-
-
-#region -------------------------------------------------------> pd.DataFrames
-DF_DFFilterByColN = pd.DataFrame({
-    'A' : [1,2,3,4,5],
-    'B' : [1,2,3,4,5],
-})
-#endregion ----------------------------------------------------> pd.DataFrames
-
-
-#region ---------------------------------------------------------> Class Setup
+#region -------------------------------------------------------------> Classes
 class Test_ProtProf(unittest.TestCase):
-    """Test for data.method.ProtProf"""
+    """Test for protprof.method.ProtProf"""
     #region -----------------------------------------------------> Class Setup
-    @classmethod
-    def setUp(cls):                                                             # pylint: disable=arguments-differ
+    def setUp(self):
         """Set test"""
-        cls.df = mFile.ReadCSV2DF(protprofData)
-        cls.dExtra  = {
-            'cLDFThreeCol'  : mConfig.dfcolProtprofFirstThree,
-            'cLDFThirdLevel': mConfig.dfcolProtprofCLevel,
+        self.df = cFile.ReadCSV2DF(fileA)
+        self.dExtra  = {
+            'cLDFThreeCol'  : mConfig.prot.dfcolFirstPart,
+            'cLDFThirdLevel': mConfig.prot.dfcolCLevel,
         }
-        cls.dict1 = {
+        self.dict1 = {
             'ScoreVal': 320.0,
             'RawI': True,
             'IndS': True,
@@ -115,14 +88,14 @@ class Test_ProtProf(unittest.TestCase):
         """Test method output"""
         #------------------------------>
         tInput = [
-            (self.df, self.dict1, self.dExtra, True, protprof_1),
+            (self.df, self.dict1, self.dExtra, True, fileB),
         ]
         #------------------------------>
         for a,b,c,d,e in tInput:
             with self.subTest(f"df={a}, rDO={b}, dExtra={c}, resetIndex={d}"):
                 #------------------------------>
-                result = mMethod.ProtProf(
-                    a, b, c, resetIndex=d)[0]['dfR']
+                result = protMethod.ProtProf(
+                    df=a, rDO=b, rDExtra=c, resetIndex=d)[0]['dfR']
                 result = result.round(2)
                 #------------------------------>
                 dfF = pd.read_csv(e, sep='\t', header=[0,1,2]).round(2)
@@ -132,8 +105,4 @@ class Test_ProtProf(unittest.TestCase):
     #---
     #endregion ----------------------------------------------> Expected Output
 #---
-#endregion ------------------------------------------------------> Class Setup
-
-
-if __name__ == '__main__':
-    unittest.main()
+#endregion ----------------------------------------------------------> Classes

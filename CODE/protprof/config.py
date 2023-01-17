@@ -24,29 +24,87 @@ from dataclasses import dataclass, field
 class Configuration():
     """Configuration for the protprof module"""
     #region ---------------------------------------------------------> Options
-    nMod:str              = 'Proteome Profiling'                                # Name of the Module
-    nwRes:str             = 'Window Result ProtProf Plot'                       # Name of the Result window
-    ndFilterRemoveAny:str = 'Remove Filters'
-    nTab:str              = 'Tab Proteome Profiling'                            # Name of Conf Tab
-    nPane:str             = 'Pane ProtProf'                                     # Name of Conf Pane
-    npResControlExp:str   = 'ResControlExpPaneProtProf'
-    tTab:str              = 'ProtProf'                                          # Title of Conf Tab
+    #------------------------------> Names & Titles
+    nMod:str                 = 'Proteome Profiling'                             # Name of the Module
+    nwRes:str                = 'Window Result ProtProf Plot'                    # Name of the Result window
+    ndFilterRemoveAny:str    = 'Remove Filters'
+    nTab:str                 = 'Tab Proteome Profiling'                         # Name of Conf Tab
+    nPane:str                = 'Pane ProtProf'                                  # Name of Conf Pane
+    npResControlExp:str      = 'ResControlExpPaneProtProf'
+    tTab:str                 = 'ProtProf'                                       # Title of Conf Tab
     #------------------------------> Labels
-    lStCond:str      = 'Conditions'                                             # lSt: Label for wx.StaticText
-    lStRP:str        = 'Relevant Points'
-    lFilFCEvol:str   = 'FC Evolution'                                           # lFil: Label for Filters
-    lFilHypCurve:str = 'Hyp Curve'
-    lFilFCLog:str    = 'Log2FC'
-    lFilPVal:str     = 'P Val'
-    lFilZScore:str   = 'Z Score'
+    lStCond:str              = 'Conditions'                                     # lSt: Label for wx.StaticText
+    lStRP:str                = 'Relevant Points'
+    lmClearSelAll:str        = 'All'
+    lmClearSelLabel:str      = 'Labels'
+    lmClearSelSel:str        = 'Selection'
+    lmColorSchemeConf:str    = 'Configure'
+    lmColorSchemePLog2:str   = 'P - Log2FC'
+    lmFCEvolExpImg:str       = 'Export Image'
+    lmFCEvolShowAll:str      = 'Show All'                                       # lm: Label for wx.MenuItem
+    lmFCEvolZoomReset:str    = 'Reset Zoom'
+    lmFilterApplyAll:str     = 'Apply All'
+    lmFilterApplyAuto:str    = 'Auto Apply'
+    lmFilterCopy:str         = 'Copy'
+    lmFilterFcEvol:str       = 'FC Evolution'
+    lmFilterHypCurve:str     = 'Hyperbolic Curve'
+    lmFilterLoad:str         = 'Load'
+    lmFilterLog2FC:str       = 'Log2(FC)'
+    lmFilterPaste:str        = 'Paste'
+    lmFilterPVal:str         = 'P Value'
+    lmFilterRemove:str       = 'Remove'
+    lmFilterRemoveAll:str    = 'Remove All'
+    lmFilterRemoveLast:str   = 'Remove Last'
+    lmFilterSave:str         = 'Save'
+    lmFilterZScore:str       = 'Z Score'
+    lmScaleAnalysis:str      = 'Analysis'
+    lmScaleNo:str            = 'No'
+    lmScaleProject:str       = 'Project'
+    lmToolClearSel:str       = 'Clear Selection'
+    lmToolExpFilterData:str  = 'Export Filtered Data'
+    lmToolFCEvol:str         = 'FC Evolution'
+    lmToolFilter:str         = 'Filters'
+    lmToolLockScale:str      = 'Lock Plot Scale'
+    lmToolVolPlot:str        = 'Volcano Plot'
+    lmVolColor:str           = 'Color Scheme'
+    lmVolExpImg:str          = 'Export Image'
+    lmVolLabelAdd:str        = 'Add Label'
+    lmVolLabelPick:str       = 'Pick Label'
+    lmVolPCorrected:str      = 'Corrected P Values'
+    lmVolZoomReset:str       = 'Reset Zoom'
     #------------------------------> Keyword for wx.MenuItem
-    kwExportDataFiltered:str = 'GeneralTool Export Filtered Data'
+    kwClearSelAll:str        = 'Clear Selection All'
+    kwClearSelLabel:str      = 'Clear Selection Labels'
+    kwClearSelSel:str        = 'Clear Selection Selection'
+    kwExportDataFiltered:str = 'Tool Export Filtered Data'
     kwFCShowAll:str          = 'FC Plot Show All'
-    kwVolPlot:str            = 'ToolVol Plot CRP'
-    kwVolPlotColorConf:str   = 'ToolVol Plot Color Configure'
-    kwVolPlotColorScheme:str = 'ToolVol Plot Color Scheme'
-    kwVolPlotLabelPick:str   = 'ToolVol Plot Pick Label'
-    kwVolPlotLabelProt:str   = 'ToolVol Plot Add Label'
+    kwFilterApplyAll:str     = 'Filter Apply All'
+    kwFilterApplyAuto:str    = 'Filter AutoApplyFilter'
+    kwFilterCopy:str         = 'Filter Copy'
+    kwFilterFCEvol:str       = 'Filter FC Evolution'
+    kwFilterFCLog:str        = 'Filter Log2FC'
+    kwFilterHypCurve:str     = 'Filter Hyp Curve'
+    kwFilterLoad:str         = 'Filter Load Filter'
+    kwFilterPaste:str        = 'Filter Paste'
+    kwFilterPVal:str         = 'Filter P Val'
+    kwFilterRemoveAll:str    = 'Filter Remove All'
+    kwFilterRemoveAny:str    = 'Filter Remove Any'
+    kwFilterRemoveLast:str   = 'Filter Remove Last'
+    kwFilterSave:str         = 'Filter Save Filter'
+    kwFilterZScore:str       = 'Filter Z Score'
+    kwScaleAnalysis:str      = 'Lock Scale Analysis'
+    kwScaleMode:str          = 'Lock Scale Mode'
+    kwScaleNo:str            = 'Lock Scale No'
+    kwScaleProject:str       = 'Lock Scale Project'
+    kwVolMenuCond:str        = 'cond'
+    kwVolMenuPCorrected:str  = 'corrP'
+    kwVolMenuRP:str          = 'rp'
+    kwVolMenuVol:str         = 'Vol'
+    kwVolPlot:str            = 'Vol Plot CRP'
+    kwVolPlotColorConf:str   = 'Vol Plot Color Configure'
+    kwVolPlotColorScheme:str = 'Vol Plot Color Scheme'
+    kwVolPlotLabelPick:str   = 'Vol Plot Pick Label'
+    kwVolPlotLabelProt:str   = 'Vol Plot Add Label'
     #------------------------------> DataFrame Columns
     dfcolFirstPart:list[str] = field(default_factory=lambda:
         ['Gene', 'Protein', 'Score'])

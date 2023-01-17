@@ -78,7 +78,7 @@ def ProtProf(                                                                   
         -----
         *args and **kwargs are ignored.
     """
-    # Test in test.unit.test_method.Test_ProtProf
+    # Test in test.unit.protprof.test_method.Test_ProtProf
     #region ------------------------------------------------> Helper Functions
     def EmptyDFR() -> pd.DataFrame:
         """Creates the empty data frame for the output. This data frame contains
@@ -251,9 +251,7 @@ def ProtProf(                                                                   
 
         #region --------------------------------------------> Log2 Intensities
         dfLogI = dfS.copy()
-        if rDO['TransMethod'] == 'Log2':
-            pass
-        else:
+        if rDO['TransMethod'] != 'Log2':
             if colC:
                 dfLogI.iloc[:,colC+colD] = np.log2(dfLogI.iloc[:,colC+colD])
             else:
@@ -281,16 +279,16 @@ def ProtProf(                                                                   
             if rDO['IndS']:
                 dfR.loc[:,(cN, tN, 'CI')] = cStatistic.CI_Mean_Diff(             # type: ignore
                     dfLogI.iloc[:,colC], dfLogI.iloc[:,colD], rDO['Alpha']
-                ).to_numpy()
+                ).loc[:,'CI'].to_numpy()
             else:
                 val = dfLogI.iloc[:,colC] - dfLogI.iloc[:,colD]
                 dfR.loc[:,(cN,tN,'CI')] = cStatistic.CI_Sample(                 # type: ignore
                     val, rDO['Alpha']
-                ).to_numpy()
+                ).loc[:,'CI'].to_numpy()
         else:
             dfR.loc[:,(cN, tN, 'CI')] = cStatistic.CI_Sample(                  # type: ignore
                 dfLogI.iloc[:,colD], rDO['Alpha']
-            ).to_numpy()
+            ).loc[:,'CI'].to_numpy()
         #endregion ------------------------------------------------> FC CI
 
         #region -----------------------------------------------------------> P
@@ -370,6 +368,10 @@ def ProtProf(                                                                   
 
     #region -------------------------------------------------------> Calculate
     dfR = EmptyDFR()
+    print('')
+    print('')
+    print('')
+    print(dfR.head())
     #------------------------------>
     for c, cN in enumerate(rDO['Cond']):
         for t, tN in enumerate(rDO['RP']):
@@ -387,6 +389,7 @@ def ProtProf(                                                                   
     #region --------------------------------------------------->
     dictO = tOut[0]
     dictO['dfR'] = dfR
+    print(dictO.keys())
     return (dictO, '', None)
     #endregion ------------------------------------------------>
 #---
