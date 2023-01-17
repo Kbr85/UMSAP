@@ -27,21 +27,23 @@ import wx
 #region -------------------------------------------------------> Configuration
 @dataclass
 class Configuration():
-    '''Configuration for the core module'''
+    """Configuration for the core module"""
     #region ---------------------------------------------------------> Options
     #------------------------------> Options for post_init
-    commOpen:str     = field(init=False)                                        # Command to open files
-    copyShortCut:str = field(init=False)                                        # Key for shortcuts
-    deltaWin:int     = field(init=False)                                        # Horizontal space between top of windows
-    fConfigDef:Path  = field(init=False)                                        # Path to File
-    fImgAbout:Path   = field(init=False)
-    fImgIcon:Path    = field(init=False)
-    fImgStart:Path   = field(init=False)
-    fManual:Path     = field(init=False)
-    pImages:Path     = field(init=False)                                        # Path to Images
-    res:Path         = field(init=False)                                        # Path to the Resources folder
-    root:Path        = field(init=False)                                        # Root folder
-    toolMenuIdx:int  = field(init=False)                                        # Tool place location
+    commOpen:str         = field(init=False)                                    # Command to open files
+    copyShortCut:str     = field(init=False)                                    # Key for shortcuts
+    deltaWin:int         = field(init=False)                                    # Horizontal space between top of windows
+    fConfigDef:Path      = field(init=False)                                    # Path to File
+    fImgAbout:Path       = field(init=False)
+    fImgIcon:Path        = field(init=False)
+    fImgStart:Path       = field(init=False)
+    fManual:Path         = field(init=False)
+    pImages:Path         = field(init=False)                                    # Path to Images
+    res:Path             = field(init=False)                                    # Path to the Resources folder
+    root:Path            = field(init=False)                                    # Root folder
+    toolMenuIdx:int      = field(init=False)                                    # Tool place location
+    ttLCtrlCopyNoMod:str = field(init=False)
+    ttLCtrlPasteMod:str  = field(init=False)
     #------------------------------> General Options
     cwd:Path         = Path(__file__)                                           # Config file path
     development:bool = True                                                     # Development (True) or Production (False)
@@ -85,11 +87,6 @@ class Configuration():
     lLCtrlColNameI:list[str] = field(default_factory=lambda: ['#', 'Name'])
     #------------------------------> Tooltips
     ttBtnHelp:str           = 'Read tutorial at {}.'
-    ttLCtrlCopyNoMod:str    = (f'Selected rows can be copied '
-        f'({copyShortCut}+C) but the table cannot be modified.')
-    ttLCtrlPasteMod:str     = (f'New rows can be pasted ({copyShortCut}+V) '
-        'after the last selected element and existing ones cut/deleted '
-        f'({copyShortCut}+X) or copied ({copyShortCut}+C).')
     ttSectionRightClick:str = ('The content of the Section can be deleted with '
                                'a right click.')
     ttStCorrectP:str        = 'Select the p correction method.'
@@ -335,6 +332,13 @@ class Configuration():
         self.fImgStart  = self.pImages / 'MAIN-WINDOW/p97-2.png'
         self.fManual    = self.res / 'MANUAL/manual.pdf'
         self.fConfigDef = self.res / 'CONFIG/config_def.json'
+        #------------------------------> Tooltips
+        self.ttLCtrlCopyNoMod = (f'Selected rows can be copied '
+            f'({self.copyShortCut}+C) but the table cannot be modified.')
+        self.ttLCtrlPasteMod  = (f'New rows can be pasted '
+            f'({self.copyShortCut}+V) after the last selected element and '
+            f'existing ones cut/deleted ({self.copyShortCut}+X) or copied '
+            f'({self.copyShortCut}+C).')
     #endregion ------------------------------------------------> Class Methods
 #---
 #endregion ----------------------------------------------------> Configuration
