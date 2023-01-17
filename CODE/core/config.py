@@ -74,11 +74,13 @@ class Configuration():
     lCbSample:str       = 'Samples'
     lmNatSeq:str        = 'Native Sequence'                                     # lm: Label for wx.MenuItem
     lPdError:str        = 'Fatal Error'                                         # lPd: Label for Progress Dialog
-    lStColAnalysis:str  = 'Columns for Analysis'                                # lSt: Label for wx.StaticText
+    lStAlpha:str        = 'α level'                                             # lSt: Label for wx.StaticText
+    lStColAnalysis:str  = 'Columns for Analysis'
     lStCtrlName:str     = 'Name'
     lStCtrlType:str     = 'Type'
     lStExcludeProt:str  = 'Exclude Proteins'
     lStGeneName:str     = 'Gene Names'
+    lStProtein:str      = 'Proteins'
     lStResCtrl:str      = 'Results - Control experiments'
     lStResCtrlS:str     = 'Results - Control'
     lStScoreCol:str     = 'Score'

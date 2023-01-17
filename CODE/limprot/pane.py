@@ -171,9 +171,9 @@ class LimProt(cPane.BaseConfPanelMod2):
     #------------------------------> Choices
     cOSample = mConfig.core.oSamples
     #------------------------------> Hints
-    cHBeta = 'e.g. 0.05'
-    cHGamma = 'e.g. 0.8'
-    cHTheta = 'e.g. 4.5'
+    cHBeta     = 'e.g. 0.05'
+    cHGamma    = 'e.g. 0.8'
+    cHTheta    = 'e.g. 4.5'
     cHThetaMax = 'e.g. 8'
     #------------------------------> Tooltips
     cTTSample = mConfig.core.ttStSample

@@ -1222,9 +1222,10 @@ class BaseConfPanelMod(BaseConfPanel, cWidget.ResControl):
         """ """
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Label
-        self.cLAlpha    = getattr(self, 'cLAlpha',    'α level')
-        self.cLScoreVal = getattr(self, 'cLScoreVal', mConfig.core.lStScoreVal)
-        self.cLScoreCol = getattr(self, 'cLScoreCol', mConfig.core.lStScoreCol)
+        self.cLAlpha        = getattr(self, 'cLAlpha',        mConfig.core.lStAlpha)
+        self.cLDetectedProt = getattr(self, 'cLDetectedProt', mConfig.core.lStProtein)
+        self.cLScoreVal     = getattr(self, 'cLScoreVal',     mConfig.core.lStScoreVal)
+        self.cLScoreCol     = getattr(self, 'cLScoreCol',     mConfig.core.lStScoreCol)
         #------------------------------> Tooltips
         self.cTTScore    = getattr(self, 'cTTScore',    mConfig.core.ttStScoreCol)
         self.cTTScoreVal = getattr(self, 'cTTScoreVal', mConfig.core.ttStScoreVal)
@@ -1446,7 +1447,7 @@ class BaseConfPanelMod2(BaseConfPanelMod):
         self.rCheckUserInput = { # New order is needed.
             self.cLuFile       :[self.wUFile.wTc,           mConfig.core.mFileBad       , False],
             self.cLiFile       :[self.wIFile.wTc,           mConfig.core.mFileBad       , False],
-            f'{self.cLSeqFile} file' :[self.wSeqFile.wTc,   mConfig.core.mFileBad       , False],
+            f'{self.cLSeqFile}':[self.wSeqFile.wTc,         mConfig.core.mFileBad       , False],
             self.cLId          :[self.wId.wTc,              mConfig.core.mValueBad      , False],
             self.cLCeroTreat   :[self.wCeroB.wCb,           mConfig.core.mOptionBad     , False],
             self.cLTransMethod :[self.wTransMethod.wCb,     mConfig.core.mOptionBad     , False],
