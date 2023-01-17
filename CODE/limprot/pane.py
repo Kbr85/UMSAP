@@ -737,22 +737,22 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
 
         Parameters
         ----------
-        parent : wx.Widget
+        parent: wx.Widget
             Parent of the panel
-        topParent : wx.Widget
+        topParent: wx.Widget
             Top parent window
-        NColF : int
+        NColF: int
             Total number of columns present in the Data File
     """
     #region -----------------------------------------------------> Class setup
     cName = mConfig.limp.npResControlExp
     #------------------------------> Needed by ResControlExpConfBase
-    cStLabel   = [f"{mConfig.limp.lStLane}:", f"{mConfig.limp.lStBand}:"]
+    cStLabel   = [f"{mConfig.limp.lStLane}", f"{mConfig.limp.lStBand}"]
     cLabelText = ['L','B']
     #------------------------------> Tooltips
     cTTTotalField = [
-        f'Set the number of {cStLabel[0]}.',
-        f'Set the number of {cStLabel[1]}.',
+        f'Set the number of {mConfig.limp.lStLane}.',
+        f'Set the number of {mConfig.limp.lStBand}.',
     ]
     #endregion --------------------------------------------------> Class setup
 

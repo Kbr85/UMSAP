@@ -1553,7 +1553,7 @@ class BaseResControlExpConf(wx.Panel):
         #------------------------------> Tooltip
         self.cTTControlN = getattr(
             self, 'cTTControlN', ('Name or ID of the control experiment.\ne.g. '
-                                  'MyControl."'))
+                                  '"MyControl"'))
         self.cTTRight = getattr(self, 'cTTRight', ('Use the right mouse click '
                                         'to clear the content of the window.'))
         self.cTTBtnCreate = getattr(self, 'cTTBtnCreate', ('Create the fields '

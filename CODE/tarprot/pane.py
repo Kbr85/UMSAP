@@ -722,10 +722,10 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
     #region -----------------------------------------------------> Class setup
     cName = mConfig.tarp.npResControlExp
     #------------------------------> Needed by ResControlExpConfBase
-    cStLabel   = [f"{mConfig.tarp.lStExp}:"]
+    cStLabel   = [f"{mConfig.tarp.lStExp}"]
     cLabelText = ['Exp']
     #------------------------------> Tooltips
-    cTTTotalField = [f'Set the number of {cStLabel[0]}.']
+    cTTTotalField = [f'Set the number of {mConfig.tarp.lStExp}.']
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup

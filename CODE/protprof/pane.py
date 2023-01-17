@@ -840,12 +840,12 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
     #------------------------------>
     cCtrlType = mConfig.prot.oControlType
     #------------------------------> Needed by ResControlExpConfBase
-    cStLabel   = [f"{mConfig.prot.lStCond}:", f"{mConfig.prot.lStRP}:"]
+    cStLabel   = [f"{mConfig.prot.lStCond}", f"{mConfig.prot.lStRP}"]
     cLabelText = ['C', 'RP']
     #------------------------------>
     cTTTotalField = [
-        f'Set the number of {cStLabel[0]}.',
-        f'Set the number of {cStLabel[1]}.',
+        f'Set the number of {mConfig.prot.lStCond}.',
+        f'Set the number of {mConfig.prot.lStRP}.',
     ]
     #------------------------------>
     cLCtrlType = mConfig.core.lStCtrlType
