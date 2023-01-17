@@ -368,10 +368,6 @@ def ProtProf(                                                                   
 
     #region -------------------------------------------------------> Calculate
     dfR = EmptyDFR()
-    print('')
-    print('')
-    print('')
-    print(dfR.head())
     #------------------------------>
     for c, cN in enumerate(rDO['Cond']):
         for t, tN in enumerate(rDO['RP']):
@@ -389,7 +385,6 @@ def ProtProf(                                                                   
     #region --------------------------------------------------->
     dictO = tOut[0]
     dictO['dfR'] = dfR
-    print(dictO.keys())
     return (dictO, '', None)
     #endregion ------------------------------------------------>
 #---

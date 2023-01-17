@@ -1892,11 +1892,6 @@ class BaseResControlExpConf(wx.Panel):
         #endregion ----------------------------------------------> Check input
 
         #region --------------------------------------------------> Add Labels
-        #------------------------------> Check the labels
-        if mConfig.core.development:
-            for k,v in self.cTopParent.rLbDict.items():                         # type: ignore
-                print(str(k)+': '+str(v))
-            print('')
         #------------------------------> Set the label numbers
         for k, v in self.cTopParent.rLbDict.items():                            # type: ignore
             if k != 'Control' and k != 'ControlType':
