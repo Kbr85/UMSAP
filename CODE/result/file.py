@@ -162,7 +162,7 @@ class UMSAPFile():
             ----------
             tSection: str
                 Section name. Default is ''.
-            tDate : str
+            tDate: str
                 Date and comment. Default is ''.
 
             Returns

@@ -115,11 +115,11 @@ class UMSAPControl(cWindow.BaseWindow):
         super().__init__(parent=parent)
         #------------------------------>
         dKeyMethod = {
-            mConfig.res.kwToolUMSAPCtrlAddDelExp: self.AddDelExport,
-            mConfig.res.kwToolUMSAPCtrlReload   : self.UpdateFileContent,
-            mConfig.res.lmToolUMSAPCtrlAdd      : self.AddAnalysis,             # Methods used directly
-            mConfig.res.lmToolUMSAPCtrlDel      : self.DeleteAnalysis,          # here in the window class
-            mConfig.res.lmToolUMSAPCtrlExp      : self.ExportAnalysis,          # and not in the menu.
+            mConfig.res.kwToolAddDelExp: self.AddDelExport,
+            mConfig.res.kwToolReload   : self.UpdateFileContent,
+            mConfig.res.lmToolAdd      : self.AddAnalysis,                      # Methods used directly
+            mConfig.res.lmToolDel      : self.DeleteAnalysis,                   # here in the window class
+            mConfig.res.lmToolExp      : self.ExportAnalysis,                   # and not in the menu.
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -270,7 +270,7 @@ class UMSAPControl(cWindow.BaseWindow):
             bool
         """
         #region --------------------------------------------------> Set Object
-        if mode == mConfig.res.lmToolUMSAPCtrlAdd:
+        if mode == mConfig.res.lmToolAdd:
             #------------------------------>
             dlg = cWindow.FileSelect(
                 'openO',
@@ -506,7 +506,7 @@ class UMSAPControl(cWindow.BaseWindow):
         return True
     #---
 
-    def DeleteAnalysis(self, selItems:dict, *args) -> bool:                    # pylint: disable=unused-argument
+    def DeleteAnalysis(self, selItems:dict, *args) -> bool:                     # pylint: disable=unused-argument
         """Delete selected analysis.
 
             Parameters
@@ -815,9 +815,9 @@ class UMSAPAddDelExport(cWindow.BaseDialogOkCancel):
     #region -----------------------------------------------------> Class setup
     cSize = (400, 700)
     cLBtnOpt = {
-        mConfig.res.lmToolUMSAPCtrlAdd: 'Add',
-        mConfig.res.lmToolUMSAPCtrlDel: 'Delete',
-        mConfig.res.lmToolUMSAPCtrlExp: 'Export',
+        mConfig.res.lmToolAdd: 'Add',
+        mConfig.res.lmToolDel: 'Delete',
+        mConfig.res.lmToolExp: 'Export',
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -916,7 +916,7 @@ class UMSAPAddDelExport(cWindow.BaseDialogOkCancel):
         return True
     #---
 
-    def OnOK(self, event: wx.CommandEvent) -> bool:
+    def OnOK(self, event:wx.CommandEvent) -> bool:
         """Check Dialog input.
 
             Parameters

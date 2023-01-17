@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 #region -------------------------------------------------------> Configuration
 @dataclass
 class Configuration():
-    """Configuration for the core module"""
+    """Configuration for the result module"""
     #region ---------------------------------------------------------> Options
     #------------------------------> Names & Titles
     nUtil:str          = 'Read UMSAP File'                                      # Name of the Util
@@ -30,12 +30,13 @@ class Configuration():
     #------------------------------> Window Trackers
     winUMSAP:dict = field(default_factory=lambda: {})                           # Keys: UMSAP File path - Values: Reference to control window
     #------------------------------> Labels
-    lmToolUMSAPCtrlAdd:str = 'Add Analysis'                                     # lm: Label for wx.MenuItem
-    lmToolUMSAPCtrlDel:str = 'Delete Analysis'
-    lmToolUMSAPCtrlExp:str = 'Export Analysis'
+    lmToolAdd:str    = 'Add Analysis'                                           # lm: Label for wx.MenuItem
+    lmToolDel:str    = 'Delete Analysis'
+    lmToolExp:str    = 'Export Analysis'
+    lmToolReload:str = 'Reload File'
     #------------------------------> Key words for Menu
-    kwToolUMSAPCtrlAddDelExp:str = 'ToolUMSAPCtrl Add Del Export Analysis'
-    kwToolUMSAPCtrlReload:str    = 'ToolUMSAPCtrl Reload File'
+    kwToolAddDelExp:str = 'ToolUMSAPCtrl Add Del Export Analysis'
+    kwToolReload:str    = 'ToolUMSAPCtrl Reload File'
     #------------------------------> Converter for user options
     converter:dict = field(default_factory=lambda: {})
     #endregion ------------------------------------------------------> Options

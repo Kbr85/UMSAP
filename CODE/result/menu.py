@@ -27,13 +27,13 @@ class ToolUmsapControl(cMenu.BaseMenu):
     """Tool menu for the UMSAP file control window"""
     #region -----------------------------------------------------> Class Setup
     #------------------------------> Label
-    cLAdd    = mConfig.res.lmToolUMSAPCtrlAdd
-    cLDel    = mConfig.res.lmToolUMSAPCtrlDel
-    cLExp    = mConfig.res.lmToolUMSAPCtrlExp
-    cLUpdate = 'Reload File'
+    cLAdd    = mConfig.res.lmToolAdd
+    cLDel    = mConfig.res.lmToolDel
+    cLExp    = mConfig.res.lmToolExp
+    cLUpdate = mConfig.res.lmToolReload
     #------------------------------> Values
-    cVAddDelExp = mConfig.res.kwToolUMSAPCtrlAddDelExp
-    cVUpdate    = mConfig.res.kwToolUMSAPCtrlReload
+    cVAddDelExp = mConfig.res.kwToolAddDelExp
+    cVUpdate    = mConfig.res.kwToolReload
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
