@@ -25,13 +25,18 @@ from core import method as cMethod
 #endregion ----------------------------------------------------------> Imports
 
 
+LIT_Tran = Literal['', 'None', 'Log2']
+LIT_Norm = Literal['', 'None', 'Median']
+LIT_Imp  = Literal['', 'None', 'Normal Distribution']
+
+
 #region -------------------------------------------------------------> Methods
 #region ----------------------------------------------------> Data Preparation
 def DataPreparation(                                                            # pylint: disable=dangerous-default-value
     *args,                                                                      # pylint: disable=unused-argument
-    df:pd.DataFrame  = pd.DataFrame(),
-    rDO:dict         = {},
-    resetIndex: bool = True,
+    df:pd.DataFrame          = pd.DataFrame(),
+    rDO:cMethod.BaseUserData = cMethod.BaseUserData(),
+    resetIndex: bool         = True,
     **kwargs
     ) -> tuple[dict, str, Optional[Exception]]:
     """Perform the data preparation steps.
@@ -79,10 +84,10 @@ def DataPreparation(                                                            
     try:
         dfI, dfF = DataPrep_Float(
             df,
-            rDO['Cero'],
-            rDO['oc']['Column'],
-            rDO['df']['ColumnR'],
-            rDO['df']['ColumnF'],
+            rDO.cero,
+            rDO.ocColumn,
+            rDO.dfColumnR,
+            rDO.dfColumnF,
         )
     except Exception as e:
         return ({}, 'Data Preparation failed', e)
@@ -90,61 +95,60 @@ def DataPreparation(                                                            
     try:
         dfT = DataTransformation(
             dfF,
-            rDO['df']['ResCtrlFlat'],
-            method = rDO['TransMethod'],
-            rep    = np.nan if rDO['Cero'] else 0,
+            rDO.dfResCtrlFlat,
+            method = rDO.tran,
+            rep    = np.nan if rDO.cero else 0,
         )
     except Exception as e:
         return ({}, 'Data Transformation failed.', e)
     #------------------------------> Normalization
     try:
         dfN = DataNormalization(
-            dfT, rDO['df']['ResCtrlFlat'], method=rDO['NormMethod'])
+            dfT, rDO.dfResCtrlFlat, method=rDO.norm)
     except Exception as e:
         return ({}, 'Data Normalization failed.', e)
     #------------------------------> Imputation
     try:
         dfIm = DataImputation(
             dfN,
-            rDO['df']['ResCtrlFlat'],
-            method = rDO['ImpMethod'],
-            shift  = rDO['Shift'],
-            width  = rDO['Width'],
+            rDO.dfResCtrlFlat,
+            method = rDO.imp,
+            shift  = rDO.shift,
+            width  = rDO.width,
         )
     except Exception as e:
         return ({}, 'Data Imputation failed.', e)
     #------------------------------> Target Protein
     try:
-        if rDO['df'].get('TargetProtCol', None) is not None:
+        if rDO.targetProt:
             dfTP = cMethod.DFFilterByColS(
-                dfIm, rDO['df']['TargetProtCol'], rDO['TargetProt'], 'e')
+                dfIm, rDO.dfTargetProt, rDO.targetProt, 'e')
         else:
             dfTP = dfIm.copy()
     except Exception as e:
         msg = mConfig.core.mPDDataTargetProt.format(
-            rDO['TargetProt'], rDO['df']['TargetProtCol'])
+            rDO.targetProt, rDO.dfTargetProt)
         return ({}, msg, e)
     #------------------------------> Exclude
     try:
-        if rDO['df'].get('ExcludeR', None) is not None:
-            dfE = cMethod.DFExclude(dfTP, rDO['df']['ExcludeR'])
+        if rDO.dfExcludeR:
+            dfE = cMethod.DFExclude(dfTP, rDO.dfExcludeR)
         else:
             dfE = dfTP.copy()
     except Exception as e:
-        msg = mConfig.core.mPDDataExclude.format(rDO['df']['ExcludeR'])
+        msg = mConfig.core.mPDDataExclude.format(rDO.dfExcludeR)
         return ({}, msg, e)
     #------------------------------> Score
-    #-------------->
     try:
-        if rDO['df'].get('ScoreCol', None) is not None:
+        if rDO.dfScore > -1:
             dfS = cMethod.DFFilterByColN(
-                dfE, [rDO['df']['ScoreCol']], rDO['ScoreVal'], 'ge')
+                dfE, [rDO.dfScore], rDO.scoreVal, 'ge')
         else:
             dfS = dfE.copy()
     except Exception as e:
-        msg = mConfig.core.mPDDataScore.format(rDO['df']['ScoreCol'])
+        msg = mConfig.core.mPDDataScore.format(rDO.dfScore)
         return ({}, msg, e)
-    #-------------->
+    #------------------------------> Check not Empty
     if dfS.empty:
         return ({}, mConfig.core.mNoDataLeft, None)
     #endregion -------------------------------------> Run Data Preparation
@@ -290,9 +294,9 @@ TRANS_METHOD = {
 
 def DataTransformation(                                                         # pylint: disable=dangerous-default-value
     df:pd.DataFrame,
-    sel:list[int]                   = [],
-    method:Literal['Log2', 'None']  = 'Log2',
-    rep:Union[None, str, float, int]= None,
+    sel:list[int]                    = [],
+    method:LIT_Tran                  = 'Log2',
+    rep:Union[None, str, float, int] = None,
     ) -> pd.DataFrame:
     """Performs a data transformation over the selected columns in the
         dataframe.
@@ -395,8 +399,8 @@ NORM_METHOD = {
 
 def DataNormalization(                                                          # pylint: disable=dangerous-default-value
     df:pd.DataFrame,
-    sel:list[int]=[],
-    method:Literal['Median', 'None'] = 'Median'
+    sel:list[int]   = [],
+    method:LIT_Norm = 'Median'
     ) -> pd.DataFrame:
     """Perform a data normalization over the selected columns in the
         dataframe.
@@ -509,7 +513,7 @@ IMPUTATION_METHOD = {
 def DataImputation(                                                             # pylint: disable=dangerous-default-value
     df:pd.DataFrame,
     sel:list[int]                                 = [],
-    method:Literal['Normal Distribution', 'None'] = 'Normal Distribution',
+    method:LIT_Imp = 'Normal Distribution',
     **kwargs
     ) -> pd.DataFrame:
     """Perform a data imputation over the selected columns in the

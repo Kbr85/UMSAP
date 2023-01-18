@@ -189,11 +189,6 @@ class TarProt(cPane.BaseConfPanelMod2):
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(parent)
-        #------------------------------>
-        self.dfAA    = pd.DataFrame()
-        self.dfHist  = pd.DataFrame()
-        self.dfCpR   = pd.DataFrame()
-        self.dfCEvol = pd.DataFrame()
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -672,18 +667,14 @@ class TarProt(cPane.BaseConfPanelMod2):
 
         #region --------------------------------------------> Further Analysis
         #------------------------------>
-        stepDict['CpR'] = f'{self.rDate}_CpR.txt'
+        stepDict['CpR']   = f'{self.rDate}_CpR.txt'
         stepDict['CEvol'] = f'{self.rDate}_CEvol.txt'
         #------------------------------>
-        stepDict['AA']= {}
-        if self.rDO['AA'] is not None:
-            stepDict['AA'][f'{self.rDate}_{self.rDO["AA"]}'] = (
-                f'{self.rDate}_AA-{self.rDO["AA"]}.txt')
+        if self.rDO.posAA is not None:
+            stepDict['AA'] = f'{self.rDate}_AA-{self.rDO.posAA}.txt'
         #------------------------------>
-        stepDict['Hist']= {}
-        if self.rDO['Hist'] is not None:
-            stepDict['Hist'][f'{self.rDate}_{self.rDO["Hist"]}'] = (
-                f'{self.rDate}_Hist-{self.rDO["Hist"]}.txt')
+        if self.rDO.winHist is not None:
+            stepDict['Hist'] = f'{self.rDate}_Hist-{self.rDO.winHist}.txt'
         #endregion -----------------------------------------> Further Analysis
 
         return self.WriteOutputData(stepDict)

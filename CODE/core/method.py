@@ -18,10 +18,11 @@
 import copy
 import itertools
 import traceback
-from datetime import datetime
-from operator import itemgetter
-from pathlib  import Path
-from typing   import Literal, Union, Optional, TYPE_CHECKING
+from dataclasses import dataclass, field
+from datetime    import datetime
+from operator    import itemgetter
+from pathlib     import Path
+from typing      import Literal, Union, Optional, TYPE_CHECKING
 
 import matplotlib as mpl
 import numpy      as np
@@ -41,6 +42,10 @@ LIT_Comp    = Literal['lt', 'le', 'e', 'ge', 'gt']
 LIT_CompEq  = Literal['e', 'ne']
 LIT_NumType = Literal['int', 'float']
 LIT_Region  = Literal['start', 'end']
+LIT_Tran    = Literal['', 'None', 'Log2']
+LIT_Norm    = Literal['', 'None', 'Median']
+LIT_Imp     = Literal['', 'None', 'Normal Distribution']
+LIT_Corr    = Literal['', 'Pearson', 'Kendall', 'Spearman']
 
 
 #region ------------------------------------------------------> String Methods
@@ -1240,3 +1245,92 @@ def MergeOverlappingFragments(
     return coordO
 #---
 #endregion -----------------------------------------------------------> Others
+
+
+#region -------------------------------------------------------------> Classes
+@dataclass
+class BaseUserData():
+    """Base class for the representation of the user input data"""
+    #region ---------------------------------------------------------> Options
+    #------------------------------> Files & ID
+    uFile:Path         = Path()                                                 # UMSAP File
+    iFile:Path         = Path()                                                 # Data File
+    seqFile:Path       = Path()                                                 # Sequence File
+    ID:str             = ''                                                     # ID for Analysis
+    iFileN:str         = ''                                                     # Name of Data File after copied to output folder
+    seqFileN:str       = ''                                                     # Name of Sequence File after copied to output folder
+    copyFile:dict      = field(default_factory=lambda: {                        # Copy these files to result folders
+        'iFile'  : 'iFileN',
+        'seqFile': 'seqFileN',})
+    #------------------------------> Data Preparation
+    cero:bool      = False                                                      # Treatment of 0 in data
+    tran:LIT_Tran  = ''                                                         # Transformation method
+    norm:LIT_Norm  = ''                                                         # Normalization method
+    imp:LIT_Imp    = ''                                                         # Imputation Method
+    shift:float    = 0                                                          # Center shift
+    width:float    = 0                                                          # Stdev value
+    targetProt:str = ''                                                         # Target Protein
+    scoreVal:int   = 0                                                          # Minimum Score value
+    #------------------------------> Correlation Analysis
+    corr:LIT_Corr  = ''                                                         # Correlation method
+    #------------------------------> Further Analysis
+    posAA:Optional[int] = None                                                  # Position number for AA analysis
+    winHist:list[int]   = field(default_factory=list)                           # Windows for Histograms
+    #------------------------------> Column numbers in the original (oc) and short (df) dataframe
+    ocColumn:list[int]      = field(default_factory=list)                       # Selected columns ALL
+    ocTargetProt:int        = -1                                                # Search here for targetProt
+    dfColumnR:list[int]     = field(default_factory=list)                       # Columns in which 0 and/or '' will be replaced with NA
+    dfColumnF:list[int]     = field(default_factory=list)                       # Selected columns with only Float values
+    dfTargetProt:int        = -1                                                # Search here for targetProt
+    dfScore:int             = -1                                                # Search here for Score values
+    dfExcludeR:list[int]    = field(default_factory=list)                       # Search here for values to exclude rows in data from analysis
+    dfResCtrlFlat:list[int] = field(default_factory=list)                       # Selected columns with only Float values as a flat list
+
+    #------------------------------>
+    protLoc:tuple[int,int]              = (-1, -1)                              # Location of the Native Sequence in the Recombinant Sequence
+    protLength:tuple[int,Optional[int]] = (1, None)                             # Length of Recombinant and Natural Protein
+    protDelta:Optional[int]             = None                                  # To calculate Native residue number from Recombinant residue number
+    dI:dict                             = field(default_factory=dict)           # Keys are class attributes and values string for pretty print
+    #------------------------------> Child class should give default values for the following attributes
+    dO:list        = field(default_factory=list)                                # Attributes written to umsap file
+    longestKey:int = 0                                                          # Length of the longest Key in dI
+    #endregion ------------------------------------------------------> Options
+
+    #region ---------------------------------------------------------> Methods
+    def PrintDI(self) -> dict:
+        """Creates the dictionary needed to pretty print the user input.
+
+            Returns
+            -------
+            dict
+        """
+        #region --------------------------------------------------->
+        dictO = {}
+        #------------------------------>
+        for k,v in self.dI.items():
+            label = f"{v}{(self.longestKey - len(v))*' '}"
+            dictO[label] = str(getattr(self, k))
+        #endregion ------------------------------------------------>
+
+        return dictO
+    #---
+
+    def PrintDO(self) -> dict:
+        """Creates the dictionary needed to print the processed user input
+
+            Return
+            ------
+            dict
+        """
+        #region -------------------------------------------------------->
+        dictO = {}
+        #------------------------------>
+        for k in self.dO:
+            dictO[k] = str(getattr(self, k))
+        #endregion ----------------------------------------------------->
+
+        return dictO
+    #---
+    #endregion ------------------------------------------------------> Methods
+#---
+#endregion ----------------------------------------------------------> Classes

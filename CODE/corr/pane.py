@@ -21,10 +21,10 @@ from typing  import Union
 import wx
 
 from config.config import config as mConfig
-from core import pane   as cPane
-from core import widget as cWidget
+from core import pane      as cPane
+from core import widget    as cWidget
 from core import validator as cValidator
-from corr import method as corrMethod
+from corr import method    as corrMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -129,7 +129,6 @@ class CorrA(cPane.BaseConfPanel):
     cTitlePD        = 'Calculating Correlation Coefficients'
     cGaugePD        = 20
     cTTHelp         = mConfig.core.ttBtnHelp.format(cURL)
-    rLLenLongest    = len(cLCorrMethod)
     rMainData       = '{}_{}-CorrelationCoefficients-Data.txt'
     rAnalysisMethod = corrMethod.CorrA
     #endregion --------------------------------------------------> Class Setup
@@ -145,7 +144,7 @@ class CorrA(cPane.BaseConfPanel):
         self.wCorrMethod = cWidget.StaticTextComboBox(self.wSbValue,
             label     = self.cLCorrMethod,
             tooltip   = f'Select the {self.cLCorrMethod}.',
-            choices   = list(mConfig.corr.oCorrMethod.values()),
+            choices   = mConfig.corr.oCorrMethod,
             validator = cValidator.IsNotEmpty(),
         )
         self.wStListI = wx.StaticText(
@@ -371,7 +370,7 @@ class CorrA(cPane.BaseConfPanel):
 
     #region ---------------------------------------------------> Run Analysis
     def CheckInput(self) -> bool:
-        """Check user input
+        """Check user input.
 
             Returns
             -------
@@ -405,57 +404,44 @@ class CorrA(cPane.BaseConfPanel):
         #region -------------------------------------------------------> Input
         msgStep = self.cLPdPrepare + 'User input, reading'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-
+        #------------------------------> Read
         col  = [int(x) for x in self.wLCtrlO.GetColContent(0)]
         colF = list(range(0, len(col)))
         impMethod = self.wImputationMethod.wCb.GetValue()
-        #------------------------------> As given
-        self.rDI = {
-            self.EqualLenLabel(self.cLiFile) : (
-                self.wIFile.wTc.GetValue()),
-            self.EqualLenLabel(self.cLId) : (
-                self.wId.wTc.GetValue()),
-            self.EqualLenLabel(self.cLCeroTreatD) : (
-                self.wCeroB.wCb.GetValue()),
-            self.EqualLenLabel(self.cLTransMethod) : (
-                self.wTransMethod.wCb.GetValue()),
-            self.EqualLenLabel(self.cLNormMethod) : (
-                self.wNormMethod.wCb.GetValue()),
-            self.EqualLenLabel(self.cLImputation) : (
-                impMethod),
-            self.EqualLenLabel(self.cLShift) : (
-                self.wShift.wTc.GetValue()),
-            self.EqualLenLabel(self.cLWidth) : (
-                self.wWidth.wTc.GetValue()),
-            self.EqualLenLabel(self.cLCorrMethod) : (
-                self.wCorrMethod.wCb.GetValue()),
-            self.EqualLenLabel('Selected Columns') : col,
+        dI = {
+            'iFileN'  : self.cLiFile,
+            'ID'      : self.cLId,
+            'cero'    : self.cLCeroTreatD,
+            'tran'    : self.cLTransMethod,
+            'norm'    : self.cLNormMethod,
+            'imp'     : self.cLImputation,
+            'corr'    : self.cLCorrMethod,
+            'ocColumn': 'Selected Columns',
         }
+        if impMethod == mConfig.data.lONormDist:
+            dI['shift'] = self.cLShift
+            dI['width'] = self.cLWidth
         #------------------------------>
         msgStep = self.cLPdPrepare + 'User input, processing'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------> Dict with all values
-        self.rDO = {
-            'uFile'      : Path(self.wUFile.wTc.GetValue()),
-            'iFile'      : Path(self.wIFile.wTc.GetValue()),
-            'ID'         : self.wId.wTc.GetValue(),
-            'Cero'       : mConfig.core.oYesNo[self.wCeroB.wCb.GetValue()],
-            'TransMethod': self.wTransMethod.wCb.GetValue(),
-            'NormMethod' : self.wNormMethod.wCb.GetValue(),
-            'ImpMethod'  : impMethod,
-            'Shift'      : float(self.wShift.wTc.GetValue()),
-            'Width'      : float(self.wWidth.wTc.GetValue()),
-            'CorrMethod' : self.wCorrMethod.wCb.GetValue(),
-            'oc'         : {
-                'Column'  : col,
-                'ColumnF' : col,
-            },
-            'df'         : {
-                'ColumnR'    : colF,
-                'ColumnF'    : colF,
-                'ResCtrlFlat': colF,
-            }
-        }
+        #------------------------------> Create DataClass Instance
+        self.rDO = corrMethod.UserData(
+            uFile         = Path(self.wUFile.wTc.GetValue()),
+            iFile         = Path(self.wIFile.wTc.GetValue()),
+            ID            = self.wId.wTc.GetValue(),
+            cero          = mConfig.core.oYesNo[self.wCeroB.wCb.GetValue()],
+            tran          = self.wTransMethod.wCb.GetValue(),
+            norm          = self.wNormMethod.wCb.GetValue(),
+            imp           = impMethod,
+            shift         = float(self.wShift.wTc.GetValue()),
+            width         = float(self.wWidth.wTc.GetValue()),
+            corr          = self.wCorrMethod.wCb.GetValue(),
+            ocColumn      = col,
+            dfColumnR     = colF,
+            dfColumnF     = colF,
+            dfResCtrlFlat = colF,
+            dI            = dI,
+        )
         #endregion ----------------------------------------------------> Input
 
         #region ---------------------------------------------------> Super
@@ -482,7 +468,7 @@ class CorrA(cPane.BaseConfPanel):
             mConfig.core.fnTrans.format(self.rDate, '03')  : self.dfT,
             mConfig.core.fnNorm.format(self.rDate, '04')   : self.dfN,
             mConfig.core.fnImp.format(self.rDate, '05')    : self.dfIm,
-            self.rMainData.format(self.rDate, '06')   : self.dfR,
+            self.rMainData.format(self.rDate, '06')        : self.dfR,
         }
         stepDict['R'] = self.rMainData.format(self.rDate, '06')
         #endregion -----------------------------------------------> Data Steps
