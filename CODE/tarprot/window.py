@@ -124,9 +124,9 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         super().__init__(parent)
         #------------------------------>
         dKeyMethod = {
-            'Peptide'  : self.ClearPept,
-            'Fragment' : self.ClearFrag,
-            'All'      : self.ClearAll,
+            mConfig.tarp.kwClearPeptide : self.ClearPept,
+            mConfig.tarp.kwClearFragment: self.ClearFrag,
+            mConfig.tarp.kwClearAll     : self.ClearAll,
             #------------------------------>
             'AA-Item'                     : self.AASelect,
             'AA-New'                      : self.AANew,
@@ -543,9 +543,9 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
                 self.rDf,
                 self.rAlpha,
                 self.rRecSeqC,
-                self.rNatSeqC,                                                  # type: ignore
                 fileP,
-                length,                                                         # type: ignore
+                length,
+                self.rNatSeqC,
             )
         except Exception as e:
             msg = 'Export of Sequence Alignments failed.'
