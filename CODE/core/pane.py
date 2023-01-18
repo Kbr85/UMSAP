@@ -2100,7 +2100,7 @@ class ListCtrlSearchPlot(wx.Panel):
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        super().__init__(parent, name=self.cName)
+        super().__init__(parent, name=self.cName, size=(200,100))
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
