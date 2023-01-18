@@ -218,9 +218,9 @@ class ToolProtProfLockPlotScale(cMenu.BaseMenu):
         self.rIDMap = self.rIDMap | rIDMap
         #------------------------------>
         rKeyMap = {
-            self.miNo.GetId()     : self.cVMode,
-            self.miDate.GetId()   : self.cVMode,
-            self.miProject.GetId(): self.cVMode,
+            self.miNo.GetId()     : 'mode',
+            self.miDate.GetId()   : 'mode',
+            self.miProject.GetId(): 'mode',
         }
         self.rKeyMap = self.rKeyMap | rKeyMap
         #endregion ---------------------------------------------------> nameID

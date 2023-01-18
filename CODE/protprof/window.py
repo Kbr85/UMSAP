@@ -226,9 +226,9 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #------------------------------> Methods
         dKeyMethod = {
             #------------------------------> Set Range of Plots
-            'No'          : self.LockScale,
-            'Analysis'    : self.LockScale,
-            'Project'     : self.LockScale,
+            mConfig.prot.kwScaleNo      : self.LockScale,
+            mConfig.prot.kwScaleAnalysis: self.LockScale,
+            mConfig.prot.kwScaleProject : self.LockScale,
             'No Set'      : self.SetRangeNo,
             'Analysis Set': self.SetRangeDate,
             'Project Set' : self.SetRangeProject,
