@@ -157,11 +157,11 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         super().__init__(parent)
         #------------------------------>
         dKeyMethod = {
-            'Peptide'  : self.ClearPept,
-            'Fragment' : self.ClearFrag,
-            'Gel Spot' : self.ClearGel,
-            'Band/Lane': self.ClearBL,
-            'All'      : self.ClearAll,
+            mConfig.limp.kwClearPeptide : self.ClearPept,
+            mConfig.limp.kwClearFragment: self.ClearFrag,
+            mConfig.limp.kwClearGelSpot : self.ClearGel,
+            mConfig.limp.kwClearBandLane: self.ClearBL,
+            mConfig.limp.kwClearAll     : self.ClearAll,
             #------------------------------>
             mConfig.limp.kwBandLane : self.LaneBandSel,
             mConfig.limp.kwShowAll  : self.ShowAll,
@@ -1763,7 +1763,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         if self.rFragSelLine is not None:
             self.rFragSelLine[0].remove()
             self.rFragSelLine = None
-            self.wPlot['Sec'].rCanvas.draw()
+            self.wPlot['Main'].rCanvas.draw()
             self.rFragSelC = [None, None, None]
         #endregion -------------------------------------> Remove Sel from Frag
 
