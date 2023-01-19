@@ -15,7 +15,8 @@
 
 
 #region -------------------------------------------------------------> Imports
-from typing import Optional, Union, Literal
+from dataclasses import dataclass, field
+from typing      import Optional, Union, Literal
 
 import numpy  as np
 import pandas as pd
@@ -28,6 +29,21 @@ from core import method as cMethod
 LIT_Tran = Literal['', 'None', 'Log2']
 LIT_Norm = Literal['', 'None', 'Median']
 LIT_Imp  = Literal['', 'None', 'Normal Distribution']
+
+
+#region -------------------------------------------------------------> Classes
+@dataclass
+class UserData(cMethod.BaseUserData):
+    """Representation of the input data for the Correlation Analysis Pane"""
+    #region ---------------------------------------------------------> Options
+    dO:list = field(default_factory=lambda:
+        ['uFile', 'iFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift',
+         'width',
+        ])
+    longestKey:int = 20                                                         # Length of the longest Key in dI
+    #endregion ------------------------------------------------------> Options
+#---
+#endregion ----------------------------------------------------------> Classes
 
 
 #region -------------------------------------------------------------> Methods

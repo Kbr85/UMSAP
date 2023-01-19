@@ -42,35 +42,6 @@ class DataPrep(cPane.BaseConfPanel):
 
         Notes
         -----
-        The structure of self.rDO and self.rDI are:
-        rDO: dict
-        {
-            'iFile'      : Path(self.iFile.tc.GetValue()),
-            'uFile'      : Path(self.uFile.tc.GetValue()),
-            'ID'         : self.id.tc.GetValue(),
-            'Cero'       : self.ceroB.IsChecked(),
-            'NormMethod' : self.normMethod.cb.GetValue(),
-            'TransMethod': self.transMethod.cb.GetValue(),
-            'ImpMethod'  : self.imputationMethod.cb.GetValue(),
-            'Shift'      : float,
-            'Width'      : float,
-            'oc'         : {
-                'ColAnalysis': Columns for the analysis,
-                'Column'     : Columns for the analysis,
-                'ColumnF'    : Columns that must contain floats,
-            },
-            'df' : {
-                'ResCtrlFlat': resCtrlFlat,
-                'ColumnF'    : resCtrlFlat,
-                'ColumnR'    : resCtrlFlat,
-            },
-        }
-        rDI : dict
-            Similar to 'do' but:
-                - No oc and df dict
-                - With the values given by the user
-                - Keys as in the GUI of the tab plus empty space.
-
         Running the analysis results in the creation of:
         - Parent Folder/
             - Input_Data_Files/
@@ -115,7 +86,6 @@ class DataPrep(cPane.BaseConfPanel):
     cSection        = mConfig.data.nUtil
     cTitlePD        = f"Running {mConfig.data.nUtil} Analysis"
     cGaugePD        = 19
-    rLLenLongest    = len(cLColAnalysis)
     rAnalysisMethod = dataMethod.DataPreparation
     #endregion --------------------------------------------------> Class setup
 
@@ -177,10 +147,6 @@ class DataPrep(cPane.BaseConfPanel):
         self.SetupScrolling()
         #endregion ---------------------------------------------------> Sizers
 
-        #region -------------------------------------------------------> DataI
-        self.SetInitialData(dataI)
-        #endregion ----------------------------------------------------> DataI
-
         #region ----------------------------------------------> checkUserInput
         rCheckUserInput = {
             self.cLColAnalysis: [self.wColAnalysis.wTc, mConfig.core.mNZPlusNumCol, True ],
@@ -213,6 +179,10 @@ class DataPrep(cPane.BaseConfPanel):
         else:
             pass
         #endregion -----------------------------------------------------> Test
+
+        #region -------------------------------------------------------> DataI
+        self.SetInitialData(dataI)
+        #endregion ----------------------------------------------------> DataI
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -295,59 +265,42 @@ class DataPrep(cPane.BaseConfPanel):
         msgStep = self.cLPdPrepare + 'User input, reading'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------> Variables
-        impMethod = self.wImputationMethod.wCb.GetValue()
-        #------------------------------> As given
-        self.rDI = {
-            self.EqualLenLabel(self.cLiFile) : (
-                self.wIFile.wTc.GetValue()),
-            self.EqualLenLabel(self.cLId) : (
-                self.wId.wTc.GetValue()),
-            self.EqualLenLabel(self.cLCeroTreatD) : (
-                self.wCeroB.wCb.GetValue()),
-            self.EqualLenLabel(self.cLTransMethod) : (
-                self.wTransMethod.wCb.GetValue()),
-            self.EqualLenLabel(self.cLNormMethod) : (
-                self.wNormMethod.wCb.GetValue()),
-            self.EqualLenLabel(self.cLImputation) : (
-                impMethod),
-            self.EqualLenLabel(self.cLShift) : (
-                self.wShift.wTc.GetValue()),
-            self.EqualLenLabel(self.cLWidth) : (
-                self.wWidth.wTc.GetValue()),
-            self.EqualLenLabel(self.cLColAnalysis): (
-                self.wColAnalysis.wTc.GetValue()),
+        impMethod   = self.wImputationMethod.wCb.GetValue()
+        colAnalysis = cMethod.Str2ListNumber(
+            self.wColAnalysis.wTc.GetValue(), numType='int', sep=' ')
+        resCtrlFlat = [x for x in range(0, len(colAnalysis))]
+        dI = {
+            'iFileN'  : self.cLiFile,
+            'ID'      : self.cLId,
+            'cero'    : self.cLCeroTreatD,
+            'tran'    : self.cLTransMethod,
+            'norm'    : self.cLNormMethod,
+            'imp'     : self.cLImputation,
+            'ocColumn': self.cLColAnalysis,
         }
+        if impMethod == mConfig.data.lONormDist:
+            dI['shift'] = self.cLShift
+            dI['width'] = self.cLWidth
         #------------------------------> Dict with all values
-        #-------------->
         msgStep = self.cLPdPrepare + 'User input, processing'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #-------------->
-        colAnalysis = cMethod.Str2ListNumber(
-            self.wColAnalysis.wTc.GetValue(), sep=' ',
+        self.rDO = dataMethod.UserData(
+            uFile         = Path(self.wUFile.wTc.GetValue()),
+            iFile         = Path(self.wIFile.wTc.GetValue()),
+            ID            = self.wId.wTc.GetValue(),
+            cero          = mConfig.core.oYesNo[self.wCeroB.wCb.GetValue()],
+            norm          = self.wNormMethod.wCb.GetValue(),
+            tran          = self.wTransMethod.wCb.GetValue(),
+            imp           = impMethod,
+            shift         = float(self.wShift.wTc.GetValue()),
+            width         = float(self.wWidth.wTc.GetValue()),
+            ocColumn      = colAnalysis,                                        # type: ignore
+            dfColumnR     = resCtrlFlat,
+            dfColumnF     = resCtrlFlat,
+            dfResCtrlFlat = resCtrlFlat,
+            dI            = dI,
         )
-        resCtrlFlat = [x for x in range(0, len(colAnalysis))]
-        #-------------->
-        self.rDO  = {
-            'iFile'      : Path(self.wIFile.wTc.GetValue()),
-            'uFile'      : Path(self.wUFile.wTc.GetValue()),
-            'ID'         : self.wId.wTc.GetValue(),
-            'Cero'       : mConfig.core.oYesNo[self.wCeroB.wCb.GetValue()],
-            'NormMethod' : self.wNormMethod.wCb.GetValue(),
-            'TransMethod': self.wTransMethod.wCb.GetValue(),
-            'ImpMethod'  : impMethod,
-            'Shift'      : float(self.wShift.wTc.GetValue()),
-            'Width'      : float(self.wWidth.wTc.GetValue()),
-            'oc'         : {
-                'ColAnalysis': colAnalysis,
-                'Column'     : colAnalysis,
-                'ColumnF'    : colAnalysis,
-            },
-            'df' : {
-                'ColumnR'    : resCtrlFlat,
-                'ResCtrlFlat': resCtrlFlat,
-                'ColumnF'    : resCtrlFlat,
-            },
-        }
         #endregion ----------------------------------------------------> Input
 
         #region ---------------------------------------------------> Super

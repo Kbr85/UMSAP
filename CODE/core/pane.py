@@ -73,9 +73,6 @@ class BaseConfPanel(
             Exclude entries by Score values.
         dfR: pd.DataFrame
             DataFrame with the results values.
-        rChangeKey: list of str
-            Keys in do whose values will be turned into a str. Default to
-            ['iFile', 'uFile].
         rCheckUnique: list of wx.TextCtrl
             These fields must contain unique column numbers.
         rCheckUserInput: dict
@@ -84,35 +81,17 @@ class BaseConfPanel(
             error message, bool]. Error message must be like mConfig.mFileBad.
             Boolean is True when the column numbers in the Data file are needed
             to check user input.
-        rCopyFile: dict
-            Keys are the keys in self.rDO and values label of the widget.
         rDate: str
             Date for the new section in the umsap file.
         rDateID: str
             Date + Analysis ID
         rDeltaT: str
             Elapsed analysis time.
-        rDExtra: dict
-            Extra options for the Analysis methods.
         rDFile: list[Path]
             Full paths to copied input files. Needed to repeat the analysis
             directly after running.
-        rDI: dict
-            Dict with user input.
-            The following key-value pairs are expected.
-            'oc' : {
-                'Column' : [list of int],
-            }
-            See Child class for other key - value pairs.
-        rDO: dict
-            Dict with processed user input.
-            The following key-value pairs are expected.
-            'Cero' : bool,
-            'df' : {
-                'ColumnF' : [list of int],
-                'ExcludeP': [list of int],
-            }
-            See Child class for other key - value pairs.
+        rDO: cMethod.BaseUserData
+            DataClass holding user input.
         rDlg: dtscore.ProgressDialog
             Progress dialog.
         rException: Exception or None
@@ -121,8 +100,6 @@ class BaseConfPanel(
             Input Data File Object.
         rLCtrlL: list of wx.ListCtrl
             To clear all wx.ListCtrl in the Tab.
-        rLLenLongest: int
-            Length of longest label.
         rMainData: str
             Name of the file containing the main output data.
         rMsgError: Str
@@ -1202,8 +1179,6 @@ class BaseConfPanelMod(BaseConfPanel, cWidget.ResControl):
         self.cTTDetectedProt = getattr(
             self, 'cTTDetectedProtL', ('Set the column number containing the '
                                        'detected proteins.\ne.g. 7'))
-        self.rLLenLongest = getattr(
-            self, 'rLLenLongest', len(mConfig.core.lStResCtrlS))
         #------------------------------> Parent class init
         BaseConfPanel.__init__(self, parent, rightDelete=rightDelete)
 
@@ -1291,11 +1266,6 @@ class BaseConfPanelMod2(BaseConfPanelMod):
                                 'Sequences.\ne.g. 0'))
         #------------------------------>
         super().__init__(parent, rightDelete=rightDelete)
-        #------------------------------>
-        self.rCopyFile = {
-            'iFile'  : self.cLiFile,
-            'seqFile': f'{self.cLSeqFile} File',
-        }
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -1411,7 +1381,7 @@ class BaseConfPanelMod2(BaseConfPanelMod):
         #endregion ---------------------------------------------------> Sizers
 
         #region -------------------------------------------------> Check Input
-        self.rCheckUserInput = { # New order is needed.
+        self.rCheckUserInput = {                                                # New order is needed.
             self.cLuFile       :[self.wUFile.wTc,           mConfig.core.mFileBad       , False],
             self.cLiFile       :[self.wIFile.wTc,           mConfig.core.mFileBad       , False],
             f'{self.cLSeqFile}':[self.wSeqFile.wTc,         mConfig.core.mFileBad       , False],

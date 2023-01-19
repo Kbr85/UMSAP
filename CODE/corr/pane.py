@@ -42,36 +42,6 @@ class CorrA(cPane.BaseConfPanel):
 
         Notes
         -----
-        The structures of self.rDO and self.rDI are:
-        rDO: dict
-            Dict with the processed user input
-            {
-                'uFile'      : 'umsap file path',
-                'iFile'      : 'data file path',
-                'ID'         : 'Analysis ID',
-                "Cero"       : 'Boolean, how to treat cero values',
-                'TransMethod': 'transformation method',
-                'NormMethod' : 'normalization method',
-                'Shift'      : float,
-                'Width'      : float,
-                'ImpMethod'  : 'imputation method',
-                'CorrMethod' : 'correlation method',
-                'oc'         : {
-                    'Column' : [selected columns as integers],
-                    'ColumnF': [columns that must contain floats],
-                }
-                'df'         : {
-                    'ColumnR'     : [cero based list of result columns],
-                    'ColumnF'     : [cero based list of float columns],
-                    'ResCtrlFlat' : [cero based flat list of result & control],
-                },
-            }
-        rDI: dict
-            Similar to 'do' but:
-                - No oc and df dict
-                - With the values given by the user
-                - Keys as in the GUI of the tab plus empty space.
-
         Running the analysis results in the creation of:
         - Parent Folder/
             - Input_Data_Files/
