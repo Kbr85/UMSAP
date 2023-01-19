@@ -23,6 +23,7 @@ import pandas as pd
 from config.config import config as mConfig
 from core     import file   as cFile
 from core     import method as cMethod
+from core     import check  as cCheck
 from corr     import method as corrMethod
 from dataprep import method as dataMethod
 #endregion ----------------------------------------------------------> Imports
@@ -482,14 +483,72 @@ class UMSAPFile():
             cMethod.BaseUserData
                 An instance according to tSection.
         """
-        #region -------------------------------------------------------->
-        data          = self.rData[tSection][tDate]['CI']
-        data['uFile'] = self.rFileP
-        data['iFile'] = self.rInputFileP / data['iFileN']
+        #region ---------------------------------------------> Helper Function
+        def OldVersion():
+            """"""
+            #region ------------------------------------------> Key Translator
+            kTranslator = {
+                'uFile'      : 'uFile',
+                'ID'         : 'ID',
+                'Cero'       : 'cero',
+                'TransMethod': 'tran',
+                'NormMethod' : 'norm',
+                'ImpMethod'  : 'imp',
+                'Shift'      : 'shift',
+                'Width'      : 'width',
+                'CorrMethod' : 'corr',
+                'oc'         : {
+                    'Column' : 'ocColumn',
+                },
+                'df'         : {
+                    'ColumnR'    : 'dfColumnR',
+                    'ColumnF'    : 'dfColumnF',
+                    'ResCtrlFlat': 'dfResCtrlFlat',
+                },
+            }
+            #endregion ---------------------------------------> Key Translator
+
+            #region ----------------------------------------------------> Data
+            data = {}
+            #------------------------------>
+            for k,v in self.rData[tSection][tDate]['CI'].items():
+                if isinstance(v, dict):
+                    for j,w in v.items():
+                        try:
+                            data[kTranslator[k][j]] = w
+                        except KeyError:
+                            pass
+                else:
+                    try:
+                        data[kTranslator[k]] = v
+                    except KeyError:
+                        pass
+            #------------------------------>
+            for k in self.rData[tSection][tDate]['I'].keys():
+                if 'Data' in k:
+                    fileN = self.rData[tSection][tDate]['I'][k]
+                    data['iFile'] = self.rInputFileP / fileN
+            #endregion -------------------------------------------------> Data
+
+            return data
+        #---
+        #endregion ------------------------------------------> Helper Function
+
+        #region --------------------------------------------------------> Data
+        fileV = self.rData[tSection][tDate]['V']['Version']
         #------------------------------>
+        if cCheck.VersionCompare('2.2.1', fileV)[0]:
+            data = OldVersion()                                                 # Old Files <= 2.2.0 with json format
+        else:
+            data          = self.rData[tSection][tDate]['CI']                   # > 2.2.0
+            data['uFile'] = self.rFileP
+            data['iFile'] = self.rInputFileP / data['iFileN']
+        #endregion -----------------------------------------------------> Data
+
+        #region ---------------------------------------------------> DataClass
         userData = self.rUserDataClass[tSection]()                              # Default Values
         userData.FromDict(data)                                                 # Values for Analysis
-        #endregion ----------------------------------------------------->
+        #endregion ------------------------------------------------> DataClass
 
         return userData
     #---
