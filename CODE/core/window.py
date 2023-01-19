@@ -161,8 +161,10 @@ class BaseWindowResult(BaseWindow):
 
         Attributes
         ----------
-        rData: dict
-            Keys are the elements in rDate and values the analysis data.
+        rData: cMethod.BaseAnalysis
+            A new attribute 'Date-ID' is added to the class with value
+            being the corresponding data class for each analysis done for the
+            utility/module.
         rDate: list[str]
             List of available dates.
         rDateC: str
@@ -187,7 +189,7 @@ class BaseWindowResult(BaseWindow):
         #------------------------------>
         self.rDate  = getattr(self, 'rDate',  [])
         self.rDateC = getattr(self, 'rDateC', '')
-        self.rData  = getattr(self, 'rData',  {})
+        self.rData  = getattr(self, 'rData',  cMethod.BaseAnalysis())
         self.rDf    = getattr(self, 'rDf',    pd.DataFrame())
         self.rObj: resFile.UMSAPFile
         #------------------------------>
@@ -246,18 +248,18 @@ class BaseWindowResult(BaseWindow):
             bool
         """
         #region ---------------------------------------------> Nothing to Plot
-        if not len(self.rData.keys()) > 1:
-            msg = (f'All {self.cSection} in file {self.rObj.rFileP.name} are '  # type: ignore
+        if len(self.rData.date) < 1:
+            msg = (f'All {self.cSection} in file {self.rObj.rFileP.name} are '
                 f'corrupted or were not found.')
             raise ValueError(msg)
         #endregion ------------------------------------------> Nothing to Plot
 
         #region -------------------------------------------------> Some Errors
-        if self.rData['Error']:
+        if self.rData.error:
             #------------------------------>
-            fileList = '\n'.join(self.rData['Error'])
+            fileList = '\n'.join(self.rData.error)
             #------------------------------>
-            if len(self.rData['Error']) == 1:
+            if len(self.rData.error) == 1:
                 msg = (f'The data for analysis:\n{fileList}\n '
                        f'contains errors or was not found.')
             else:
@@ -305,8 +307,11 @@ class BaseWindowResult(BaseWindow):
         #region ---------------------------------------------------> Get Path
         if dlg.ShowModal() == wx.ID_OK:
             #------------------------------> Variables
-            p = Path(dlg.GetPath())
-            tDF = self.rData[self.rDateC]['DF'] if df is None else df
+            p   = Path(dlg.GetPath())
+            tDF = df
+            if tDF is None:
+                data = getattr(self.rData, self.rDateC)
+                tDF = data.df if df is None else df
             #------------------------------> Export
             try:
                 cFile.WriteDF2CSV(p, tDF)
@@ -438,11 +443,7 @@ class BaseWindowResult(BaseWindow):
                     'MenuDate' : [List of dates],
                 }
         """
-        #region ---------------------------------------------------> Fill dict
-        date = [x for x in self.rData if x != 'Error']
-        #endregion ------------------------------------------------> Fill dict
-
-        return (date, {'MenuDate':date})
+        return (self.rData.date, {'MenuDate':self.rData.date})
     #---
     #endregion ------------------------------------------------> Class methods
 #---

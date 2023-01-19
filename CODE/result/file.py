@@ -113,25 +113,17 @@ class UMSAPFile():
     #endregion -------------------------------------------------> Class Method
 
     #region -------------------------------------------------------> Configure
-    def ConfigureDataCorrA(self) -> dict:
+    def ConfigureDataCorrA(self) -> cMethod.BaseAnalysis:
         """Configure a Correlation Analysis section.
 
             Returns
             ------
-            dict
-            {
-                'Error': ['Date1',...], # Analysis containing errors.
-                'Date1': {
-                    'DF'         : pd.DataFrame with the data to plot,
-                    'NumCol'     : number of columns in 'DF',
-                    'NumColList' : List with the number of the columns,
-                },
-                'DateN' : {}
-            }
+            cMethod.BaseAnalysis
+                For each CorrA a new attribute 'Date' is added with value
+                corrMethod.CorrAnalysis.
         """
         #region ---------------------------------------------------> Variables
-        plotData = {}
-        plotData['Error'] = []
+        data = cMethod.BaseAnalysis()
         pathB = mConfig.corr.nUtil.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
@@ -145,24 +137,35 @@ class UMSAPFile():
             try:
                 df = cFile.ReadCSV2DF(tPath/v['R'])
             except Exception:
-                plotData['Error'].append(k)
+                data.error.append(k)
                 continue
             #------------------------------> Check Columns
-            if not (numCol := len(v['CI']['oc']['Column'])) == df.shape[0]:
-                plotData['Error'].append(k)
+            try:
+                numColList = v['CI']['oc']['Column']                            # Keep support for previous versions
+            except KeyError:
+                numColList = v['CI']['ocColumn']
+            numCol = len(numColList)
+            #------------------------------>
+            if numCol != df.shape[0]:
+                data.error.append(k)
                 continue
             #------------------------------> Add to dict if no error
-            plotData[k] = { # type: ignore
-                'DF'        : df,
-                'NumCol'    : numCol,
-                'NumColList': v['CI']['oc']['Column'],
-            }
+            setattr(data, k, corrMethod.CorrAnalysis(
+                df         = df,
+                numCol     = numCol,
+                numColList = numColList
+            ))
+            data.date.append(k)
         #endregion ----------------------------------------------> Plot & Menu
 
-        return plotData
+        return data
     #---
 
-    def ConfigureDataDataPrep(self, tSection:str='', tDate:str='') -> dict:
+    def ConfigureDataDataPrep(
+        self,
+        tSection:str = '',
+        tDate:str    = '',
+        ) -> cMethod.BaseAnalysis:
         """Configure a Data Preparation Check section.
 
             Parameters
@@ -174,15 +177,9 @@ class UMSAPFile():
 
             Returns
             -------
-            dict
-            {
-                'Error': ['Date1',...], # Analysis containing errors.
-                'Date1': {
-                    'DP' : dict with the data preparation steps key are the
-                        step's names and values the pd.DataFrame,
-                },
-                'DateN': {},
-            }
+            cMethod.BaseAnalysis
+                For each DataPrep a new attribute 'Date' is added with value
+                dataMethod.DataPrepAnalysis.
         """
         #------------------------------> Data Prep From Plot
         if tSection and tDate:
@@ -196,7 +193,11 @@ class UMSAPFile():
         raise ValueError(msg)
     #---
 
-    def ConfigureDataDataPrepFromPlot(self, tSection:str, tDate:str) -> dict:
+    def ConfigureDataDataPrepFromPlot(
+        self,
+        tSection:str,
+        tDate:str,
+        ) -> cMethod.BaseAnalysis:
         """Configure a Data Preparation Check section.
 
             Parameters
@@ -208,74 +209,76 @@ class UMSAPFile():
 
             Returns
             -------
-            dict
-            {
-                'Error': ['Date1',...], # Analysis containing errors.
-                'Date1': {
-                    'DP' : dict with the data preparation steps key are the
-                        step's names and values the pd.DataFrame,
-                }
-            }
+            cMethod.BaseAnalysis
+                For each DataPrep a new attribute 'Date' is added with value
+                dataMethod.DataPrepAnalysis.
         """
         #region ---------------------------------------------------> Variables
-        plotData          = {}
-        plotData['Error'] = []
+        data = cMethod.BaseAnalysis()
         pathA = tDate.split(" - ")[0]
         pathB = tSection.replace(" ", "-")
         tPath = self.rStepDataP / f'{pathA}_{pathB}'
         #endregion ------------------------------------------------> Variables
 
-        #region -------------------------------------------------> Plot & Menu
+        #region --------------------------------------------------------> Data
         try:
-            plotData[tDate] = {
-                'DP': {j:cFile.ReadCSV2DF(tPath/w) for j,w in self.rData[tSection][tDate]['DP'].items()},
-                'NumColList': self.rData[tSection][tDate]['CI']['oc']['Column'],
-            }
-        except Exception:
-            pass
-        #endregion ----------------------------------------------> Plot & Menu
+            dp = {j:cFile.ReadCSV2DF(tPath/w) for j,w in self.rData[tSection][tDate]['DP'].items()}
+        except Exception as e:
+            raise ValueError(f"Data for analysis {tDate} is corrupted.") from e
+        try:
+            numColList = self.rData[tSection][tDate]['CI']['oc']['Column']
+        except KeyError:
+            numColList = self.rData[tSection][tDate]['CI']['ocColumn']
+        #------------------------------>
+        setattr(data, tDate, dataMethod.DataPrepAnalysis(
+            dp         = dp,
+            numColList = numColList,
+        ))
+        data.date.append(tDate)
+        #endregion -----------------------------------------------------> Data
 
-        return plotData
+        return data
     #---
 
-    def ConfigureDataDataPrepFromUMSAP(self) -> dict:
+    def ConfigureDataDataPrepFromUMSAP(self) -> cMethod.BaseAnalysis:
         """Configure a Data Preparation Check section.
 
             Returns
             -------
-            dict
-            {
-                'Error': ['Date1',...], # Analysis containing errors.
-                'Date1': {
-                    'DP' : dict with the data preparation steps key are the
-                        step's names and values the pd.DataFrame,
-                },
-                'DateN': {},
-            }
+            cMethod.BaseAnalysis
+                For each DataPrep a new attribute 'Date' is added with value
+                dataMethod.DataPrepAnalysis.
         """
         #region ---------------------------------------------------> Variables
-        plotData = {}
-        plotData['Error'] = []
+        data  = cMethod.BaseAnalysis()
         pathB = mConfig.data.nUtil.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu
         for k,v in self.rData[mConfig.data.nUtil].items():
             #------------------------------> Read and type
+            pathA = k.split(" - ")[0]
+            tPath = self.rStepDataP / f'{pathA}_{pathB}'
+            #------------------------------> Read data frames
             try:
-                pathA = k.split(" - ")[0]
-                tPath = self.rStepDataP / f'{pathA}_{pathB}'
+                dp = {j:cFile.ReadCSV2DF(tPath/w) for j,w in v['DP'].items()}
             except Exception:
-                plotData['Error'].append(k)
+                data.error.append(k)
                 continue
-            #------------------------------> Add to dict
-            plotData[k] = {
-                'DP' : {j:cFile.ReadCSV2DF(tPath/w) for j,w in v['DP'].items()},
-                'NumColList': v['CI']['oc']['Column'],
-            }
+            #------------------------------>
+            try:
+                numColList = v['CI']['oc']['Column']
+            except KeyError:
+                numColList = v['CI']['ocColumn']
+            #------------------------------>
+            setattr(data, k, dataMethod.DataPrepAnalysis(
+                dp         = dp,
+                numColList = numColList,
+            ))
+            data.date.append(k)
         #endregion ----------------------------------------------> Plot & Menu
 
-        return plotData
+        return data
     #---
 
     def ConfigureDataProtProf(self) -> dict:
@@ -489,17 +492,6 @@ class UMSAPFile():
         #endregion ----------------------------------------------------->
 
         return userData
-
-        # #region ------------------------------------------------> Strip I keys
-        # i = {k.strip():v
-            #  for k,v in self.rData[tSection][tDate]['I'].items()}
-        # #endregion ---------------------------------------------> Strip I keys
-
-        # return {
-            # 'I'    : i,
-            # 'CI'   : self.rData[tSection][tDate]['CI'],
-            # 'uFile': self.rFileP,
-        # }
     #---
 
     def GetRecSeq(self, tSection:str, tDate:str) -> str:

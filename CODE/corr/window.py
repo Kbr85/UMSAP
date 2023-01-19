@@ -46,8 +46,9 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
             CMAP to use in the plot
         rCol: Boolean
             Plot column names (True) or numbers (False)
-        rData: parent.obj.confData[Section]
-            Data for the Correlation Analysis section.
+        rData: cMethod.BaseAnalysis
+            For each CorrA a new attribute 'Date-ID' is added with value
+            corrMethod.CorrAnalysis.
         rDataPlot: pd.DF
             Data to plot and search the values for the wx.StatusBar.
         rDate: [parent.obj.confData[Section].keys()]
@@ -205,8 +206,9 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
             -------
             bool
         """
-        self.rSelColName = self.rData[tDate]['DF'].columns.values
-        self.rSelColNum  = self.rData[tDate]['NumColList']
+        data = getattr(self.rData, tDate)
+        self.rSelColName = data.df.columns.values
+        self.rSelColNum  = data.numColList
         self.rSelColIdx  = [x for x,_ in enumerate(self.rSelColNum)]
         #------------------------------>
         return True
@@ -248,8 +250,9 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         #endregion -----------------------------------------------------> Axis
 
         #region --------------------------------------------------------> Plot
+        data = getattr(self.rData, self.rDateC)
         #------------------------------>
-        self.rDataPlot = self.rData[self.rDateC]['DF'].iloc[self.rSelColIdx,self.rSelColIdx]
+        self.rDataPlot = data.df.iloc[self.rSelColIdx,self.rSelColIdx]
         #------------------------------>
         self.wPlot[0].rAxes.pcolormesh(
             self.rDataPlot,
@@ -357,15 +360,15 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         #endregion ------------------------------------------------> All
 
         #region -----------------------------------------------------> Options
+        data   = getattr(self.rData, self.rDateC)
         allCol = []
-        for k,c in enumerate(self.rData[self.rDateC]['DF'].columns):
-            allCol.append([str(self.rData[self.rDateC]['NumColList'][k]), c])
+        #------------------------------>
+        for k,c in enumerate(data.df.columns):
+            allCol.append([str(data.numColList[k]), c])
         #------------------------------>
         selCol = []
         for c in self.rSelColIdx:
-            selCol.append([
-                str(self.rData[self.rDateC]['NumColList'][c]),
-                self.rData[self.rDateC]['DF'].columns[c]])
+            selCol.append([str(data.numColList[c]), data.df.columns[c]])
         #endregion --------------------------------------------------> Options
 
         #region -------------------------------------------------> Get New Sel
@@ -386,12 +389,10 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
             self.rSelColName = []
             #------------------------------>
             for k in self.rSelColNum:
-                #------------------------------>
-                tIDX = self.rData[self.rDateC]['NumColList'].index(int(k))
+                tIDX = data.numColList.index(int(k))
                 self.rSelColIdx.append(tIDX)
                 #------------------------------>
-                self.rSelColName.append(
-                    self.rData[self.rDateC]['DF'].columns[tIDX])
+                self.rSelColName.append(data.df.columns[tIDX])
             #------------------------------>
             self.UpdateResultWindow()
         #endregion ----------------------------------------------> Get New Sel

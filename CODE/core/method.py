@@ -15,7 +15,6 @@
 
 
 #region -------------------------------------------------------------> Imports
-import ast
 import copy
 import itertools
 import traceback
@@ -1291,25 +1290,17 @@ class BaseUserData():
     protLoc:tuple[int,int]              = (-1, -1)                              # Location of the Native Sequence in the Recombinant Sequence
     protLength:tuple[int,Optional[int]] = (1, None)                             # Length of Recombinant and Natural Protein
     protDelta:Optional[int]             = None                                  # To calculate Native residue number from Recombinant residue number
-    dI:dict                             = field(default_factory=dict)           # Keys are class attributes and values string for pretty print
-    converter:dict                      = field(default_factory=lambda:{
-        'uFile'        : Path,
-        'iFile'        : Path,
-        'seqFile'      : Path,
-        'ID'           : str,
-        'iFileN'       : str,
-        'cero'         : bool,
-        'tran'         : str,
-        'norm'         : str,
-        'imp'          : str,
-        'shift'        : float,
-        'width'        : float,
-        'corr'         : str,
-        'ocColumn'     : ast.literal_eval,
-        'dfColumnR'    : ast.literal_eval,
-        'dfColumnF'    : ast.literal_eval,
-        'dfResCtrlFlat': ast.literal_eval,
+    converterRead:dict                  = field(default_factory=lambda:{        # Set proper type when reading from file
+        'uFile'  : Path,
+        'iFile'  : Path,
+        'seqFile': Path,
     })
+    converterPrint:dict                 = field(default_factory=lambda:{        # Set proper type when printing to file
+        'uFile'  : str,
+        'iFile'  : str,
+        'seqFile': str,
+    })
+    dI:dict                             = field(default_factory=dict)           # Keys are class attributes and values string for pretty print
     #------------------------------> Child class should give default values for the following attributes
     dO:list        = field(default_factory=list)                                # Attributes written to umsap file
     longestKey:int = 0                                                          # Length of the longest Key in dI
@@ -1345,7 +1336,10 @@ class BaseUserData():
         dictO = {}
         #------------------------------>
         for k in self.dO:
-            dictO[k] = str(getattr(self, k))
+            if (conv := self.converterPrint.get(k)) is not None:
+                dictO[k] = conv(getattr(self, k))
+            else:
+                dictO[k] = getattr(self, k)
         #endregion ----------------------------------------------------->
 
         return dictO
@@ -1365,11 +1359,24 @@ class BaseUserData():
         """
         #region --------------------------------------------------->
         for k,v in data.items():
-            setattr(self, k, self.converter[k](v))
+            if (conv := self.converterRead.get(k)) is not None:
+                setattr(self, k, conv(v))
+            else:
+                setattr(self, k, v)
         #endregion ------------------------------------------------>
 
         return True
     #---
     #endregion ------------------------------------------------------> Methods
+#---
+
+
+@dataclass
+class BaseAnalysis():
+    """Base class to hold information about an analysis in an UMSAP file."""
+    #region --------------------------------------------------->
+    error:list[str] = field(default_factory=list)                               # List of analysis with errors.
+    date:list[str]  = field(default_factory=list)                               # List of analysis with no error.
+    #endregion ------------------------------------------------>
 #---
 #endregion ----------------------------------------------------------> Classes
