@@ -37,8 +37,8 @@ class UserData(cMethod.BaseUserData):
     """Representation of the input data for the Correlation Analysis Pane"""
     #region ---------------------------------------------------------> Options
     dO:list = field(default_factory=lambda:
-        ['uFile', 'iFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift',
-         'width',
+        ['iFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift',
+         'width', 'ocColumn', 'dfColumnR', 'dfColumnF', 'dfResCtrlFlat',
         ])
     longestKey:int = 20                                                         # Length of the longest Key in dI
     #endregion ------------------------------------------------------> Options

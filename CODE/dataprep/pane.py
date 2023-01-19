@@ -16,6 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
+from typing  import Optional
 
 import wx
 
@@ -36,9 +37,9 @@ class DataPrep(cPane.BaseConfPanel):
         ----------
         parent: wx.Window
             Parent of the pane.
-        dataI: dict or None
+        dataI: dataMethod.UseData or None
             Initial data provided by the user in a previous analysis.
-            This contains both I and CI dicts e.g. {'I': I, 'CI': CI}.
+            Default is None.
 
         Notes
         -----
@@ -60,8 +61,8 @@ class DataPrep(cPane.BaseConfPanel):
             'Data Preparation : {
                 '20210324-165609': {
                     'V' : config.dictVersion,
-                    'I' : self.d,
-                    'CI': self.do,
+                    'I' : Dict with User Input as given. Keys are label like in the Tab GUI,
+                    'CI': Dict with Processed User Input. Keys are attributes of UserData,
                     'DP': {
                         'dfF' : Name of the file with initial data as float,
                         'dfT' : Name of the file with transformed data,
@@ -90,7 +91,11 @@ class DataPrep(cPane.BaseConfPanel):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent:wx.Window, dataI:dict={}) -> None:                # pylint: disable=dangerous-default-value
+    def __init__(
+        self,
+        parent:wx.Window,
+        dataI:Optional[dataMethod.UserData]=None,
+        ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(parent)
@@ -181,19 +186,20 @@ class DataPrep(cPane.BaseConfPanel):
         #endregion -----------------------------------------------------> Test
 
         #region -------------------------------------------------------> DataI
-        self.SetInitialData(dataI)
+        if dataI is not None:
+            self.SetInitialData(dataI)
         #endregion ----------------------------------------------------> DataI
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class Methods
-    def SetInitialData(self, dataI:dict={}) -> bool:                            # pylint: disable=dangerous-default-value
+    def SetInitialData(self, dataI:dataMethod.UserData) -> bool:
         """Set initial data.
 
             Parameters
             ----------
-            dataI: dict or None
-                Data to fill all fields and repeat an analysis. See Notes.
+            dataI: dataMethod.UserData
+                Data to fill all fields and repeat an analysis.
 
             Returns
             -------
@@ -201,22 +207,16 @@ class DataPrep(cPane.BaseConfPanel):
         """
         #region -------------------------------------------------> Fill Fields
         if dataI:
-            #------------------------------>
-            dataInit = dataI['uFile'].parent / mConfig.core.fnDataInit
-            iFile = dataInit / dataI['I'][self.cLiFile]
-            #------------------------------> Files
-            self.wUFile.wTc.SetValue(str(dataI['uFile']))
-            self.wIFile.wTc.SetValue(str(iFile))
-            self.wId.wTc.SetValue(dataI['CI']['ID'])
-            #------------------------------> Data Preparation
-            self.wCeroB.wCb.SetValue(dataI['I'][self.cLCeroTreatD])
-            self.wTransMethod.wCb.SetValue(dataI['I'][self.cLTransMethod])
-            self.wNormMethod.wCb.SetValue(dataI['I'][self.cLNormMethod])
-            self.wImputationMethod.wCb.SetValue(dataI['I'][self.cLImputation])
-            self.wShift.wTc.SetValue(dataI['I'].get(self.cLShift, self.cValShift))
-            self.wWidth.wTc.SetValue(dataI['I'].get(self.cLWidth, self.cValWidth))
-            #------------------------------> Columns
-            self.wColAnalysis.wTc.SetValue(dataI['I'][self.cLColAnalysis])
+            self.wUFile.wTc.SetValue(str(dataI.uFile))
+            self.wIFile.wTc.SetValue(str(dataI.iFile))
+            self.wId.wTc.SetValue(dataI.ID)
+            self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
+            self.wTransMethod.wCb.SetValue(dataI.tran)
+            self.wNormMethod.wCb.SetValue(dataI.norm)
+            self.wImputationMethod.wCb.SetValue(dataI.imp)
+            self.wShift.wTc.SetValue(str(dataI.shift))
+            self.wWidth.wTc.SetValue(str(dataI.width))
+            self.wColAnalysis.wTc.SetValue(" ".join(map(str, dataI.ocColumn)))
             #------------------------------>
             self.OnIFileLoad('fEvent')
             self.OnImpMethod('fEvent')

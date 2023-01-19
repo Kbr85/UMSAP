@@ -15,6 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
+import ast
 import copy
 import itertools
 import traceback
@@ -1253,13 +1254,13 @@ class BaseUserData():
     """Base class for the representation of the user input data"""
     #region ---------------------------------------------------------> Options
     #------------------------------> Files & ID
-    uFile:Path         = Path()                                                 # UMSAP File
-    iFile:Path         = Path()                                                 # Data File
-    seqFile:Path       = Path()                                                 # Sequence File
-    ID:str             = ''                                                     # ID for Analysis
-    iFileN:str         = ''                                                     # Name of Data File after copied to output folder
-    seqFileN:str       = ''                                                     # Name of Sequence File after copied to output folder
-    copyFile:dict      = field(default_factory=lambda: {                        # Copy these files to result folders
+    uFile:Path    = Path()                                                      # UMSAP File
+    iFile:Path    = Path()                                                      # Data File
+    seqFile:Path  = Path()                                                      # Sequence File
+    ID:str        = ''                                                          # ID for Analysis
+    iFileN:str    = ''                                                          # Name of Data File after copied to output folder
+    seqFileN:str  = ''                                                          # Name of Sequence File after copied to output folder
+    copyFile:dict = field(default_factory=lambda: {                             # Copy these files to result folders
         'iFile'  : 'iFileN',
         'seqFile': 'seqFileN',})
     #------------------------------> Data Preparation
@@ -1267,8 +1268,8 @@ class BaseUserData():
     tran:LIT_Tran  = ''                                                         # Transformation method
     norm:LIT_Norm  = ''                                                         # Normalization method
     imp:LIT_Imp    = ''                                                         # Imputation Method
-    shift:float    = 0                                                          # Center shift
-    width:float    = 0                                                          # Stdev value
+    shift:float    = float(mConfig.data.Shift)                                  # Center shift
+    width:float    = float(mConfig.data.Width)                                  # Stdev value
     targetProt:str = ''                                                         # Target Protein
     scoreVal:int   = 0                                                          # Minimum Score value
     #------------------------------> Correlation Analysis
@@ -1291,6 +1292,24 @@ class BaseUserData():
     protLength:tuple[int,Optional[int]] = (1, None)                             # Length of Recombinant and Natural Protein
     protDelta:Optional[int]             = None                                  # To calculate Native residue number from Recombinant residue number
     dI:dict                             = field(default_factory=dict)           # Keys are class attributes and values string for pretty print
+    converter:dict                      = field(default_factory=lambda:{
+        'uFile'        : Path,
+        'iFile'        : Path,
+        'seqFile'      : Path,
+        'ID'           : str,
+        'iFileN'       : str,
+        'cero'         : bool,
+        'tran'         : str,
+        'norm'         : str,
+        'imp'          : str,
+        'shift'        : float,
+        'width'        : float,
+        'corr'         : str,
+        'ocColumn'     : ast.literal_eval,
+        'dfColumnR'    : ast.literal_eval,
+        'dfColumnF'    : ast.literal_eval,
+        'dfResCtrlFlat': ast.literal_eval,
+    })
     #------------------------------> Child class should give default values for the following attributes
     dO:list        = field(default_factory=list)                                # Attributes written to umsap file
     longestKey:int = 0                                                          # Length of the longest Key in dI
@@ -1330,6 +1349,26 @@ class BaseUserData():
         #endregion ----------------------------------------------------->
 
         return dictO
+    #---
+
+    def FromDict(self, data:dict) -> bool:
+        """Update class attributes based on data
+
+            Parameters
+            ----------
+            data: dict
+                Keys are class attributes and values the corresponding values.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        for k,v in data.items():
+            setattr(self, k, self.converter[k](v))
+        #endregion ------------------------------------------------>
+
+        return True
     #---
     #endregion ------------------------------------------------------> Methods
 #---

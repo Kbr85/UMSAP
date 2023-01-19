@@ -21,7 +21,10 @@ from typing  import Union
 import pandas as pd
 
 from config.config import config as mConfig
-from core import file as cFile
+from core     import file   as cFile
+from core     import method as cMethod
+from corr     import method as corrMethod
+from dataprep import method as dataMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -52,6 +55,10 @@ class UMSAPFile():
     # No Test
     #region -----------------------------------------------------> Class setup
     SeqF = [mConfig.tarp.nMod, mConfig.limp.nMod]
+    rUserDataClass = {
+        mConfig.corr.nUtil : corrMethod.UserData,
+        mConfig.data.nUtil : dataMethod.UserData,
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -456,7 +463,7 @@ class UMSAPFile():
     #endregion ----------------------------------------------------> Configure
 
     #region -----------------------------------------------------> Get Methods
-    def GetDataUser(self, tSection:str, tDate:str) -> dict:
+    def GetDataUser(self, tSection:str, tDate:str) -> cMethod.BaseUserData:
         """Get both initial and curated data from the user for the analysis.
 
             Parameters
@@ -469,23 +476,30 @@ class UMSAPFile():
 
             Returns
             -------
-            dict:
-                {
-                    'I' : user input with stripped keys,
-                    'CI': corrected user input,
-                    'rootP' : path to the folder containing the UMSAP file,
-                }
+            cMethod.BaseUserData
+                An instance according to tSection.
         """
-        #region ------------------------------------------------> Strip I keys
-        i = {k.strip():v
-             for k,v in self.rData[tSection][tDate]['I'].items()}
-        #endregion ---------------------------------------------> Strip I keys
+        #region -------------------------------------------------------->
+        data          = self.rData[tSection][tDate]['CI']
+        data['uFile'] = self.rFileP
+        data['iFile'] = self.rInputFileP / data['iFileN']
+        #------------------------------>
+        userData = self.rUserDataClass[tSection]()                              # Default Values
+        userData.FromDict(data)                                                 # Values for Analysis
+        #endregion ----------------------------------------------------->
 
-        return {
-            'I'    : i,
-            'CI'   : self.rData[tSection][tDate]['CI'],
-            'uFile': self.rFileP,
-        }
+        return userData
+
+        # #region ------------------------------------------------> Strip I keys
+        # i = {k.strip():v
+            #  for k,v in self.rData[tSection][tDate]['I'].items()}
+        # #endregion ---------------------------------------------> Strip I keys
+
+        # return {
+            # 'I'    : i,
+            # 'CI'   : self.rData[tSection][tDate]['CI'],
+            # 'uFile': self.rFileP,
+        # }
     #---
 
     def GetRecSeq(self, tSection:str, tDate:str) -> str:

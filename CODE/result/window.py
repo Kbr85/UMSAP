@@ -166,7 +166,7 @@ class UMSAPControl(cWindow.BaseWindow):
         """
         #region -------------------------------------------------------> DateI
         dateI   = event.GetItem()
-        section = dateI.GetParent().GetText()                                   # type: ignore
+        section = dateI.GetParent().GetText()
         #endregion ----------------------------------------------------> DateI
 
         #region -------------------------------------------------------> DataI
