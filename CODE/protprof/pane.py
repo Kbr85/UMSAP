@@ -430,34 +430,34 @@ class ProtProf(cPane.BaseConfPanelMod):
             True
         """
         #region -------------------------------------------------> Fill Fields
-        # self.wUFile.wTc.SetValue(str(dataI['uFile']))
-        # self.wIFile.wTc.SetValue(str(iFile))
-        # self.wId.wTc.SetValue(dataI['CI']['ID'])
-        # #------------------------------> Data Preparation
-        # self.wCeroB.wCb.SetValue(dataI['I'][self.cLCeroTreatD])
-        # self.wTransMethod.wCb.SetValue(dataI['I'][self.cLTransMethod])
-        # self.wNormMethod.wCb.SetValue(dataI['I'][self.cLNormMethod])
-        # self.wImputationMethod.wCb.SetValue(dataI['I'][self.cLImputation])
-        # self.wShift.wTc.SetValue(dataI['I'].get(self.cLShift, self.cValShift))
-        # self.wWidth.wTc.SetValue(dataI['I'].get(self.cLWidth, self.cValWidth))
-        # #------------------------------> Values
-        # self.wScoreVal.wTc.SetValue(dataI['I'][self.cLScoreVal])
-        # self.wSample.wCb.SetValue(dataI['I'][self.cLSample])
-        # self.wAlpha.wTc.SetValue(dataI['I'][self.cLAlpha])
-        # self.wCorrectP.wCb.SetValue(dataI['I'][self.cLCorrectP])
-        # #------------------------------> Columns
-        # self.wDetectedProt.wTc.SetValue(dataI['I'][self.cLDetectedProt])
-        # self.wGeneName.wTc.SetValue(dataI['I'][self.cLGene])
-        # self.wScore.wTc.SetValue(dataI['I'][self.cLScoreCol])
-        # self.wExcludeProt.wTc.SetValue(dataI['I'][self.cLExcludeProt])
-        # self.wTcResults.SetValue(dataI['I'][mConfig.core.lStResCtrlS])
-        # self.rLbDict[1] = dataI['I'][self.cLCond]
-        # self.rLbDict[2] = dataI['I'][self.cLRP]
-        # self.rLbDict['ControlType'] = dataI['I'][f'Control {self.cLCtrlType}']
-        # self.rLbDict['Control'] = dataI['I'][f"Control {self.cLCtrlName}"]
-        # #------------------------------>
-        # self.OnIFileLoad('fEvent')
-        # self.OnImpMethod('fEvent')
+        self.wUFile.wTc.SetValue(str(dataI.uFile))
+        self.wIFile.wTc.SetValue(str(dataI.iFile))
+        self.wId.wTc.SetValue(dataI.ID)
+        #------------------------------>
+        self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
+        self.wTransMethod.wCb.SetValue(dataI.tran)
+        self.wNormMethod.wCb.SetValue(dataI.norm)
+        self.wImputationMethod.wCb.SetValue(dataI.imp)
+        self.wShift.wTc.SetValue(str(dataI.shift))
+        self.wWidth.wTc.SetValue(str(dataI.width))
+        #------------------------------> Values
+        self.wScoreVal.wTc.SetValue(str(dataI.scoreVal))
+        self.wSample.wCb.SetValue(str(dataI.indSample))
+        self.wAlpha.wTc.SetValue(str(dataI.alpha))
+        self.wCorrectP.wCb.SetValue(dataI.correctedP)
+        #------------------------------> Columns
+        self.wDetectedProt.wTc.SetValue(str(dataI.ocTargetProt))
+        self.wGeneName.wTc.SetValue(str(dataI.ocGene))
+        self.wScore.wTc.SetValue(str(dataI.ocScore))
+        self.wExcludeProt.wTc.SetValue(" ".join(map(str, dataI.ocExcludeR)))
+        self.wTcResults.SetValue(dataI.resCtrl)
+        self.rLbDict[0] = dataI.labelA
+        self.rLbDict[1] = dataI.labelB
+        self.rLbDict['ControlType'] = dataI.ctrlType
+        self.rLbDict['Control'] = dataI.ctrlName
+        #------------------------------>
+        self.OnIFileLoad('fEvent')
+        self.OnImpMethod('fEvent')
         #endregion ----------------------------------------------> Fill Fields
 
         return True
@@ -704,16 +704,17 @@ class ProtProf(cPane.BaseConfPanelMod):
             indSample     = True if indSample=='Independent Samples' else False,
             alpha         = float(self.wAlpha.wTc.GetValue()),
             correctedP    = self.wCorrectP.wCb.GetValue(),
-            labelA        = self.rLbDict[0],
-            labelB        = self.rLbDict[1],
-            ctrlType      = self.rLbDict['ControlType'],
-            ctrlName      = self.rLbDict['Control'],
             ocTargetProt  = detectedProt,
             ocGene        = geneName,
             ocScore       = scoreCol,
             ocExcludeR    = excludeProt,                                         # type: ignore
-            ocColumn      = ocColumn,
+            ocColumn      = ocColumn,                                            # type: ignore
             ocResCtrl     = resCtrl,
+            resCtrl       = self.wTcResults.GetValue(),
+            labelA        = self.rLbDict[0],
+            labelB        = self.rLbDict[1],
+            ctrlType      = self.rLbDict['ControlType'],
+            ctrlName      = self.rLbDict['Control'],
             dfTargetProt  = 0,
             dfGene        = 1,
             dfScore       = 2,
@@ -722,15 +723,8 @@ class ProtProf(cPane.BaseConfPanelMod):
             dfResCtrlFlat = resCtrlDFFlat,
             dfColumnR     = resCtrlDFFlat,
             dfColumnF     = [2] + resCtrlDFFlat,
+            dI            = dI,
         )
-        # {
-        #     'oc'         : {
-        #         'ResCtrl'   : resCtrl,
-        #         'ColumnF'   : [scoreCol] + resCtrlFlat,
-        #         'Column'    : (
-        #             [geneName, detectedProt, scoreCol]+excludeProt+resCtrlFlat),# type: ignore
-        #     },
-        # }
         #endregion ----------------------------------------------------> Input
 
         #region ---------------------------------------------------> Super

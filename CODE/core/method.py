@@ -1289,6 +1289,7 @@ class BaseUserData():
     posAA:Optional[int] = None                                                  # Position number for AA analysis
     winHist:list[int]   = field(default_factory=list)                           # Windows for Histograms
     #------------------------------> Column numbers in the original (oc) and short (df) dataframe
+    resCtrl:str             = ''                                                # ResCtrl in str form
     ocTargetProt:int        = -1                                                # Search here for targetProt
     ocGene:int              = -1                                                # Search here for Gene names
     ocScore:int             = -1                                                # Search here for Score values

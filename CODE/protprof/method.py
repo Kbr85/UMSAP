@@ -43,8 +43,11 @@ class UserData(cMethod.BaseUserData):
         mConfig.prot.dfcolFirstPart)
     #------------------------------>
     dO:list = field(default_factory=lambda:                                     # Options for output printing
-        ['iFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift',
-         'width', 'ocResCtrlFlat', 'dfColumnR', 'dfColumnF', 'dfResCtrlFlat',
+        ['iFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift', 'width',
+         'scoreVal', 'indSample', 'alpha', 'correctedP', 'ocTargetProt',
+         'ocGene', 'ocScore', 'ocExcludeR', 'labelA', 'labelB', 'ctrlType',
+         'ctrlName', 'resCtrl', 'dfTargetProt', 'dfGene', 'dfScore',
+         'dfExcludeR', 'dfResCtrl',
         ])
     longestKey:int = 17                                                         # Length of the longest Key in dI
     #endregion ------------------------------------------------------> Options

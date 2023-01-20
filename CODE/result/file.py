@@ -26,6 +26,7 @@ from core     import method as cMethod
 from core     import check  as cCheck
 from corr     import method as corrMethod
 from dataprep import method as dataMethod
+from protprof import method as protMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -59,6 +60,7 @@ class UMSAPFile():
     rUserDataClass = {
         mConfig.corr.nUtil : corrMethod.UserData,
         mConfig.data.nUtil : dataMethod.UserData,
+        mConfig.prot.nMod  : protMethod.UserData,
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -488,19 +490,41 @@ class UMSAPFile():
             """"""
             #region ------------------------------------------> Key Translator
             kTranslator = {
-                'uFile'      : 'uFile',
-                'ID'         : 'ID',
+                'uFile': 'uFile',
+                'ID'   : 'ID',
+                #------------------------------>
                 'Cero'       : 'cero',
                 'TransMethod': 'tran',
                 'NormMethod' : 'norm',
                 'ImpMethod'  : 'imp',
                 'Shift'      : 'shift',
                 'Width'      : 'width',
-                'CorrMethod' : 'corr',
-                'oc'         : {
-                    'Column' : 'ocResCtrlFlat',
+                #------------------------------>
+                'CorrMethod': 'corr',
+                'ScoreVal'  : 'scoreVal',
+                'RawI'      : 'rawInt',
+                'IndS'      : 'indSample',
+                'Alpha'     : 'alpha',
+                'CorrectP'  : 'correctedP',
+                #------------------------------>
+                'Cond'    : 'labelA',
+                'RP'      : 'labelB',
+                'ControlT': 'ctrlType',
+                'ControlL': 'ctrlName',
+                'oc'      : {
+                    'DetectedP': 'ocTargetProt',
+                    'GeneName' : 'ocGene',
+                    'ScoreCol' : 'ocScore',
+                    'ExcludeR' : 'ocExcludeR',
+                    'ResCtrl'  : 'ocResCtrl',
+                    'Column'   : 'ocColumn',
                 },
                 'df'         : {
+                    'DetectedP'  : 'dfTargetProt',
+                    'GeneName'   : 'dfGene',
+                    'ScoreCol'   : 'dfScore',
+                    'ExcludeR'   : 'dfExcludeR',
+                    'ResCtrl'    : 'dfResCtrl',
                     'ColumnR'    : 'dfColumnR',
                     'ColumnF'    : 'dfColumnF',
                     'ResCtrlFlat': 'dfResCtrlFlat',
@@ -528,6 +552,8 @@ class UMSAPFile():
                 if 'Data' in k:
                     fileN = self.rData[tSection][tDate]['I'][k]
                     data['iFile'] = self.rInputFileP / fileN
+                if 'Results - Control' in k:
+                    data['resCtrl'] = self.rData[tSection][tDate]['I'][k]
             #endregion -------------------------------------------------> Data
 
             return data
