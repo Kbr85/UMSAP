@@ -30,6 +30,7 @@ import wx
 from config.config import config as mConfig
 from core     import statistic as cStatistic
 from core     import validator as cValidator
+from core     import method    as cMethod
 from core     import widget    as cWidget
 from core     import window    as cWindow
 from main     import menu      as mMenu
@@ -55,16 +56,17 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         rAutoFilter: bool
             Apply defined filters (True) when changing date or not (False).
             Default is False.
-        rCI: dict
-            CI dict for the current date.
         rColor: str
             Color mode.
         rCondC: str
             Condition currently selected.
         rCorrP: bool
             Use corrected P values (True) or not (False). Default is False.
-        rData: dict
-            Dict with the configured data for this section from UMSAPFile.
+        rData: cMethod.BaseAnalysis
+            For each Proteome Profiling analysis a new attribute 'Date-ID' is
+            added with value protMethod.ProtAnalysis.
+        rDataC: protMethod.ProtAnalysis
+            Data for currently selected date
         rDate: list of str
             List of available dates in the section.
         rDateC: str
@@ -185,11 +187,11 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent: 'resWindow.UMSAPControl') -> None:
+    def __init__(self, parent:'resWindow.UMSAPControl') -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.rObj            = parent.rObj
-        self.rData           = self.rObj.dConfigure[self.cSection]()
+        self.rData:cMethod.BaseAnalysis = self.rObj.dConfigure[self.cSection]()
         self.rDate, menuData = self.SetDateMenuDate()
         #------------------------------>
         self.ReportPlotDataError()
@@ -197,6 +199,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         self.cTitle       = f"{parent.cTitle} - {self.cSection}"
         self.rDf          = pd.DataFrame()
         self.rDateC       = self.rDate[0]
+        self.rDataC:protMethod.ProtAnalysis = getattr(self.rData, self.rDateC)
         self.rCondC       = menuData['crp'][self.rDate[0]]['C'][0]
         self.rRpC         = menuData['crp'][self.rDate[0]]['RP'][0]
         self.rGreenP      = None
@@ -206,7 +209,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         self.rT0          = 0.1
         self.rS0          = 1.0
         self.rZ           = 10.0
-        self.rP           = self.rData[self.rDateC]['Alpha']
+        self.rP           = getattr(self.rData, self.rDateC).alpha
         self.rLog2FC      = 0.1
         self.rColor       = 'Hyperbolic Curve Color'
         self.rLockScale   = 'Analysis'
@@ -349,18 +352,16 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         """
         #region ---------------------------------------------------> Fill dict
         #------------------------------> Variables
-        date = []
+        date     = self.rData.date
         menuData = {'crp' : {}, 'MenuDate': []}
         #------------------------------> Fill
-        for k in self.rData.keys():
-            if k != 'Error':
-                #------------------------------>
-                date.append(k)
-                #------------------------------>
-                menuData['crp'][k] = {
-                    'C' : self.rObj.rData[self.cSection][k]['CI']['Cond'],
-                    'RP': self.rObj.rData[self.cSection][k]['CI']['RP']
-                }
+        for k in self.rData.date:
+            data = getattr(self.rData, k)
+            #------------------------------>
+            menuData['crp'][k] = {
+                'C' : data.labelA,
+                'RP': data.labelB,
+            }
         #------------------------------>
         menuData['MenuDate'] = date
         #endregion ------------------------------------------------> Fill dict
@@ -443,9 +444,9 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> Fill List
-        for c in self.rCI['RP']:
+        for c in self.rDataC.labelB:
             #------------------------------>
-            df = self.rData[self.rDateC]['DF'].loc[:,idx[:,c,'FC']]
+            df = self.rDataC.df.loc[:,idx[:,c,'FC']]                            # type: ignore
             #------------------------------>
             ymax.append(df.max().max())
             ymin.append(df.min().min())
@@ -761,9 +762,9 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #------------------------------> Variables
         idx = pd.IndexSlice
         colorN = len(self.cFCLines)
-        x = list(range(0, len(self.rCI['RP'])+1))
+        x = list(range(0, len(self.rDataC.labelB)+1))
         #------------------------------>
-        for k,c in enumerate(self.rCI['Cond']):
+        for k,c in enumerate(self.rDataC.labelA):
             #------------------------------> FC values
             y = self.rDf.loc[self.rDf.index[[idxL]],idx[c,:,'FC']]              # type: ignore
             y = [0.0] + y.values.tolist()[0]                                    # type: ignore
@@ -833,7 +834,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #------------------------------> Ave and st for intensity values
         self.wText.AppendText(
             '--> Intensity values after data preparation:\n\n')
-        dfList = self.dKeyMethod[self.rCI['ControlT']](self.rLCIdx)             # type: ignore
+        dfList = self.dKeyMethod[self.rDataC.ctrlType](self.rLCIdx)             # type: ignore
         for df in dfList: # type: ignore
             self.wText.AppendText(df.to_string(index=False))
             self.wText.AppendText('\n\n')
@@ -912,13 +913,13 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
                 CN
         """
         #region ----------------------------------------------------------> DF
-        dfo = self.GetDF4Text(
-            ['FC (CI)', 'P'], self.rCI['RP'], self.rCI['Cond'])
+        dfo  = self.GetDF4Text(
+            ['FC (CI)', 'P'], self.rDataC.labelB, self.rDataC.labelA)
         #endregion -------------------------------------------------------> DF
 
         #region --------------------------------------------------> Add Values
-        for k,c in enumerate(self.rCI['Cond']):
-            for t in self.rCI['RP']:
+        for k,c in enumerate(self.rDataC.labelA):
+            for t in self.rDataC.labelB:
                 #------------------------------> Get Values
                 p  = self.rDf.at[self.rDf.index[pID],(c,t,'P')]
                 fc = self.rDf.at[self.rDf.index[pID],(c,t,'FC')]
@@ -951,12 +952,12 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         """
         #region ----------------------------------------------------------> DF
         aveC = self.rDf.at[
-            self.rDf.index[pID],(self.rCI['Cond'][0], self.rCI['RP'][0], 'aveC')]
+            self.rDf.index[pID],(self.rDataC.labelA[0], self.rDataC.labelB[0], 'aveC')]
         stdC = self.rDf.at[
-            self.rDf.index[pID], (self.rCI['Cond'][0], self.rCI['RP'][0], 'stdC')]
+            self.rDf.index[pID], (self.rDataC.labelA[0], self.rDataC.labelB[0], 'stdC')]
         #------------------------------>
         dfc = pd.DataFrame({
-            'Condition': self.rCI['ControlL'],
+            'Condition': self.rDataC.ctrlName,
             'Ave'      : [aveC],
             'Std'      : [stdC]
         })
@@ -990,13 +991,16 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         """
         #region ----------------------------------------------------------> DF
         dfo = self.GetDF4Text(
-            ['Ave', 'Std'], self.rCI['RP'], self.rCI['ControlL']+self.rCI['Cond'])
+            ['Ave', 'Std'],
+            self.rDataC.labelB,
+            [self.rDataC.ctrlName]+self.rDataC.labelA,
+        )
         #endregion -------------------------------------------------------> DF
 
         #region --------------------------------------------------> Add Values
         #------------------------------> Control
-        for c in self.rCI['Cond']:
-            for t in self.rCI['RP']:
+        for c in self.rDataC.labelA:
+            for t in self.rDataC.labelB:
                 #------------------------------> Get Values
                 aveC = self.rDf.at[self.rDf.index[pID],(c,t,'aveC')]
                 stdC = self.rDf.at[self.rDf.index[pID],(c,t,'stdC')]
@@ -1004,8 +1008,8 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
                 dfo.at[dfo.index[0], (t,'Ave')] = aveC
                 dfo.at[dfo.index[0], (t,'Std')] = stdC
         #------------------------------> Conditions
-        for k,c in enumerate(self.rCI['Cond'], start=1):
-            for t in self.rCI['RP']:
+        for k,c in enumerate(self.rDataC.labelA, start=1):
+            for t in self.rDataC.labelB:
                 #------------------------------> Get Values
                 ave = self.rDf.at[self.rDf.index[pID],(c,t,'ave')]
                 std = self.rDf.at[self.rDf.index[pID],(c,t,'std')]
@@ -1037,22 +1041,25 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         """
         #region ----------------------------------------------------------> DF
         dfo = self.GetDF4Text(
-            ['Ave', 'Std'], self.rCI['ControlL']+self.rCI['RP'], self.rCI['Cond'])
+            ['Ave', 'Std'],
+            [self.rDataC.ctrlName]+self.rDataC.labelB,
+            self.rDataC.labelA,
+        )
         #endregion -------------------------------------------------------> DF
 
         #region --------------------------------------------------> Add Values
         #------------------------------> Control
-        for k,c in enumerate(self.rCI['Cond']):
-            for t in self.rCI['RP']:
+        for k,c in enumerate(self.rDataC.labelA):
+            for t in self.rDataC.labelB:
                 #------------------------------> Get Values
                 aveC = self.rDf.at[self.rDf.index[pID],(c,t,'aveC')]
                 stdC = self.rDf.at[self.rDf.index[pID],(c,t,'stdC')]
                 #------------------------------> Assign
-                dfo.at[dfo.index[k], (self.rCI['ControlL'],'Ave')] = aveC
-                dfo.at[dfo.index[k], (self.rCI['ControlL'],'Std')] = stdC
+                dfo.at[dfo.index[k], (self.rDataC.ctrlName,'Ave')] = aveC
+                dfo.at[dfo.index[k], (self.rDataC.ctrlName,'Std')] = stdC
         #------------------------------> Conditions
-        for k,c in enumerate(self.rCI['Cond']):
-            for t in self.rCI['RP']:
+        for k,c in enumerate(self.rDataC.labelA):
+            for t in self.rDataC.labelB:
                 #------------------------------> Get Values
                 ave = self.rDf.at[self.rDf.index[pID],(c,t,'ave')]
                 std = self.rDf.at[self.rDf.index[pID],(c,t,'std')]
@@ -1083,12 +1090,16 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
                 CN
         """
         #region ----------------------------------------------------------> DF
-        dfo = self.GetDF4Text(['Ave', 'Std'], self.rCI['RP'], self.rCI['Cond'])
+        dfo = self.GetDF4Text(
+            ['Ave', 'Std'],
+            self.rDataC.labelB,
+            self.rDataC.labelA,
+        )
         #endregion -------------------------------------------------------> DF
 
         #region --------------------------------------------------> Add Values
-        for k,c in enumerate(self.rCI['Cond']):
-            for t in self.rCI['RP']:
+        for k,c in enumerate(self.rDataC.labelA):
+            for t in self.rDataC.labelB:
                 #------------------------------> Get Values
                 ave = self.rDf.at[self.rDf.index[pID],(c,t,'ave')]
                 std = self.rDf.at[self.rDf.index[pID],(c,t,'std')]
@@ -1185,14 +1196,15 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
                 [xRange, yRange] e.g. [[-0.3, 0.3], [-0.1, 4.5]]
         """
         #region ---------------------------------------------------> Variables
-        idx = pd.IndexSlice
+        data = getattr(self.rData, date)
+        idx  = pd.IndexSlice
         #------------------------------>
-        x = self.rData[date]['DF'].loc[:, idx[:,:,'FC']]
+        x = data.df.loc[:, idx[:,:,'FC']]
         #------------------------------>
         if self.rCorrP:
-            y = self.rData[date]['DF'].loc[:, idx[:,:,'Pc']]
+            y = data.df.loc[:, idx[:,:,'Pc']]
         else:
-            y = self.rData[date]['DF'].loc[:, idx[:,:,'P']]
+            y = data.df.loc[:, idx[:,:,'P']]
         #------------------------------>
         y = -np.log10(y)
         #------------------------------>
@@ -1240,17 +1252,18 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
                 [xRange, yRange] e.g. [[-0.3, 3.3], [-0.1, 4.5]]
         """
         #region ---------------------------------------------------> Variables
-        idx = pd.IndexSlice
+        data = getattr(self.rData, date)
+        idx  = pd.IndexSlice
         #------------------------------>
-        y = self.rData[date]['DF'].loc[:, idx[:,:,'FC']]
-        yCI = self.rData[date]['DF'].loc[:, idx[:,:,'CI']]
+        y   = data.df.loc[:, idx[:,:,'FC']]
+        yCI = data.df.loc[:, idx[:,:,'CI']]
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> Get Range
         #------------------------------> X
-        dm = len(self.rCI['RP']) * mConfig.core.MatPlotMargin
+        dm = len(self.rDataC.labelB) * mConfig.core.MatPlotMargin
         #-------------->
-        xRange = [-dm, len(self.rCI['RP'])+dm]
+        xRange = [-dm, len(self.rDataC.labelB) + dm]
         #------------------------------> Y
         #-------------->
         yMax  = y.max().max()
@@ -1569,8 +1582,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         self.rShowAll    = showAll if showAll is not None else self.rShowAll
         self.rT0         = t0 if t0 is not None else self.rT0
         self.rS0         = s0 if s0 is not None else self.rS0
-        self.rCI         = self.rObj.rData[self.cSection][self.rDateC]['CI']
-        self.rDf         = self.rData[self.rDateC]['DF'].copy()
+        self.rDf         = getattr(self.rData, self.rDateC).df.copy()
         self.rLabelProt  = [] if tDate else self.rLabelProt
         self.rLabelProtD = {} if tDate else self.rLabelProtD
         #endregion -----------------------------------------> Update variables
@@ -1585,7 +1597,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #endregion -----------------------------------------------> Update GUI
 
         #region -------------------------------------------> Update FC x label
-        self.rFcXLabel = self.rCI['ControlL'] + self.rCI['RP']
+        self.rFcXLabel = [self.rDataC.ctrlName] + self.rDataC.labelB
         #endregion ----------------------------------------> Update FC x label
 
         #region ---------------------------------------------------> FC minMax
@@ -2033,7 +2045,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         elif choice0 == self.cLFFCDown:
             mask = df.groupby(level=0, axis=1).apply(lambda x: (x < 0).all(axis=1))                                                                                     # type: ignore
         elif choice0 == self.cLFFCNo:
-            # pylint disable=invalid-unary-operand-type
+            # pylint: disable=invalid-unary-operand-type
             mask = df.groupby(level=0, axis=1).apply(lambda x: ((x > -self.rT0*self.rS0) & (x < self.rT0*self.rS0)).all(axis=1))                                        # type: ignore
         elif choice0 == self.cLFFCUpMon:
             mask = df.groupby(level=0, axis=1).apply(lambda x: x.apply(lambda x: ((x.is_monotonic_increasing) & (x > 0)).all(), axis=1))                                # type: ignore
@@ -2363,7 +2375,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         """
         #region ----------------------------------------------------> Reset df
         if reset:
-            self.rDf = self.rData[self.rDateC]['DF'].copy()
+            self.rDf = getattr(self.rData, self.rDateC).df.copy()
         #endregion -------------------------------------------------> Reset df
 
         #region -----------------------------------------------> Apply Filters
@@ -2386,7 +2398,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region -------------------------------------------> Update Attributes
-        self.rDf         = self.rData[self.rDateC]['DF'].copy()
+        self.rDf         = getattr(self.rData, self.rDateC).df.copy()
         self.rFilterList = []
         self.wStatBar.SetStatusText('', 1)
         #endregion ----------------------------------------> Update Attributes
@@ -2512,7 +2524,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         self.rObj.rData[self.cSection][self.rDateC]['F'] = filterDict
         #------------------------------>
         if self.rObj.Save():
-            self.rData[self.rDateC]['F'] = filterDict
+            getattr(self.rData, self.rDateC).filterS = filterDict
         #endregion ------------------------------------------------>
 
         return True
@@ -2527,7 +2539,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         """
         #region --------------------------------------------------->
         self.rFilterList = [
-            [k]+v for k,v in self.rData[self.rDateC]['F'].items()]
+            [k]+v for k,v in getattr(self.rData, self.rDateC).filterS.items()]
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->

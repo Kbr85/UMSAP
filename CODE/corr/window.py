@@ -82,7 +82,7 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         """ """
         #region -----------------------------------------------> Initial Setup
         self.rObj  = parent.rObj
-        self.rData = self.rObj.dConfigure[self.cSection]()
+        self.rData:cMethod.BaseAnalysis = self.rObj.dConfigure[self.cSection]()
         self.rDate, menuData = self.SetDateMenuDate()
         #------------------------------> Nothing found
         self.ReportPlotDataError()

@@ -52,6 +52,22 @@ class UserData(cMethod.BaseUserData):
     longestKey:int = 17                                                         # Length of the longest Key in dI
     #endregion ------------------------------------------------------> Options
 #---
+
+
+@dataclass
+class ProtAnalysis():
+    """Data class to hold the info regarding a Proteome Profiling analysis in
+        an UMSAP file.
+    """
+    #region --------------------------------------------------------> Options
+    df:pd.DataFrame                                                             # Result
+    alpha:float                                                                 # Significance level
+    filterS:dict                                                                # Filters
+    labelA:list[str]                                                            # Conditions
+    labelB:list[str]                                                            # Relevant Points
+    ctrlType:str
+    ctrlName:str
+    #endregion -----------------------------------------------------> Options
 #endregion ----------------------------------------------------------> Classes
 
 

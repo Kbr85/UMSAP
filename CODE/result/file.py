@@ -284,25 +284,17 @@ class UMSAPFile():
         return data
     #---
 
-    def ConfigureDataProtProf(self) -> dict:
+    def ConfigureDataProtProf(self) -> cMethod.BaseAnalysis:
         """Configure a Proteome Profiling section.
 
             Returns
             ------
-            dict
-            {
-                'Error': ['Date1',...], # Analysis containing errors.
-                'Date1': {
-                    'DF'   : pd.DataFrame with the data to plot,
-                    'F'    : dict with filters,
-                    'Alpha': Alpha value used in the analysis,
-                },
-                'DateN': {},
-            }
+            cMethod.BaseAnalysis
+                For each Proteome Profiling a new attribute 'Date' is added with
+                value protMethod.ProtProfAnalysis.
         """
         #region ---------------------------------------------------> Variables
-        plotData = {}
-        plotData['Error'] = []
+        data   = cMethod.BaseAnalysis()
         colStr = [('Gene','Gene','Gene'),('Protein','Protein','Protein')]
         pathB  = mConfig.prot.nMod.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
@@ -317,17 +309,35 @@ class UMSAPFile():
                 df = cFile.ReadCSV2DF(tPath/v['R'], header=[0,1,2])
                 df.loc[:,colStr] = df.loc[:,colStr].astype('str')               # type: ignore
             except Exception:
-                plotData['Error'].append(k)
+                data.error.append(k)
                 continue
-            #------------------------------> Add to dict
-            plotData[k] = {
-                'DF'   : df,
-                'F'    : v['F'],
-                'Alpha': v['CI']['Alpha'],
-            }
+            #------------------------------> Alpha
+            try:                                                                # Keep backward compatibility
+                alpha    = v['CI']['Alpha']
+                labelA   = v['CI']['Cond']
+                labelB   = v['CI']['RP']
+                ctrlType = v['CI']['ControlT']
+                ctrlName = v['CI']['ControlL'][0]
+            except KeyError:
+                alpha    = v['CI']['alpha']
+                labelA   = v['CI']['labelA']
+                labelB   = v['CI']['labelB']
+                ctrlType = v['CI']['ctrlType']
+                ctrlName = v['CI']['ctrlName'][0]
+            #------------------------------> Add to class
+            setattr(data, k, protMethod.ProtAnalysis(
+                df       = df,
+                filterS  = v['F'],
+                alpha    = alpha,
+                labelA   = labelA,
+                labelB   = labelB,
+                ctrlName = ctrlName,
+                ctrlType = ctrlType,
+            ))
+            data.date.append(k)
         #endregion ----------------------------------------------> Plot & Menu
 
-        return plotData
+        return data
     #---
 
     def ConfigureDataLimProt(self) -> dict:
