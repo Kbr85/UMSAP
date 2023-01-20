@@ -116,8 +116,6 @@ class ProtProf(cPane.BaseConfPanelMod):
     cLRP           = mConfig.prot.lStRP
     cLCtrlType     = mConfig.core.lStCtrlType
     cLCtrlName     = mConfig.core.lStCtrlName
-    cLDFThreeCol   = mConfig.prot.dfcolFirstPart
-    cLDFThirdLevel = mConfig.prot.dfcolCLevel
     cLPdRunText    = 'Performing Proteome Profiling'
     #------------------------------> Choices
     cOCorrectP  = mConfig.core.oCorrectP

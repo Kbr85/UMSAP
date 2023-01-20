@@ -1038,10 +1038,10 @@ class BaseConfPanel(
             try:
                 self.rDO.protLoc = self.rSeqFileObj.GetNatProtLoc()
             except Exception:
-                self.rDO.protLoc = (-1, -1)
+                self.rDO.protLoc = [-1, -1]
             #------------------------------>
-            self.rDO.protLength = (
-                self.rSeqFileObj.rSeqLengthRec, self.rSeqFileObj.rSeqLengthNat)
+            self.rDO.protLength = [
+                self.rSeqFileObj.rSeqLengthRec, self.rSeqFileObj.rSeqLengthNat]
             #------------------------------>
             try:
                 self.rDO.protDelta = self.rSeqFileObj.GetSelfDelta()

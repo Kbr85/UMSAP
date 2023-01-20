@@ -37,7 +37,7 @@ class UserData(cMethod.BaseUserData):
         Pane.
     """
     #region ---------------------------------------------------------> Options
-    colFirstThree:list[str] = field(default_factory=lambda:
+    colFirstPart:list[str] = field(default_factory=lambda:
         mConfig.prot.dfcolFirstPart)
     colThirdLevel:list[str] = field(default_factory=lambda:
         mConfig.prot.dfcolFirstPart)
@@ -130,9 +130,9 @@ def ProtProf(                                                                   
         """
         #region -------------------------------------------------------> Index
         #------------------------------> First Three Columns
-        aL = rDO.colFirstThree
-        bL = rDO.colFirstThree
-        cL = rDO.colFirstThree
+        aL = rDO.colFirstPart
+        bL = rDO.colFirstPart
+        cL = rDO.colFirstPart
         #------------------------------> Columns per Point
         n = len(rDO.colThirdLevel)
         #------------------------------> Other columns

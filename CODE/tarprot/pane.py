@@ -16,6 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
+from typing  import Optional
 
 import pandas as pd
 
@@ -38,69 +39,12 @@ class TarProt(cPane.BaseConfPanelMod2):
         ----------
         parent: wx.Window
             Parent of the pane.
-        dataI: dict or None
+        dataI: tarpMethod.UserData or None
             Initial data provided by the user in a previous analysis.
-            This contains both I and CI dicts e.g. {'I': I, 'CI': CI}.
+            Default is None.
 
         Attributes
         ----------
-        rDI: dict
-            Dictionary with the user input. Keys are labels in the panel plus:
-            {
-                config.lStTarProtExp            : [list of experiments],
-                f"Control {config.lStCtrlName}" : "Control Name",
-            }
-        rDO: dict
-            Dictionary with checked user input. Keys are:
-            {
-                "iFile"      : "Path to input data file",
-                "uFile"      : "Path to umsap file.",
-                "seqFile"    : "Path to the sequence file",
-                "ID"         : "Analysis ID",
-                "Cero"       : Boolean, how to treat cero values,
-                "TransMethod": "Transformation method",
-                "NormMethod" : "Normalization method",
-                "ImpMethod"  : "Imputation method",
-                "Shift"      : float,
-                "Width"      : float,
-                "TargetProt" : "Target Protein",
-                "ScoreVal"   : "Score value threshold",
-                "Alpha"      : "Significance level",
-                "SeqLength"  : "Sequence length",
-                "AA"         : "Positions to analyze during the AA distribution",
-                "Hist"       : "Windows width for the Histograms",
-                "Exp"        : "['Exp1', 'Exp2', 'Exp3']",
-                "ControlL"   : ['Ctrl']
-                "oc" : {
-                    "SeqCol"       : Column of Sequences,
-                    "TargetProtCol": Column of Proteins,
-                    "ScoreCol"     : Score column,
-                    "ResCtrl"      : [List of columns containing the control and
-                        experiments column numbers],
-                    "ColumnF"      : [Flat list with float columns],
-                    "Column"       : [Flat list of all column numbers with the
-                              following order: SeqCol, TargetProtCol,
-                              ScoreColRes & Control]
-                },
-                "df" : { Colum numbers if the pd.df created from the input file
-                    "SeqCol"       : 0,
-                    "TargetProtCol": 1,
-                    "ScoreCol"     : 2,
-                    "ResCtrl"      : [[[]], [[]],...,[[]]],
-                    "ResCtrlFlat"  : Flat ResCtrl,
-                    "ColumnR"      : [Columns with the results],
-                    "ColumnF"      : [Columns that must contain only floats],
-                },
-                "dfo" : {
-                    "NC" : [Columns for the N and C residue numbers in the
-                        output df],
-                    "NCF" : [Columns for the nNat and cNat residue numbers in
-                        the output df],
-                },
-                "ProtLength": "Length of the Recombinant protein",
-                "ProtLoc"   : "Location of the Nat Seq in the Rec Seq",
-                "ProtDelta" : "To adjust Res Number. Nat = Res + Delta",
-            }
         rLbDict: dict
             Contains information about the Res - Ctrl e.g.
             {
@@ -131,8 +75,8 @@ class TarProt(cPane.BaseConfPanelMod2):
             'Targeted Proteolysis : {
                 '20210324-165609': {
                     'V' : config.dictVersion,
-                    'I' : self.d,
-                    'CI': self.do,
+                    'I' : Dict with User Input as given. Keys are label like in the Tab GUI,
+                    'CI': Dict with Processed User Input. Keys are attributes of UserData,
                     'DP': {
                         'dfS' : pd.DataFrame with initial data as float and
                                 after discarding values by score.
@@ -170,22 +114,22 @@ class TarProt(cPane.BaseConfPanelMod2):
         f'equally spaced windows. Multiple numbers allow defining custom sized '
         f'windows.\ne.g. 50 or 0 50 100 150 500{mConfig.core.mOptField}')
     #------------------------------> Needed by BaseConfPanel
-    cURL         = f"{mConfig.core.urlTutorial}/targeted-proteolysis"
-    cSection     = mConfig.tarp.nMod
-    cTitlePD     = f"Running {mConfig.tarp.nMod} Analysis"
-    cGaugePD     = 34
-    rMainData    = '{}_{}-TargetedProteolysis-Data.txt'
-    rDExtra:dict = {
-        'cLDFFirst' : cLDFFirst,
-        'cLDFSecond': cLDFSecond,
-    }
+    cURL      = f"{mConfig.core.urlTutorial}/targeted-proteolysis"
+    cSection  = mConfig.tarp.nMod
+    cTitlePD  = f"Running {mConfig.tarp.nMod} Analysis"
+    cGaugePD  = 34
+    rMainData = '{}_{}-TargetedProteolysis-Data.txt'
     rAnalysisMethod = tarpMethod.TarProt
     #------------------------------> Optional configuration
     cTTHelp = mConfig.core.ttBtnHelp.format(cURL)
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, dataI:dict={}) -> None:                          # pylint: disable=dangerous-default-value
+    def __init__(
+        self,
+        parent,
+        dataI:Optional[tarpMethod.UserData]=None,
+        ) -> None:                          # pylint: disable=dangerous-default-value
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(parent)
@@ -314,10 +258,6 @@ class TarProt(cPane.BaseConfPanelMod2):
         self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #endregion -------------------------------------------> checkUserInput
 
-        #region -------------------------------------------------------> DataI
-        self.SetInitialData(dataI)
-        #endregion ----------------------------------------------------> DataI
-
         #region --------------------------------------------------------> Test
         if mConfig.core.development:
             # pylint: disable=line-too-long
@@ -358,11 +298,16 @@ class TarProt(cPane.BaseConfPanelMod2):
         else:
             pass
         #endregion -----------------------------------------------------> Test
+
+        #region -------------------------------------------------------> DataI
+        if dataI is not None:
+            self.SetInitialData(dataI)
+        #endregion ----------------------------------------------------> DataI
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class Event
-    def SetInitialData(self, dataI:dict={}) -> bool:                            # pylint: disable=dangerous-default-value
+    def SetInitialData(self, dataI:tarpMethod.UserData) -> bool:                            # pylint: disable=dangerous-default-value
         """Set initial data.
 
             Parameters
@@ -375,39 +320,34 @@ class TarProt(cPane.BaseConfPanelMod2):
             bool
         """
         #region -------------------------------------------------> Fill Fields
-        if dataI is not None:
-            #------------------------------>
-            dataInit = dataI['uFile'].parent / mConfig.core.fnDataInit
-            iFile    = dataInit / dataI['I'][self.cLiFile]
-            seqFile  = dataInit / dataI['I'][f'{self.cLSeqFile} File']
-            #------------------------------> Files
-            self.wUFile.wTc.SetValue(str(dataI['uFile']))
-            self.wIFile.wTc.SetValue(str(iFile))
-            self.wSeqFile.wTc.SetValue(str(seqFile))
-            self.wId.wTc.SetValue(dataI['CI']['ID'])
-            #------------------------------> Data Preparation
-            self.wCeroB.wCb.SetValue(dataI['I'][self.cLCeroTreatD])
-            self.wTransMethod.wCb.SetValue(dataI['I'][self.cLTransMethod])
-            self.wNormMethod.wCb.SetValue(dataI['I'][self.cLNormMethod])
-            self.wImputationMethod.wCb.SetValue(dataI['I'][self.cLImputation])
-            self.wShift.wTc.SetValue(dataI['I'].get(self.cLShift, self.cValShift))
-            self.wWidth.wTc.SetValue(dataI['I'].get(self.cLWidth, self.cValWidth))
-            #------------------------------> Values
-            self.wTargetProt.wTc.SetValue(dataI['I'][self.cLTargetProt])
-            self.wScoreVal.wTc.SetValue(dataI['I'][self.cLScoreVal])
-            self.wAlpha.wTc.SetValue(dataI['I'][self.cLAlpha])
-            self.wAAPos.wTc.SetValue(dataI['I'][self.cLAAPos])
-            self.wHist.wTc.SetValue(dataI['I'][self.cLHist])
-            #------------------------------> Columns
-            self.wSeqCol.wTc.SetValue(dataI['I'][f'{self.cLSeqCol} Column'])
-            self.wDetectedProt.wTc.SetValue(dataI['I'][self.cLDetectedProt])
-            self.wScore.wTc.SetValue(dataI['I'][self.cLScoreCol])
-            self.wTcResults.SetValue(dataI['I'][mConfig.core.lStResCtrlS])
-            self.rLbDict[0] = dataI['I'][self.cLExp]
-            self.rLbDict['Control'] = dataI['I'][f"Control {self.cLCtrlName}"]
-            #------------------------------>
-            self.OnIFileLoad('fEvent')
-            self.OnImpMethod('fEvent')
+        # #------------------------------> Files
+        # self.wUFile.wTc.SetValue(str(dataI['uFile']))
+        # self.wIFile.wTc.SetValue(str(iFile))
+        # self.wSeqFile.wTc.SetValue(str(seqFile))
+        # self.wId.wTc.SetValue(dataI['CI']['ID'])
+        # #------------------------------> Data Preparation
+        # self.wCeroB.wCb.SetValue(dataI['I'][self.cLCeroTreatD])
+        # self.wTransMethod.wCb.SetValue(dataI['I'][self.cLTransMethod])
+        # self.wNormMethod.wCb.SetValue(dataI['I'][self.cLNormMethod])
+        # self.wImputationMethod.wCb.SetValue(dataI['I'][self.cLImputation])
+        # self.wShift.wTc.SetValue(dataI['I'].get(self.cLShift, self.cValShift))
+        # self.wWidth.wTc.SetValue(dataI['I'].get(self.cLWidth, self.cValWidth))
+        # #------------------------------> Values
+        # self.wTargetProt.wTc.SetValue(dataI['I'][self.cLTargetProt])
+        # self.wScoreVal.wTc.SetValue(dataI['I'][self.cLScoreVal])
+        # self.wAlpha.wTc.SetValue(dataI['I'][self.cLAlpha])
+        # self.wAAPos.wTc.SetValue(dataI['I'][self.cLAAPos])
+        # self.wHist.wTc.SetValue(dataI['I'][self.cLHist])
+        # #------------------------------> Columns
+        # self.wSeqCol.wTc.SetValue(dataI['I'][f'{self.cLSeqCol} Column'])
+        # self.wDetectedProt.wTc.SetValue(dataI['I'][self.cLDetectedProt])
+        # self.wScore.wTc.SetValue(dataI['I'][self.cLScoreCol])
+        # self.wTcResults.SetValue(dataI['I'][mConfig.core.lStResCtrlS])
+        # self.rLbDict[0] = dataI['I'][self.cLExp]
+        # self.rLbDict['Control'] = dataI['I'][f"Control {self.cLCtrlName}"]
+        # #------------------------------>
+        # self.OnIFileLoad('fEvent')
+        # self.OnImpMethod('fEvent')
         #endregion ----------------------------------------------> Fill Fields
 
         return True
@@ -425,61 +365,13 @@ class TarProt(cPane.BaseConfPanelMod2):
         #region -----------------------------------------------------------> d
         msgStep = self.cLPdPrepare + 'User input, reading'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------> As given
-        self.rDI = {
-            self.EqualLenLabel(self.cLiFile) : (
-                self.wIFile.wTc.GetValue()),
-            self.EqualLenLabel(f'{self.cLSeqFile} File') : (
-                self.wSeqFile.wTc.GetValue()),
-            self.EqualLenLabel(self.cLId) : (
-                self.wId.wTc.GetValue()),
-            self.EqualLenLabel(self.cLCeroTreatD) : (
-                self.wCeroB.wCb.GetValue()),
-            self.EqualLenLabel(self.cLTransMethod) : (
-                self.wTransMethod.wCb.GetValue()),
-            self.EqualLenLabel(self.cLNormMethod) : (
-                self.wNormMethod.wCb.GetValue()),
-            self.EqualLenLabel(self.cLImputation) : (
-                self.wImputationMethod.wCb.GetValue()),
-            self.EqualLenLabel(self.cLShift) : (
-                self.wShift.wTc.GetValue()),
-            self.EqualLenLabel(self.cLWidth) : (
-                self.wWidth.wTc.GetValue()),
-            self.EqualLenLabel(self.cLTargetProt) : (
-                self.wTargetProt.wTc.GetValue()),
-            self.EqualLenLabel(self.cLScoreVal) : (
-                self.wScoreVal.wTc.GetValue()),
-            self.EqualLenLabel(self.cLAlpha) : (
-                self.wAlpha.wTc.GetValue()),
-            self.EqualLenLabel(self.cLAAPos) : (
-                self.wAAPos.wTc.GetValue()),
-            self.EqualLenLabel(self.cLHist) : (
-                self.wHist.wTc.GetValue()),
-            self.EqualLenLabel(f'{self.cLSeqCol} Column') : (
-                self.wSeqCol.wTc.GetValue()),
-            self.EqualLenLabel(self.cLDetectedProt) : (
-                self.wDetectedProt.wTc.GetValue()),
-            self.EqualLenLabel(self.cLScoreCol) : (
-                self.wScore.wTc.GetValue()),
-            self.EqualLenLabel(mConfig.core.lStResCtrlS): (
-                self.wTcResults.GetValue()),
-            self.EqualLenLabel(self.cLExp) : (
-                self.rLbDict[0]),
-            self.EqualLenLabel(f"Control {self.cLCtrlName}") : (
-                self.rLbDict['Control']),
-        }
-        #endregion --------------------------------------------------------> d
-
-        #region ----------------------------------------------------------> do
-        #------------------------------> Dict with all values
-        #--------------> Step
-        msgStep = self.cLPdPrepare + 'User input, processing'
-        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------> Read values
+        impMethod = self.wImputationMethod.wCb.GetValue()
         #--------------> SeqLength
-        aaPosVal     = self.wAAPos.wTc.GetValue()
-        aaPos        = int(aaPosVal) if aaPosVal != '' else None
-        histVal      = self.wHist.wTc.GetValue()
-        hist         = [int(x) for x in histVal.split()] if histVal != '' else None
+        aaPosVal = self.wAAPos.wTc.GetValue()
+        aaPos    = int(aaPosVal) if aaPosVal != '' else None
+        histVal  = self.wHist.wTc.GetValue()
+        hist     = [int(x) for x in histVal.split()] if histVal != '' else None
         #--------------> Columns
         seqCol        = int(self.wSeqCol.wTc.GetValue())
         detectedProt  = int(self.wDetectedProt.wTc.GetValue())
@@ -488,55 +380,74 @@ class TarProt(cPane.BaseConfPanelMod2):
         resCtrlFlat   = cMethod.ResControl2Flat(resCtrl)
         resCtrlDF     = cMethod.ResControl2DF(resCtrl, 3)
         resCtrlDFFlat = cMethod.ResControl2Flat(resCtrlDF)
-        #-------------->
-        self.rDO  = {
-            'iFile'      : Path(self.wIFile.wTc.GetValue()),
-            'uFile'      : Path(self.wUFile.wTc.GetValue()),
-            'seqFile'    : Path(self.wSeqFile.wTc.GetValue()),
-            'ID'         : self.wId.wTc.GetValue(),
-            'Cero'       : mConfig.core.oYesNo[self.wCeroB.wCb.GetValue()],
-            'TransMethod': self.wTransMethod.wCb.GetValue(),
-            'NormMethod' : self.wNormMethod.wCb.GetValue(),
-            'ImpMethod'  : self.wImputationMethod.wCb.GetValue(),
-            'Shift'      : float(self.wShift.wTc.GetValue()),
-            'Width'      : float(self.wWidth.wTc.GetValue()),
-            'TargetProt' : self.wTargetProt.wTc.GetValue(),
-            'ScoreVal'   : float(self.wScoreVal.wTc.GetValue()),
-            'Alpha'      : float(self.wAlpha.wTc.GetValue()),
-            'AA'         : aaPos,
-            'Hist'       : hist,
-            'Exp'        : self.rLbDict[0],
-            'ControlL'   : self.rLbDict['Control'],
-            'oc'         : { # Column numbers in the initial dataframe
-                'SeqCol'       : seqCol,
-                'TargetProtCol': detectedProt,
-                'ScoreCol'     : scoreCol,
-                'ResCtrl'      : resCtrl,
-                'ColumnF'      : [scoreCol] + resCtrlFlat,
-                'Column'       : (
-                    [seqCol, detectedProt, scoreCol] + resCtrlFlat),
-            },
-            'df' : { # Column numbers in the selected data dataframe
-                'SeqCol'       : 0,
-                'TargetProtCol': 1,
-                'ScoreCol'     : 2,
-                'ResCtrl'      : resCtrlDF,
-                'ResCtrlFlat'  : resCtrlDFFlat,
-                'ColumnR'      : resCtrlDFFlat,
-                'ColumnF'      : [2] + resCtrlDFFlat,
-            },
-            'dfo' : { # Column numbers in the output dataframe
-                'NC' : [2,3], # N and C Term Res Numbers in the Rec Seq
-                'NCF': [4,5], # N and C Term Res Numbers in the Nat Seq
-            }
+        #--------------> dI
+        dI = {
+            'iFileN'      : self.cLiFile,
+            'seqFile'     : self.cLSeqFile,
+            'ID'          : self.cLId,
+            'cero'        : self.cLCeroTreatD,
+            'tran'        : self.cLTransMethod,
+            'norm'        : self.cLNormMethod,
+            'imp'         : self.cLImputation,
+            'targetProt'  : self.cLTargetProt,
+            'scoreVal'    : self.cLScoreVal,
+            'alpha'       : self.cLAlpha,
+            'posAA'       : self.cLAAPos,
+            'winHist'     : self.cLHist,
+            'ocPept'      : self.cLSeqCol,
+            'ocTargetProt': self.cLDetectedProt,
+            'ocScore'     : self.cLScoreCol,
+            'ocResCtrl'   : mConfig.core.lStResCtrlS,
+            'labelA'      : self.cLExp,
+            'ctrlName'    : f'Control {self.cLCtrlName}',
         }
+        if impMethod == mConfig.data.lONormDist:
+            dI['shift'] = self.cLShift
+            dI['width'] = self.cLWidth
+        #endregion --------------------------------------------------------> d
+
+        #region ----------------------------------------------------------> do
+        msgStep = self.cLPdPrepare + 'User input, processing'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------>
+        self.rDO = tarpMethod.UserData(
+            uFile         = Path(self.wUFile.wTc.GetValue()),
+            iFile         = Path(self.wIFile.wTc.GetValue()),
+            seqFile       = Path(self.wSeqFile.wTc.GetValue()),
+            ID            = self.wId.wTc.GetValue(),
+            cero          = mConfig.core.oYesNo[self.wCeroB.wCb.GetValue()],
+            tran          = self.wTransMethod.wCb.GetValue(),
+            norm          = self.wNormMethod.wCb.GetValue(),
+            imp           = impMethod,
+            shift         = float(self.wShift.wTc.GetValue()),
+            width         = float(self.wWidth.wTc.GetValue()),
+            targetProt    = self.wTargetProt.wTc.GetValue(),
+            scoreVal      = float(self.wScoreVal.wTc.GetValue()),
+            alpha         = float(self.wAlpha.wTc.GetValue()),
+            posAA         = aaPos,
+            winHist       = hist,
+            labelA        = self.rLbDict[0],
+            ctrlName      = self.rLbDict['Control'][0],
+            ocSeq         = seqCol,
+            ocTargetProt  = detectedProt,
+            ocScore       = scoreCol,
+            ocResCtrl     = resCtrl,
+            ocColumn      = [seqCol, detectedProt, scoreCol] + resCtrlFlat,
+            dfSeq         = 0,
+            dfTargetProt  = 1,
+            dfScore       = 2,
+            dfResCtrl     = resCtrlDF,
+            dfResCtrlFlat = resCtrlDFFlat,
+            dfColumnR     = resCtrlDFFlat,
+            dfColumnF     = [2] + resCtrlDFFlat,
+        )
         #endregion -------------------------------------------------------> do
 
-        #region ---------------------------------------------------> Super
+        #region -------------------------------------------------------> Super
         if not super().PrepareRun():
             self.rMsgError = 'Something went wrong when preparing the analysis.'
             return False
-        #endregion ------------------------------------------------> Super
+        #endregion ----------------------------------------------------> Super
 
         return True
     #---
@@ -549,7 +460,7 @@ class TarProt(cPane.BaseConfPanelMod2):
             bool
         """
         #region -----------------------------------------------------> rDExtra
-        self.rDExtra['rSeqFileObj'] = self.rSeqFileObj
+        setattr(self.rDO, 'seqFileObj', self.rSeqFileObj)
         #endregion --------------------------------------------------> rDExtra
 
         #region -----------------------------------------------------> TarProt
@@ -564,15 +475,15 @@ class TarProt(cPane.BaseConfPanelMod2):
         msgStep = (f'{self.cLPdRun} Cleavage per Residue')
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------>
-        a = self.cLDFFirst[2:]+self.rDO['Exp']
-        b = self.cLDFFirst[2:]+['P']
+        a = self.cLDFFirst[2:] + self.rDO.labelA
+        b = self.cLDFFirst[2:] + ['P']
         tIdxH = idx[a,b] # Also used for Hist
         #------------------------------>
         try:
             self.dfCpR = tarpMethod.R2CpR(
                 self.dfR.loc[:, tIdxH],                                         # type: ignore
-                self.rDO['Alpha'],
-                self.rDO['ProtLength'],
+                self.rDO.alpha,
+                self.rDO.protLength,
             )
         except Exception as e:
             self.rMsgError = 'The Cleavage per Residue method failed.'
@@ -584,15 +495,15 @@ class TarProt(cPane.BaseConfPanelMod2):
         msgStep = (f'{self.cLPdRun} Cleavage Evolution')
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------>
-        a    = self.cLDFFirst[2:]+self.rDO['Exp']
-        b    = self.cLDFFirst[2:]+['Int', 'P']
+        a    = self.cLDFFirst[2:] + self.rDO.labelA
+        b    = self.cLDFFirst[2:] + ['Int', 'P']
         tIdx = idx[a,b]
         #------------------------------>
         try:
             self.dfCEvol = tarpMethod.R2CEvol(
                 self.dfR.loc[:, tIdx],                                          # type: ignore
-                self.rDO['Alpha'],
-                self.rDO['ProtLength'],
+                self.rDO.alpha,
+                self.rDO.protLength,
             )
         except Exception as e:
             self.rMsgError = 'The Cleavage Evolution method failed.'
@@ -601,19 +512,19 @@ class TarProt(cPane.BaseConfPanelMod2):
         #endregion ------------------------------------------------> CutEvo
 
         #region ----------------------------------------------------------> AA
-        if self.rDO['AA'] is not None:
+        if self.rDO.posAA is not None:
             #------------------------------>
             msgStep = (f'{self.cLPdRun} AA Distribution')
             wx.CallAfter(self.rDlg.UpdateStG, msgStep)
             #------------------------------>
-            tIdx = idx[['Sequence']+self.rDO['Exp'],['Sequence', 'P']]
+            tIdx = idx[['Sequence']+self.rDO.labelA,['Sequence', 'P']]
             try:
                 self.dfAA = tarpMethod.R2AA(
                     self.dfR.loc[:,tIdx],                                       # type: ignore
-                    self.rSeqFileObj.rSeqRec, # type: ignore
-                    self.rDO['Alpha'],
-                    self.rDO['ProtLength'][0],
-                    pos=self.rDO['AA'],
+                    self.rSeqFileObj.rSeqRec,
+                    self.rDO.alpha,
+                    self.rDO.protLength[0],
+                    pos = self.rDO.posAA,
                 )
             except Exception as e:
                 self.rMsgError = 'Amino acid distribution calculation failed.'
@@ -622,7 +533,7 @@ class TarProt(cPane.BaseConfPanelMod2):
         #endregion -------------------------------------------------------> AA
 
         #region --------------------------------------------------------> Hist
-        if self.rDO['Hist'] is not None:
+        if self.rDO.winHist is not None:
             #------------------------------>
             msgStep = (f'{self.cLPdRun} Histograms')
             wx.CallAfter(self.rDlg.UpdateStG, msgStep)
@@ -630,9 +541,9 @@ class TarProt(cPane.BaseConfPanelMod2):
             try:
                 self.dfHist = tarpMethod.R2Hist(
                     self.dfR.loc[:,tIdxH],                                      # type: ignore
-                    self.rDO['Alpha'],
-                    self.rDO['Hist'],
-                    self.rDO['ProtLength']
+                    self.rDO.alpha,
+                    self.rDO.winHist,
+                    self.rDO.protLength
                 )
             except Exception as e:
                 self.rMsgError = 'The Histogram generation method failed.'

@@ -282,7 +282,7 @@ class FastaFile():
             self.rHeaderNat, self.rSeqNat = next(gen)
             self.rSeqLengthNat = len(self.rSeqNat)
         except StopIteration:
-            self.rHeaderNat, self.rSeqNat, self.rSeqLengthNat = ('', '', None)
+            self.rHeaderNat, self.rSeqNat, self.rSeqLengthNat = ('', '', 0)
         except Exception as e:
             msg = (f'There was an unexpected error when parsing the fasta '
                 f'file.\n{fileP}')
@@ -430,13 +430,13 @@ class FastaFile():
         #endregion ------------------------------------------------> Get delta
     #---
 
-    def GetNatProtLoc(self) -> tuple[int, int]:
+    def GetNatProtLoc(self) -> list[int]:
         """Get the location of the Native sequence inside the Recombinant
             sequence.
 
             Returns
             -------
-            tuple
+            list
                 First and last residue.
 
             Notes
@@ -471,7 +471,7 @@ class FastaFile():
         lr = self.rSeqLengthRec if lr is None else lr
         #endregion ---------------------------------------> Get Right Position
 
-        return (ll, lr)
+        return [ll, lr]
     #---
     #endregion ------------------------------------------------> Class methods
 #---

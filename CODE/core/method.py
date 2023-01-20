@@ -50,6 +50,164 @@ LIT_CorrectedP = Literal['', 'None', 'Bonferroni', 'Sidak', 'Holm - Sidak',
                          'Holm', 'Simes - Hochberg', 'Hommel',
                          'Benjamini - Hochberg', 'Benjamini - Yekutieli']
 
+
+#region -------------------------------------------------------------> Classes
+@dataclass
+class BaseUserData():
+    """Base class for the representation of the user input data"""
+    #region ---------------------------------------------------------> Options
+    #------------------------------> Files & ID
+    uFile:Path    = Path()                                                      # UMSAP File
+    iFile:Path    = Path()                                                      # Data File
+    seqFile:Path  = Path()                                                      # Sequence File
+    ID:str        = ''                                                          # ID for Analysis
+    iFileN:str    = ''                                                          # Name of Data File after copied to output folder
+    seqFileN:str  = ''                                                          # Name of Sequence File after copied to output folder
+    copyFile:dict = field(default_factory=lambda: {                             # Copy these files to result folders
+        'iFile'  : 'iFileN',
+        'seqFile': 'seqFileN',})
+    seqFileObj:Optional['cFile.FastaFile'] = None                                 # Sequence File Object
+    #------------------------------> Data Preparation
+    cero:bool      = False                                                      # Treatment of 0 in data
+    tran:LIT_Tran  = ''                                                         # Transformation method
+    norm:LIT_Norm  = ''                                                         # Normalization method
+    imp:LIT_Imp    = ''                                                         # Imputation Method
+    shift:float    = float(mConfig.data.Shift)                                  # Center shift
+    width:float    = float(mConfig.data.Width)                                  # Stdev value
+    targetProt:str = ''                                                         # Target Protein
+    scoreVal:float = 0                                                          # Minimum Score value
+    #------------------------------> Statistic options
+    rawInt:bool    = False                                                      # Raw intensity or ration of intensity
+    indSample:bool = False                                                      # Samples are independent or not
+    alpha:float    = 0                                                          # Significance level
+    correctedP:LIT_CorrectedP = ''                                              # Method to correct P values for multiple test
+    #------------------------------> Result - Control
+    labelA:list[str] = field(default_factory=list)
+    labelB:list[str] = field(default_factory=list)
+    ctrlType:str     = ''
+    ctrlName:str     = ''
+    #------------------------------> Correlation Analysis
+    corr:LIT_Corr = ''                                                         # Correlation method
+    #------------------------------> Further Analysis
+    posAA:Optional[int]         = None                                          # Position number for AA analysis
+    winHist:Optional[list[int]] = None                                          # Windows for Histograms
+    #------------------------------> Column numbers in the original (oc) and short (df) dataframe
+    resCtrl:str             = ''                                                # ResCtrl in str form
+    ocSeq:int               = -1                                                # Search here for Peptides.
+    ocTargetProt:int        = -1                                                # Search here for targetProt
+    ocGene:int              = -1                                                # Search here for Gene names
+    ocScore:int             = -1                                                # Search here for Score values
+    ocExcludeR:list[int]    = field(default_factory=list)                       # Search here for values to exclude rows in data from analysis
+    ocColumn:list[int]      = field(default_factory=list)                       # All columns that will be extracted from original data
+    ocResCtrl:list          = field(default_factory=list)                       # ResCtrl column as nested list of int
+    ocResCtrlFlat:list[int] = field(default_factory=list)                       # ResCtrl columns as flat list
+    dfSeq:int               = -1                                                # Search here for Peptides.
+    dfTargetProt:int        = -1                                                # Search here for targetProt
+    dfGene:int              = -1                                                # Search here for Gene names
+    dfScore:int             = -1                                                # Search here for Score values
+    dfExcludeR:list[int]    = field(default_factory=list)                       # Search here for values to exclude rows in data from analysis
+    dfColumnR:list[int]     = field(default_factory=list)                       # Columns in which 0 and/or '' will be replaced with NA
+    dfColumnF:list[int]     = field(default_factory=list)                       # Columns with only Float values
+    dfResCtrl:list          = field(default_factory=list)                       # ResCtrl columns as nested list of int
+    dfResCtrlFlat:list[int] = field(default_factory=list)                       # ResCtrl columns as flat list
+    dfNC:list[int]          = field(default_factory=lambda: [2,3])              # Location of N, C residue numbers in Recombinant Protein
+    dfNCF:list[int]         = field(default_factory=lambda: [4,5])              # Location of N, C residue numbers in Native Protein
+    #------------------------------>
+    protLoc:list[int]       = field(default_factory=lambda: [-1, -1])           # Location of the Native Sequence in the Recombinant Sequence
+    protLength:list[int]    = field(default_factory=lambda: [1, 0])             # Length of Recombinant and Natural Protein
+    protDelta:Optional[int] = None                                              # To calculate Native residue number from Recombinant residue number
+    converterRead:dict      = field(default_factory=lambda:{                    # Set proper type when reading from file
+        'uFile'  : Path,
+        'iFile'  : Path,
+        'seqFile': Path,
+    })
+    converterPrint:dict     = field(default_factory=lambda:{                    # Set proper type when printing to file
+        'uFile'  : str,
+        'iFile'  : str,
+        'seqFile': str,
+    })
+    dI:dict                 = field(default_factory=dict)                       # Keys are class attributes and values string for pretty print
+    #------------------------------> Child class should give default values for the following attributes
+    dO:list        = field(default_factory=list)                                # Attributes written to umsap file
+    longestKey:int = 0                                                          # Length of the longest Key in dI
+    #endregion ------------------------------------------------------> Options
+
+    #region ---------------------------------------------------------> Methods
+    def PrintDI(self) -> dict:
+        """Creates the dictionary needed to pretty print the user input.
+
+            Returns
+            -------
+            dict
+        """
+        #region --------------------------------------------------->
+        dictO = {}
+        #------------------------------>
+        for k,v in self.dI.items():
+            label = f"{v}{(self.longestKey - len(v))*' '}"
+            dictO[label] = str(getattr(self, k))
+        #endregion ------------------------------------------------>
+
+        return dictO
+    #---
+
+    def PrintDO(self) -> dict:
+        """Creates the dictionary needed to print the processed user input
+
+            Return
+            ------
+            dict
+        """
+        #region -------------------------------------------------------->
+        dictO = {}
+        #------------------------------>
+        for k in self.dO:
+            if (conv := self.converterPrint.get(k)) is not None:
+                dictO[k] = conv(getattr(self, k))
+            else:
+                dictO[k] = getattr(self, k)
+        #endregion ----------------------------------------------------->
+
+        return dictO
+    #---
+
+    def FromDict(self, data:dict) -> bool:
+        """Update class attributes based on data
+
+            Parameters
+            ----------
+            data: dict
+                Keys are class attributes and values the corresponding values.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        for k,v in data.items():
+            if (conv := self.converterRead.get(k)) is not None:
+                setattr(self, k, conv(v))
+            else:
+                setattr(self, k, v)
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+    #endregion ------------------------------------------------------> Methods
+#---
+
+
+@dataclass
+class BaseAnalysis():
+    """Base class to hold information about an analysis in an UMSAP file."""
+    #region --------------------------------------------------->
+    error:list[str] = field(default_factory=list)                               # List of analysis with errors.
+    date:list[str]  = field(default_factory=list)                               # List of analysis with no error.
+    #endregion ------------------------------------------------>
+#---
+#endregion ----------------------------------------------------------> Classes
+
+
 #region ------------------------------------------------------> String Methods
 def StrNow(dtFormat:str=mConfig.core.dtFormat) -> str:
     """Get a formatted datetime.now() string.
@@ -775,8 +933,7 @@ def LCtrlFillColNames(lc:wx.ListCtrl, fileP:Union[Path, str]) -> bool:
 #region --------------------------------------------------------------> Others
 def NCResNumbers(
     dfR:pd.DataFrame,
-    rDO:dict,
-    rSeqFileObj:'cFile.FastaFile',
+    rDO:BaseUserData,
     seqNat:bool = True
     ) -> tuple[pd.DataFrame, str, Optional[Exception]]:
     """Find the residue numbers for the peptides in the sequence of the
@@ -786,8 +943,8 @@ def NCResNumbers(
         ----------
         dfR: pd.DataFrame
             DataFrame with the data.
-        rDO: dict
-            Options for the calculation of residue numbers.
+        rDO: BaseUserData
+            Dataclass with user input.
         rSeqFileObj: cFile.FastaFile
             Fasta file object with the protein sequence.
         seqNat: bool
@@ -796,19 +953,6 @@ def NCResNumbers(
         Returns
         -------
         bool
-
-        Notes
-        -----
-        At least the following key - values pairs must be present in rDO.
-            {
-                'df' : {
-                    'SeqCol' : int,
-                },
-                'dfo' : {
-                    'NC' : list[int],
-                    'NCF': list[int],
-                },
-            }
     """
     # Test in test.unit.core.test_method.Test_NCResNumbers
     #region --------------------------------------------> Helper Functions
@@ -848,13 +992,13 @@ def NCResNumbers(
 
     #region -----------------------------------------------------> Rec Seq
     try:
-        dfR.iloc[:,rDO['dfo']['NC']] = dfR.iloc[
-            :,[rDO['df']['SeqCol'], 1]].apply(
+        dfR.iloc[:,rDO.dfNC] = dfR.iloc[
+            :,[rDO.dfSeq, 1]].apply(
                 NCTerm,                                                         # type: ignore
                 axis        = 1,
                 raw         = True,
                 result_type = 'expand',                                         # type: ignore
-                args        = (rSeqFileObj, 'Recombinant'),
+                args        = (rDO.seqFileObj, 'Recombinant'),
             )
     except RuntimeError as e:
         return (pd.DataFrame(), str(e), e)
@@ -864,19 +1008,19 @@ def NCResNumbers(
 
     #region -----------------------------------------------------> Nat Seq
     #------------------------------>
-    if seqNat and rSeqFileObj.rSeqNat:
+    if seqNat and rDO.seqFileObj.rSeqNat:
         #------------------------------>
-        delta   = rSeqFileObj.GetSelfDelta()
-        protLoc = rSeqFileObj.GetNatProtLoc()
+        delta   = rDO.seqFileObj.GetSelfDelta()
+        protLoc = rDO.seqFileObj.GetNatProtLoc()
         #------------------------------>
-        a = dfR.iloc[:,rDO['dfo']['NC']] + delta
-        dfR.iloc[:,rDO['dfo']['NCF']] = a
+        a = dfR.iloc[:,rDO.dfNC] + delta
+        dfR.iloc[:,rDO.dfNCF] = a
         #------------------------------> Remove Numbers not in the Native Protein
-        m = ((dfR.iloc[:,rDO['dfo']['NC']] >= protLoc[0]) &
-            (dfR.iloc[:,rDO['dfo']['NC']] <= protLoc[1])).to_numpy()
-        a = dfR.iloc[:,rDO['dfo']['NCF']].where(m, np.nan)
+        m = ((dfR.iloc[:,rDO.dfNC] >= protLoc[0]) &
+            (dfR.iloc[:,rDO.dfNC] <= protLoc[1])).to_numpy()
+        a = dfR.iloc[:,rDO.dfNCF].where(m, np.nan)
         a = a.astype('Int64')
-        dfR.iloc[:,rDO['dfo']['NCF']] = a
+        dfR.iloc[:,rDO.dfNCF] = a
     #endregion --------------------------------------------------> Nat Seq
 
     return (dfR, '', None)
@@ -1247,155 +1391,3 @@ def MergeOverlappingFragments(
     return coordO
 #---
 #endregion -----------------------------------------------------------> Others
-
-
-#region -------------------------------------------------------------> Classes
-@dataclass
-class BaseUserData():
-    """Base class for the representation of the user input data"""
-    #region ---------------------------------------------------------> Options
-    #------------------------------> Files & ID
-    uFile:Path    = Path()                                                      # UMSAP File
-    iFile:Path    = Path()                                                      # Data File
-    seqFile:Path  = Path()                                                      # Sequence File
-    ID:str        = ''                                                          # ID for Analysis
-    iFileN:str    = ''                                                          # Name of Data File after copied to output folder
-    seqFileN:str  = ''                                                          # Name of Sequence File after copied to output folder
-    copyFile:dict = field(default_factory=lambda: {                             # Copy these files to result folders
-        'iFile'  : 'iFileN',
-        'seqFile': 'seqFileN',})
-    #------------------------------> Data Preparation
-    cero:bool      = False                                                      # Treatment of 0 in data
-    tran:LIT_Tran  = ''                                                         # Transformation method
-    norm:LIT_Norm  = ''                                                         # Normalization method
-    imp:LIT_Imp    = ''                                                         # Imputation Method
-    shift:float    = float(mConfig.data.Shift)                                  # Center shift
-    width:float    = float(mConfig.data.Width)                                  # Stdev value
-    targetProt:str = ''                                                         # Target Protein
-    scoreVal:float = 0                                                          # Minimum Score value
-    #------------------------------> Statistic options
-    rawInt:bool    = False                                                      # Raw intensity or ration of intensity
-    indSample:bool = False                                                      # Samples are independent or not
-    alpha:float    = 0                                                          # Significance level
-    correctedP:LIT_CorrectedP = ''                                              # Method to correct P values for multiple test
-    #------------------------------> Result - Control
-    labelA:list[str] = field(default_factory=list)
-    labelB:list[str] = field(default_factory=list)
-    ctrlType:str     = ''
-    ctrlName:str     = ''
-    #------------------------------> Correlation Analysis
-    corr:LIT_Corr = ''                                                         # Correlation method
-    #------------------------------> Further Analysis
-    posAA:Optional[int] = None                                                  # Position number for AA analysis
-    winHist:list[int]   = field(default_factory=list)                           # Windows for Histograms
-    #------------------------------> Column numbers in the original (oc) and short (df) dataframe
-    resCtrl:str             = ''                                                # ResCtrl in str form
-    ocTargetProt:int        = -1                                                # Search here for targetProt
-    ocGene:int              = -1                                                # Search here for Gene names
-    ocScore:int             = -1                                                # Search here for Score values
-    ocExcludeR:list[int]    = field(default_factory=list)                       # Search here for values to exclude rows in data from analysis
-    ocColumn:list[int]      = field(default_factory=list)                       # All columns that will be extracted from original data
-    ocResCtrl:list          = field(default_factory=list)                       # ResCtrl column as nested list of int
-    ocResCtrlFlat:list[int] = field(default_factory=list)                       # ResCtrl columns as flat list
-    dfTargetProt:int        = -1                                                # Search here for targetProt
-    dfGene:int              = -1                                                # Search here for Gene names
-    dfScore:int             = -1                                                # Search here for Score values
-    dfExcludeR:list[int]    = field(default_factory=list)                       # Search here for values to exclude rows in data from analysis
-    dfColumnR:list[int]     = field(default_factory=list)                       # Columns in which 0 and/or '' will be replaced with NA
-    dfColumnF:list[int]     = field(default_factory=list)                       # Columns with only Float values
-    dfResCtrl:list          = field(default_factory=list)                       # ResCtrl columns as nested list of int
-    dfResCtrlFlat:list[int] = field(default_factory=list)                       # ResCtrl columns as flat list
-    #------------------------------>
-    protLoc:tuple[int,int]              = (-1, -1)                              # Location of the Native Sequence in the Recombinant Sequence
-    protLength:tuple[int,Optional[int]] = (1, None)                             # Length of Recombinant and Natural Protein
-    protDelta:Optional[int]             = None                                  # To calculate Native residue number from Recombinant residue number
-    converterRead:dict                  = field(default_factory=lambda:{        # Set proper type when reading from file
-        'uFile'  : Path,
-        'iFile'  : Path,
-        'seqFile': Path,
-    })
-    converterPrint:dict                 = field(default_factory=lambda:{        # Set proper type when printing to file
-        'uFile'  : str,
-        'iFile'  : str,
-        'seqFile': str,
-    })
-    dI:dict                             = field(default_factory=dict)           # Keys are class attributes and values string for pretty print
-    #------------------------------> Child class should give default values for the following attributes
-    dO:list        = field(default_factory=list)                                # Attributes written to umsap file
-    longestKey:int = 0                                                          # Length of the longest Key in dI
-    #endregion ------------------------------------------------------> Options
-
-    #region ---------------------------------------------------------> Methods
-    def PrintDI(self) -> dict:
-        """Creates the dictionary needed to pretty print the user input.
-
-            Returns
-            -------
-            dict
-        """
-        #region --------------------------------------------------->
-        dictO = {}
-        #------------------------------>
-        for k,v in self.dI.items():
-            label = f"{v}{(self.longestKey - len(v))*' '}"
-            dictO[label] = str(getattr(self, k))
-        #endregion ------------------------------------------------>
-
-        return dictO
-    #---
-
-    def PrintDO(self) -> dict:
-        """Creates the dictionary needed to print the processed user input
-
-            Return
-            ------
-            dict
-        """
-        #region -------------------------------------------------------->
-        dictO = {}
-        #------------------------------>
-        for k in self.dO:
-            if (conv := self.converterPrint.get(k)) is not None:
-                dictO[k] = conv(getattr(self, k))
-            else:
-                dictO[k] = getattr(self, k)
-        #endregion ----------------------------------------------------->
-
-        return dictO
-    #---
-
-    def FromDict(self, data:dict) -> bool:
-        """Update class attributes based on data
-
-            Parameters
-            ----------
-            data: dict
-                Keys are class attributes and values the corresponding values.
-
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------->
-        for k,v in data.items():
-            if (conv := self.converterRead.get(k)) is not None:
-                setattr(self, k, conv(v))
-            else:
-                setattr(self, k, v)
-        #endregion ------------------------------------------------>
-
-        return True
-    #---
-    #endregion ------------------------------------------------------> Methods
-#---
-
-
-@dataclass
-class BaseAnalysis():
-    """Base class to hold information about an analysis in an UMSAP file."""
-    #region --------------------------------------------------->
-    error:list[str] = field(default_factory=list)                               # List of analysis with errors.
-    date:list[str]  = field(default_factory=list)                               # List of analysis with no error.
-    #endregion ------------------------------------------------>
-#---
-#endregion ----------------------------------------------------------> Classes
