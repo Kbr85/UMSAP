@@ -592,10 +592,14 @@ class TarProt(cPane.BaseConfPanelMod2):
         stepDict['CEvol'] = f'{self.rDate}_CEvol.txt'
         #------------------------------>
         if self.rDO.posAA is not None:
-            stepDict['AA'] = f'{self.rDate}_AA-{self.rDO.posAA}.txt'
+            stepDict['AA'] = {
+                f'{self.rDate}-{self.rDO.posAA}' : f'{self.rDate}_AA-{self.rDO.posAA}.txt',
+            }
         #------------------------------>
         if self.rDO.winHist is not None:
-            stepDict['Hist'] = f'{self.rDate}_Hist-{self.rDO.winHist}.txt'
+            stepDict['Hist'] = {
+                f'{self.rDate}-{self.rDO.winHist}' : f'{self.rDate}_Hist-{self.rDO.winHist}.txt',
+            }
         #endregion -----------------------------------------> Further Analysis
 
         return self.WriteOutputData(stepDict)

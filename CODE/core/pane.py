@@ -797,12 +797,12 @@ class BaseConfPanel(
         #endregion -----------------------------------------------> Data Steps
 
         #region --------------------------------------------> Further Analysis
-        if (aaDict := stepDict.get('AA', False)):
-            fileP = dataFolder/aaDict
+        if (aaDict := stepDict.get('AA', {})):
+            fileP = dataFolder/list(aaDict.values())[0]
             cFile.WriteDF2CSV(fileP, self.dfAA)
 
-        if (histDict := stepDict.get('Hist', False)):
-            fileP = dataFolder/histDict
+        if (histDict := stepDict.get('Hist', {})):
+            fileP = dataFolder/list(histDict.values())[0]
             cFile.WriteDF2CSV(fileP, self.dfHist)
 
         if (cpr := stepDict.get('CpR', False)):

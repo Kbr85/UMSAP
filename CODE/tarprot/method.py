@@ -58,12 +58,23 @@ class UserData(cMethod.BaseUserData):
 #---
 
 @dataclass
-class CorrAnalysis():
-    """Data class to hold the info regarding a CorrA in an UMSAP file."""
+class TarpAnalysis():
+    """Data class to hold the info regarding a Targeted Proteolysis analysis in
+        an UMSAP file.
+    """
     #region --------------------------------------------------------> Options
     df:pd.DataFrame                                                             # Results as dataframe
-    numCol:int                                                                  # Total number of columns
-    numColList:list[int]                                                        # Column numbers
+    labelA:list[str]
+    ctrlName:str
+    alpha:float
+    protLength:list[int]
+    protLoc:list[int]
+    protDelta:Optional[int]
+    targetProt:str
+    CpR:str
+    CEvol:str
+    AA:dict[str,str]
+    Hist:dict[str,str]
     #endregion -----------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------------> Classes

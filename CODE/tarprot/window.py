@@ -54,8 +54,9 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         rAlpha: float
             Significance level of the Analysis.
         rCtrl:
-        rData: dict
-            Keys are dates and values the data for the plot.
+        rData: cMethod.BaseAnalysis
+            For each Targeted Proteolysis analysis a new attribute 'Date-ID' is
+            added with value tarpMethod.TarpAnalysis.
         rDate: list[str]
             Dates for the analysis
         rDateC: str
@@ -113,12 +114,13 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         #region -----------------------------------------------> Initial Setup
         self.cTitle = f'{parent.cTitle} - {self.cSection}'
         self.rObj   = parent.rObj
-        self.rData  = self.rObj.dConfigure[self.cSection]()
+        self.rData:cMethod.BaseAnalysis = self.rObj.dConfigure[self.cSection]()
         self.rDate, menuData = self.SetDateMenuDate()
         #------------------------------>
         self.ReportPlotDataError()
         #------------------------------>
         self.rDateC  = self.rDate[0]
+        self.rDataC:tarpMethod.TarpAnalysis = getattr(self.rData, self.rDateC)
         self.rRecSeq = {}
         #------------------------------>
         super().__init__(parent)
@@ -128,10 +130,10 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             mConfig.tarp.kwClearFragment: self.ClearFrag,
             mConfig.tarp.kwClearAll     : self.ClearAll,
             #------------------------------>
-            'AA-Item'                     : self.AASelect,
-            'AA-New'                      : self.AANew,
-            'Hist-Item'                   : self.HistSelect,
-            'Hist-New'                    : self.HistNew,
+            'AA-Item'                      : self.AASelect,
+            'AA-New'                       : self.AANew,
+            'Hist-Item'                    : self.HistSelect,
+            'Hist-New'                     : self.HistNew,
             mConfig.tarp.kwFACleavageEvol  : self.CEvol,
             mConfig.tarp.kwFACleavagePerRes: self.CpR,
             mConfig.tarp.kwFAPDBMap        : self.PDBMap,
@@ -192,22 +194,19 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         """
         #region ---------------------------------------------------> Fill dict
         #------------------------------> Variables
-        date = []
+        date = self.rData.date
         menuData = {
             'MenuDate': [],
             'FA'      : {},
         }
         #------------------------------> Fill
-        for k,v in self.rData.items():
-            if k != 'Error':
-                #------------------------------>
-                date.append(k)
-                #------------------------------>
-                menuData['FA'][k] = {}
-                aa = v.get('AA', {})
-                hist = v.get('Hist',{})
-                menuData['FA'][k]['AA'] = [x for x in aa.keys()]
-                menuData['FA'][k]['Hist'] = [x for x in hist.keys()]
+        for k in self.rData.date:
+            data = getattr(self.rData, k)
+            aa   = data.AA
+            hist = data.Hist
+            menuData['FA'][k] = {}
+            menuData['FA'][k]['AA']   = list(aa.keys())
+            menuData['FA'][k]['Hist'] = list(hist.keys())
         #------------------------------>
         menuData['MenuDate'] = date
         #endregion ------------------------------------------------> Fill dict
@@ -229,14 +228,15 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         """
         #region ---------------------------------------------------> Variables
         self.rDateC       = tDate if tDate else self.rDateC
-        self.rDf          = self.rData[self.rDateC]['DF'].copy()
-        self.rAlpha       = self.rData[self.rDateC]['PI']['Alpha']
-        self.rProtLoc     = self.rData[self.rDateC]['PI']['ProtLoc']
-        self.rProtLength  = self.rData[self.rDateC]['PI']['ProtLength'][0]
+        self.rDataC       = getattr(self.rData, self.rDateC)
+        self.rDf          = self.rDataC.df.copy()
+        self.rAlpha       = self.rDataC.alpha
+        self.rProtLoc     = self.rDataC.protLoc
+        self.rProtLength  = self.rDataC.protLength[0]
         self.rFragSelLine = None
         self.rFragSelC    = [None, None, None]
-        self.rExp         = self.rData[self.rDateC]['PI']['Exp']
-        self.rCtrl        = self.rData[self.rDateC]['PI']['Ctrl']
+        self.rExp         = self.rDataC.labelA
+        self.rCtrl        = [self.rDataC.ctrlName]
         self.rIdxP        = pd.IndexSlice[self.rExp,'P']
         self.rPeptide     = None
         self.rRecSeqC, self.rNatSeqC = (
@@ -676,9 +676,9 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         #endregion ------------------------------------------------> Get Pos
 
         #region ---------------------------------------------------> Run
-        dfI = self.rData[self.rDateC]['DF']
+        dfI = self.rDataC.df
         idx = pd.IndexSlice
-        dfI = dfI.loc[:,idx[['Sequence']+self.rExp,['Sequence', 'P']]]
+        dfI = dfI.loc[:,idx[['Sequence']+self.rExp,['Sequence', 'P']]]          # type: ignore
         dfO = tarpMethod.R2AA(
             dfI, self.rRecSeqC, self.rAlpha, self.rProtLength, pos=pos)
         #endregion ------------------------------------------------> Run
@@ -725,7 +725,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             bool
         """
         self.cParent.rWindow[self.cSection]['FA'].append(                       # type: ignore
-            ResAA(self, self.rDateC, aa, self.rData[self.rDateC]['AA'][aa]))
+            ResAA(self, self.rDateC, aa, self.rDataC.AA[aa]))
         return True
     #---
 
@@ -744,7 +744,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         #region --------------------------------------------------->
         self.cParent.rWindow[self.cSection]['FA'].append(                       # type: ignore
             ResHist(
-                self, self.rDateC, hist, self.rData[self.rDateC]['Hist'][hist]))
+                self, self.rDateC, hist, self.rDataC.Hist[hist]))
         #endregion ------------------------------------------------>
 
         return True
@@ -777,13 +777,13 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         #endregion ------------------------------------------------> Get Pos
 
         #region ---------------------------------------------------> Run
-        dfI = self.rData[self.rDateC]['DF']
+        dfI = self.rDataC.df
         idx = pd.IndexSlice
         a   = mConfig.tarp.dfcolFirstPart[2:]+self.rExp
         b   = mConfig.tarp.dfcolFirstPart[2:]+len(self.rExp)*['P']
-        dfI = dfI.loc[:,idx[a,b]]
+        dfI = dfI.loc[:,idx[a,b]]                                               # type: ignore
         dfO = tarpMethod.R2Hist(
-            dfI, self.rAlpha, win, self.rData[self.rDateC]['PI']['ProtLength'])
+            dfI, self.rAlpha, win, self.rDataC.protLength)
         #endregion ------------------------------------------------> Run
 
         #region -----------------------------------------------> Save & Update
@@ -824,7 +824,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         """
         #region --------------------------------------------------->
         self.cParent.rWindow[self.cSection]['FA'].append(                       # type: ignore
-            ResCpR(self, self.rDateC, self.rData[self.rDateC]['CpR']))
+            ResCpR(self, self.rDateC, self.rDataC.CpR))
         #endregion ------------------------------------------------>
 
         return True
@@ -930,7 +930,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             bool
         """
         self.cParent.rWindow[self.cSection]['FA'].append(                       # type: ignore
-            ResCEvol(self, self.rDateC, self.rData[self.rDateC]['CEvol']))
+            ResCEvol(self, self.rDateC, self.rDataC.CEvol))
         return True
     #---
     #endregion -----------------------------------------------> Manage Methods
@@ -1524,7 +1524,8 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
         self.rData  = self.rObj.GetFAData(
             parent.cSection, parent.rDateC,fileN, [0,1,2])
         self.rLabel      = self.rData.columns.unique(level=2).tolist()[1:]
-        self.rProtLength = parent.rData[self.cDateC]['PI']['ProtLength']
+        data = getattr(parent.rData, self.cDateC)
+        self.rProtLength = data.protLength
         menuData         = self.SetMenuDate()
         self.rNat = 'Rec'
         self.rAllC = 'All'
@@ -1811,8 +1812,9 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
         self.rData  = self.rObj.GetFAData(
             parent.cSection, parent.rDateC,fileN, [0,1])
         self.rLabel = self.rData.columns.unique(level=1).tolist()
-        self.rProtLength = parent.rData[self.cDateC]['PI']['ProtLength']
-        self.rProtLoc    = parent.rData[self.cDateC]['PI']['ProtLoc']
+        data = getattr(parent.rData, self.cDateC)
+        self.rProtLength = data.protLength
+        self.rProtLoc    = data.protLoc
         menuData         = self.SetMenuDate()
         #------------------------------>
         super().__init__(parent)
@@ -2087,7 +2089,8 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
             parent.cSection, parent.rDateC, fileN, [0,1])
         self.rLabel = self.rData.columns.unique(level=1).tolist()
         self.rIdx   = {}
-        self.rProtLength = parent.rData[self.cDateC]['PI']['ProtLength']
+        data = getattr(parent.rData, self.cDateC)
+        self.rProtLength = data.protLength
         menuData = self.SetMenuDate()
         #------------------------------>
         super().__init__(parent)

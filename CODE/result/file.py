@@ -403,43 +403,17 @@ class UMSAPFile():
         return plotData
     #---
 
-    def ConfigureDataTarProt(self) -> dict:
+    def ConfigureDataTarProt(self) -> cMethod.BaseAnalysis:
         """Configure a Targeted Proteolysis section.
 
             Returns
             ------
-            dict
-            {
-                'Error': ['Date1',...], # Analysis containing errors.
-                'Date1': {
-                    'DF' : pd.DataFrame with the data to plot,
-                    'PI' : { dict with information for the plotting window
-                        'Exp'       : list with the experiment's names,
-                        'Ctrl'      : name of the control,
-                        'Alpha'     : alpha value,
-                        'ProtLength': length of the recombinant protein,
-                        'ProtLoc'   : list with the location of the native protein,
-                        'ProtDelta' : value to calculate native residue numbers as
-                                        resN_Nat = resN_Rec + ProtDelta,
-                        'Prot'      : name of the Target Protein,
-                    },
-                    'Cpr': 'File name',
-                    'CEvol: 'File name',
-                    'AA': {
-                        'Date': 'File name',
-                        'DateN': 'File name',
-                    },
-                    'Hist' : {
-                        'Date': 'File name',
-                        'DateN': 'File name',
-                    },
-                },
-                'DateN': {},
-            }
+            cMethod.BaseAnalysis
+                For each Targeted Proteolysis a new attribute 'Date' is added
+                with value tarpMethod.TarpAnalysis.
         """
         #region ---------------------------------------------------> Variables
-        plotData = {}
-        plotData['Error']=[]
+        data = cMethod.BaseAnalysis()
         pathB = mConfig.tarp.nMod.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
@@ -450,33 +424,46 @@ class UMSAPFile():
             tPath = self.rStepDataP / f'{pathA}_{pathB}'
             #------------------------------>
             try:
-                #------------------------------>
                 df  = cFile.ReadCSV2DF(tPath/v['R'], header=[0,1])
-                #------------------------------> Plot Info
-                PI = {
-                    'Exp'       : v['CI']['Exp'],
-                    'Ctrl'      : v['CI']['ControlL'],
-                    'Alpha'     : v['CI']['Alpha'],
-                    'ProtLength': v['CI']['ProtLength'],
-                    'ProtLoc'   : v['CI']['ProtLoc'],
-                    'ProtDelta' : v['CI']['ProtDelta'],
-                    'Prot'      : v['CI']['TargetProt'],
-                }
             except Exception:
-                plotData['Error'].append(k)
+                data.error.append(k)
                 continue
+            #------------------------------>
+            try:
+                exp        = v['CI']['Exp']
+                ctrl       = v['CI']['ControlL']
+                alpha      = v['CI']['Alpha']
+                protLength = v['CI']['ProtLength']
+                protLoc    = v['CI']['ProtLoc']
+                protDelta  = v['CI']['ProtDelta']
+                prot       = v['CI']['TargetProt']
+            except KeyError:
+                exp        = v['CI']['labelA']
+                ctrl       = v['CI']['ctrlName']
+                alpha      = v['CI']['alpha']
+                protLength = v['CI']['protLength']
+                protLoc    = v['CI']['protLoc']
+                protDelta  = v['CI']['protDelta']
+                prot       = v['CI']['targetProt']
             #------------------------------> Add to dict if no error
-            plotData[k] = {
-                'DF'   : df,
-                'PI'   : PI,
-                'AA'   : v.get('AA', {}),
-                'Hist' : v.get('Hist', {}),
-                'CpR'  : v['CpR'],
-                'CEvol': v['CEvol'],
-            }
+            setattr(data, k, tarpMethod.TarpAnalysis(
+                df         = df,
+                labelA     = exp,
+                ctrlName   = ctrl,
+                alpha      = alpha,
+                protLength = protLength,
+                protLoc    = protLoc,
+                protDelta  = protDelta,
+                targetProt = prot,
+                CpR        = v['CpR'],
+                CEvol      = v['CEvol'],
+                AA         = v.get('AA', {}),
+                Hist       = v.get('Hist', {})
+            ))
+            data.date.append(k)
         #endregion ----------------------------------------------> Plot & Menu
 
-        return plotData
+        return data
     #---
     #endregion ----------------------------------------------------> Configure
 
@@ -663,6 +650,8 @@ class UMSAPFile():
             if 'Sequences File' in k:
                 fileN = v
                 break
+        if not fileN:
+            fileN = self.rData[tSection][tDate]['CI']['seqFileN']
         #endregion ---------------------------------------------> Path
 
         #region --------------------------------------------------->
