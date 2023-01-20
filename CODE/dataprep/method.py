@@ -38,7 +38,7 @@ class UserData(cMethod.BaseUserData):
     #region ---------------------------------------------------------> Options
     dO:list = field(default_factory=lambda:
         ['iFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift',
-         'width', 'ocColumn', 'dfColumnR', 'dfColumnF', 'dfResCtrlFlat',
+         'width', 'ocResCtrlFlat', 'dfColumnR', 'dfColumnF', 'dfResCtrlFlat',
         ])
     longestKey:int = 20                                                         # Length of the longest Key in dI
     #endregion ------------------------------------------------------> Options

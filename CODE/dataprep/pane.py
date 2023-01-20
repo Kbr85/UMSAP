@@ -206,20 +206,19 @@ class DataPrep(cPane.BaseConfPanel):
             True
         """
         #region -------------------------------------------------> Fill Fields
-        if dataI:
-            self.wUFile.wTc.SetValue(str(dataI.uFile))
-            self.wIFile.wTc.SetValue(str(dataI.iFile))
-            self.wId.wTc.SetValue(dataI.ID)
-            self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
-            self.wTransMethod.wCb.SetValue(dataI.tran)
-            self.wNormMethod.wCb.SetValue(dataI.norm)
-            self.wImputationMethod.wCb.SetValue(dataI.imp)
-            self.wShift.wTc.SetValue(str(dataI.shift))
-            self.wWidth.wTc.SetValue(str(dataI.width))
-            self.wColAnalysis.wTc.SetValue(" ".join(map(str, dataI.ocColumn)))
-            #------------------------------>
-            self.OnIFileLoad('fEvent')
-            self.OnImpMethod('fEvent')
+        self.wUFile.wTc.SetValue(str(dataI.uFile))
+        self.wIFile.wTc.SetValue(str(dataI.iFile))
+        self.wId.wTc.SetValue(dataI.ID)
+        self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
+        self.wTransMethod.wCb.SetValue(dataI.tran)
+        self.wNormMethod.wCb.SetValue(dataI.norm)
+        self.wImputationMethod.wCb.SetValue(dataI.imp)
+        self.wShift.wTc.SetValue(str(dataI.shift))
+        self.wWidth.wTc.SetValue(str(dataI.width))
+        self.wColAnalysis.wTc.SetValue(" ".join(map(str, dataI.ocResCtrlFlat)))
+        #------------------------------>
+        self.OnIFileLoad('fEvent')
+        self.OnImpMethod('fEvent')
         #endregion ----------------------------------------------> Fill Fields
 
         return True
@@ -270,13 +269,13 @@ class DataPrep(cPane.BaseConfPanel):
             self.wColAnalysis.wTc.GetValue(), numType='int', sep=' ')
         resCtrlFlat = [x for x in range(0, len(colAnalysis))]
         dI = {
-            'iFileN'  : self.cLiFile,
-            'ID'      : self.cLId,
-            'cero'    : self.cLCeroTreatD,
-            'tran'    : self.cLTransMethod,
-            'norm'    : self.cLNormMethod,
-            'imp'     : self.cLImputation,
-            'ocColumn': self.cLColAnalysis,
+            'iFileN'       : self.cLiFile,
+            'ID'           : self.cLId,
+            'cero'         : self.cLCeroTreatD,
+            'tran'         : self.cLTransMethod,
+            'norm'         : self.cLNormMethod,
+            'imp'          : self.cLImputation,
+            'ocResCtrlFlat': self.cLColAnalysis,
         }
         if impMethod == mConfig.data.lONormDist:
             dI['shift'] = self.cLShift
@@ -296,6 +295,7 @@ class DataPrep(cPane.BaseConfPanel):
             shift         = float(self.wShift.wTc.GetValue()),
             width         = float(self.wWidth.wTc.GetValue()),
             ocColumn      = colAnalysis,                                        # type: ignore
+            ocResCtrlFlat = colAnalysis,                                        # type: ignore
             dfColumnR     = resCtrlFlat,
             dfColumnF     = resCtrlFlat,
             dfResCtrlFlat = resCtrlFlat,

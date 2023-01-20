@@ -38,15 +38,17 @@ if TYPE_CHECKING:
 #endregion ----------------------------------------------------------> Imports
 
 
-LIT_Comp    = Literal['lt', 'le', 'e', 'ge', 'gt']
-LIT_CompEq  = Literal['e', 'ne']
-LIT_NumType = Literal['int', 'float']
-LIT_Region  = Literal['start', 'end']
-LIT_Tran    = Literal['', 'None', 'Log2']
-LIT_Norm    = Literal['', 'None', 'Median']
-LIT_Imp     = Literal['', 'None', 'Normal Distribution']
-LIT_Corr    = Literal['', 'Pearson', 'Kendall', 'Spearman']
-
+LIT_Comp       = Literal['lt', 'le', 'e', 'ge', 'gt']
+LIT_CompEq     = Literal['e', 'ne']
+LIT_NumType    = Literal['int', 'float']
+LIT_Region     = Literal['start', 'end']
+LIT_Tran       = Literal['', 'None', 'Log2']
+LIT_Norm       = Literal['', 'None', 'Median']
+LIT_Imp        = Literal['', 'None', 'Normal Distribution']
+LIT_Corr       = Literal['', 'Pearson', 'Kendall', 'Spearman']
+LIT_CorrectedP = Literal['', 'None', 'Bonferroni', 'Sidak', 'Holm - Sidak',
+                         'Holm', 'Simes - Hochberg', 'Hommel',
+                         'Benjamini - Hochberg', 'Benjamini - Yekutieli']
 
 #region ------------------------------------------------------> String Methods
 def StrNow(dtFormat:str=mConfig.core.dtFormat) -> str:
@@ -1270,22 +1272,38 @@ class BaseUserData():
     shift:float    = float(mConfig.data.Shift)                                  # Center shift
     width:float    = float(mConfig.data.Width)                                  # Stdev value
     targetProt:str = ''                                                         # Target Protein
-    scoreVal:int   = 0                                                          # Minimum Score value
+    scoreVal:float = 0                                                          # Minimum Score value
+    #------------------------------> Statistic options
+    rawInt:bool    = False                                                      # Raw intensity or ration of intensity
+    indSample:bool = False                                                      # Samples are independent or not
+    alpha:float    = 0                                                          # Significance level
+    correctedP:LIT_CorrectedP = ''                                              # Method to correct P values for multiple test
+    #------------------------------> Result - Control
+    labelA:list[str] = field(default_factory=list)
+    labelB:list[str] = field(default_factory=list)
+    ctrlType:str     = ''
+    ctrlName:str     = ''
     #------------------------------> Correlation Analysis
-    corr:LIT_Corr  = ''                                                         # Correlation method
+    corr:LIT_Corr = ''                                                         # Correlation method
     #------------------------------> Further Analysis
     posAA:Optional[int] = None                                                  # Position number for AA analysis
     winHist:list[int]   = field(default_factory=list)                           # Windows for Histograms
     #------------------------------> Column numbers in the original (oc) and short (df) dataframe
-    ocColumn:list[int]      = field(default_factory=list)                       # Selected columns ALL
     ocTargetProt:int        = -1                                                # Search here for targetProt
-    dfColumnR:list[int]     = field(default_factory=list)                       # Columns in which 0 and/or '' will be replaced with NA
-    dfColumnF:list[int]     = field(default_factory=list)                       # Selected columns with only Float values
+    ocGene:int              = -1                                                # Search here for Gene names
+    ocScore:int             = -1                                                # Search here for Score values
+    ocExcludeR:list[int]    = field(default_factory=list)                       # Search here for values to exclude rows in data from analysis
+    ocColumn:list[int]      = field(default_factory=list)                       # All columns that will be extracted from original data
+    ocResCtrl:list          = field(default_factory=list)                       # ResCtrl column as nested list of int
+    ocResCtrlFlat:list[int] = field(default_factory=list)                       # ResCtrl columns as flat list
     dfTargetProt:int        = -1                                                # Search here for targetProt
+    dfGene:int              = -1                                                # Search here for Gene names
     dfScore:int             = -1                                                # Search here for Score values
     dfExcludeR:list[int]    = field(default_factory=list)                       # Search here for values to exclude rows in data from analysis
-    dfResCtrlFlat:list[int] = field(default_factory=list)                       # Selected columns with only Float values as a flat list
-
+    dfColumnR:list[int]     = field(default_factory=list)                       # Columns in which 0 and/or '' will be replaced with NA
+    dfColumnF:list[int]     = field(default_factory=list)                       # Columns with only Float values
+    dfResCtrl:list          = field(default_factory=list)                       # ResCtrl columns as nested list of int
+    dfResCtrlFlat:list[int] = field(default_factory=list)                       # ResCtrl columns as flat list
     #------------------------------>
     protLoc:tuple[int,int]              = (-1, -1)                              # Location of the Native Sequence in the Recombinant Sequence
     protLength:tuple[int,Optional[int]] = (1, None)                             # Length of Recombinant and Natural Protein

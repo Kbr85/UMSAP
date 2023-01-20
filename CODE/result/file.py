@@ -144,7 +144,7 @@ class UMSAPFile():
             try:
                 numColList = v['CI']['oc']['Column']                            # Keep support for previous versions
             except KeyError:
-                numColList = v['CI']['ocColumn']
+                numColList = v['CI']['ocResCtrlFlat']
             numCol = len(numColList)
             #------------------------------>
             if numCol != df.shape[0]:
@@ -229,7 +229,7 @@ class UMSAPFile():
         try:
             numColList = self.rData[tSection][tDate]['CI']['oc']['Column']
         except KeyError:
-            numColList = self.rData[tSection][tDate]['CI']['ocColumn']
+            numColList = self.rData[tSection][tDate]['CI']['ocResCtrlFlat']
         #------------------------------>
         setattr(data, tDate, dataMethod.DataPrepAnalysis(
             dp         = dp,
@@ -270,7 +270,7 @@ class UMSAPFile():
             try:
                 numColList = v['CI']['oc']['Column']
             except KeyError:
-                numColList = v['CI']['ocColumn']
+                numColList = v['CI']['ocResCtrlFlat']
             #------------------------------>
             setattr(data, k, dataMethod.DataPrepAnalysis(
                 dp         = dp,
@@ -498,7 +498,7 @@ class UMSAPFile():
                 'Width'      : 'width',
                 'CorrMethod' : 'corr',
                 'oc'         : {
-                    'Column' : 'ocColumn',
+                    'Column' : 'ocResCtrlFlat',
                 },
                 'df'         : {
                     'ColumnR'    : 'dfColumnR',

@@ -300,38 +300,37 @@ class CorrA(cPane.BaseConfPanel):
             bool
         """
         #region --------------------------------------------------------> Add
-        if dataI:
-            self.wUFile.wTc.SetValue(str(dataI.uFile))
-            self.wIFile.wTc.SetValue(str(dataI.iFile))
-            self.wId.wTc.SetValue(dataI.ID)
-            self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
-            self.wTransMethod.wCb.SetValue(dataI.tran)
-            self.wNormMethod.wCb.SetValue(dataI.norm)
-            self.wImputationMethod.wCb.SetValue(dataI.imp)
-            self.wShift.wTc.SetValue(str(dataI.shift))
-            self.wWidth.wTc.SetValue(str(dataI.width))
-            #------------------------------>
-            if dataI.iFile.is_file() and dataI.iFile.exists:
-                #------------------------------> Add columns with the same order
-                l = []
-                for k in dataI.ocColumn:
-                    if len(l) == 0:
-                        l.append(k)
-                        continue
-                    #------------------------------>
-                    if k > l[-1]:
-                        l.append(k)
-                        continue
-                    #------------------------------>
-                    self.wLCtrlI.SelectList(l)
-                    self.OnAdd('fEvent')
-                    #------------------------------>
-                    l = [k]
-                #------------------------------> Last past
+        self.wUFile.wTc.SetValue(str(dataI.uFile))
+        self.wIFile.wTc.SetValue(str(dataI.iFile))
+        self.wId.wTc.SetValue(dataI.ID)
+        self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
+        self.wTransMethod.wCb.SetValue(dataI.tran)
+        self.wNormMethod.wCb.SetValue(dataI.norm)
+        self.wImputationMethod.wCb.SetValue(dataI.imp)
+        self.wShift.wTc.SetValue(str(dataI.shift))
+        self.wWidth.wTc.SetValue(str(dataI.width))
+        #------------------------------>
+        if dataI.iFile.is_file() and dataI.iFile.exists:
+            #------------------------------> Add columns with the same order
+            l = []
+            for k in dataI.ocResCtrlFlat:
+                if len(l) == 0:
+                    l.append(k)
+                    continue
+                #------------------------------>
+                if k > l[-1]:
+                    l.append(k)
+                    continue
+                #------------------------------>
                 self.wLCtrlI.SelectList(l)
                 self.OnAdd('fEvent')
-            #------------------------------>
-            self.OnImpMethod('fEvent')
+                #------------------------------>
+                l = [k]
+            #------------------------------> Last past
+            self.wLCtrlI.SelectList(l)
+            self.OnAdd('fEvent')
+        #------------------------------>
+        self.OnImpMethod('fEvent')
         #endregion -----------------------------------------------------> Add
 
         return True
@@ -379,14 +378,14 @@ class CorrA(cPane.BaseConfPanel):
         colF = list(range(0, len(col)))
         impMethod = self.wImputationMethod.wCb.GetValue()
         dI = {
-            'iFileN'  : self.cLiFile,
-            'ID'      : self.cLId,
-            'cero'    : self.cLCeroTreatD,
-            'tran'    : self.cLTransMethod,
-            'norm'    : self.cLNormMethod,
-            'imp'     : self.cLImputation,
-            'corr'    : self.cLCorrMethod,
-            'ocColumn': 'Selected Columns',
+            'iFileN'       : self.cLiFile,
+            'ID'           : self.cLId,
+            'cero'         : self.cLCeroTreatD,
+            'tran'         : self.cLTransMethod,
+            'norm'         : self.cLNormMethod,
+            'imp'          : self.cLImputation,
+            'corr'         : self.cLCorrMethod,
+            'ocResCtrlFlat': 'Selected Columns',
         }
         if impMethod == mConfig.data.lONormDist:
             dI['shift'] = self.cLShift
@@ -407,6 +406,7 @@ class CorrA(cPane.BaseConfPanel):
             width         = float(self.wWidth.wTc.GetValue()),
             corr          = self.wCorrMethod.wCb.GetValue(),
             ocColumn      = col,
+            ocResCtrlFlat = col,
             dfColumnR     = colF,
             dfColumnF     = colF,
             dfResCtrlFlat = colF,
