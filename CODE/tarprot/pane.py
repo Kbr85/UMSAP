@@ -402,7 +402,7 @@ class TarProt(cPane.BaseConfPanelMod2):
             'alpha'       : self.cLAlpha,
             'posAA'       : self.cLAAPos,
             'winHist'     : self.cLHist,
-            'ocSeq'       : self.cLSeqCol,
+            'ocSeq'       : f'{self.cLSeqCol} Column',
             'ocTargetProt': self.cLDetectedProt,
             'ocScore'     : self.cLScoreCol,
             'ocResCtrl'   : mConfig.core.lStResCtrlS,

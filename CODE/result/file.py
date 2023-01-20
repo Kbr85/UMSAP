@@ -646,12 +646,13 @@ class UMSAPFile():
         #region ------------------------------------------------> Path
         fileN = ''
         #------------------------------>
-        for k,v in self.rData[tSection][tDate]['I'].items():
-            if 'Sequences File' in k:
-                fileN = v
-                break
-        if not fileN:
+        try:
             fileN = self.rData[tSection][tDate]['CI']['seqFileN']
+        except KeyError:                                                        # Keep backward compatibility
+            for k,v in self.rData[tSection][tDate]['I'].items():
+                if 'Sequences File' in k:
+                    fileN = v
+                    break
         #endregion ---------------------------------------------> Path
 
         #region --------------------------------------------------->
