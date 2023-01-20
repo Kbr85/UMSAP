@@ -47,11 +47,11 @@ class UserData(cMethod.BaseUserData):
         mConfig.tarp.dfcolBLevel)
     #------------------------------>
     dO:list = field(default_factory=lambda:                                     # Options for output printing
-        ['iFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift', 'width',
-         'scoreVal', 'indSample', 'alpha', 'correctedP', 'ocTargetProt',
-         'ocGene', 'ocScore', 'ocExcludeR', 'labelA', 'labelB', 'ctrlType',
-         'ctrlName', 'resCtrl', 'dfTargetProt', 'dfGene', 'dfScore',
-         'dfExcludeR', 'dfResCtrl',
+        ['iFileN', 'seqFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift',
+         'width', 'targetProt', 'scoreVal', 'alpha', 'posAA', 'winHist',
+         'ocSeq', 'ocTargetProt', 'ocScore', 'resCtrl', 'labelA', 'ctrlName',
+         'dfSeq', 'dfTargetProt', 'dfScore', 'dfResCtrl', 'protLength',
+         'protLoc', 'protDelta',
         ])
     longestKey:int = 17                                                         # Length of the longest Key in dI
     #endregion ------------------------------------------------------> Options

@@ -319,35 +319,43 @@ class TarProt(cPane.BaseConfPanelMod2):
             -------
             bool
         """
+        #region --------------------------------------------------->
+        posAA   = str(dataI.posAA) if dataI.posAA is not None else ''
+        if dataI.winHist is not None:
+            winHist = " ".join(map(str, dataI.winHist))
+        else:
+            winHist = ''
+        #endregion ------------------------------------------------>
+
         #region -------------------------------------------------> Fill Fields
-        # #------------------------------> Files
-        # self.wUFile.wTc.SetValue(str(dataI['uFile']))
-        # self.wIFile.wTc.SetValue(str(iFile))
-        # self.wSeqFile.wTc.SetValue(str(seqFile))
-        # self.wId.wTc.SetValue(dataI['CI']['ID'])
-        # #------------------------------> Data Preparation
-        # self.wCeroB.wCb.SetValue(dataI['I'][self.cLCeroTreatD])
-        # self.wTransMethod.wCb.SetValue(dataI['I'][self.cLTransMethod])
-        # self.wNormMethod.wCb.SetValue(dataI['I'][self.cLNormMethod])
-        # self.wImputationMethod.wCb.SetValue(dataI['I'][self.cLImputation])
-        # self.wShift.wTc.SetValue(dataI['I'].get(self.cLShift, self.cValShift))
-        # self.wWidth.wTc.SetValue(dataI['I'].get(self.cLWidth, self.cValWidth))
-        # #------------------------------> Values
-        # self.wTargetProt.wTc.SetValue(dataI['I'][self.cLTargetProt])
-        # self.wScoreVal.wTc.SetValue(dataI['I'][self.cLScoreVal])
-        # self.wAlpha.wTc.SetValue(dataI['I'][self.cLAlpha])
-        # self.wAAPos.wTc.SetValue(dataI['I'][self.cLAAPos])
-        # self.wHist.wTc.SetValue(dataI['I'][self.cLHist])
-        # #------------------------------> Columns
-        # self.wSeqCol.wTc.SetValue(dataI['I'][f'{self.cLSeqCol} Column'])
-        # self.wDetectedProt.wTc.SetValue(dataI['I'][self.cLDetectedProt])
-        # self.wScore.wTc.SetValue(dataI['I'][self.cLScoreCol])
-        # self.wTcResults.SetValue(dataI['I'][mConfig.core.lStResCtrlS])
-        # self.rLbDict[0] = dataI['I'][self.cLExp]
-        # self.rLbDict['Control'] = dataI['I'][f"Control {self.cLCtrlName}"]
-        # #------------------------------>
-        # self.OnIFileLoad('fEvent')
-        # self.OnImpMethod('fEvent')
+        #------------------------------> Files
+        self.wUFile.wTc.SetValue(str(dataI.uFile))
+        self.wIFile.wTc.SetValue(str(dataI.iFile))
+        self.wSeqFile.wTc.SetValue(str(dataI.seqFile))
+        self.wId.wTc.SetValue(dataI.ID)
+        #------------------------------> Data Preparation
+        self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
+        self.wTransMethod.wCb.SetValue(dataI.tran)
+        self.wNormMethod.wCb.SetValue(dataI.norm)
+        self.wImputationMethod.wCb.SetValue(dataI.imp)
+        self.wShift.wTc.SetValue(str(dataI.shift))
+        self.wWidth.wTc.SetValue(str(dataI.width))
+        #------------------------------> Values
+        self.wTargetProt.wTc.SetValue(dataI.targetProt)
+        self.wScoreVal.wTc.SetValue(str(dataI.scoreVal))
+        self.wAlpha.wTc.SetValue(str(dataI.alpha))
+        self.wAAPos.wTc.SetValue(posAA)
+        self.wHist.wTc.SetValue(winHist)
+        #------------------------------> Columns
+        self.wSeqCol.wTc.SetValue(str(dataI.ocSeq))
+        self.wDetectedProt.wTc.SetValue(str(dataI.ocTargetProt))
+        self.wScore.wTc.SetValue(str(dataI.ocScore))
+        self.wTcResults.SetValue(dataI.resCtrl)
+        self.rLbDict[0] = dataI.labelA
+        self.rLbDict['Control'] = list(dataI.ctrlName)
+        #------------------------------>
+        self.OnIFileLoad('fEvent')
+        self.OnImpMethod('fEvent')
         #endregion ----------------------------------------------> Fill Fields
 
         return True
@@ -383,7 +391,7 @@ class TarProt(cPane.BaseConfPanelMod2):
         #--------------> dI
         dI = {
             'iFileN'      : self.cLiFile,
-            'seqFile'     : self.cLSeqFile,
+            'seqFileN'    : self.cLSeqFile,
             'ID'          : self.cLId,
             'cero'        : self.cLCeroTreatD,
             'tran'        : self.cLTransMethod,
@@ -394,7 +402,7 @@ class TarProt(cPane.BaseConfPanelMod2):
             'alpha'       : self.cLAlpha,
             'posAA'       : self.cLAAPos,
             'winHist'     : self.cLHist,
-            'ocPept'      : self.cLSeqCol,
+            'ocSeq'       : self.cLSeqCol,
             'ocTargetProt': self.cLDetectedProt,
             'ocScore'     : self.cLScoreCol,
             'ocResCtrl'   : mConfig.core.lStResCtrlS,
@@ -431,6 +439,7 @@ class TarProt(cPane.BaseConfPanelMod2):
             ocSeq         = seqCol,
             ocTargetProt  = detectedProt,
             ocScore       = scoreCol,
+            resCtrl       = self.wTcResults.GetValue(),
             ocResCtrl     = resCtrl,
             ocColumn      = [seqCol, detectedProt, scoreCol] + resCtrlFlat,
             dfSeq         = 0,
@@ -440,6 +449,7 @@ class TarProt(cPane.BaseConfPanelMod2):
             dfResCtrlFlat = resCtrlDFFlat,
             dfColumnR     = resCtrlDFFlat,
             dfColumnF     = [2] + resCtrlDFFlat,
+            dI            = dI,
         )
         #endregion -------------------------------------------------------> do
 

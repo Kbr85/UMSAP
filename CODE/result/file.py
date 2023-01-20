@@ -27,6 +27,7 @@ from core     import check  as cCheck
 from corr     import method as corrMethod
 from dataprep import method as dataMethod
 from protprof import method as protMethod
+from tarprot  import method as tarpMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -61,6 +62,7 @@ class UMSAPFile():
         mConfig.corr.nUtil : corrMethod.UserData,
         mConfig.data.nUtil : dataMethod.UserData,
         mConfig.prot.nMod  : protMethod.UserData,
+        mConfig.tarp.nMod  : tarpMethod.UserData,
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -500,8 +502,8 @@ class UMSAPFile():
             """"""
             #region ------------------------------------------> Key Translator
             kTranslator = {
-                'uFile': 'uFile',
-                'ID'   : 'ID',
+                'uFile'  : 'uFile',
+                'ID'     : 'ID',
                 #------------------------------>
                 'Cero'       : 'cero',
                 'TransMethod': 'tran',
@@ -516,29 +518,44 @@ class UMSAPFile():
                 'IndS'      : 'indSample',
                 'Alpha'     : 'alpha',
                 'CorrectP'  : 'correctedP',
+                'TargetProt': 'targetProt',
+                'AA'        : 'posAA',
+                'Hist'      : 'winHist',
                 #------------------------------>
                 'Cond'    : 'labelA',
                 'RP'      : 'labelB',
+                'Exp'     : 'labelA',
                 'ControlT': 'ctrlType',
                 'ControlL': 'ctrlName',
                 'oc'      : {
-                    'DetectedP': 'ocTargetProt',
-                    'GeneName' : 'ocGene',
-                    'ScoreCol' : 'ocScore',
-                    'ExcludeR' : 'ocExcludeR',
-                    'ResCtrl'  : 'ocResCtrl',
-                    'Column'   : 'ocColumn',
+                    'SeqCol'       : 'ocSeq',
+                    'TargetProtCol': 'ocTargetProt',
+                    'DetectedP'    : 'ocTargetProt',
+                    'GeneName'     : 'ocGene',
+                    'ScoreCol'     : 'ocScore',
+                    'ExcludeR'     : 'ocExcludeR',
+                    'ResCtrl'      : 'ocResCtrl',
+                    'Column'       : 'ocColumn',
                 },
-                'df'         : {
-                    'DetectedP'  : 'dfTargetProt',
-                    'GeneName'   : 'dfGene',
-                    'ScoreCol'   : 'dfScore',
-                    'ExcludeR'   : 'dfExcludeR',
-                    'ResCtrl'    : 'dfResCtrl',
-                    'ColumnR'    : 'dfColumnR',
-                    'ColumnF'    : 'dfColumnF',
-                    'ResCtrlFlat': 'dfResCtrlFlat',
+                'df' : {
+                    'SeqCol'       : 'dfSeq',
+                    'TargetProtCol': 'dfTargetProt',
+                    'DetectedP'    : 'dfTargetProt',
+                    'GeneName'     : 'dfGene',
+                    'ScoreCol'     : 'dfScore',
+                    'ExcludeR'     : 'dfExcludeR',
+                    'ResCtrl'      : 'dfResCtrl',
+                    'ColumnR'      : 'dfColumnR',
+                    'ColumnF'      : 'dfColumnF',
+                    'ResCtrlFlat'  : 'dfResCtrlFlat',
                 },
+                'dfo': {
+                    'NC' : 'dfNC',
+                    'NCF': 'dfNCF',
+                },
+                'ProtLength': 'protLength',
+                'ProtLoc'   : 'protLoc',
+                'ProtDelta' : 'protDelta',
             }
             #endregion ---------------------------------------> Key Translator
 
@@ -564,6 +581,9 @@ class UMSAPFile():
                     data['iFile'] = self.rInputFileP / fileN
                 if 'Results - Control' in k:
                     data['resCtrl'] = self.rData[tSection][tDate]['I'][k]
+                if 'Sequences File' in k:
+                    fileN = self.rData[tSection][tDate]['I'][k]
+                    data['seqFile'] = self.rInputFileP / fileN
             #endregion -------------------------------------------------> Data
 
             return data
@@ -576,9 +596,10 @@ class UMSAPFile():
         if cCheck.VersionCompare('2.2.1', fileV)[0]:
             data = OldVersion()                                                 # Old Files <= 2.2.0 with json format
         else:
-            data          = self.rData[tSection][tDate]['CI']                   # > 2.2.0
-            data['uFile'] = self.rFileP
-            data['iFile'] = self.rInputFileP / data['iFileN']
+            data            = self.rData[tSection][tDate]['CI']                 # > 2.2.0
+            data['uFile']   = self.rFileP
+            data['iFile']   = self.rInputFileP / data['iFileN']
+            data['seqFile'] = self.rInputFileP / data['seqFileN']
         #endregion -----------------------------------------------------> Data
 
         #region ---------------------------------------------------> DataClass
