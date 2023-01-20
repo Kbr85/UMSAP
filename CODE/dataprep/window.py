@@ -26,10 +26,11 @@ from scipy  import stats
 import wx
 
 from config.config import config as mConfig
-from core import file      as cFile
-from core import statistic as cStatistic
-from core import window    as cWindow
-from main import menu      as mMenu
+from core     import file      as cFile
+from core     import statistic as cStatistic
+from core     import window    as cWindow
+from main     import menu      as mMenu
+from dataprep import method    as dataMethod
 
 if TYPE_CHECKING:
     from result import window as resWindow
@@ -313,6 +314,8 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             self.rDateC = self.rDate[0]
             self.cTitle = (
                 f"{parent.cTitle} - {self.cSection} - {self.rDateC}")           # type: ignore
+        #------------------------------>
+        self.rDataC:dataMethod.DataPrepAnalysis = getattr(self.rData, self.rDateC)
         #endregion --------------------------------------------> Set Variables
 
         return True
@@ -380,10 +383,9 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         #endregion -----------------------------------------------> Delete old
 
         #region ----------------------------------------------------> Get Data
-        dataP = getattr(self.rData, self.rDateC)
         data = []
         for k,n in enumerate(self.rDataPlot['dfF'].columns.values.tolist()):
-            colN = str(dataP.numColList[k])
+            colN = str(self.rDataC.numColList[k])
             data.append([colN, n])
         #endregion -------------------------------------------------> Get Data
 
@@ -648,8 +650,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             self.rDataPlot = data.dp
             self.rDateC = tDate
         else:
-            data = getattr(self.rData, self.rDateC)
-            self.rDataPlot = data.dp
+            self.rDataPlot = self.rDataC.dp
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> wx.ListCtrl
@@ -660,14 +661,14 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         self.ClearPlots()
         #endregion -----------------------------------------------------> Plot
 
-        #region ---------------------------------------------------> Text
+        #region --------------------------------------------------------> Text
         self.wText.Clear()
-        #endregion ------------------------------------------------> Text
+        #endregion -----------------------------------------------------> Text
 
-        #region ---------------------------------------------------> Title
+        #region -------------------------------------------------------> Title
         if self.rFromUMSAPFile:
             self.PlotTitle()
-        #endregion ------------------------------------------------> Title
+        #endregion ----------------------------------------------------> Title
 
         return True
     #---

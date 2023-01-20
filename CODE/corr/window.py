@@ -22,6 +22,7 @@ import matplotlib as mpl
 from config.config import config as mConfig
 from core import method as cMethod
 from core import window as cWindow
+from corr import method as corrMethod
 from main import menu   as mMenu
 
 if TYPE_CHECKING:
@@ -88,6 +89,7 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         self.ReportPlotDataError()
         #------------------------------>
         self.rDateC = self.rDate[0]
+        self.rDataC:corrMethod.CorrAnalysis = getattr(self.rData, self.rDateC)
         self.rBar   = False
         self.rCol   = True
         self.rNorm  = mpl.colors.Normalize(vmin=-1, vmax=1)
@@ -206,11 +208,13 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
             -------
             bool
         """
+        #region -------------------------------------------------------->
         data = getattr(self.rData, tDate)
         self.rSelColName = data.df.columns.values
         self.rSelColNum  = data.numColList
         self.rSelColIdx  = [x for x,_ in enumerate(self.rSelColNum)]
-        #------------------------------>
+        #endregion ----------------------------------------------------->
+
         return True
     #---
 
@@ -241,8 +245,9 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
             self.SetColDetails(tDate)
         #------------------------------>
         self.rDateC = tDate
-        self.rCol = col if col is not None else self.rCol
-        self.rBar = bar if bar is not None else self.rBar
+        self.rDataC = getattr(self.rData, self.rDateC)
+        self.rCol   = col if col is not None else self.rCol
+        self.rBar   = bar if bar is not None else self.rBar
         #endregion ----------------------------------------> Update parameters
 
         #region --------------------------------------------------------> Axis
@@ -250,9 +255,7 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         #endregion -----------------------------------------------------> Axis
 
         #region --------------------------------------------------------> Plot
-        data = getattr(self.rData, self.rDateC)
-        #------------------------------>
-        self.rDataPlot = data.df.iloc[self.rSelColIdx,self.rSelColIdx]
+        self.rDataPlot = self.rDataC.df.iloc[self.rSelColIdx,self.rSelColIdx]
         #------------------------------>
         self.wPlot[0].rAxes.pcolormesh(
             self.rDataPlot,
@@ -360,15 +363,14 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         #endregion ------------------------------------------------> All
 
         #region -----------------------------------------------------> Options
-        data   = getattr(self.rData, self.rDateC)
         allCol = []
         #------------------------------>
-        for k,c in enumerate(data.df.columns):
-            allCol.append([str(data.numColList[k]), c])
+        for k,c in enumerate(self.rDataC.df.columns):
+            allCol.append([str(self.rDataC.numColList[k]), c])
         #------------------------------>
         selCol = []
         for c in self.rSelColIdx:
-            selCol.append([str(data.numColList[c]), data.df.columns[c]])
+            selCol.append([str(self.rDataC.numColList[c]), self.rDataC.df.columns[c]])
         #endregion --------------------------------------------------> Options
 
         #region -------------------------------------------------> Get New Sel
@@ -389,10 +391,10 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
             self.rSelColName = []
             #------------------------------>
             for k in self.rSelColNum:
-                tIDX = data.numColList.index(int(k))
+                tIDX = self.rDataC.numColList.index(int(k))
                 self.rSelColIdx.append(tIDX)
                 #------------------------------>
-                self.rSelColName.append(data.df.columns[tIDX])
+                self.rSelColName.append(self.rDataC.df.columns[tIDX])
             #------------------------------>
             self.UpdateResultWindow()
         #endregion ----------------------------------------------> Get New Sel
