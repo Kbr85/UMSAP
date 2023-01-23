@@ -700,6 +700,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         #--------------> TarProt
         self.rObj = self.cParent.rObj                                           # type: ignore
         self.rData = self.rObj.dConfigure[self.cSection]()
+        self.rDataC = getattr(self.rData, self.rDateC)
         #--------------> Menu
         _, menuData = self.SetDateMenuDate()
         self.mBar.mTool.mFurtherA.UpdateFurtherAnalysis(
@@ -801,8 +802,9 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         #--------------> UMSAPControl
         self.cParent.UpdateFileContent()                                        # type: ignore
         #--------------> TarProt
-        self.rObj = self.cParent.rObj                                           # type: ignore
-        self.rData = self.rObj.dConfigure[self.cSection]()
+        self.rObj   = self.cParent.rObj                                         # type: ignore
+        self.rData  = self.rObj.dConfigure[self.cSection]()
+        self.rDataC = getattr(self.rData, self.rDateC)
         #--------------> Menu
         _, menuData = self.SetDateMenuDate()
         self.mBar.mTool.mFurtherA.UpdateFurtherAnalysis(

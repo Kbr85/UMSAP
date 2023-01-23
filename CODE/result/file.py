@@ -597,37 +597,6 @@ class UMSAPFile():
         return userData
     #---
 
-    def GetRecSeq(self, tSection:str, tDate:str) -> str:
-        """Get the recombinant sequence used in an analysis.
-
-            Parameters
-            ----------
-            tSection: str
-                Analysis performed, e.g. 'Correlation Analysis'
-            tDate: str
-                The date plus user-given Analysis ID
-                e.g. '20210325-112056 - bla'
-
-            Returns
-            -------
-            str
-        """
-        #region ------------------------------------------------> Path
-        fileN = ''
-        #------------------------------>
-        for k,v in self.rData[tSection][tDate]['I'].items():
-            if 'Sequences File' in k:
-                fileN = v
-                break
-        #endregion ---------------------------------------------> Path
-
-        #region --------------------------------------------------->
-        seqObj = cFile.FastaFile(self.rInputFileP/fileN)
-        #endregion ------------------------------------------------>
-
-        return seqObj.rSeqRec
-    #---
-
     def GetSeq(self, tSection:str, tDate:str) -> tuple[str, str]:
         """Get the sequences used in an analysis.
 
@@ -660,6 +629,28 @@ class UMSAPFile():
         #endregion ------------------------------------------------>
 
         return (seqObj.rSeqRec, seqObj.rSeqNat)
+    #---
+
+    def GetRecSeq(self, tSection:str, tDate:str) -> str:
+        """Get the recombinant sequence used in an analysis.
+
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate: str
+                The date plus user-given Analysis ID
+                e.g. '20210325-112056 - bla'
+
+            Returns
+            -------
+            str
+        """
+        #region --------------------------------------------------->
+        seqs = self.GetSeq(tSection, tDate)
+        #endregion ------------------------------------------------>
+
+        return seqs[0]
     #---
 
     def GetFAData(
