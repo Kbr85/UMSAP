@@ -315,7 +315,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             self.cTitle = (
                 f"{parent.cTitle} - {self.cSection} - {self.rDateC}")           # type: ignore
         #------------------------------>
-        self.rDataC:dataMethod.DataPrepAnalysis = getattr(self.rData, self.rDateC)
+        self.rDataC:dataMethod.DataAnalysis = getattr(self.rData, self.rDateC)
         #endregion --------------------------------------------> Set Variables
 
         return True

@@ -21,11 +21,12 @@ from typing  import Union
 import pandas as pd
 
 from config.config import config as mConfig
+from core     import check  as cCheck
 from core     import file   as cFile
 from core     import method as cMethod
-from core     import check  as cCheck
 from corr     import method as corrMethod
 from dataprep import method as dataMethod
+from limprot  import method as limpMethod
 from protprof import method as protMethod
 from tarprot  import method as tarpMethod
 #endregion ----------------------------------------------------------> Imports
@@ -63,6 +64,7 @@ class UMSAPFile():
         mConfig.data.nUtil : dataMethod.UserData,
         mConfig.prot.nMod  : protMethod.UserData,
         mConfig.tarp.nMod  : tarpMethod.UserData,
+        mConfig.limp.nMod  : limpMethod.UserData,
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -235,7 +237,7 @@ class UMSAPFile():
         except KeyError:
             numColList = self.rData[tSection][tDate]['CI']['ocResCtrlFlat']
         #------------------------------>
-        setattr(data, tDate, dataMethod.DataPrepAnalysis(
+        setattr(data, tDate, dataMethod.DataAnalysis(
             dp         = dp,
             numColList = numColList,
         ))
@@ -276,7 +278,7 @@ class UMSAPFile():
             except KeyError:
                 numColList = v['CI']['ocResCtrlFlat']
             #------------------------------>
-            setattr(data, k, dataMethod.DataPrepAnalysis(
+            setattr(data, k, dataMethod.DataAnalysis(
                 dp         = dp,
                 numColList = numColList,
             ))
@@ -342,34 +344,18 @@ class UMSAPFile():
         return data
     #---
 
-    def ConfigureDataLimProt(self) -> dict:
+    def ConfigureDataLimProt(self) -> cMethod.BaseAnalysis:
         """Configure a Limited Proteolysis section.
 
             Returns
             -------
-            dict
-            {
-                'Error': ['Date1',...], # Analysis containing errors.
-                'Date1': {
-                    'DF' : pd.DataFrame with the data to plot,
-                    'PI' : { dict with information for the plotting window
-                        'Bands'     : list with the band's names,
-                        'Lanes'     : list with the lane's names,
-                        'Alpha'     : alpha value,
-                        'ProtLength': length of the recombinant protein,
-                        'ProtLoc'   : list with the location of the native protein,
-                        'ProtDelta' : value to calculate native residue numbers as
-                                        resN_Nat = resN_Rec + ProtDelta,
-                        'Prot'      : name of the Target Protein,
-                    },
-                },
-                'DateN': {},
-            }
+            cMethod.BaseAnalysis
+                For each Limited Proteolysis a new attribute 'Date' is added
+                with value limpMethod.LimpAnalysis.
         """
         #region ---------------------------------------------------> Variables
-        plotData = {}
-        plotData['Error'] = []
-        pathB = mConfig.limp.nMod.replace(" ", "-")
+        plotData = cMethod.BaseAnalysis()
+        pathB    = mConfig.limp.nMod.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu
@@ -380,24 +366,38 @@ class UMSAPFile():
             #------------------------------>
             try:
                 df = cFile.ReadCSV2DF(tPath/v['R'], header=[0,1,2])
-                #------------------------------> Plot Info
-                PI = {
-                    'Bands'     : v['CI']['Band'],
-                    'Lanes'     : v['CI']['Lane'],
-                    'Alpha'     : v['CI']['Alpha'],
-                    'ProtLength': v['CI']['ProtLength'],
-                    'ProtLoc'   : v['CI']['ProtLoc'],
-                    'ProtDelta' : v['CI']['ProtDelta'],
-                    'Prot'      : v['CI']['TargetProt'],
-                }
             except Exception:
-                plotData['Error'].append(k)
+                plotData.error.append(k)
                 continue
             #------------------------------>
-            plotData[k] = {
-                'DF': df,
-                'PI': PI,
-            }
+            try:
+                labelB     = v['CI']['Band']
+                labelA     = v['CI']['Lane']
+                alpha      = v['CI']['Alpha']
+                protLength = v['CI']['ProtLength']
+                protLoc    = v['CI']['ProtLoc']
+                protDelta  = v['CI']['ProtDelta']
+                prot       = v['CI']['TargetProt']
+            except KeyError:
+                labelB     = v['CI']['labelB']
+                labelA     = v['CI']['labelA']
+                alpha      = v['CI']['alpha']
+                protLength = v['CI']['protLength']
+                protLoc    = v['CI']['protLoc']
+                protDelta  = v['CI']['protDelta']
+                prot       = v['CI']['TargetProt']
+            #------------------------------>
+            setattr(plotData, k, limpMethod.LimpAnalysis(
+                df         = df,
+                labelA     = labelA,
+                labelB     = labelB,
+                alpha      = alpha,
+                protLength = protLength,
+                protLoc    = protLoc,
+                protDelta  = protDelta,
+                targetProt = prot,
+            ))
+            plotData.date.append(k)
         #endregion ----------------------------------------------> Plot & Menu
 
         return plotData
@@ -586,7 +586,10 @@ class UMSAPFile():
             data            = self.rData[tSection][tDate]['CI']                 # > 2.2.0
             data['uFile']   = self.rFileP
             data['iFile']   = self.rInputFileP / data['iFileN']
-            data['seqFile'] = self.rInputFileP / data['seqFileN']
+            try:
+                data['seqFile'] = self.rInputFileP / data['seqFileN']
+            except KeyError:
+                pass
         #endregion -----------------------------------------------------> Data
 
         #region ---------------------------------------------------> DataClass

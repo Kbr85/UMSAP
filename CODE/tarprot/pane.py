@@ -469,9 +469,9 @@ class TarProt(cPane.BaseConfPanelMod2):
             -------
             bool
         """
-        #region -----------------------------------------------------> rDExtra
+        #region -----------------------------------------------------> Seq Obj
         setattr(self.rDO, 'seqFileObj', self.rSeqFileObj)
-        #endregion --------------------------------------------------> rDExtra
+        #endregion --------------------------------------------------> Seq Obj
 
         #region -----------------------------------------------------> TarProt
         if not super().RunAnalysis():

@@ -46,7 +46,7 @@ class UserData(cMethod.BaseUserData):
 
 
 @dataclass
-class DataPrepAnalysis():
+class DataAnalysis():
     """Data class to hold the info regarding a DataPrep in an UMSAP file."""
     #region --------------------------------------------------------> Options
     dp:dict[str,pd.DataFrame]                                                   # Results as dataframe
