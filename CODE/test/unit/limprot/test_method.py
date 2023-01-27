@@ -20,7 +20,6 @@ from pathlib import Path
 
 import pandas as pd
 
-from config.config import config as mConfig
 from core    import file   as cFile
 from limprot import method as limpMethod
 #endregion ----------------------------------------------------------> Imports
@@ -40,52 +39,40 @@ class Test_LimProt(unittest.TestCase):
     #region -----------------------------------------------------> Class Setup
     def setUp(self):
         """Set test"""
-        self.df = cFile.ReadCSV2DF(fileA)
-        self.dExtra  = {
-            'cLDFFirstThree' : mConfig.limp.dfcolFirstPart,
-            'cLDFThirdLevel' : mConfig.limp.dfcolCLevel,
-            'rSeqFileObj'    : cFile.FastaFile(fileB),
-        }
-        self.dict1 = {
-            'Cero': True,
-            'TransMethod': 'Log2',
-            'NormMethod': 'Median',
-            'ImpMethod': 'None',
-            'Shift': 1.8,
-            'Width': 0.3,
-            'TargetProt': 'Mis18alpha',
-            'ScoreVal': 25.0,
-            'Sample': 'i',
-            'Alpha': 0.05,
-            'Beta': 0.05,
-            'Gamma': 0.8,
-            'Theta': None,
-            'ThetaMax': 8.0,
-            'Lane': ['Lane1', 'Lane2'],
-            'Band': ['Band1', 'Band2'],
-            'ControlL': ['Ctrl'],
-            'oc': {
-                'SeqCol': 0,
-                'TargetProtCol': 34,
-                'ScoreCol': 42,
-                'ResCtrl': [[[69, 70, 71]], [[81, 82, 83], [78, 79, 80]], [[], [66, 67, 68]]],
-                'ColumnF': [42, 69, 70, 71, 81, 82, 83, 78, 79, 80, 66, 67, 68],
-                'Column': [0, 34, 42, 69, 70, 71, 81, 82, 83, 78, 79, 80, 66, 67, 68],
-            },
-            'df': {
-                'SeqCol': 0,
-                'TargetProtCol': 1,
-                'ScoreCol': 2,
-                'ResCtrl': [[[3, 4, 5]], [[6, 7, 8], [9, 10, 11]], [[], [12, 13, 14]]],
-                'ResCtrlFlat': [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
-                'ColumnR': [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
-                'ColumnF': [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
-            },
-            'dfo' : {
-                    'NC': [2, 3],
-                    'NCF': [4, 5],
-            },
-        }
+        self.df    = cFile.ReadCSV2DF(fileA)
+        self.dict1 = limpMethod.UserData(
+            seqFile       = fileB,
+            seqFileObj    = cFile.FastaFile(fileB),
+            cero          = True,
+            tran          = 'Log2',
+            norm          = 'Median',
+            imp           = 'None',
+            shift         = 1.8,
+            width         = 0.3,
+            targetProt    = 'Mis18alpha',
+            scoreVal      = 25.0,
+            indSample     = True,
+            alpha         = 0.05,
+            beta          = 0.05,
+            gamma         = 0.8,
+            theta         = None,
+            thetaM        = 8.0,
+            labelA        = ['Lane1', 'Lane2'],
+            labelB        = ['Band1', 'Band2'],
+            ctrlName      = 'Ctrl',
+            ocSeq         = 0,
+            ocTargetProt  = 34,
+            ocScore       = 42,
+            ocResCtrl     = [[[69, 70, 71]], [[81, 82, 83], [78, 79, 80]], [[], [66, 67, 68]]],
+            ocColumn      = [0, 34, 42, 69, 70, 71, 81, 82, 83, 78, 79, 80, 66, 67, 68],
+            dfSeq         = 0,
+            dfTargetProt  = 1,
+            dfScore       = 2,
+            dfResCtrl     = [[[3, 4, 5]], [[6, 7, 8], [9, 10, 11]], [[], [12, 13, 14]]],
+            dfResCtrlFlat = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+            dfColumnR     = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+            dfColumnF     = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+        )
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -94,17 +81,17 @@ class Test_LimProt(unittest.TestCase):
         """Test method output"""
         #------------------------------>
         tInput = [
-            (self.df, self.dict1, self.dExtra, True, fileC),
+            (self.df, self.dict1, True, fileC, 'Test - 1'),
         ]
         #------------------------------>
         for a,b,c,d,e in tInput:
-            with self.subTest(f"df={a}, rDO={b}, dExtra={c}, resetIndex={d}"):
+            with self.subTest(f"{e}"):
                 #------------------------------>
                 result = limpMethod.LimProt(
-                    df=a, rDO=b, rDExtra=c, resetIndex=d)[0]['dfR']
+                    df=a, rDO=b, resetIndex=c)[0]['dfR']
                 # result = result.round(2)
                 #------------------------------>
-                dfF = pd.read_csv(e, sep='\t', header=[0,1,2])#.round(2)
+                dfF = pd.read_csv(d, sep='\t', header=[0,1,2])#.round(2)
                 dfF.iloc[:,4:6] = dfF.iloc[:,4:6].astype('Int64')
                 #------------------------------>
                 # pylint: disable=protected-access

@@ -40,7 +40,7 @@ class UserData(cMethod.BaseUserData):
     colFirstPart:list[str] = field(default_factory=lambda:
         mConfig.prot.dfcolFirstPart)
     colThirdLevel:list[str] = field(default_factory=lambda:
-        mConfig.prot.dfcolFirstPart)
+        mConfig.prot.dfcolCLevel)
     #------------------------------>
     dO:list = field(default_factory=lambda:                                     # Options for output printing
         ['iFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift', 'width',

@@ -111,7 +111,7 @@ class Test_FastaFile(unittest.TestCase):
             (self.f1Prot.rSeqLengthRec,      98,  'Length - Nat - 1'),
             (self.f2Prot.rSeqLengthRec,      98,  'Length - Nat - 2'),
             (self.fNProt.rSeqLengthRec,      98,  'Length - Nat - N'),
-            (self.f1Prot.rSeqLengthNat,    None,  'Length - Nat - 1'),
+            (self.f1Prot.rSeqLengthNat,       0,  'Length - Nat - 1'),
             (self.f2Prot.rSeqLengthNat,      68,  'Length - Nat - 2'),
             (self.fNProt.rSeqLengthNat,      68,  'Length - Nat - N'),
         ]
@@ -179,10 +179,10 @@ class Test_FastaFile(unittest.TestCase):
         """Test for Sequence delta."""
         #------------------------------>
         tInput = [
-            (self.f2Prot, (15,82)),
-            (self.fSecS,  (1,88)),
-            (self.fSecE,  (14,98)),
-            (self.fSecEq, (1,98)),
+            (self.f2Prot, [15,82]),
+            (self.fSecS,  [ 1,88]),
+            (self.fSecE,  [14,98]),
+            (self.fSecEq, [ 1,98]),
         ]
         #------------------------------>
         for a,b in tInput:

@@ -42,46 +42,33 @@ class Test_TarProt(unittest.TestCase):
     #region -----------------------------------------------------> Class Setup
     def setUp(self):
         """Set test"""
-        self.df = cFile.ReadCSV2DF(fileA)
-        self.dExtra  = {
-            'cLDFFirst'  : mConfig.tarp.dfcolFirstPart,
-            'cLDFSecond' : mConfig.tarp.dfcolBLevel,
-            'rSeqFileObj': cFile.FastaFile(fileB),
-        }
-        self.dict1 = {
-            'Cero': True,
-            'TransMethod': 'Log2',
-            'NormMethod': 'Median',
-            'ImpMethod': 'None',
-            'Shift': 1.8,
-            'Width': 0.3,
-            'TargetProt': 'efeB',
-            'ScoreVal': 100.0,
-            'Alpha': 0.05,
-            'Exp': ['Exp1', 'Exp2'],
-            'ControlL': ['Ctrl'],
-            'oc' : {
-                'SeqCol': 0,
-                'TargetProtCol': 38,
-                'ScoreCol': 44,
-                'ResCtrl': [[[98, 99, 100, 101, 102, 103, 104, 105]], [[109, 110, 111]], [[112, 113, 114]]],
-                'ColumnF': [44, 98, 99, 100, 101, 102, 103, 104, 105, 109, 110, 111, 112, 113, 114],
-                'Column': [0, 38, 44, 98, 99, 100, 101, 102, 103, 104, 105, 109, 110, 111, 112, 113, 114],
-            },
-            'df': {
-                'SeqCol': 0,
-                'TargetProtCol': 1,
-                'ScoreCol': 2,
-                'ResCtrl': [[[3, 4, 5, 6, 7, 8, 9, 10]], [[11, 12, 13]], [[14, 15, 16]]],
-                'ResCtrlFlat': [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-                'ColumnR': [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-                'ColumnF': [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
-            },
-            'dfo': {
-                'NC': [2, 3],
-                'NCF': [4, 5],
-            },
-        }
+        self.df    = cFile.ReadCSV2DF(fileA)
+        self.dict1 = tarpMethod.UserData(
+            seqFileObj    = cFile.FastaFile(fileB),
+            cero          = True,
+            tran          = 'Log2',
+            norm          = 'Median',
+            imp           = 'None',
+            shift         = 1.8,
+            width         = 0.3,
+            targetProt    = 'efeB',
+            scoreVal      = 100.0,
+            alpha         = 0.05,
+            labelA        = ['Exp1', 'Exp2'],
+            ctrlName      = 'Ctrl',
+            ocSeq         = 0,
+            ocTargetProt  = 38,
+            ocScore       = 44,
+            ocResCtrl     = [[[98, 99, 100, 101, 102, 103, 104, 105]], [[109, 110, 111]], [[112, 113, 114]]],
+            ocColumn      = [0, 38, 44, 98, 99, 100, 101, 102, 103, 104, 105, 109, 110, 111, 112, 113, 114],
+            dfSeq         = 0,
+            dfTargetProt  = 1,
+            dfScore       = 2,
+            dfResCtrl     = [[[3, 4, 5, 6, 7, 8, 9, 10]], [[11, 12, 13]], [[14, 15, 16]]],
+            dfResCtrlFlat = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+            dfColumnR     = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+            dfColumnF     = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+        )
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -90,17 +77,17 @@ class Test_TarProt(unittest.TestCase):
         """Test method output"""
         #------------------------------>
         tInput = [
-            (self.df, self.dict1, self.dExtra, True, fileC),
+            (self.df, self.dict1, True, fileC, 'Test - 1'),
         ]
         #------------------------------>
         for a,b,c,d,e in tInput:
-            with self.subTest(f"df={a}, rDO={b}, dExtra={c}, resetIndex={d}"):
+            with self.subTest(f"{e}"):
                 #------------------------------>
                 result = tarpMethod.TarProt(
-                    df=a, rDO=b, rDExtra=c, resetIndex=d)[0]['dfR']
+                    df=a, rDO=b, resetIndex=c)[0]['dfR']
                 # result = result.round(2)
                 #------------------------------>
-                dfF = pd.read_csv(e, sep='\t', header=[0,1])#.round(2)
+                dfF = pd.read_csv(d, sep='\t', header=[0,1])#.round(2)
                 dfF.iloc[:,4:6] = dfF.iloc[:,4:6].astype('Int64')
                 #------------------------------>
                 # pylint: disable=protected-access

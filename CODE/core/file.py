@@ -250,8 +250,8 @@ class FastaFile():
             Header for the Native sequence.
         rHeaderRec: str
             Header for the Recombinant sequence.
-        rSeqLengthNat: int or None
-            Length of the Native sequence.
+        rSeqLengthNat: int
+            Length of the Native sequence. 0 if native sequence is not present
         rSeqLengthRec: int
             Length of the Recombinant sequence.
         rSeqNat: str

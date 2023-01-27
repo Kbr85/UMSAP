@@ -22,8 +22,9 @@ import pandas as pd
 from numpy  import nan
 from pandas import NA
 
-from core import method as cMethod
-from core import file   as cFile
+from core    import method as cMethod
+from core    import file   as cFile
+from limprot import method as limpMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -519,16 +520,12 @@ class Test_NCResNumbers(unittest.TestCase):
             'NF' : [nan, nan, nan, nan,],
             'CF' : [nan, nan, nan, nan,],
         })
-        self.do = {
-                'df' : {
-                    'SeqCol' : 0,
-                },
-                'dfo' : {
-                    'NC' : [1,2],
-                    'NCF': [3,4],
-                },
-            }
-        self.seqF = cFile.FastaFile(fileA)
+        self.do = limpMethod.UserData(
+            dfSeq      = 0,
+            seqFileObj = cFile.FastaFile(fileA),
+            dfNC       = [1,2],
+            dfNCF      = [3,4],
+        )
         self.dfRes = pd.DataFrame({
             'Seq': ['HMKKTA', 'VALAG', 'SALLR', 'LRVMM'],
             'N'  : [14, 24, 76, 79,],
@@ -545,15 +542,15 @@ class Test_NCResNumbers(unittest.TestCase):
         """Test method output"""
         #------------------------------>
         tInput = [
-            (self.df, self.do, self.seqF, True, self.dfRes),
+            (self.df, self.do, True, self.dfRes),
         ]
         #------------------------------>
-        for a,b,c,d,e in tInput:
-            with self.subTest(f"dfR={a}, rDO={b}, rSeqFileObj={c}, seqNat={d}"):
+        for a,b,c,d in tInput:
+            with self.subTest(f"dfR={a}, rDO={b}, seqNat={c}"):
                 #------------------------------>
-                result = cMethod.NCResNumbers(a,b,c,seqNat=d)[0]
+                result = cMethod.NCResNumbers(a,b,seqNat=c)[0]
                 # pylint: disable=protected-access
-                pd._testing.assert_frame_equal(result, e)                     # type: ignore
+                pd._testing.assert_frame_equal(result, d)                     # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
 #---
