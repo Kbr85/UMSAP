@@ -73,9 +73,6 @@ class BaseConfPanel(
             Exclude entries by Score values.
         dfR: pd.DataFrame
             DataFrame with the results values.
-        rChangeKey: list of str
-            Keys in do whose values will be turned into a str. Default to
-            ['iFile', 'uFile].
         rCheckUnique: list of wx.TextCtrl
             These fields must contain unique column numbers.
         rCheckUserInput: dict
@@ -84,35 +81,17 @@ class BaseConfPanel(
             error message, bool]. Error message must be like mConfig.mFileBad.
             Boolean is True when the column numbers in the Data file are needed
             to check user input.
-        rCopyFile: dict
-            Keys are the keys in self.rDO and values label of the widget.
         rDate: str
             Date for the new section in the umsap file.
         rDateID: str
             Date + Analysis ID
         rDeltaT: str
             Elapsed analysis time.
-        rDExtra: dict
-            Extra options for the Analysis methods.
         rDFile: list[Path]
             Full paths to copied input files. Needed to repeat the analysis
             directly after running.
-        rDI: dict
-            Dict with user input.
-            The following key-value pairs are expected.
-            'oc' : {
-                'Column' : [list of int],
-            }
-            See Child class for other key - value pairs.
-        rDO: dict
-            Dict with processed user input.
-            The following key-value pairs are expected.
-            'Cero' : bool,
-            'df' : {
-                'ColumnF' : [list of int],
-                'ExcludeP': [list of int],
-            }
-            See Child class for other key - value pairs.
+        rDO: cMethod.BaseUserData
+            DataClass holding user input.
         rDlg: dtscore.ProgressDialog
             Progress dialog.
         rException: Exception or None
@@ -121,8 +100,6 @@ class BaseConfPanel(
             Input Data File Object.
         rLCtrlL: list of wx.ListCtrl
             To clear all wx.ListCtrl in the Tab.
-        rLLenLongest: int
-            Length of longest label.
         rMainData: str
             Name of the file containing the main output data.
         rMsgError: Str
@@ -239,43 +216,38 @@ class BaseConfPanel(
         self.rNCol   = None
         #------------------------------> Needed to Run the Analysis
         self.rCheckUnique = []
-        self.rLLenLongest = getattr(self, 'rLLenLongest', 0)
         self.rAnalysisMethod:Callable
-        self.rMainData    = getattr(self, 'rMainData', '')
-        #--------------> Dict with the user input as given
-        self.rDI = {}
-        #--------------> Dict with the processed user input
-        self.rDO = {}
-        #--------------> Dict with extra options for Run Analysis methods
-        self.rDExtra = getattr(self, 'rDExtra', {})
+        self.rMainData = getattr(self, 'rMainData', '')
+        #--------------> DataClass with the processed user input
+        self.rDO:cMethod.BaseUserData = cMethod.BaseUserData()
         #--------------> Error message and exception to show in self.RunEnd
         self.rMsgError  = ''
         self.rException = None
         #--------------> pd.DataFrames for:
-        self.dfI  = pd.DataFrame()                                              # Initial and
-        self.dfF  = pd.DataFrame()                                              # Data as float and 0 and '' values as np.nan
-        self.dfT  = pd.DataFrame()                                              # Transformed values
-        self.dfN  = pd.DataFrame()                                              # Normalized Values
-        self.dfIm = pd.DataFrame()                                              # Imputed values
-        self.dfTP = pd.DataFrame()                                              # Select Target Protein
-        self.dfE  = pd.DataFrame()                                              # Exclude entries by some parameter
-        self.dfS  = pd.DataFrame()                                              # Exclude entries by Score value
-        self.dfR  = pd.DataFrame()                                              # Results values
+        self.dfI     = pd.DataFrame()                                           # Initial and
+        self.dfF     = pd.DataFrame()                                           # Data as float and 0 and '' values as np.nan
+        self.dfT     = pd.DataFrame()                                           # Transformed values
+        self.dfN     = pd.DataFrame()                                           # Normalized Values
+        self.dfIm    = pd.DataFrame()                                           # Imputed values
+        self.dfTP    = pd.DataFrame()                                           # Select Target Protein
+        self.dfE     = pd.DataFrame()                                           # Exclude entries by some parameter
+        self.dfS     = pd.DataFrame()                                           # Exclude entries by Score value
+        self.dfR     = pd.DataFrame()                                           # Results values
+        self.dfAA    = pd.DataFrame()                                           # AA analysis
+        self.dfHist  = pd.DataFrame()                                           # Histogram
+        self.dfCpR   = pd.DataFrame()                                           # Cleavage per Residue
+        self.dfCEvol = pd.DataFrame()                                           # Cleavage Evolution
         #--------------> Date for umsap file
         self.rDate   = ''
         self.rDateID = ''
-        #--------------> folder for output
-        self.rOFolder = None
+        #--------------> Folder for output
+        self.rOFolder:Optional[Path] = None
         #--------------> input file for directing repeating analysis from
         # file copied to oFolder
-        self.rDFile   = []
+        self.rDFile = []
         # #--------------> Obj for files
-        self.rIFileObj   = None
+        self.rIFileObj:Optional[cFile.CSVFile]      = None
         self.rSeqFileObj: Optional[cFile.FastaFile] = None
-        #------------------------------>
-        self.rChangeKey = getattr(self, 'rChangeKey', ['iFile', 'uFile'])
-        #------------------------------>
-        self.rCopyFile = getattr(self, 'rCopyFile', {'iFile':self.cLiFile})
         #------------------------------> Parent init
         scrolled.ScrolledPanel.__init__(self, parent, name=self.cName)
 
@@ -650,29 +622,6 @@ class BaseConfPanel(
         return True
     #---
 
-    def EqualLenLabel(self, label:str) -> str:
-        """Add empty space to the end of label to match the length of
-            self.rLLenLongest.
-
-            Parameters
-            ----------
-            label: str
-                Original label
-
-            Returns
-            -------
-            str
-                Label with added empty strings at the end to match the length of
-                self.rLLenLongest
-
-            Notes
-            -----
-            It assumes child class defines a self.rLLenLongest with the length
-            of the longest name for the input fields.
-        """
-        return f"{label}{(self.rLLenLongest - len(label))*' '}"
-    #---
-
     def SetStepDictDP(self) -> dict:
         """Set the Data Processing part of the stepDict to write in the output.
 
@@ -756,11 +705,11 @@ class BaseConfPanel(
             section name of the analysis.
         """
         #region ---------------------------------------------------> Read File
-        if self.rDO['uFile'].exists():
+        if self.rDO.uFile.exists():
             try:
-                outData = cFile.ReadJSON(self.rDO['uFile'])
+                outData = cFile.ReadJSON(self.rDO.uFile)
             except Exception as e:
-                msg = mConfig.core.mFileRead.format(self.rDO['uFile'])
+                msg = mConfig.core.mFileRead.format(self.rDO.uFile)
                 raise RuntimeError(msg) from e
         else:
             outData = {}
@@ -806,30 +755,31 @@ class BaseConfPanel(
         msgStep = self.cLPdWrite + 'Data files, Input Data'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------>
-        puFolder = self.rDO['uFile'].parent / mConfig.core.fnDataInit
+        puFolder = self.rDO.uFile.parent / mConfig.core.fnDataInit
         #------------------------------>
-        for k,v in self.rCopyFile.items():
-            if self.rDI[self.EqualLenLabel(v)] != '':
+        for k,v in self.rDO.copyFile.items():
+            tPath = getattr(self.rDO, k)
+            if tPath.is_file():
                 #------------------------------>
-                piFolder = self.rDO[k].parent
+                piFolder = tPath.parent
                 #------------------------------>
-                if not piFolder == puFolder:
+                if piFolder != puFolder:                                        # Copy new file
                     #------------------------------>
-                    tStem = self.rDO[k].stem.replace(' ', '-')
+                    tStem = tPath.stem.replace(' ', '-')
                     tStem = tStem.replace('_', '-')
-                    name = f"{self.rDate}_{tStem}{self.rDO[k].suffix}"
+                    name = f"{self.rDate}_{tStem}{tPath.suffix}"
                     file = puFolder/name
                     #------------------------------>
-                    shutil.copy(self.rDO[k], file)
+                    shutil.copy(tPath, file)
                     #------------------------------>
-                    self.rDI[self.EqualLenLabel(v)] = str(file.name)
+                    setattr(self.rDO, v, str(file.name))
                     #------------------------------>
                     self.rDFile.append(file)
-                else:
+                else:                                                           # Reference to old file
                     #------------------------------>
-                    self.rDI[self.EqualLenLabel(v)] = str(self.rDO[k].name)
+                    setattr(self.rDO, v, str(tPath.name))
                     #------------------------------>
-                    self.rDFile.append(self.rDO[k])
+                    self.rDFile.append(tPath)
             else:
                 self.rDFile.append('')
         #endregion ---------------------------------------------> Data Initial
@@ -847,21 +797,21 @@ class BaseConfPanel(
         #endregion -----------------------------------------------> Data Steps
 
         #region --------------------------------------------> Further Analysis
-        if (aaDict := stepDict.get('AA', False)):
-            fileP = dataFolder/aaDict[f'{self.rDate}_{self.rDO["AA"]}']         # type: ignore
-            cFile.WriteDF2CSV(fileP, self.dfAA)                                 # type: ignore
+        if (aaDict := stepDict.get('AA', {})):
+            fileP = dataFolder/list(aaDict.values())[0]
+            cFile.WriteDF2CSV(fileP, self.dfAA)
 
-        if (histDict := stepDict.get('Hist', False)):
-            fileP = dataFolder/histDict[f'{self.rDate}_{self.rDO["Hist"]}']     # type: ignore
-            cFile.WriteDF2CSV(fileP, self.dfHist)                               # type: ignore
+        if (histDict := stepDict.get('Hist', {})):
+            fileP = dataFolder/list(histDict.values())[0]
+            cFile.WriteDF2CSV(fileP, self.dfHist)
 
-        if (fileN := stepDict.get('CpR', False)):
-            fileP = dataFolder/fileN
-            cFile.WriteDF2CSV(fileP, self.dfCpR)                                # type: ignore
+        if (cpr := stepDict.get('CpR', False)):
+            fileP = dataFolder/cpr
+            cFile.WriteDF2CSV(fileP, self.dfCpR)
 
-        if (fileN := stepDict.get('CEvol', False)):
-            fileP = dataFolder/fileN
-            cFile.WriteDF2CSV(fileP, self.dfCEvol)                              # type: ignore
+        if (cEvol := stepDict.get('CEvol', False)):
+            fileP = dataFolder/cEvol
+            cFile.WriteDF2CSV(fileP, self.dfCEvol)
         #endregion -----------------------------------------> Further Analysis
 
         #region --------------------------------------------------> UMSAP File
@@ -871,8 +821,8 @@ class BaseConfPanel(
         dateDict = {
             self.rDateID : {
                 'V' : mConfig.core.dictVersion,
-                'I' : self.rDI,
-                'CI': cMethod.DictVal2Str(self.rDO, self.rChangeKey, new=True),
+                'I' : self.rDO.PrintDI(),
+                'CI': self.rDO.PrintDO(),
                 'DP': {
                     mConfig.core.ltDPKeys[0] : stepDict['DP'][mConfig.core.ltDPKeys[0]],
                     mConfig.core.ltDPKeys[1] : stepDict['DP'][mConfig.core.ltDPKeys[1]],
@@ -890,7 +840,7 @@ class BaseConfPanel(
             dateDict[self.rDateID]['F'] = {}
         elif self.cName == mConfig.tarp.nPane:
             #--------------> TarProt
-            dateDict[self.rDateID]['CpR'] = stepDict['CpR']
+            dateDict[self.rDateID]['CpR']   = stepDict['CpR']
             dateDict[self.rDateID]['CEvol'] = stepDict['CEvol']
         #--------------> Further Analysis
         if stepDict.get('AA', None) is not None:
@@ -907,7 +857,7 @@ class BaseConfPanel(
             return False
         #------------------------------> Write
         try:
-            cFile.WriteJSON(self.rDO['uFile'], outData)
+            cFile.WriteJSON(self.rDO.uFile, outData)
         except Exception as e:
             self.rMsgError = ('It was not possible to create the dictionary '
                 'with the UMSAP data.')
@@ -933,7 +883,7 @@ class BaseConfPanel(
             bool
         """
         #region --------------------------------------------------> Dlg window
-        self.rDlg = cWindow.Progress(                                     # pylint: disable=attribute-defined-outside-init
+        self.rDlg = cWindow.Progress(                                           # pylint: disable=attribute-defined-outside-init
             mConfig.main.mainWin, self.cTitlePD, self.cGaugePD)
         #endregion -----------------------------------------------> Dlg window
 
@@ -1010,27 +960,25 @@ class BaseConfPanel(
             -------
             bool
         """
+        #region --------------------------------------------------->
         #------------------------------> Date
         self.rDate = cMethod.StrNow()
         #------------------------------> Output folder
-        if self.rDO['uFile'].exists():
-            self.rOFolder = self.rDO['uFile'].parent
+        if self.rDO.uFile.exists():
+            self.rOFolder = self.rDO.uFile.parent
         else:
-            folder = self.rDO['uFile'].parent
+            folder = self.rDO.uFile.parent
             step = folder/mConfig.core.fnDataSteps
             init = folder/mConfig.core.fnDataInit
             #------------------------------>
             if step.exists() or init.exists():
                 self.rOFolder = folder/f'{self.rDate}'
-                self.rDO['uFile'] = self.rOFolder/self.rDO['uFile'].name
+                self.rDO.uFile = self.rOFolder/self.rDO.uFile.name
             else:
-                self.rOFolder = self.rDO['uFile'].parent
+                self.rOFolder = self.rDO.uFile.parent
         #------------------------------> DateID
-        self.rDateID = f'{self.rDate} - {self.rDO["ID"]}'
-        #------------------------------> Remove Shift & Width if not needed
-        if self.wImputationMethod.wCb.GetValue() != 'Normal Distribution':
-            del self.rDI[self.EqualLenLabel(self.cLShift)]
-            del self.rDI[self.EqualLenLabel(self.cLWidth)]
+        self.rDateID = f'{self.rDate} - {self.rDO.ID}'
+        #endregion ------------------------------------------------>
 
         return True
     #---
@@ -1056,52 +1004,49 @@ class BaseConfPanel(
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------>
         try:
-            self.rIFileObj = cFile.CSVFile(self.rDO['iFile'])
+            self.rIFileObj = cFile.CSVFile(self.rDO.iFile)
         except Exception as e:
-            self.rMsgError = mConfig.core.mFileRead.format(self.rDO['iFile'])
+            self.rMsgError = mConfig.core.mFileRead.format(self.rDO.iFile)
             self.rException = e
             return False
         #------------------------------> Check Target Protein. It cannot be done
         # before this step
-        if 'TargetProt' in self.rDO:
+        if self.rDO.targetProt:
             a = self.rIFileObj.StrInCol(
-                self.rDO['TargetProt'], self.rDO['oc']['TargetProtCol'])
+                self.rDO.targetProt, self.rDO.ocTargetProt)
             if not a:
                 self.rMsgError = (f'The Target Protein '
-                    f'({self.rDO["TargetProt"]}) was not found in the '
+                    f'({self.rDO.targetProt}) was not found in the '
                     f'{self.cLDetectedProt} column '
-                    f'({self.rDO["oc"]["TargetProtCol"]}).')
+                    f'({self.rDO.ocTargetProt}).')
                 return False
         #endregion ------------------------------------------------> Data file
 
         #region ------------------------------------------------> Seq Rec File
-        if 'seqFile' in self.rDO:
+        if self.rDO.seqFile.is_file():
             #------------------------------>
             msgStep = self.cLPdReadFile + f"{self.cLSeqFile}, reading"
             wx.CallAfter(self.rDlg.UpdateStG, msgStep)
             #------------------------------>
             try:
-                self.rSeqFileObj = cFile.FastaFile(self.rDO['seqFile'])
+                self.rSeqFileObj = cFile.FastaFile(self.rDO.seqFile)
             except Exception as e:
-                self.rMsgError = mConfig.core.mFileRead.format(self.rDO['seqFile'])
+                self.rMsgError = mConfig.core.mFileRead.format(self.rDO.seqFile)
                 self.rException = e
                 return False
             #------------------------------>
             try:
-                ProtLoc = self.rSeqFileObj.GetNatProtLoc()
+                self.rDO.protLoc = self.rSeqFileObj.GetNatProtLoc()
             except Exception:
-                ProtLoc = (None, None)
+                self.rDO.protLoc = [-1, -1]
             #------------------------------>
-            self.rDO['ProtLength'] = [
+            self.rDO.protLength = [
                 self.rSeqFileObj.rSeqLengthRec, self.rSeqFileObj.rSeqLengthNat]
-            self.rDO['ProtLoc'] = ProtLoc
             #------------------------------>
             try:
-                ProtDelta = self.rSeqFileObj.GetSelfDelta()
+                self.rDO.protDelta = self.rSeqFileObj.GetSelfDelta()
             except Exception:
-                ProtDelta = None
-            #------------------------------>
-            self.rDO['ProtDelta'] = ProtDelta
+                self.rDO.protDelta = None
         #endregion ---------------------------------------------> Seq Rec File
 
         return True
@@ -1119,7 +1064,7 @@ class BaseConfPanel(
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------>
         dfDict, self.rMsgError, self.rException = self.rAnalysisMethod(
-            df=self.rIFileObj.rDf, rDO=self.rDO, rDExtra=self.rDExtra)                         # type: ignore
+            df=self.rIFileObj.rDf, rDO=self.rDO)
         #------------------------------>
         if dfDict:
             for k,v in dfDict.items():
@@ -1154,9 +1099,9 @@ class BaseConfPanel(
         """
         #region ---------------------------------------> Dlg progress dialogue
         if not self.rMsgError:
-            self.rDFile.append(self.rDO['uFile'])
+            self.rDFile.append(self.rDO.uFile)
             #--> Here to avoid circular imports problems and thread limitations.
-            pub.sendMessage('load_umsap', fileP=self.rDO['uFile'])
+            pub.sendMessage('load_umsap', fileP=self.rDO.uFile)
             #------------------------------>
             self.rDlg.SuccessMessage(
                 self.cLPdDone, eTime=f"{self.cLPdElapsed} {self.rDeltaT}")
@@ -1166,12 +1111,11 @@ class BaseConfPanel(
         #endregion ------------------------------------> Dlg progress dialogue
 
         #region -------------------------------------------------------> Reset
-        self.rMsgError  = '' # Error msg to show in self.RunEnd
-        self.rException = None # Exception
-        self.rDI        = {} # Dict with the user input as given
-        self.rDO        = {} # Dict with the processed user input
-        self.dfI        = pd.DataFrame() # pd.DataFrame for initial, normalized
-        self.dfF        = pd.DataFrame() # etc
+        self.rMsgError  = ''                                                    # Error msg to show in self.RunEnd
+        self.rException = None                                                  # Exception
+        self.rDO        = cMethod.BaseUserData()                                # DataClass for User Input
+        self.dfI        = pd.DataFrame()                                        # pd.DataFrame for initial, normalized
+        self.dfF        = pd.DataFrame()                                        # etc
         self.dfTP       = pd.DataFrame()
         self.dfE        = pd.DataFrame()
         self.dfS        = pd.DataFrame()
@@ -1179,11 +1123,11 @@ class BaseConfPanel(
         self.dfN        = pd.DataFrame()
         self.dfIm       = pd.DataFrame()
         self.dfR        = pd.DataFrame()
-        self.rDate      = '' # date for corr file
-        self.rDateID    = ''
-        self.rOFolder   = None # folder for output
-        self.rIFileObj  = None
-        self.rDeltaT    = ''
+        self.rDate      = ''                                                    # Date for ID
+        self.rDateID    = ''                                                    # Full ID
+        self.rOFolder   = None                                                  # folder for output
+        self.rIFileObj  = None                                                  # Input Data File object
+        self.rDeltaT    = ''                                                    # Duration of Analysis
 
         if self.rDFile:
             self.wUFile.wTc.SetValue(str(self.rDFile[-1]))
@@ -1235,8 +1179,6 @@ class BaseConfPanelMod(BaseConfPanel, cWidget.ResControl):
         self.cTTDetectedProt = getattr(
             self, 'cTTDetectedProtL', ('Set the column number containing the '
                                        'detected proteins.\ne.g. 7'))
-        self.rLLenLongest = getattr(
-            self, 'rLLenLongest', len(mConfig.core.lStResCtrlS))
         #------------------------------> Parent class init
         BaseConfPanel.__init__(self, parent, rightDelete=rightDelete)
 
@@ -1324,11 +1266,6 @@ class BaseConfPanelMod2(BaseConfPanelMod):
                                 'Sequences.\ne.g. 0'))
         #------------------------------>
         super().__init__(parent, rightDelete=rightDelete)
-        #------------------------------>
-        self.rCopyFile = {
-            'iFile'  : self.cLiFile,
-            'seqFile': f'{self.cLSeqFile} File',
-        }
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -1444,7 +1381,7 @@ class BaseConfPanelMod2(BaseConfPanelMod):
         #endregion ---------------------------------------------------> Sizers
 
         #region -------------------------------------------------> Check Input
-        self.rCheckUserInput = { # New order is needed.
+        self.rCheckUserInput = {                                                # New order is needed.
             self.cLuFile       :[self.wUFile.wTc,           mConfig.core.mFileBad       , False],
             self.cLiFile       :[self.wIFile.wTc,           mConfig.core.mFileBad       , False],
             f'{self.cLSeqFile}':[self.wSeqFile.wTc,         mConfig.core.mFileBad       , False],

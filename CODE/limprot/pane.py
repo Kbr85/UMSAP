@@ -15,6 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
+from typing  import Optional
 from pathlib import Path
 
 import wx
@@ -36,73 +37,12 @@ class LimProt(cPane.BaseConfPanelMod2):
         ----------
         parent: wx.Window
             Parent of the pane.
-        dataI: dict
+        dataI: limpMethod.UserData or None
             Initial data provided by the user in a previous analysis.
-            This contains both I and CI dicts e.g. {'I': I, 'CI': CI}.
+            Default is None.
 
         Attributes
         ----------
-        rDI: dict
-            Dictionary with the user input. Keys are labels in the panel plus:
-            {
-                config.lStLimProtLane           : [list of lanes],
-                config.lStLimProtBand           : [list of bands],
-                f"Control {config.lStCtrlName}" : "Control Name",
-            }
-        rDO: dict
-            Dictionary with checked user input. Keys are:
-            {
-                "iFile"      : "Path to input data file",
-                "uFile"      : "Path to umsap file.",
-                'seqFile'    : "Path to the sequence file",
-                'ID'         : "Analysis ID",
-                "Cero"       : "Boolean, how to treat cero values",
-                "TransMethod": "Transformation method",
-                "NormMethod" : "Normalization method",
-                "ImpMethod"  : "Imputation method",
-                "Shift"      : float,
-                "Width"      : float,
-                "TargetProt" : "Target Protein",
-                "ScoreVal"   : "Score value threshold",
-                'Sample'     : 'Independent or dependent samples',
-                "Alpha"      : "Significance level",
-                "Beta"       : "Beta level',
-                'Gamma'      : "Gamma level",
-                'Theta'      : Theta value or None,
-                'Theta Max'  : Theta maximum,
-                "Lane"       : [List of lanes],
-                "Band"       : [List of bands],
-                "ControlL"   : "Control label",
-                "oc": {
-                    "SeqCol"       : Column of Sequences,
-                    "TargetProtCol": Column of Proteins,
-                    "ScoreCol"     : Score column,
-                    "ResCtrl"      : [List of columns containing the control and
-                        experiments column numbers],
-                    "ColumnF" : [Flat list of all columns containing floats],
-                    "Column": [Flat list of all column numbers with the
-                              following order: SeqCol, TargetProtCol,
-                              ScoreColRes & Control]
-                },
-                "df": { Column numbers in the pd.df created from the input file.
-                    "SeqCol"       : 0,
-                    "TargetProtCol": 1,
-                    "ScoreCol"     : 2,
-                    "ResCtrl"      : [[[]], [[]],...,[[]]],
-                    "ResCtrlFlat"  : [ResCtrl as a flat list],
-                    "ColumnR"      : [Columns with the results],
-                    "ColumnF"      : [Columns that must contain only floats],
-                },
-                "dfo" : {
-                    "NC" : [Columns for the N and C residue numbers in the
-                        output df],
-                    "NCF" : [Columns for the nNat and cNat residue numbers in
-                        the output df],
-                },
-                "ProtLength": "Length of the Recombinant protein",
-                "ProtLoc"   : "Location of the Nat Seq in the Rec Seq",
-                "ProtDelta" : "To adjust Res Number. Nat = Res + Delta",
-            },
         rLbDict: dict
             Contains information about the Res - Ctrl e.g.
             {
@@ -134,8 +74,8 @@ class LimProt(cPane.BaseConfPanelMod2):
             'Limited Proteolysis : {
                 '20210324-165609': {
                     'V' : config.dictVersion,
-                    'I' : self.d,
-                    'CI': self.do,
+                    'I' : Dict with User Input as given. Keys are label like in the Tab GUI,
+                    'CI': Dict with Processed User Input. Keys are attributes of UserData,
                     'DP': {
                         'dfS' : pd.DataFrame with initial data as float and
                                 after discarding values by score.
@@ -191,17 +131,21 @@ class LimProt(cPane.BaseConfPanelMod2):
     cTitlePD     = f"Running {mConfig.limp.nMod} Analysis"
     cGaugePD     = 34
     rMainData    = '{}_{}-LimitedProteolysis-Data.txt'
-    rDExtra: dict = {
-        'cLDFFirstThree' : cLDFFirstThree,
-        'cLDFThirdLevel' : cLDFThirdLevel,
-    }
+    # rDExtra: dict = {
+    #     'cLDFFirstThree' : cLDFFirstThree,
+    #     'cLDFThirdLevel' : cLDFThirdLevel,
+    # }
     rAnalysisMethod = limpMethod.LimProt
     #------------------------------> Optional configuration
     cTTHelp = mConfig.core.ttBtnHelp.format(cURL)
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, dataI:dict={}) -> None:                          # pylint: disable=dangerous-default-value
+    def __init__(
+        self,
+        parent,
+        dataI:Optional[limpMethod.UserData]=None,
+        ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(parent)
@@ -392,10 +336,6 @@ class LimProt(cPane.BaseConfPanelMod2):
         self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #endregion -------------------------------------------> checkUserInput
 
-        #region -------------------------------------------------------> DataI
-        self.SetInitialData(dataI)
-        #endregion ----------------------------------------------------> DataI
-
         #region --------------------------------------------------------> Test
         if mConfig.core.development:
             # pylint: disable=line-too-long
@@ -439,11 +379,18 @@ class LimProt(cPane.BaseConfPanelMod2):
         else:
             pass
         #endregion -----------------------------------------------------> Test
+
+        #region -------------------------------------------------------> DataI
+        if dataI is not None:
+            self.SetInitialData(dataI)
+        #endregion ----------------------------------------------------> DataI
+
+
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class Event
-    def SetInitialData(self, dataI:dict={}) -> bool:                            # pylint: disable=dangerous-default-value
+    def SetInitialData(self, dataI:limpMethod.UserData) -> bool:
         """Set initial data.
 
             Parameters
@@ -456,43 +403,38 @@ class LimProt(cPane.BaseConfPanelMod2):
             bool
         """
         #region -------------------------------------------------> Fill Fields
-        if dataI:
-            #------------------------------>
-            dataInit = dataI['uFile'].parent / mConfig.core.fnDataInit
-            iFile = dataInit / dataI['I'][self.cLiFile]
-            seqFile = dataInit / dataI['I'][f'{self.cLSeqFile} File']
-            #------------------------------> Files
-            self.wUFile.wTc.SetValue(str(dataI['uFile']))
-            self.wIFile.wTc.SetValue(str(iFile))
-            self.wSeqFile.wTc.SetValue(str(seqFile))
-            self.wId.wTc.SetValue(dataI['CI']['ID'])
-            #------------------------------> Data Preparation
-            self.wCeroB.wCb.SetValue(dataI['I'][self.cLCeroTreatD])
-            self.wTransMethod.wCb.SetValue(dataI['I'][self.cLTransMethod])
-            self.wNormMethod.wCb.SetValue(dataI['I'][self.cLNormMethod])
-            self.wImputationMethod.wCb.SetValue(dataI['I'][self.cLImputation])
-            self.wShift.wTc.SetValue(dataI['I'].get(self.cLShift, self.cValShift))
-            self.wWidth.wTc.SetValue(dataI['I'].get(self.cLWidth, self.cValWidth))
-            #------------------------------> Values
-            self.wTargetProt.wTc.SetValue(dataI['I'][self.cLTargetProt])
-            self.wScoreVal.wTc.SetValue(dataI['I'][self.cLScoreVal])
-            self.wAlpha.wTc.SetValue(dataI['I'][self.cLAlpha])
-            self.wSample.wCb.SetValue(dataI['I'][self.cLSample])
-            self.wBeta.wTc.SetValue(dataI['I'][self.cLBeta])
-            self.wGamma.wTc.SetValue(dataI['I'][self.cLGamma])
-            self.wTheta.wTc.SetValue(dataI['I'][self.cLTheta])
-            self.wThetaMax.wTc.SetValue(dataI['I'][self.cLThetaMax])
-            #------------------------------> Columns
-            self.wSeqCol.wTc.SetValue(dataI['I'][f'{self.cLSeqCol} Column'])
-            self.wDetectedProt.wTc.SetValue(dataI['I'][self.cLDetectedProt])
-            self.wScore.wTc.SetValue(dataI['I'][self.cLScoreCol])
-            self.wTcResults.SetValue(dataI['I'][mConfig.core.lStResCtrlS])
-            self.rLbDict[0] = dataI['I'][self.cLLane]
-            self.rLbDict[1] = dataI['I'][self.cLBand]
-            self.rLbDict['Control'] = dataI['I'][f"Control {self.cLCtrlName}"]
-            #------------------------------>
-            self.OnIFileLoad('fEvent')
-            self.OnImpMethod('fEvent')
+        #------------------------------> Files
+        self.wUFile.wTc.SetValue(str(dataI.uFile))
+        self.wIFile.wTc.SetValue(str(dataI.iFile))
+        self.wSeqFile.wTc.SetValue(str(dataI.seqFile))
+        self.wId.wTc.SetValue(dataI.ID)
+        #------------------------------> Data Preparation
+        self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
+        self.wTransMethod.wCb.SetValue(dataI.tran)
+        self.wNormMethod.wCb.SetValue(dataI.norm)
+        self.wImputationMethod.wCb.SetValue(dataI.imp)
+        self.wShift.wTc.SetValue(str(dataI.shift))
+        self.wWidth.wTc.SetValue(str(dataI.width))
+        #------------------------------> Values
+        self.wTargetProt.wTc.SetValue(dataI.targetProt)
+        self.wScoreVal.wTc.SetValue(str(dataI.scoreVal))
+        self.wAlpha.wTc.SetValue(str(dataI.alpha))
+        self.wSample.wCb.SetValue(str(dataI.indSample))
+        self.wBeta.wTc.SetValue(str(dataI.beta))
+        self.wGamma.wTc.SetValue(str(dataI.gamma))
+        self.wTheta.wTc.SetValue(str(dataI.theta))
+        self.wThetaMax.wTc.SetValue(str(dataI.thetaM))
+        #------------------------------> Columns
+        self.wSeqCol.wTc.SetValue(str(dataI.ocSeq))
+        self.wDetectedProt.wTc.SetValue(str(dataI.targetProt))
+        self.wScore.wTc.SetValue(str(dataI.ocScore))
+        self.wTcResults.SetValue(dataI.resCtrl)
+        self.rLbDict[0] = dataI.labelA
+        self.rLbDict[1] = dataI.labelB
+        self.rLbDict['Control'] = [dataI.ctrlName]
+        #------------------------------>
+        self.OnIFileLoad('fEvent')
+        self.OnImpMethod('fEvent')
         #endregion ----------------------------------------------> Fill Fields
 
         return True
@@ -555,57 +497,47 @@ class LimProt(cPane.BaseConfPanelMod2):
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------> Variables
         impMethod = self.wImputationMethod.wCb.GetValue()
-        #------------------------------> As given
-        self.rDI = {
-            self.EqualLenLabel(self.cLiFile) : (
-                self.wIFile.wTc.GetValue()),
-            self.EqualLenLabel(f'{self.cLSeqFile} File') : (
-                self.wSeqFile.wTc.GetValue()),
-            self.EqualLenLabel(self.cLId) : (
-                self.wId.wTc.GetValue()),
-            self.EqualLenLabel(self.cLCeroTreatD) : (
-                self.wCeroB.wCb.GetValue()),
-            self.EqualLenLabel(self.cLTransMethod) : (
-                self.wTransMethod.wCb.GetValue()),
-            self.EqualLenLabel(self.cLNormMethod) : (
-                self.wNormMethod.wCb.GetValue()),
-            self.EqualLenLabel(self.cLImputation) : (
-                impMethod),
-            self.EqualLenLabel(self.cLShift) : (
-                self.wShift.wTc.GetValue()),
-            self.EqualLenLabel(self.cLWidth) : (
-                self.wWidth.wTc.GetValue()),
-            self.EqualLenLabel(self.cLTargetProt) : (
-                self.wTargetProt.wTc.GetValue()),
-            self.EqualLenLabel(self.cLScoreVal) : (
-                self.wScoreVal.wTc.GetValue()),
-            self.EqualLenLabel(self.cLSample) : (
-                self.wSample.wCb.GetValue()),
-            self.EqualLenLabel(self.cLAlpha) : (
-                self.wAlpha.wTc.GetValue()),
-            self.EqualLenLabel(self.cLBeta) : (
-                self.wBeta.wTc.GetValue()),
-            self.EqualLenLabel(self.cLGamma) : (
-                self.wGamma.wTc.GetValue()),
-            self.EqualLenLabel(self.cLTheta) : (
-                self.wTheta.wTc.GetValue()),
-            self.EqualLenLabel(self.cLThetaMax) : (
-                self.wThetaMax.wTc.GetValue()),
-            self.EqualLenLabel(f'{self.cLSeqCol} Column') : (
-                self.wSeqCol.wTc.GetValue()),
-            self.EqualLenLabel(self.cLDetectedProt) : (
-                self.wDetectedProt.wTc.GetValue()),
-            self.EqualLenLabel(self.cLScoreCol) : (
-                self.wScore.wTc.GetValue()),
-            self.EqualLenLabel(mConfig.core.lStResCtrlS): (
-                self.wTcResults.GetValue()),
-            self.EqualLenLabel(self.cLLane) : (
-                self.rLbDict[0]),
-            self.EqualLenLabel(self.cLBand) : (
-                self.rLbDict[1]),
-            self.EqualLenLabel(f"Control {self.cLCtrlName}") : (
-                self.rLbDict['Control']),
+        #--------------> Theta
+        thetaVal    = self.wTheta.wTc.GetValue()
+        theta       = float(thetaVal) if thetaVal != '' else None
+        thetaMaxVal = self.wThetaMax.wTc.GetValue()
+        thetaMax    = float(thetaMaxVal) if thetaMaxVal != '' else None
+        #--------------> Columns
+        seqCol        = int(self.wSeqCol.wTc.GetValue())
+        detectedProt  = int(self.wDetectedProt.wTc.GetValue())
+        scoreCol      = int(self.wScore.wTc.GetValue())
+        resCtrl       = cMethod.ResControl2ListNumber(self.wTcResults.GetValue())
+        resCtrlFlat   = cMethod.ResControl2Flat(resCtrl)
+        resCtrlDF     = cMethod.ResControl2DF(resCtrl, 3)
+        resCtrlDFFlat = cMethod.ResControl2Flat(resCtrlDF)
+        #--------------> dI
+        dI = {
+            'iFileN'      : self.cLiFile,
+            'seqFileN'    : self.cLSeqFile,
+            'ID'          : self.cLId,
+            'cero'        : self.cLCeroTreatD,
+            'tran'        : self.cLTransMethod,
+            'norm'        : self.cLNormMethod,
+            'imp'         : self.cLImputation,
+            'targetProt'  : self.cLTargetProt,
+            'scoreVal'    : self.cLScoreVal,
+            'alpha'       : self.cLAlpha,
+            'indSample'   : self.cLSample,
+            'beta'        : self.cLBeta,
+            'gamma'       : self.cLGamma,
+            'theta'       : self.cLTheta,
+            'thetaM'      : self.cLThetaMax,
+            'ocSeq'       : f'{self.cLSeqCol} Column',
+            'ocTargetProt': self.cLDetectedProt,
+            'ocScore'     : self.cLScoreCol,
+            'ocResCtrl'   : mConfig.core.lStResCtrlS,
+            'labelA'      : self.cLLane,
+            'labelB'      : self.cLBand,
+            'ctrlName'    : f'Control {self.cLCtrlName}',
         }
+        if impMethod == mConfig.data.lONormDist:
+            dI['shift'] = self.cLShift
+            dI['width'] = self.cLWidth
         #endregion --------------------------------------------------------> d
 
         #region ----------------------------------------------------------> do
@@ -613,65 +545,44 @@ class LimProt(cPane.BaseConfPanelMod2):
         #--------------> Step
         msgStep = self.cLPdPrepare + 'User input, processing'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #--------------> Theta
-        thetaVal = self.wTheta.wTc.GetValue()
-        theta = float(thetaVal) if thetaVal != '' else None
-        thetaMaxVal = self.wThetaMax.wTc.GetValue()
-        thetaMax = float(thetaMaxVal) if thetaMaxVal != '' else None
-        #--------------> Columns
-        seqCol       = int(self.wSeqCol.wTc.GetValue())
-        detectedProt = int(self.wDetectedProt.wTc.GetValue())
-        scoreCol     = int(self.wScore.wTc.GetValue())
-        resCtrl       = cMethod.ResControl2ListNumber(self.wTcResults.GetValue())
-        resCtrlFlat   = cMethod.ResControl2Flat(resCtrl)
-        resCtrlDF     = cMethod.ResControl2DF(resCtrl, 3)
-        resCtrlDFFlat = cMethod.ResControl2Flat(resCtrlDF)
         #-------------->
-        self.rDO  = {
-            'iFile'      : Path(self.wIFile.wTc.GetValue()),
-            'uFile'      : Path(self.wUFile.wTc.GetValue()),
-            'seqFile'    : Path(self.wSeqFile.wTc.GetValue()),
-            'ID'         : self.wId.wTc.GetValue(),
-            'Cero'       : mConfig.core.oYesNo[self.wCeroB.wCb.GetValue()],
-            'TransMethod': self.wTransMethod.wCb.GetValue(),
-            'NormMethod' : self.wNormMethod.wCb.GetValue(),
-            'ImpMethod'  : impMethod,
-            'Shift'      : float(self.wShift.wTc.GetValue()),
-            'Width'      : float(self.wWidth.wTc.GetValue()),
-            'TargetProt' : self.wTargetProt.wTc.GetValue(),
-            'ScoreVal'   : float(self.wScoreVal.wTc.GetValue()),
-            'Sample'     : self.cOSample[self.wSample.wCb.GetValue()],
-            'Alpha'      : float(self.wAlpha.wTc.GetValue()),
-            'Beta'       : float(self.wBeta.wTc.GetValue()),
-            'Gamma'      : float(self.wGamma.wTc.GetValue()),
-            'Theta'      : theta,
-            'ThetaMax'   : thetaMax,
-            'Lane'       : self.rLbDict[0],
-            'Band'       : self.rLbDict[1],
-            'ControlL'   : self.rLbDict['Control'],
-            'oc'         : { # Column numbers in the initial dataframe
-                'SeqCol'       : seqCol,
-                'TargetProtCol': detectedProt,
-                'ScoreCol'     : scoreCol,
-                'ResCtrl'      : resCtrl,
-                'ColumnF'      : [scoreCol] + resCtrlFlat,
-                'Column'       : (
-                    [seqCol, detectedProt, scoreCol] + resCtrlFlat),
-            },
-            'df' : { # Column numbers in the selected data dataframe
-                'SeqCol'       : 0,
-                'TargetProtCol': 1,
-                'ScoreCol'     : 2,
-                'ResCtrl'      : resCtrlDF,
-                'ResCtrlFlat'  : resCtrlDFFlat,
-                'ColumnR'      : resCtrlDFFlat,
-                'ColumnF'      : [2] + resCtrlDFFlat,
-            },
-            'dfo' : { # Column numbers in the output dataframe
-                'NC' : [2,3], # N and C Term Res Numbers in the Rec Seq
-                'NCF': [4,5], # N and C Term Res Numbers in the Nat Seq
-            }
-        }
+        self.rDO = limpMethod.UserData(
+            uFile         = Path(self.wUFile.wTc.GetValue()),
+            iFile         = Path(self.wIFile.wTc.GetValue()),
+            seqFile       = Path(self.wSeqFile.wTc.GetValue()),
+            ID            = self.wId.wTc.GetValue(),
+            cero          = mConfig.core.oYesNo[self.wCeroB.wCb.GetValue()],
+            tran          = self.wTransMethod.wCb.GetValue(),
+            norm          = self.wNormMethod.wCb.GetValue(),
+            imp           = impMethod,
+            shift         = float(self.wShift.wTc.GetValue()),
+            width         = float(self.wWidth.wTc.GetValue()),
+            targetProt    = self.wTargetProt.wTc.GetValue(),
+            scoreVal      = float(self.wScore.wTc.GetValue()),
+            indSample     = self.cOSample[self.wSample.wCb.GetValue()],
+            alpha         = float(self.wAlpha.wTc.GetValue()),
+            beta          = float(self.wBeta.wTc.GetValue()),
+            gamma         = float(self.wGamma.wTc.GetValue()),
+            theta         = theta,
+            thetaM        = thetaMax,
+            labelA        = self.rLbDict[0],
+            labelB        = self.rLbDict[1],
+            ctrlName      = self.rLbDict['Control'][0],
+            ocSeq         = seqCol,
+            ocTargetProt  = detectedProt,
+            ocScore       = scoreCol,
+            resCtrl       = self.wTcResults.GetValue(),
+            ocResCtrl     = resCtrl,
+            ocColumn      = [seqCol, detectedProt, scoreCol] + resCtrlFlat,
+            dfSeq         = 0,
+            dfTargetProt  = 1,
+            dfScore       = 2,
+            dfResCtrl     = resCtrlDF,
+            dfResCtrlFlat = resCtrlDFFlat,
+            dfColumnR     = resCtrlDFFlat,
+            dfColumnF     = [2] + resCtrlDFFlat,
+            dI            = dI,
+        )
         #endregion -------------------------------------------------------> do
 
         #region ---------------------------------------------------> Super
@@ -690,9 +601,9 @@ class LimProt(cPane.BaseConfPanelMod2):
             -------
             bool
         """
-        #region -----------------------------------------------------> rDExtra
-        self.rDExtra['rSeqFileObj'] = self.rSeqFileObj
-        #endregion --------------------------------------------------> rDExtra
+        #region -----------------------------------------------------> Seq Obj
+        setattr(self.rDO, 'seqFileObj', self.rSeqFileObj)
+        #endregion --------------------------------------------------> Seq Obj
 
         #region ---------------------------------------------------> Run Super
         return super().RunAnalysis()

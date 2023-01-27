@@ -16,7 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from typing  import Union, Optional
+from typing  import Union, Optional, TYPE_CHECKING
 
 import pandas as pd
 import numpy as np
@@ -26,16 +26,20 @@ from scipy  import stats
 import wx
 
 from config.config import config as mConfig
-from core import file      as cFile
-from core import statistic as cStatistic
-from core import window    as cWindow
-from main import menu      as mMenu
+from core     import file      as cFile
+from core     import statistic as cStatistic
+from core     import window    as cWindow
+from main     import menu      as mMenu
+from dataprep import method    as dataMethod
+
+if TYPE_CHECKING:
+    from result import window as resWindow
 #endregion ----------------------------------------------------------> Imports
 
 
 #region -------------------------------------------------------------> Methods
 def CreateResDataPrep(
-    parent:wx.Window,
+    parent:'resWindow.UMSAPControl',
     title:str    = '',
     tSection:str = '',
     tDate:str    = '',
@@ -44,7 +48,7 @@ def CreateResDataPrep(
 
         Parameters
         ----------
-        parent: wx.Window
+        parent: resWindow.UMSAPControl
             Parent of the window.
         title: str or None
             Title of the window. Default is None.
@@ -59,7 +63,7 @@ def CreateResDataPrep(
     """
     #region --------------------------------------------------->
     try:
-        ResDataPrep(parent,title=title, tSection=tSection, tDate=tDate)
+        ResDataPrep(parent, title=title, tSection=tSection, tDate=tDate)
     except Exception as e:
         msg = 'Failed to create the Data Preparation Result window.'
         cWindow.Notification('errorU', msg=msg, tException=e, parent=parent)
@@ -77,7 +81,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
 
         Parameters
         ----------
-        parent: wx.Window
+        parent: resWindow.UMSAPControl
             Parent of the window.
         title: str or None
             Title of the window. Default is None.
@@ -88,8 +92,9 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
 
         Attributes
         ----------
-        rData: dict
-            Dict with the configured data for this section from UMSAPFile.
+        rData: cMethod.BaseAnalysis
+            For each DataPrep a new attribute 'Date-ID' is added with value
+            dataMethod.DataPrepAnalysis.
         rDataPlot: dict[str: pd.DataFrame]
             DataFrames with the data.
         rDate: list of str
@@ -103,7 +108,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
 
         Notes
         -----
-        Requires a 'NumColList' key in self.rData[tSection][tDate] with a list
+        Requires a 'NumColList' key in self.rData.tDate with a list
         of all columns involved in the analysis with the column numbers in the
         original data file.
         """
@@ -144,14 +149,14 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
     #region --------------------------------------------------> Instance setup
     def __init__(
         self,
-        parent:wx.Window,
+        parent:'resWindow.UMSAPControl',
         title:str    = '',
         tSection:str = '',
         tDate:str    = '',
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.rObj     = parent.rObj # type: ignore
+        self.rObj     = parent.rObj
         self.cTitle   = title
         self.tSection = tSection if tSection else self.cSection
         self.tDate    = tDate
@@ -304,11 +309,13 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         else:
             self.rFromUMSAPFile = True
             self.rData  = self.rObj.dConfigure[self.cSection]()
-            self.rDate  = [k for k in self.rData.keys() if k != 'Error']
+            self.rDate  = self.rData.date
             #------------------------------>
             self.rDateC = self.rDate[0]
             self.cTitle = (
                 f"{parent.cTitle} - {self.cSection} - {self.rDateC}")           # type: ignore
+        #------------------------------>
+        self.rDataC:dataMethod.DataAnalysis = getattr(self.rData, self.rDateC)
         #endregion --------------------------------------------> Set Variables
 
         return True
@@ -378,7 +385,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         #region ----------------------------------------------------> Get Data
         data = []
         for k,n in enumerate(self.rDataPlot['dfF'].columns.values.tolist()):
-            colN = str(self.rData[self.rDateC]['NumColList'][k])
+            colN = str(self.rDataC.numColList[k])
             data.append([colN, n])
         #endregion -------------------------------------------------> Get Data
 
@@ -639,10 +646,11 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         """
         #region ---------------------------------------------------> Variables
         if tDate:
-            self.rDataPlot = self.rData[tDate]['DP']
+            data = getattr(self.rData, tDate)
+            self.rDataPlot = data.dp
             self.rDateC = tDate
         else:
-            self.rDataPlot = self.rData[self.rDateC]['DP']
+            self.rDataPlot = self.rDataC.dp
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> wx.ListCtrl
@@ -653,14 +661,14 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         self.ClearPlots()
         #endregion -----------------------------------------------------> Plot
 
-        #region ---------------------------------------------------> Text
+        #region --------------------------------------------------------> Text
         self.wText.Clear()
-        #endregion ------------------------------------------------> Text
+        #endregion -----------------------------------------------------> Text
 
-        #region ---------------------------------------------------> Title
+        #region -------------------------------------------------------> Title
         if self.rFromUMSAPFile:
             self.PlotTitle()
-        #endregion ------------------------------------------------> Title
+        #endregion ----------------------------------------------------> Title
 
         return True
     #---

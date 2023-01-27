@@ -36,12 +36,8 @@ class Configuration():
     #------------------------------> Keywords for Menu
     kwCol:str = 'ToolCorrA Select Column'
     #------------------------------> Options
-    oCorrMethod:dict = field(default_factory=lambda: {                          # Correlation Methods
-        ''        : '',
-        'Pearson' : 'Pearson',
-        'Kendall' : 'Kendall',
-        'Spearman': 'Spearman',
-    })
+    oCorrMethod:list = field(default_factory=lambda:                            # Correlation Methods
+        ['', 'Pearson', 'Kendall', 'Spearman'])
     #------------------------------> Colors
     CMAP:dict = field(default_factory=lambda : {                                # CMAP Colors
         'N' : 128,

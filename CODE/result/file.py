@@ -21,7 +21,14 @@ from typing  import Union
 import pandas as pd
 
 from config.config import config as mConfig
-from core import file as cFile
+from core     import check  as cCheck
+from core     import file   as cFile
+from core     import method as cMethod
+from corr     import method as corrMethod
+from dataprep import method as dataMethod
+from limprot  import method as limpMethod
+from protprof import method as protMethod
+from tarprot  import method as tarpMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -52,6 +59,13 @@ class UMSAPFile():
     # No Test
     #region -----------------------------------------------------> Class setup
     SeqF = [mConfig.tarp.nMod, mConfig.limp.nMod]
+    rUserDataClass = {
+        mConfig.corr.nUtil : corrMethod.UserData,
+        mConfig.data.nUtil : dataMethod.UserData,
+        mConfig.prot.nMod  : protMethod.UserData,
+        mConfig.tarp.nMod  : tarpMethod.UserData,
+        mConfig.limp.nMod  : limpMethod.UserData,
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -106,25 +120,17 @@ class UMSAPFile():
     #endregion -------------------------------------------------> Class Method
 
     #region -------------------------------------------------------> Configure
-    def ConfigureDataCorrA(self) -> dict:
+    def ConfigureDataCorrA(self) -> cMethod.BaseAnalysis:
         """Configure a Correlation Analysis section.
 
             Returns
             ------
-            dict
-            {
-                'Error': ['Date1',...], # Analysis containing errors.
-                'Date1': {
-                    'DF'         : pd.DataFrame with the data to plot,
-                    'NumCol'     : number of columns in 'DF',
-                    'NumColList' : List with the number of the columns,
-                },
-                'DateN' : {}
-            }
+            cMethod.BaseAnalysis
+                For each CorrA a new attribute 'Date' is added with value
+                corrMethod.CorrAnalysis.
         """
         #region ---------------------------------------------------> Variables
-        plotData = {}
-        plotData['Error'] = []
+        data = cMethod.BaseAnalysis()
         pathB = mConfig.corr.nUtil.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
@@ -138,24 +144,35 @@ class UMSAPFile():
             try:
                 df = cFile.ReadCSV2DF(tPath/v['R'])
             except Exception:
-                plotData['Error'].append(k)
+                data.error.append(k)
                 continue
             #------------------------------> Check Columns
-            if not (numCol := len(v['CI']['oc']['Column'])) == df.shape[0]:
-                plotData['Error'].append(k)
+            try:
+                numColList = v['CI']['oc']['Column']                            # Keep support for previous versions
+            except KeyError:
+                numColList = v['CI']['ocResCtrlFlat']
+            numCol = len(numColList)
+            #------------------------------>
+            if numCol != df.shape[0]:
+                data.error.append(k)
                 continue
             #------------------------------> Add to dict if no error
-            plotData[k] = { # type: ignore
-                'DF'        : df,
-                'NumCol'    : numCol,
-                'NumColList': v['CI']['oc']['Column'],
-            }
+            setattr(data, k, corrMethod.CorrAnalysis(
+                df         = df,
+                numCol     = numCol,
+                numColList = numColList
+            ))
+            data.date.append(k)
         #endregion ----------------------------------------------> Plot & Menu
 
-        return plotData
+        return data
     #---
 
-    def ConfigureDataDataPrep(self, tSection:str='', tDate:str='') -> dict:
+    def ConfigureDataDataPrep(
+        self,
+        tSection:str = '',
+        tDate:str    = '',
+        ) -> cMethod.BaseAnalysis:
         """Configure a Data Preparation Check section.
 
             Parameters
@@ -167,15 +184,9 @@ class UMSAPFile():
 
             Returns
             -------
-            dict
-            {
-                'Error': ['Date1',...], # Analysis containing errors.
-                'Date1': {
-                    'DP' : dict with the data preparation steps key are the
-                        step's names and values the pd.DataFrame,
-                },
-                'DateN': {},
-            }
+            cMethod.BaseAnalysis
+                For each DataPrep a new attribute 'Date' is added with value
+                dataMethod.DataPrepAnalysis.
         """
         #------------------------------> Data Prep From Plot
         if tSection and tDate:
@@ -189,7 +200,11 @@ class UMSAPFile():
         raise ValueError(msg)
     #---
 
-    def ConfigureDataDataPrepFromPlot(self, tSection:str, tDate:str) -> dict:
+    def ConfigureDataDataPrepFromPlot(
+        self,
+        tSection:str,
+        tDate:str,
+        ) -> cMethod.BaseAnalysis:
         """Configure a Data Preparation Check section.
 
             Parameters
@@ -201,95 +216,89 @@ class UMSAPFile():
 
             Returns
             -------
-            dict
-            {
-                'Error': ['Date1',...], # Analysis containing errors.
-                'Date1': {
-                    'DP' : dict with the data preparation steps key are the
-                        step's names and values the pd.DataFrame,
-                }
-            }
+            cMethod.BaseAnalysis
+                For each DataPrep a new attribute 'Date' is added with value
+                dataMethod.DataPrepAnalysis.
         """
         #region ---------------------------------------------------> Variables
-        plotData          = {}
-        plotData['Error'] = []
+        data = cMethod.BaseAnalysis()
         pathA = tDate.split(" - ")[0]
         pathB = tSection.replace(" ", "-")
         tPath = self.rStepDataP / f'{pathA}_{pathB}'
         #endregion ------------------------------------------------> Variables
 
-        #region -------------------------------------------------> Plot & Menu
+        #region --------------------------------------------------------> Data
         try:
-            plotData[tDate] = {
-                'DP': {j:cFile.ReadCSV2DF(tPath/w) for j,w in self.rData[tSection][tDate]['DP'].items()},
-                'NumColList': self.rData[tSection][tDate]['CI']['oc']['Column'],
-            }
-        except Exception:
-            pass
-        #endregion ----------------------------------------------> Plot & Menu
+            dp = {j:cFile.ReadCSV2DF(tPath/w) for j,w in self.rData[tSection][tDate]['DP'].items()}
+        except Exception as e:
+            raise ValueError(f"Data for analysis {tDate} is corrupted.") from e
+        try:
+            numColList = self.rData[tSection][tDate]['CI']['oc']['Column']
+        except KeyError:
+            numColList = self.rData[tSection][tDate]['CI']['ocResCtrlFlat']
+        #------------------------------>
+        setattr(data, tDate, dataMethod.DataAnalysis(
+            dp         = dp,
+            numColList = numColList,
+        ))
+        data.date.append(tDate)
+        #endregion -----------------------------------------------------> Data
 
-        return plotData
+        return data
     #---
 
-    def ConfigureDataDataPrepFromUMSAP(self) -> dict:
+    def ConfigureDataDataPrepFromUMSAP(self) -> cMethod.BaseAnalysis:
         """Configure a Data Preparation Check section.
 
             Returns
             -------
-            dict
-            {
-                'Error': ['Date1',...], # Analysis containing errors.
-                'Date1': {
-                    'DP' : dict with the data preparation steps key are the
-                        step's names and values the pd.DataFrame,
-                },
-                'DateN': {},
-            }
+            cMethod.BaseAnalysis
+                For each DataPrep a new attribute 'Date' is added with value
+                dataMethod.DataPrepAnalysis.
         """
         #region ---------------------------------------------------> Variables
-        plotData = {}
-        plotData['Error'] = []
+        data  = cMethod.BaseAnalysis()
         pathB = mConfig.data.nUtil.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu
         for k,v in self.rData[mConfig.data.nUtil].items():
             #------------------------------> Read and type
+            pathA = k.split(" - ")[0]
+            tPath = self.rStepDataP / f'{pathA}_{pathB}'
+            #------------------------------> Read data frames
             try:
-                pathA = k.split(" - ")[0]
-                tPath = self.rStepDataP / f'{pathA}_{pathB}'
+                dp = {j:cFile.ReadCSV2DF(tPath/w) for j,w in v['DP'].items()}
             except Exception:
-                plotData['Error'].append(k)
+                data.error.append(k)
                 continue
-            #------------------------------> Add to dict
-            plotData[k] = {
-                'DP' : {j:cFile.ReadCSV2DF(tPath/w) for j,w in v['DP'].items()},
-                'NumColList': v['CI']['oc']['Column'],
-            }
+            #------------------------------>
+            try:
+                numColList = v['CI']['oc']['Column']
+            except KeyError:
+                numColList = v['CI']['ocResCtrlFlat']
+            #------------------------------>
+            setattr(data, k, dataMethod.DataAnalysis(
+                dp         = dp,
+                numColList = numColList,
+            ))
+            data.date.append(k)
         #endregion ----------------------------------------------> Plot & Menu
 
-        return plotData
+        return data
     #---
 
-    def ConfigureDataProtProf(self) -> dict:
+    def ConfigureDataProtProf(self) -> cMethod.BaseAnalysis:
         """Configure a Proteome Profiling section.
 
             Returns
             ------
-            dict
-            {
-                'Error': ['Date1',...], # Analysis containing errors.
-                'Date1': {
-                    'DF'   : pd.DataFrame with the data to plot,
-                    'F'    : dict with filters,
-                    'Alpha': Alpha value used in the analysis,
-                },
-                'DateN': {},
-            }
+            cMethod.BaseAnalysis
+                For each Proteome Profiling a new attribute 'Date' is added with
+                value protMethod.ProtProfAnalysis.
         """
         #region ---------------------------------------------------> Variables
-        plotData = {}
-        plotData['Error'] = []
+        data   = cMethod.BaseAnalysis()
         colStr = [('Gene','Gene','Gene'),('Protein','Protein','Protein')]
         pathB  = mConfig.prot.nMod.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
@@ -304,47 +313,49 @@ class UMSAPFile():
                 df = cFile.ReadCSV2DF(tPath/v['R'], header=[0,1,2])
                 df.loc[:,colStr] = df.loc[:,colStr].astype('str')               # type: ignore
             except Exception:
-                plotData['Error'].append(k)
+                data.error.append(k)
                 continue
-            #------------------------------> Add to dict
-            plotData[k] = {
-                'DF'   : df,
-                'F'    : v['F'],
-                'Alpha': v['CI']['Alpha'],
-            }
+            #------------------------------> Alpha
+            try:                                                                # Keep backward compatibility
+                alpha    = v['CI']['Alpha']
+                labelA   = v['CI']['Cond']
+                labelB   = v['CI']['RP']
+                ctrlType = v['CI']['ControlT']
+                ctrlName = v['CI']['ControlL'][0]
+            except KeyError:
+                alpha    = v['CI']['alpha']
+                labelA   = v['CI']['labelA']
+                labelB   = v['CI']['labelB']
+                ctrlType = v['CI']['ctrlType']
+                ctrlName = v['CI']['ctrlName'][0]
+            #------------------------------> Add to class
+            setattr(data, k, protMethod.ProtAnalysis(
+                df       = df,
+                filterS  = v['F'],
+                alpha    = alpha,
+                labelA   = labelA,
+                labelB   = labelB,
+                ctrlName = ctrlName,
+                ctrlType = ctrlType,
+            ))
+            data.date.append(k)
         #endregion ----------------------------------------------> Plot & Menu
 
-        return plotData
+        return data
     #---
 
-    def ConfigureDataLimProt(self) -> dict:
+    def ConfigureDataLimProt(self) -> cMethod.BaseAnalysis:
         """Configure a Limited Proteolysis section.
 
             Returns
             -------
-            dict
-            {
-                'Error': ['Date1',...], # Analysis containing errors.
-                'Date1': {
-                    'DF' : pd.DataFrame with the data to plot,
-                    'PI' : { dict with information for the plotting window
-                        'Bands'     : list with the band's names,
-                        'Lanes'     : list with the lane's names,
-                        'Alpha'     : alpha value,
-                        'ProtLength': length of the recombinant protein,
-                        'ProtLoc'   : list with the location of the native protein,
-                        'ProtDelta' : value to calculate native residue numbers as
-                                        resN_Nat = resN_Rec + ProtDelta,
-                        'Prot'      : name of the Target Protein,
-                    },
-                },
-                'DateN': {},
-            }
+            cMethod.BaseAnalysis
+                For each Limited Proteolysis a new attribute 'Date' is added
+                with value limpMethod.LimpAnalysis.
         """
         #region ---------------------------------------------------> Variables
-        plotData = {}
-        plotData['Error'] = []
-        pathB = mConfig.limp.nMod.replace(" ", "-")
+        plotData = cMethod.BaseAnalysis()
+        pathB    = mConfig.limp.nMod.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu
@@ -355,66 +366,54 @@ class UMSAPFile():
             #------------------------------>
             try:
                 df = cFile.ReadCSV2DF(tPath/v['R'], header=[0,1,2])
-                #------------------------------> Plot Info
-                PI = {
-                    'Bands'     : v['CI']['Band'],
-                    'Lanes'     : v['CI']['Lane'],
-                    'Alpha'     : v['CI']['Alpha'],
-                    'ProtLength': v['CI']['ProtLength'],
-                    'ProtLoc'   : v['CI']['ProtLoc'],
-                    'ProtDelta' : v['CI']['ProtDelta'],
-                    'Prot'      : v['CI']['TargetProt'],
-                }
             except Exception:
-                plotData['Error'].append(k)
+                plotData.error.append(k)
                 continue
             #------------------------------>
-            plotData[k] = {
-                'DF': df,
-                'PI': PI,
-            }
+            try:
+                labelB     = v['CI']['Band']
+                labelA     = v['CI']['Lane']
+                alpha      = v['CI']['Alpha']
+                protLength = v['CI']['ProtLength']
+                protLoc    = v['CI']['ProtLoc']
+                protDelta  = v['CI']['ProtDelta']
+                prot       = v['CI']['TargetProt']
+            except KeyError:
+                labelB     = v['CI']['labelB']
+                labelA     = v['CI']['labelA']
+                alpha      = v['CI']['alpha']
+                protLength = v['CI']['protLength']
+                protLoc    = v['CI']['protLoc']
+                protDelta  = v['CI']['protDelta']
+                prot       = v['CI']['targetProt']
+            #------------------------------>
+            setattr(plotData, k, limpMethod.LimpAnalysis(
+                df         = df,
+                labelA     = labelA,
+                labelB     = labelB,
+                alpha      = alpha,
+                protLength = protLength,
+                protLoc    = protLoc,
+                protDelta  = protDelta,
+                targetProt = prot,
+            ))
+            plotData.date.append(k)
         #endregion ----------------------------------------------> Plot & Menu
 
         return plotData
     #---
 
-    def ConfigureDataTarProt(self) -> dict:
+    def ConfigureDataTarProt(self) -> cMethod.BaseAnalysis:
         """Configure a Targeted Proteolysis section.
 
             Returns
             ------
-            dict
-            {
-                'Error': ['Date1',...], # Analysis containing errors.
-                'Date1': {
-                    'DF' : pd.DataFrame with the data to plot,
-                    'PI' : { dict with information for the plotting window
-                        'Exp'       : list with the experiment's names,
-                        'Ctrl'      : name of the control,
-                        'Alpha'     : alpha value,
-                        'ProtLength': length of the recombinant protein,
-                        'ProtLoc'   : list with the location of the native protein,
-                        'ProtDelta' : value to calculate native residue numbers as
-                                        resN_Nat = resN_Rec + ProtDelta,
-                        'Prot'      : name of the Target Protein,
-                    },
-                    'Cpr': 'File name',
-                    'CEvol: 'File name',
-                    'AA': {
-                        'Date': 'File name',
-                        'DateN': 'File name',
-                    },
-                    'Hist' : {
-                        'Date': 'File name',
-                        'DateN': 'File name',
-                    },
-                },
-                'DateN': {},
-            }
+            cMethod.BaseAnalysis
+                For each Targeted Proteolysis a new attribute 'Date' is added
+                with value tarpMethod.TarpAnalysis.
         """
         #region ---------------------------------------------------> Variables
-        plotData = {}
-        plotData['Error']=[]
+        data = cMethod.BaseAnalysis()
         pathB = mConfig.tarp.nMod.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
@@ -425,38 +424,51 @@ class UMSAPFile():
             tPath = self.rStepDataP / f'{pathA}_{pathB}'
             #------------------------------>
             try:
-                #------------------------------>
                 df  = cFile.ReadCSV2DF(tPath/v['R'], header=[0,1])
-                #------------------------------> Plot Info
-                PI = {
-                    'Exp'       : v['CI']['Exp'],
-                    'Ctrl'      : v['CI']['ControlL'],
-                    'Alpha'     : v['CI']['Alpha'],
-                    'ProtLength': v['CI']['ProtLength'],
-                    'ProtLoc'   : v['CI']['ProtLoc'],
-                    'ProtDelta' : v['CI']['ProtDelta'],
-                    'Prot'      : v['CI']['TargetProt'],
-                }
             except Exception:
-                plotData['Error'].append(k)
+                data.error.append(k)
                 continue
+            #------------------------------>
+            try:
+                exp        = v['CI']['Exp']
+                ctrl       = v['CI']['ControlL']
+                alpha      = v['CI']['Alpha']
+                protLength = v['CI']['ProtLength']
+                protLoc    = v['CI']['ProtLoc']
+                protDelta  = v['CI']['ProtDelta']
+                prot       = v['CI']['TargetProt']
+            except KeyError:
+                exp        = v['CI']['labelA']
+                ctrl       = v['CI']['ctrlName']
+                alpha      = v['CI']['alpha']
+                protLength = v['CI']['protLength']
+                protLoc    = v['CI']['protLoc']
+                protDelta  = v['CI']['protDelta']
+                prot       = v['CI']['targetProt']
             #------------------------------> Add to dict if no error
-            plotData[k] = {
-                'DF'   : df,
-                'PI'   : PI,
-                'AA'   : v.get('AA', {}),
-                'Hist' : v.get('Hist', {}),
-                'CpR'  : v['CpR'],
-                'CEvol': v['CEvol'],
-            }
+            setattr(data, k, tarpMethod.TarpAnalysis(
+                df         = df,
+                labelA     = exp,
+                ctrlName   = ctrl,
+                alpha      = alpha,
+                protLength = protLength,
+                protLoc    = protLoc,
+                protDelta  = protDelta,
+                targetProt = prot,
+                CpR        = v['CpR'],
+                CEvol      = v['CEvol'],
+                AA         = v.get('AA', {}),
+                Hist       = v.get('Hist', {})
+            ))
+            data.date.append(k)
         #endregion ----------------------------------------------> Plot & Menu
 
-        return plotData
+        return data
     #---
     #endregion ----------------------------------------------------> Configure
 
     #region -----------------------------------------------------> Get Methods
-    def GetDataUser(self, tSection:str, tDate:str) -> dict:
+    def GetDataUser(self, tSection:str, tDate:str) -> cMethod.BaseUserData:
         """Get both initial and curated data from the user for the analysis.
 
             Parameters
@@ -469,54 +481,129 @@ class UMSAPFile():
 
             Returns
             -------
-            dict:
-                {
-                    'I' : user input with stripped keys,
-                    'CI': corrected user input,
-                    'rootP' : path to the folder containing the UMSAP file,
-                }
+            cMethod.BaseUserData
+                An instance according to tSection.
         """
-        #region ------------------------------------------------> Strip I keys
-        i = {k.strip():v
-             for k,v in self.rData[tSection][tDate]['I'].items()}
-        #endregion ---------------------------------------------> Strip I keys
+        #region ---------------------------------------------> Helper Function
+        def OldVersion():
+            """"""
+            #region ------------------------------------------> Key Translator
+            kTranslator = {
+                'uFile'  : 'uFile',
+                'ID'     : 'ID',
+                #------------------------------>
+                'Cero'       : 'cero',
+                'TransMethod': 'tran',
+                'NormMethod' : 'norm',
+                'ImpMethod'  : 'imp',
+                'Shift'      : 'shift',
+                'Width'      : 'width',
+                #------------------------------>
+                'CorrMethod': 'corr',
+                'ScoreVal'  : 'scoreVal',
+                'RawI'      : 'rawInt',
+                'IndS'      : 'indSample',
+                'Alpha'     : 'alpha',
+                'Beta'      : 'beta',
+                'Gamma'     : 'gamma',
+                'Theta'     : 'theta',
+                'ThetaMax'  : 'thetaM',
+                'CorrectP'  : 'correctedP',
+                'TargetProt': 'targetProt',
+                'AA'        : 'posAA',
+                'Hist'      : 'winHist',
+                #------------------------------>
+                'Cond'    : 'labelA',
+                'Lane'    : 'labelA',
+                'RP'      : 'labelB',
+                'Band'    : 'labelB',
+                'Exp'     : 'labelA',
+                'ControlT': 'ctrlType',
+                'ControlL': 'ctrlName',
+                'oc'      : {
+                    'SeqCol'       : 'ocSeq',
+                    'TargetProtCol': 'ocTargetProt',
+                    'DetectedP'    : 'ocTargetProt',
+                    'GeneName'     : 'ocGene',
+                    'ScoreCol'     : 'ocScore',
+                    'ExcludeR'     : 'ocExcludeR',
+                    'ResCtrl'      : 'ocResCtrl',
+                    'Column'       : 'ocColumn',
+                },
+                'df' : {
+                    'SeqCol'       : 'dfSeq',
+                    'TargetProtCol': 'dfTargetProt',
+                    'DetectedP'    : 'dfTargetProt',
+                    'GeneName'     : 'dfGene',
+                    'ScoreCol'     : 'dfScore',
+                    'ExcludeR'     : 'dfExcludeR',
+                    'ResCtrl'      : 'dfResCtrl',
+                    'ColumnR'      : 'dfColumnR',
+                    'ColumnF'      : 'dfColumnF',
+                    'ResCtrlFlat'  : 'dfResCtrlFlat',
+                },
+                'dfo': {
+                    'NC' : 'dfNC',
+                    'NCF': 'dfNCF',
+                },
+                'ProtLength': 'protLength',
+                'ProtLoc'   : 'protLoc',
+                'ProtDelta' : 'protDelta',
+            }
+            #endregion ---------------------------------------> Key Translator
 
-        return {
-            'I'    : i,
-            'CI'   : self.rData[tSection][tDate]['CI'],
-            'uFile': self.rFileP,
-        }
-    #---
+            #region ----------------------------------------------------> Data
+            data = {}
+            #------------------------------>
+            for k,v in self.rData[tSection][tDate]['CI'].items():
+                if isinstance(v, dict):
+                    for j,w in v.items():
+                        try:
+                            data[kTranslator[k][j]] = w
+                        except KeyError:
+                            pass
+                else:
+                    try:
+                        data[kTranslator[k]] = v
+                    except KeyError:
+                        pass
+            #------------------------------>
+            for k in self.rData[tSection][tDate]['I'].keys():
+                if 'Data' in k:
+                    fileN = self.rData[tSection][tDate]['I'][k]
+                    data['iFile'] = self.rInputFileP / fileN
+                if 'Results - Control' in k:
+                    data['resCtrl'] = self.rData[tSection][tDate]['I'][k]
+                if 'Sequences File' in k:
+                    fileN = self.rData[tSection][tDate]['I'][k]
+                    data['seqFile'] = self.rInputFileP / fileN
+            #endregion -------------------------------------------------> Data
 
-    def GetRecSeq(self, tSection:str, tDate:str) -> str:
-        """Get the recombinant sequence used in an analysis.
+            return data
+        #---
+        #endregion ------------------------------------------> Helper Function
 
-            Parameters
-            ----------
-            tSection: str
-                Analysis performed, e.g. 'Correlation Analysis'
-            tDate: str
-                The date plus user-given Analysis ID
-                e.g. '20210325-112056 - bla'
-
-            Returns
-            -------
-            str
-        """
-        #region ------------------------------------------------> Path
-        fileN = ''
+        #region --------------------------------------------------------> Data
+        fileV = self.rData[tSection][tDate]['V']['Version']
         #------------------------------>
-        for k,v in self.rData[tSection][tDate]['I'].items():
-            if 'Sequences File' in k:
-                fileN = v
-                break
-        #endregion ---------------------------------------------> Path
+        if cCheck.VersionCompare('2.2.1', fileV)[0]:
+            data = OldVersion()                                                 # Old Files <= 2.2.0 with json format
+        else:
+            data            = self.rData[tSection][tDate]['CI']                 # > 2.2.0
+            data['uFile']   = self.rFileP
+            data['iFile']   = self.rInputFileP / data['iFileN']
+            try:
+                data['seqFile'] = self.rInputFileP / data['seqFileN']
+            except KeyError:
+                pass
+        #endregion -----------------------------------------------------> Data
 
-        #region --------------------------------------------------->
-        seqObj = cFile.FastaFile(self.rInputFileP/fileN)
-        #endregion ------------------------------------------------>
+        #region ---------------------------------------------------> DataClass
+        userData = self.rUserDataClass[tSection]()                              # Default Values
+        userData.FromDict(data)                                                 # Values for Analysis
+        #endregion ------------------------------------------------> DataClass
 
-        return seqObj.rSeqRec
+        return userData
     #---
 
     def GetSeq(self, tSection:str, tDate:str) -> tuple[str, str]:
@@ -537,10 +624,13 @@ class UMSAPFile():
         #region ------------------------------------------------> Path
         fileN = ''
         #------------------------------>
-        for k,v in self.rData[tSection][tDate]['I'].items():
-            if 'Sequences File' in k:
-                fileN = v
-                break
+        try:
+            fileN = self.rData[tSection][tDate]['CI']['seqFileN']
+        except KeyError:                                                        # Keep backward compatibility
+            for k,v in self.rData[tSection][tDate]['I'].items():
+                if 'Sequences File' in k:
+                    fileN = v
+                    break
         #endregion ---------------------------------------------> Path
 
         #region --------------------------------------------------->
@@ -548,6 +638,28 @@ class UMSAPFile():
         #endregion ------------------------------------------------>
 
         return (seqObj.rSeqRec, seqObj.rSeqNat)
+    #---
+
+    def GetRecSeq(self, tSection:str, tDate:str) -> str:
+        """Get the recombinant sequence used in an analysis.
+
+            Parameters
+            ----------
+            tSection: str
+                Analysis performed, e.g. 'Correlation Analysis'
+            tDate: str
+                The date plus user-given Analysis ID
+                e.g. '20210325-112056 - bla'
+
+            Returns
+            -------
+            str
+        """
+        #region --------------------------------------------------->
+        seqs = self.GetSeq(tSection, tDate)
+        #endregion ------------------------------------------------>
+
+        return seqs[0]
     #---
 
     def GetFAData(
