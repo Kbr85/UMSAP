@@ -385,7 +385,7 @@ class UMSAPFile():
                 protLength = v['CI']['protLength']
                 protLoc    = v['CI']['protLoc']
                 protDelta  = v['CI']['protDelta']
-                prot       = v['CI']['TargetProt']
+                prot       = v['CI']['targetProt']
             #------------------------------>
             setattr(plotData, k, limpMethod.LimpAnalysis(
                 df         = df,
@@ -504,13 +504,19 @@ class UMSAPFile():
                 'RawI'      : 'rawInt',
                 'IndS'      : 'indSample',
                 'Alpha'     : 'alpha',
+                'Beta'      : 'beta',
+                'Gamma'     : 'gamma',
+                'Theta'     : 'theta',
+                'ThetaMax'  : 'thetaM',
                 'CorrectP'  : 'correctedP',
                 'TargetProt': 'targetProt',
                 'AA'        : 'posAA',
                 'Hist'      : 'winHist',
                 #------------------------------>
                 'Cond'    : 'labelA',
+                'Lane'    : 'labelA',
                 'RP'      : 'labelB',
+                'Band'    : 'labelB',
                 'Exp'     : 'labelA',
                 'ControlT': 'ctrlType',
                 'ControlL': 'ctrlName',

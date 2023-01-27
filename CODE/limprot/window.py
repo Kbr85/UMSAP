@@ -31,9 +31,10 @@ from reportlab.platypus.flowables import KeepTogether
 from reportlab.lib.styles         import getSampleStyleSheet, ParagraphStyle
 
 from config.config import config as mConfig
-from core import method as cMethod
-from core import window as cWindow
-from main import menu   as mMenu
+from core    import method as cMethod
+from core    import window as cWindow
+from main    import menu   as mMenu
+from limprot import method as limpMethod
 
 if TYPE_CHECKING:
     from result import window as resWindow
@@ -134,12 +135,13 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         #region -----------------------------------------------> Initial Setup
         self.cTitle          = f'{parent.cTitle} - {self.cSection}'
         self.rObj            = parent.rObj
-        self.rData           = self.rObj.dConfigure[self.cSection]()
+        self.rData:limpMethod.LimpAnalysis = self.rObj.dConfigure[self.cSection]()
         self.rDate, menuData = self.SetDateMenuDate()
         #------------------------------>
         self.ReportPlotDataError()
         #------------------------------>
         self.rDateC         = self.rDate[0]
+        self.rDataC         = getattr(self.rData, self.rDateC)
         self.rBands         = []
         self.rLanes         = []
         self.rSelBands      = True
@@ -289,7 +291,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         #------------------------------>
         self.SetFragmentAxis(showAll=tYLabel)
         #------------------------------>
-        nc = len(self.cSpot)                                           # type: ignore
+        nc = len(self.cSpot)                                                    # type: ignore
         #------------------------------>
         k = 1
         for k,v in enumerate(tKeys, start=1):
@@ -300,7 +302,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
                     0.4,
                     picker    = True,
                     linewidth = self.cGelLineWidth,
-                    facecolor = self.cSpot[(tColor[k-1])%nc],          # type: ignore
+                    facecolor = self.cSpot[(tColor[k-1])%nc],                   # type: ignore
                     edgecolor = 'black',
                     label     = f'{tLabel[k-1]}.{j}',
                 ))
@@ -367,15 +369,16 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         """
         #region ---------------------------------------------------> Variables
         self.rDateC = tDate if tDate else self.rDateC
+        self.rDataC = getattr(self.rData, self.rDateC)
         #------------------------------>
-        self.rDf          = self.rData[self.rDateC]['DF'].copy()
-        self.rBands       = self.rData[self.rDateC]['PI']['Bands']
-        self.rLanes       = self.rData[self.rDateC]['PI']['Lanes']
-        self.rAlpha       = self.rData[self.rDateC]['PI']['Alpha']
-        self.rProtLoc     = self.rData[self.rDateC]['PI']['ProtLoc']
-        self.rProtLength  = self.rData[self.rDateC]['PI']['ProtLength'][0]
-        self.rProtDelta   = self.rData[self.rDateC]['PI']['ProtDelta']
-        self.rProtTarget  = self.rData[self.rDateC]['PI']['Prot']
+        self.rDf          = self.rDataC.df.copy()
+        self.rBands       = self.rDataC.labelB
+        self.rLanes       = self.rDataC.labelA
+        self.rAlpha       = self.rDataC.alpha
+        self.rProtLoc     = self.rDataC.protLoc
+        self.rProtLength  = self.rDataC.protLength[0]
+        self.rProtDelta   = self.rDataC.protDelta
+        self.rProtTarget  = self.rDataC.targetProt
         self.rRectsGel    = []
         self.rRectsFrag   = []
         self.rBlSelC      = [None, None]
@@ -536,22 +539,23 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         c = (self.rDf.loc[:,(b,l,'Ptost')].isna().all() or
             not self.rFragments[f"{(b,l,'Ptost')}"]['Coord']
         )
-        nc = len(self.cSpot)                                           # type: ignore
+        nc = len(self.cSpot)                                                    # type: ignore
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------------> Color
         if c:
             return 'white'
-        elif showAll:
+        #------------------------------>
+        if showAll:
             if self.rSelBands:
-                return self.cSpot[nb%nc]                               # type: ignore
-            else:
-                return self.cSpot[nl%nc]                               # type: ignore
-        else:
-            if self.rSelBands:
-                return self.cSpot[nl%nc]                               # type: ignore
-            else:
-                return self.cSpot[nb%nc]                               # type: ignore
+                return self.cSpot[nb%nc]                                        # type: ignore
+            #------------------------------>
+            return self.cSpot[nl%nc]                                            # type: ignore
+        #------------------------------>
+        if self.rSelBands:
+            return self.cSpot[nl%nc]                                            # type: ignore
+            #------------------------------>
+        return self.cSpot[nb%nc]                                                # type: ignore
         #endregion ----------------------------------------------------> Color
     #---
 
@@ -722,8 +726,8 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         """
         if self.rSelBands:
             return self.PrintBText(y)
-        else:
-            return self.PrintLText(x)
+        #------------------------------>
+        return self.PrintLText(x)
     #---
 
     def PrintLBGetInfo(self, tKeys:list[list]) -> dict:
