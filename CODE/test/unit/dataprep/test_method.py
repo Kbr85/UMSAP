@@ -248,23 +248,17 @@ class Test_DataPreparation(unittest.TestCase):
     @classmethod
     def setUp(cls):                                                             # pylint: disable=arguments-differ
         """Set test"""
-        cls.df = cFile.ReadCSV2DF(fileA)
-        cls.dict1 = {
-            'Cero' : False,
-            'TransMethod' : 'Log2',
-            'NormMethod'  : 'Median',
-            'ImpMethod'   : 'None',
-            'Shift'       : 1.8,
-            'Width'       : 0.3,
-            'oc' : {
-                'Column' : [98,99,100,101,102],
-            },
-            'df' : {
-                'ColumnR'     : [0,1,2,3,4],
-                'ColumnF'     : [0,1,2,3,4],
-                'ResCtrlFlat' : [0,1,2,3,4],
-            }
-        }
+        cls.df    = cFile.ReadCSV2DF(fileA)
+        cls.dict1 = dataMethod.UserData(
+            cero          = False,
+            tran          = 'Log2',
+            norm          = 'Median',
+            imp           = 'None',
+            shift         = 1.8,
+            width         = 0.3,
+            ocColumn      = [98,99,100,101,102],
+            ocResCtrlFlat = [0,1,2,3,4],
+        )
     #---
     #endregion --------------------------------------------------> Class Setup
 

@@ -16,6 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
+from typing  import Optional
 
 import wx
 
@@ -37,9 +38,9 @@ class ProtProf(cPane.BaseConfPanelMod):
         ----------
         parent: wx.Widget
             Parent of the pane
-        dataI: dict or None
+        dataI: protMethod.UserData or None
             Initial data provided by the user in a previous analysis.
-            This contains both I and CI dicts e.g. {'I': I, 'CI': CI}.
+            Default is None.
 
         Attributes
         ----------
@@ -47,59 +48,8 @@ class ProtProf(cPane.BaseConfPanelMod):
             Methods to check the replicate numbers.
         dColCtrlData: dict
             Methods to get the Columns for Control Experiments.
-        rDI: dict
-            Dictionary with the user input. Keys are labels in the panel plus:
-            {
-                config.lStProtProfCond          : [list of conditions],
-                config.lStProtProfRP            : [list of relevant points],
-                f"Control {config.lStCtrlType}" : "Control Type",
-                f"Control {config.lStCtrlName}" : "Control Name",
-            }
-        rDO: dict
-            Dictionary with checked user input. Keys are:
-            {
-                "iFile"      : "Path to input data file",
-                "uFile"      : "Path to umsap file.",
-                'ID'         : 'Analysis ID',
-                "ScoreVal"   : "Score value threshold",
-                "RawI"       : "Raw intensity or not. Boolean",
-                "IndS"       : "Independent samples or not. Boolean,
-                "Cero"       : Boolean, how to treat cero values,
-                "TransMethod": "Transformation method",
-                "NormMethod" : "Normalization method",
-                "ImpMethod"  : "Imputation method",
-                "Shift"      : "float",
-                "Width:      : "float",
-                "Alpha"      : "Significance level",
-                "CorrectP"   : "Method to correct P values",
-                "Cond"       : [List of conditions],
-                "RP"         : [List of relevant points],
-                "ControlT"   : "Control type",
-                "ControlL"   : "Control label",
-                "oc": {
-                    "DetectedP": "Detected Proteins column. Int",
-                    "GeneName" : "Gene name column. Int",
-                    "ScoreCol" : "Score column. Int",
-                    "ExcludeP" : [List of columns to search for proteins to
-                                exclude. List of int],
-                    "ResCtrl": [List of columns containing the control and
-                                experiments column numbers],
-                    "ColumnF" : [Column that must contain floats],
-                    "Column": [Flat list of all column numbers with the
-                              following order: Gene Names, Detected Proteins,
-                              Score, Exclude Proteins, Res & Control]
-                },
-                "df": { Column numbers in the pd.df created from the input file.
-                    "DetectedP": 0,
-                    "GeneName" : 1,
-                    "ScoreCol" : 2,
-                    "ExcludeP" : [list of int],
-                    "ResCtrl": [],
-                    "ResCtrlFlat": [ResCtrl as a flat list],
-                    "ColumnR : [Columns with the results]
-                    "ColumnF": [Columns that must contain only float numbers]
-                }
-            },
+        rDO: protMethod.UserData
+            DataClass with user input.
         rLbDict: dict
             Contains information about the Res - Ctrl e.g.
             {
@@ -132,8 +82,8 @@ class ProtProf(cPane.BaseConfPanelMod):
             'Proteome-Profiling : {
                 '20210324-165609': {
                     'V' : config.dictVersion,
-                    'I' : self.d,
-                    'CI': self.do,
+                    'I' : Dict with User Input as given. Keys are label like in the Tab GUI,
+                    'CI': Dict with Processed User Input. Keys are attributes of UserData,
                     'DP': {
                         'dfI' : Name of the file with initial data as float.
                         'dfT' : Name of the file with transformed data.
@@ -166,8 +116,6 @@ class ProtProf(cPane.BaseConfPanelMod):
     cLRP           = mConfig.prot.lStRP
     cLCtrlType     = mConfig.core.lStCtrlType
     cLCtrlName     = mConfig.core.lStCtrlName
-    cLDFThreeCol   = mConfig.prot.dfcolFirstPart
-    cLDFThirdLevel = mConfig.prot.dfcolCLevel
     cLPdRunText    = 'Performing Proteome Profiling'
     #------------------------------> Choices
     cOCorrectP  = mConfig.core.oCorrectP
@@ -184,19 +132,18 @@ class ProtProf(cPane.BaseConfPanelMod):
     cSection     = mConfig.prot.nMod
     cTitlePD     = f"Running {mConfig.prot.nMod} Analysis"
     cGaugePD     = 29
-    rLLenLongest = len(mConfig.core.lStResCtrlS)
     rMainData    = '{}_{}-ProteomeProfiling-Data.txt'
-    rDExtra = {
-        'cLDFThreeCol'  : cLDFThreeCol,
-        'cLDFThirdLevel': cLDFThirdLevel
-    }
     rAnalysisMethod = protMethod.ProtProf
     #------------------------------> Optional configuration
     cTTHelp = mConfig.core.ttBtnHelp.format(cURL)
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent, dataI:dict={}):                                 # pylint: disable=dangerous-default-value
+    def __init__(
+        self,
+        parent,
+        dataI:Optional[protMethod.UserData]=None,
+        ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Base attributes and setup
@@ -396,10 +343,6 @@ class ProtProf(cPane.BaseConfPanelMod):
             self.wScore.wTc, self.wExcludeProt.wTc, self.wTcResults]
         #endregion -------------------------------------------> checkUserInput
 
-        #region -------------------------------------------------------> DataI
-        self.SetInitialData(dataI)
-        #endregion ----------------------------------------------------> DataI
-
         #region --------------------------------------------------------> Test
         if mConfig.core.development:
             # pylint: disable=line-too-long
@@ -463,11 +406,16 @@ class ProtProf(cPane.BaseConfPanelMod):
             self.wShift.wTc.SetValue('1.8')
             self.wWidth.wTc.SetValue('0.3')
         #endregion -----------------------------------------------------> Test
+
+        #region -------------------------------------------------------> DataI
+        if dataI is not None:
+            self.SetInitialData(dataI)
+        #endregion ----------------------------------------------------> DataI
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region --------------------------------------------------> Class Methods
-    def SetInitialData(self, dataI:dict={}) -> bool:                            # pylint: disable=dangerous-default-value
+    def SetInitialData(self, dataI:protMethod.UserData) -> bool:
         """Set initial data.
 
             Parameters
@@ -480,39 +428,34 @@ class ProtProf(cPane.BaseConfPanelMod):
             True
         """
         #region -------------------------------------------------> Fill Fields
-        if dataI:
-            #------------------------------>
-            dataInit = dataI['uFile'].parent / mConfig.core.fnDataInit
-            iFile = dataInit / dataI['I'][self.cLiFile]
-            #------------------------------>
-            self.wUFile.wTc.SetValue(str(dataI['uFile']))
-            self.wIFile.wTc.SetValue(str(iFile))
-            self.wId.wTc.SetValue(dataI['CI']['ID'])
-            #------------------------------> Data Preparation
-            self.wCeroB.wCb.SetValue(dataI['I'][self.cLCeroTreatD])
-            self.wTransMethod.wCb.SetValue(dataI['I'][self.cLTransMethod])
-            self.wNormMethod.wCb.SetValue(dataI['I'][self.cLNormMethod])
-            self.wImputationMethod.wCb.SetValue(dataI['I'][self.cLImputation])
-            self.wShift.wTc.SetValue(dataI['I'].get(self.cLShift, self.cValShift))
-            self.wWidth.wTc.SetValue(dataI['I'].get(self.cLWidth, self.cValWidth))
-            #------------------------------> Values
-            self.wScoreVal.wTc.SetValue(dataI['I'][self.cLScoreVal])
-            self.wSample.wCb.SetValue(dataI['I'][self.cLSample])
-            self.wAlpha.wTc.SetValue(dataI['I'][self.cLAlpha])
-            self.wCorrectP.wCb.SetValue(dataI['I'][self.cLCorrectP])
-            #------------------------------> Columns
-            self.wDetectedProt.wTc.SetValue(dataI['I'][self.cLDetectedProt])
-            self.wGeneName.wTc.SetValue(dataI['I'][self.cLGene])
-            self.wScore.wTc.SetValue(dataI['I'][self.cLScoreCol])
-            self.wExcludeProt.wTc.SetValue(dataI['I'][self.cLExcludeProt])
-            self.wTcResults.SetValue(dataI['I'][mConfig.core.lStResCtrlS])
-            self.rLbDict[1] = dataI['I'][self.cLCond]
-            self.rLbDict[2] = dataI['I'][self.cLRP]
-            self.rLbDict['ControlType'] = dataI['I'][f'Control {self.cLCtrlType}']
-            self.rLbDict['Control'] = dataI['I'][f"Control {self.cLCtrlName}"]
-            #------------------------------>
-            self.OnIFileLoad('fEvent')
-            self.OnImpMethod('fEvent')
+        self.wUFile.wTc.SetValue(str(dataI.uFile))
+        self.wIFile.wTc.SetValue(str(dataI.iFile))
+        self.wId.wTc.SetValue(dataI.ID)
+        #------------------------------>
+        self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
+        self.wTransMethod.wCb.SetValue(dataI.tran)
+        self.wNormMethod.wCb.SetValue(dataI.norm)
+        self.wImputationMethod.wCb.SetValue(dataI.imp)
+        self.wShift.wTc.SetValue(str(dataI.shift))
+        self.wWidth.wTc.SetValue(str(dataI.width))
+        #------------------------------> Values
+        self.wScoreVal.wTc.SetValue(str(dataI.scoreVal))
+        self.wSample.wCb.SetValue(str(dataI.indSample))
+        self.wAlpha.wTc.SetValue(str(dataI.alpha))
+        self.wCorrectP.wCb.SetValue(dataI.correctedP)
+        #------------------------------> Columns
+        self.wDetectedProt.wTc.SetValue(str(dataI.ocTargetProt))
+        self.wGeneName.wTc.SetValue(str(dataI.ocGene))
+        self.wScore.wTc.SetValue(str(dataI.ocScore))
+        self.wExcludeProt.wTc.SetValue(" ".join(map(str, dataI.ocExcludeR)))
+        self.wTcResults.SetValue(dataI.resCtrl)
+        self.rLbDict[0] = dataI.labelA
+        self.rLbDict[1] = dataI.labelB
+        self.rLbDict['ControlType'] = dataI.ctrlType
+        self.rLbDict['Control'] = dataI.ctrlName
+        #------------------------------>
+        self.OnIFileLoad('fEvent')
+        self.OnImpMethod('fEvent')
         #endregion ----------------------------------------------> Fill Fields
 
         return True
@@ -701,108 +644,85 @@ class ProtProf(cPane.BaseConfPanelMod):
         #region -------------------------------------------------------> Input
         msgStep = self.cLPdPrepare + 'User input, reading'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------> As given
-        self.rDI = {
-            self.EqualLenLabel(self.cLiFile) : (
-                self.wIFile.wTc.GetValue()),
-            self.EqualLenLabel(self.cLId) : (
-                self.wId.wTc.GetValue()),
-            self.EqualLenLabel(self.cLCeroTreatD) : (
-                self.wCeroB.wCb.GetValue()),
-            self.EqualLenLabel(self.cLTransMethod) : (
-                self.wTransMethod.wCb.GetValue()),
-            self.EqualLenLabel(self.cLNormMethod) : (
-                self.wNormMethod.wCb.GetValue()),
-            self.EqualLenLabel(self.cLImputation) : (
-                self.wImputationMethod.wCb.GetValue()),
-            self.EqualLenLabel(self.cLShift) : (
-                self.wShift.wTc.GetValue()),
-            self.EqualLenLabel(self.cLWidth) : (
-                self.wWidth.wTc.GetValue()),
-            self.EqualLenLabel(self.cLScoreVal) : (
-                self.wScoreVal.wTc.GetValue()),
-            self.EqualLenLabel(self.cLSample) : (
-                self.wSample.wCb.GetValue()),
-            self.EqualLenLabel(self.cLAlpha) : (
-                self.wAlpha.wTc.GetValue()),
-            self.EqualLenLabel(self.cLCorrectP) : (
-                self.wCorrectP.wCb.GetValue()),
-            self.EqualLenLabel(self.cLDetectedProt) : (
-                self.wDetectedProt.wTc.GetValue()),
-            self.EqualLenLabel(self.cLGene) : (
-                self.wGeneName.wTc.GetValue()),
-            self.EqualLenLabel(self.cLScoreCol) : (
-                self.wScore.wTc.GetValue()),
-            self.EqualLenLabel(self.cLExcludeProt) : (
-                self.wExcludeProt.wTc.GetValue()),
-            self.EqualLenLabel(self.cLCond) : (
-                self.rLbDict[0]),
-            self.EqualLenLabel(self.cLRP) : (
-                self.rLbDict[1]),
-            self.EqualLenLabel(f"Control {self.cLCtrlType}") : (
-                self.rLbDict['ControlType']),
-            self.EqualLenLabel(f"Control {self.cLCtrlName}") : (
-                self.rLbDict['Control']),
-            self.EqualLenLabel(mConfig.core.lStResCtrlS): (
-                self.wTcResults.GetValue()),
-        }
-        #------------------------------> Dict with all values
-        #-------------->
-        msgStep = self.cLPdPrepare + 'User input, processing'
-        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #-------------->
+        #------------------------------> Read values
+        impMethod     = self.wImputationMethod.wCb.GetValue()
         a = self.rLbDict['ControlType'] == mConfig.prot.oControlType['Ratio']
-        rawI = False if a else True
-        detectedProt = int(self.wDetectedProt.wTc.GetValue())
-        geneName     = int(self.wGeneName.wTc.GetValue())
-        scoreCol     = int(self.wScore.wTc.GetValue())
-        excludeProt  = cMethod.Str2ListNumber(
-            self.wExcludeProt.wTc.GetValue(), sep=' ')
+        rawI          = False if a else True
+        indSample     = self.wSample.wCb.GetValue()
+        detectedProt  = int(self.wDetectedProt.wTc.GetValue())
+        geneName      = int(self.wGeneName.wTc.GetValue())
+        scoreCol      = int(self.wScore.wTc.GetValue())
+        excludeProt   = cMethod.Str2ListNumber(
+            self.wExcludeProt.wTc.GetValue(), numType='int', sep=' ')
         resCtrl       = cMethod.ResControl2ListNumber(self.wTcResults.GetValue())
         resCtrlFlat   = cMethod.ResControl2Flat(resCtrl)
         resCtrlDF     = cMethod.ResControl2DF(resCtrl, 2+len(excludeProt)+1)
         resCtrlDFFlat = cMethod.ResControl2Flat(resCtrlDF)
-        #-------------->
-        self.rDO  = {
-            'iFile'      : Path(self.wIFile.wTc.GetValue()),
-            'uFile'      : Path(self.wUFile.wTc.GetValue()),
-            'ID'         : self.wId.wTc.GetValue(),
-            'ScoreVal'   : float(self.wScoreVal.wTc.GetValue()),
-            'RawI'       : rawI,
-            'IndS'       : True if self.wSample.wCb.GetValue() == 'Independent Samples' else False,
-            'Cero'       : mConfig.core.oYesNo[self.wCeroB.wCb.GetValue()],
-            'NormMethod' : self.wNormMethod.wCb.GetValue(),
-            'TransMethod': self.wTransMethod.wCb.GetValue(),
-            'ImpMethod'  : self.wImputationMethod.wCb.GetValue(),
-            'Shift'      : float(self.wShift.wTc.GetValue()),
-            'Width'      : float(self.wWidth.wTc.GetValue()),
-            'Alpha'      : float(self.wAlpha.wTc.GetValue()),
-            'CorrectP'   : self.wCorrectP.wCb.GetValue(),
-            'Cond'       : self.rLbDict[0],
-            'RP'         : self.rLbDict[1],
-            'ControlT'   : self.rLbDict['ControlType'],
-            'ControlL'   : self.rLbDict['Control'],
-            'oc'         : {
-                'DetectedP' : detectedProt,
-                'GeneName'  : geneName,
-                'ScoreCol'  : scoreCol,
-                'ExcludeR'  : excludeProt,
-                'ResCtrl'   : resCtrl,
-                'ColumnF'   : [scoreCol] + resCtrlFlat,
-                'Column'    : (
-                    [geneName, detectedProt, scoreCol]+excludeProt+resCtrlFlat),# type: ignore
-            },
-            'df' : {
-                'DetectedP'  : 0,
-                'GeneName'   : 1,
-                'ScoreCol'   : 2,
-                'ExcludeR'   : [2+x for x in range(1, len(excludeProt)+1)],
-                'ResCtrl'    : resCtrlDF,
-                'ResCtrlFlat': resCtrlDFFlat,
-                'ColumnR'    : resCtrlDFFlat,
-                'ColumnF'    : [2] + resCtrlDFFlat,
-            },
+        ocColumn      = [detectedProt, geneName, scoreCol] + excludeProt + resCtrlFlat
+        dI = {
+            'iFileN'      : self.cLiFile,
+            'ID'          : self.cLId,
+            'cero'        : self.cLCeroTreatD,
+            'tran'        : self.cLTransMethod,
+            'norm'        : self.cLNormMethod,
+            'imp'         : self.cLImputation,
+            'scoreVal'    : self.cLScoreVal,
+            'indSample'   : self.cLSample,
+            'alpha'       : self.cLAlpha,
+            'correctedP'  : self.cLCorrectP,
+            'ocTargetProt': self.cLDetectedProt,
+            'ocGene'      : self.cLGene,
+            'ocScore'     : self.cLScoreCol,
+            'ocExcludeR'  : self.cLExcludeProt,
+            'labelA'      : self.cLCond,
+            'labelB'      : self.cLRP,
+            'ctrlType'    : f"Control {self.cLCtrlType}",
+            'ctrlName'    : f"Control {self.cLCtrlName}",
+            'ocResCtrl'   : mConfig.core.lStResCtrlS,
         }
+        if impMethod == mConfig.data.lONormDist:
+            dI['shift'] = self.cLShift
+            dI['width'] = self.cLWidth
+        #------------------------------> Create dataclass
+        msgStep = self.cLPdPrepare + 'User input, processing'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #-------------->
+        self.rDO = protMethod.UserData(
+            uFile         = Path(self.wUFile.wTc.GetValue()),
+            iFile         = Path(self.wIFile.wTc.GetValue()),
+            ID            = self.wId.wTc.GetValue(),
+            cero          = mConfig.core.oYesNo[self.wCeroB.wCb.GetValue()],
+            norm          = self.wNormMethod.wCb.GetValue(),
+            tran          = self.wTransMethod.wCb.GetValue(),
+            imp           = self.wImputationMethod.wCb.GetValue(),
+            shift         = float(self.wShift.wTc.GetValue()),
+            width         = float(self.wWidth.wTc.GetValue()),
+            scoreVal      = float(self.wScoreVal.wTc.GetValue()),
+            rawInt        = rawI,
+            indSample     = True if indSample=='Independent Samples' else False,
+            alpha         = float(self.wAlpha.wTc.GetValue()),
+            correctedP    = self.wCorrectP.wCb.GetValue(),
+            ocTargetProt  = detectedProt,
+            ocGene        = geneName,
+            ocScore       = scoreCol,
+            ocExcludeR    = excludeProt,                                         # type: ignore
+            ocColumn      = ocColumn,                                            # type: ignore
+            ocResCtrl     = resCtrl,
+            resCtrl       = self.wTcResults.GetValue(),
+            labelA        = self.rLbDict[0],
+            labelB        = self.rLbDict[1],
+            ctrlType      = self.rLbDict['ControlType'],
+            ctrlName      = self.rLbDict['Control'],
+            dfTargetProt  = 0,
+            dfGene        = 1,
+            dfScore       = 2,
+            dfExcludeR    = [2+x for x in range(1, len(excludeProt)+1)],
+            dfResCtrl     = resCtrlDF,
+            dfResCtrlFlat = resCtrlDFFlat,
+            dfColumnR     = resCtrlDFFlat,
+            dfColumnF     = [2] + resCtrlDFFlat,
+            dI            = dI,
+        )
         #endregion ----------------------------------------------------> Input
 
         #region ---------------------------------------------------> Super

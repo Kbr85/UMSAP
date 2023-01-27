@@ -16,7 +16,8 @@
 
 #region -------------------------------------------------------------> Imports
 from collections import namedtuple
-from typing import Optional, TYPE_CHECKING
+from dataclasses import dataclass, field
+from typing      import Optional, TYPE_CHECKING
 
 import numpy  as np
 import pandas as pd
@@ -35,12 +36,55 @@ if TYPE_CHECKING:
 #endregion ----------------------------------------------------------> Imports
 
 
+#region -------------------------------------------------------------> Classes
+@dataclass
+class UserData(cMethod.BaseUserData):
+    """Representation of the input data for the Target Proteolysis Pane."""
+    #region ---------------------------------------------------------> Options
+    colFirstPart:list[str] = field(default_factory=lambda:
+        mConfig.tarp.dfcolFirstPart)
+    colSecLevel:list[str] = field(default_factory=lambda:
+        mConfig.tarp.dfcolBLevel)
+    #------------------------------>
+    dO:list = field(default_factory=lambda:                                     # Options for output printing
+        ['iFileN', 'seqFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift',
+         'width', 'targetProt', 'scoreVal', 'alpha', 'posAA', 'winHist',
+         'ocSeq', 'ocTargetProt', 'ocScore', 'resCtrl', 'labelA', 'ctrlName',
+         'dfSeq', 'dfTargetProt', 'dfScore', 'dfResCtrl', 'protLength',
+         'protLoc', 'protDelta',
+        ])
+    longestKey:int = 17                                                         # Length of the longest Key in dI
+    #endregion ------------------------------------------------------> Options
+#---
+
+@dataclass
+class TarpAnalysis():
+    """Data class to hold the info regarding a Targeted Proteolysis analysis in
+        an UMSAP file.
+    """
+    #region --------------------------------------------------------> Options
+    df:pd.DataFrame                                                             # Results as dataframe
+    labelA:list[str]
+    ctrlName:str
+    alpha:float
+    protLength:list[int]
+    protLoc:list[int]
+    protDelta:Optional[int]
+    targetProt:str
+    CpR:str
+    CEvol:str
+    AA:dict[str,str]
+    Hist:dict[str,str]
+    #endregion -----------------------------------------------------> Options
+#---
+#endregion ----------------------------------------------------------> Classes
+
+
 #region -------------------------------------------------------------> Methods
-def TarProt(                                                                    # pylint: disable=dangerous-default-value
+def TarProt(
     *args,
     df:pd.DataFrame  = pd.DataFrame(),                                          # pylint: disable=unused-argument
-    rDO:dict         = {},
-    rDExtra:dict     = {},
+    rDO:UserData     = UserData(),
     resetIndex: bool = True,
     **kwargs
     ) -> tuple[dict, str, Optional[Exception]]:
@@ -52,10 +96,8 @@ def TarProt(                                                                    
             Ignored here. Needed for compatibility.
         df: pd.DataFrame
             DataFrame read from CSV file.
-        rDO: dict
-            rDO dictionary from the PrepareRun step of the analysis.
-        rDExtra: dict
-            Extra parameters.
+        rDO: UserData
+            Dataclass with user input.
         resetIndex: bool
             Reset index of dfS (True) or not (False). Default is True.
         **kwargs:
@@ -95,16 +137,16 @@ def TarProt(                                                                    
             pd.DataFrame
         """
         #region -------------------------------------------------------> Index
-        aL = rDExtra['cLDFFirst']
-        bL = rDExtra['cLDFFirst']
-        n = len(rDExtra['cLDFSecond'])
+        aL = rDO.colFirstPart
+        bL = rDO.colFirstPart
+        n = len(rDO.colSecLevel)
         #------------------------------> Ctrl
-        aL = aL + n*rDO['ControlL']
-        bL = bL + rDExtra['cLDFSecond']
+        aL = aL + n*[rDO.ctrlName]
+        bL = bL + rDO.colSecLevel
         #------------------------------> Exp
-        for exp in rDO['Exp']:
+        for exp in rDO.labelA:
             aL = aL + n*[exp]
-            bL = bL + rDExtra['cLDFSecond']
+            bL = bL + rDO.colSecLevel
         #------------------------------>
         idx = pd.MultiIndex.from_arrays([aL[:], bL[:]])
         #endregion ----------------------------------------------------> Index
@@ -120,7 +162,7 @@ def TarProt(                                                                    
         #region -------------------------------------------------> Seq & Score
         df[aL[0]] = dfS.iloc[:,0]
         df[aL[1]] = dfS.iloc[:,2]
-        df[(rDO['ControlL'][0], 'P')] = np.nan
+        df[(rDO.ctrlName, 'P')] = np.nan
         #endregion ----------------------------------------------> Seq & Score
 
         return df
@@ -159,15 +201,15 @@ def TarProt(                                                                    
         #region --------------------------------------------------->
         #------------------------------> Control
         #--------------> List
-        for r in rDO['df']['ResCtrl'][0][0]:
+        for r in rDO.dfResCtrl[0][0]:
             if np.isfinite(row[r]):
                 xC.append(1)
                 xCt.append(5)
                 yC.append(row[r])
         #--------------> Add to self.dfR
-        dfR.at[rowC,(rDO['ControlL'],'Int')] = str(yC)
+        dfR.at[rowC,(rDO.ctrlName,'Int')] = str(yC)
         #------------------------------> Points
-        for k,r in enumerate(rDO['df']['ResCtrl'][1:], start=1):
+        for k,r in enumerate(rDO.dfResCtrl[1:], start=1):
             #------------------------------>
             xE = []
             yE = []
@@ -177,7 +219,7 @@ def TarProt(                                                                    
                     xE.append(5)
                     yE.append(row[rE])
             #------------------------------>
-            dfR.at[rowC,(rDO['Exp'][k-1], 'Int')] = str(yE)
+            dfR.at[rowC,(rDO.labelA[k-1], 'Int')] = str(yE)
             #------------------------------>
             a = xC + xCt
             b = yC + yC
@@ -205,16 +247,15 @@ def TarProt(                                                                    
     #------------------------------> Empty dfR
     dfR = EmptyDFR()
     #------------------------------> N, C Res Num
-    dfR, msgError, tException = cMethod.NCResNumbers(
-        dfR, rDO, rDExtra['rSeqFileObj'], seqNat=True)
+    dfR, msgError, tException = cMethod.NCResNumbers(dfR, rDO, seqNat=True)
     if dfR.empty:
         return ({}, msgError, tException)
     #------------------------------> P values
-    totalRowAncovaDF = 2*max([len(x[0]) for x in rDO['df']['ResCtrl']])
-    nGroups = [2 for x in rDO['df']['ResCtrl']]
+    totalRowAncovaDF = 2*max([len(x[0]) for x in rDO.dfResCtrl])
+    nGroups = [2 for x in rDO.dfResCtrl]
     nGroups = nGroups[1:]
     idx = pd.IndexSlice
-    idx = idx[rDO['Exp'], 'P']
+    idx = idx[rDO.labelA, 'P']
     #-------------->
     k = 0
     for row in dfS.itertuples(index=False):
@@ -232,7 +273,7 @@ def TarProt(                                                                    
 
     #region -------------------------------------------------> Check P < a
     idx = pd.IndexSlice
-    if not (dfR.loc[:,idx[:,'P']] < rDO['Alpha']).any().any():                  # type: ignore
+    if not (dfR.loc[:,idx[:,'P']] < rDO.alpha).any().any():                  # type: ignore
         msg = ('There were no peptides detected with intensity '
             'values significantly higher to the intensity values in the '
             'controls. You may run the analysis again with different '
@@ -496,7 +537,7 @@ def R2CpR(df:pd.DataFrame, alpha:float, protL:list[int]) -> pd.DataFrame:
     nL    = len(label)
     a     = (nL)*['Rec']+(nL)*['Nat']
     b     = 2*label
-    nR    = sorted(protL, reverse=True)[0] if protL[1] is not None else protL[0]
+    nR    = sorted(protL, reverse=True)[0] if protL[1] else protL[0]
     idx   = pd.IndexSlice
     col   = pd.MultiIndex.from_arrays([a[:],b[:]])
     dfO   = pd.DataFrame(0, index=range(0,nR), columns=col)                       # type: ignore

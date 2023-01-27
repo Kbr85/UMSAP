@@ -15,25 +15,66 @@
 
 
 #region -------------------------------------------------------------> Imports
-from typing import Optional
+from dataclasses import dataclass, field
+from typing      import Optional
 
 from scipy import stats
 
 import numpy  as np
 import pandas as pd
 
+from config.config import config as mConfig
 from core     import method    as cMethod
 from core     import statistic as cStatistic
 from dataprep import method    as dataMethod
 #endregion ----------------------------------------------------------> Imports
 
 
+#region -------------------------------------------------------------> Classes
+@dataclass
+class UserData(cMethod.BaseUserData):
+    """Representation of the input data for the Limited Proteolysis Pane."""
+    #region ---------------------------------------------------------> Options
+    colFirstPart:list[str] = field(default_factory=lambda:
+        mConfig.limp.dfcolFirstPart)
+    colThirdLevel:list[str] = field(default_factory=lambda:
+        mConfig.limp.dfcolCLevel)
+    #------------------------------>
+    dO:list = field(default_factory=lambda:                                     # Options for output printing
+        ['iFileN', 'seqFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift',
+         'width', 'targetProt', 'scoreVal', 'alpha', 'beta', 'gamma', 'theta',
+         'thetaM', 'indSample', 'ocSeq', 'ocTargetProt', 'ocScore', 'resCtrl',
+         'labelA', 'labelB', 'ctrlName', 'dfSeq', 'dfTargetProt', 'dfScore',
+         'dfResCtrl', 'protLength', 'protLoc', 'protDelta',
+        ])
+    longestKey:int = 17                                                         # Length of the longest Key in dI
+    #endregion ------------------------------------------------------> Options
+#---
+
+@dataclass
+class LimpAnalysis():
+    """Data class to hold the info regarding a Targeted Proteolysis analysis in
+        an UMSAP file.
+    """
+    #region --------------------------------------------------------> Options
+    df:pd.DataFrame                                                             # Results as dataframe
+    labelA:list[str]
+    labelB:list[str]
+    alpha:float
+    protLength:list[int]
+    protLoc:list[int]
+    protDelta:Optional[int]
+    targetProt:str
+    #endregion -----------------------------------------------------> Options
+#---
+#endregion ----------------------------------------------------------> Classes
+
+
 #region -------------------------------------------------------------> Methods
 def LimProt(                                                                    # pylint: disable=dangerous-default-value
     *args,
     df:pd.DataFrame  = pd.DataFrame(),                                          # pylint: disable=unused-argument
-    rDO:dict         = {},
-    rDExtra:dict     = {},
+    rDO:UserData     = UserData(),
     resetIndex: bool = True,
     equal_var:bool   = False,
     **kwargs,
@@ -46,10 +87,8 @@ def LimProt(                                                                    
             These are ignored here. Needed for compatibility.
         df: pd.DataFrame
             DataFrame read from CSV file.
-        rDO: dict
-            rDO dictionary from the PrepareRun step of the analysis.
-        rDExtra: dict
-            Extra parameters.
+        rDO: UserData
+            Dataclass with user input.
         resetIndex: bool
             Reset index of dfS (True) or not (False). Default is True.
         equal_var: bool
@@ -92,17 +131,17 @@ def LimProt(                                                                    
         """
         #region -------------------------------------------------------> Index
         #------------------------------>
-        aL = rDExtra['cLDFFirstThree']
-        bL = rDExtra['cLDFFirstThree']
-        cL = rDExtra['cLDFFirstThree']
+        aL = rDO.colFirstPart
+        bL = rDO.colFirstPart
+        cL = rDO.colFirstPart
         #------------------------------>
-        n = len(rDExtra['cLDFThirdLevel'])
+        n = len(rDO.colThirdLevel)
         #------------------------------>
-        for b in rDO['Band']:
-            for l in rDO['Lane']:
+        for b in rDO.labelB:
+            for l in rDO.labelA:
                 aL = aL + n*[b]
                 bL = bL + n*[l]
-                cL = cL + rDExtra['cLDFThirdLevel']
+                cL = cL + rDO.colThirdLevel
         #------------------------------>
         idx = pd.MultiIndex.from_arrays([aL[:], bL[:], cL[:]])
         #endregion ----------------------------------------------------> Index
@@ -148,7 +187,7 @@ def LimProt(                                                                    
             bool
         """
         #region ----------------------------------------------> Delta and TOST
-        if rDO['Sample'] == 'p':
+        if rDO.indSample == 'p':
             pG = stats.ttest_rel(
                 dfS.iloc[:,colC].add(dfR[('Delta', 'Delta', 'Delta')], axis=0),
                 dfS.iloc[:,colD],
@@ -206,29 +245,29 @@ def LimProt(                                                                    
     dfR = EmptyDFR()
     #------------------------------> N, C Res Num
     dfR, msgError, tException = cMethod.NCResNumbers(
-        dfR, rDO, rDExtra['rSeqFileObj'], seqNat=True)
+        dfR, rDO, seqNat=True)
     if dfR.empty:
         return ({}, msgError, tException)
     #------------------------------> Control Columns
-    colC  = rDO['df']['ResCtrl'][0][0]
+    colC  = rDO.dfResCtrl[0][0]
     #------------------------------> Delta
-    if rDO['Theta'] is not None:
-        delta = rDO['Theta']
+    if rDO.theta is not None:
+        delta = rDO.theta
     else:
         delta = cStatistic.Tost_delta(
             dfS.iloc[:,colC],
-            rDO['Alpha'],
-            rDO['Beta'],
-            rDO['Gamma'],
-            deltaMax = rDO['ThetaMax'],
+            rDO.alpha,
+            rDO.beta,
+            rDO.gamma,
+            deltaMax = rDO.thetaM,
         )
     #------------------------------>
     dfR[('Delta', 'Delta', 'Delta')] = delta
     #------------------------------> Calculate
-    for b, bN in enumerate(rDO['Band']):
-        for l, lN in enumerate(rDO['Lane']):
+    for b, bN in enumerate(rDO.labelB):
+        for l, lN in enumerate(rDO.labelA):
             #------------------------------> Control & Data Column
-            colD = rDO['df']['ResCtrl'][b+1][l]
+            colD = rDO.dfResCtrl[b+1][l]
             #------------------------------> Calculate data
             if colD:
                 try:
@@ -241,7 +280,7 @@ def LimProt(                                                                    
 
     #region -------------------------------------------------> Check P < a
     idx = pd.IndexSlice
-    if not (dfR.loc[:,idx[:,:,'Ptost']] < rDO['Alpha']).any().any():                # type: ignore
+    if not (dfR.loc[:,idx[:,:,'Ptost']] < rDO.alpha).any().any():                # type: ignore
         msg = ('There were no peptides detected in the gel '
             'spots with intensity values equivalent to the intensity '
             'values in the control spot. You may run the analysis again '

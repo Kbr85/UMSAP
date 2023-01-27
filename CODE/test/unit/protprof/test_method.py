@@ -20,7 +20,6 @@ from pathlib import Path
 
 import pandas as pd
 
-from config.config import config as mConfig
 from core     import file   as cFile
 from protprof import method as protMethod
 #endregion ----------------------------------------------------------> Imports
@@ -39,47 +38,38 @@ class Test_ProtProf(unittest.TestCase):
     #region -----------------------------------------------------> Class Setup
     def setUp(self):
         """Set test"""
-        self.df = cFile.ReadCSV2DF(fileA)
-        self.dExtra  = {
-            'cLDFThreeCol'  : mConfig.prot.dfcolFirstPart,
-            'cLDFThirdLevel': mConfig.prot.dfcolCLevel,
-        }
-        self.dict1 = {
-            'ScoreVal': 320.0,
-            'RawI': True,
-            'IndS': True,
-            'Cero': True,
-            'NormMethod': 'Median',
-            'TransMethod': 'Log2',
-            'ImpMethod': 'None',
-            'Shift': 1.8,
-            'Width': 0.3,
-            'Alpha': 0.05,
-            'CorrectP': 'Benjamini - Hochberg',
-            'Cond': ['C1', 'C2'],
-            'RP': ['RP1', 'RP2'],
-            'ControlT': 'One Control',
-            'ControlL': ['1Control'],
-            'oc': {
-                'DetectedP': 0,
-                'GeneName': 6,
-                'ScoreCol': 39,
-                'ExcludeP': [171, 172, 173],
-                'ResCtrl': [[[105, 115, 125]], [[106, 116, 126], [101, 111, 121]], [[108, 118, 128], [103, 113, 123]]],
-                'ColumnF': [39, 105, 115, 125, 106, 116, 126, 101, 111, 121, 108, 118, 128, 103, 113, 123],
-                'Column': [6, 0, 39, 171, 172, 173, 105, 115, 125, 106, 116, 126, 101, 111, 121, 108, 118, 128, 103, 113, 123],
-            },
-            'df' : {
-                'DetectedP': 0,
-                'GeneName': 1,
-                'ScoreCol': 2,
-                'ExcludeR': [3, 4, 5],
-                'ResCtrl': [[[6, 7, 8]], [[9, 10, 11], [12, 13, 14]], [[15, 16, 17], [18, 19, 20]]],
-                'ResCtrlFlat': [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
-                'ColumnR': [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
-                'ColumnF': [2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
-            },
-        }
+        self.df    = cFile.ReadCSV2DF(fileA)
+        self.dict1 = protMethod.UserData(
+            cero          = True,
+            norm          = 'Median',
+            tran          = 'Log2',
+            imp           = 'None',
+            shift         = 1.8,
+            width         = 0.3,
+            scoreVal      = 320.0,
+            rawInt        = True,
+            indSample     = True,
+            alpha         = 0.05,
+            correctedP    = 'Benjamini - Hochberg',
+            ocTargetProt  = 0,
+            ocGene        = 6,
+            ocScore       = 39,
+            ocExcludeR    = [171, 172, 173],
+            ocResCtrl     = [[[105, 115, 125]], [[106, 116, 126], [101, 111, 121]], [[108, 118, 128], [103, 113, 123]]],
+            ocColumn      = [6, 0, 39, 171, 172, 173, 105, 115, 125, 106, 116, 126, 101, 111, 121, 108, 118, 128, 103, 113, 123],
+            labelA        = ['C1', 'C2'],
+            labelB        = ['RP1', 'RP2'],
+            ctrlType      = 'One Control',
+            ctrlName      = '1Control',
+            dfTargetProt  = 0,
+            dfGene        = 1,
+            dfScore       = 2,
+            dfExcludeR    = [3, 4, 5],
+            dfResCtrl     = [[[6, 7, 8]], [[9, 10, 11], [12, 13, 14]], [[15, 16, 17], [18, 19, 20]]],
+            dfResCtrlFlat = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+            dfColumnR     = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+            dfColumnF     = [2, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+        )
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -88,17 +78,17 @@ class Test_ProtProf(unittest.TestCase):
         """Test method output"""
         #------------------------------>
         tInput = [
-            (self.df, self.dict1, self.dExtra, True, fileB),
+            (self.df, self.dict1, True, fileB, 'Test - 1'),
         ]
         #------------------------------>
         for a,b,c,d,e in tInput:
-            with self.subTest(f"df={a}, rDO={b}, dExtra={c}, resetIndex={d}"):
+            with self.subTest(f"{e}"):
                 #------------------------------>
                 result = protMethod.ProtProf(
-                    df=a, rDO=b, rDExtra=c, resetIndex=d)[0]['dfR']
+                    df=a, rDO=b, resetIndex=c)[0]['dfR']
                 result = result.round(2)
                 #------------------------------>
-                dfF = pd.read_csv(e, sep='\t', header=[0,1,2]).round(2)
+                dfF = pd.read_csv(d, sep='\t', header=[0,1,2]).round(2)
                 #------------------------------>
                 # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(result, dfF)                     # type: ignore

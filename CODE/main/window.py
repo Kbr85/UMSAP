@@ -23,6 +23,7 @@ from wx.lib.agw import aui
 
 from config.config import config as mConfig
 from core     import window as cWindow
+from core     import method as cMethod
 from corr     import tab    as corrTab
 from dataprep import tab    as dataTab
 from help     import method as hMethod
@@ -121,15 +122,19 @@ class WindowMain(cWindow.BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class Methods
-    def CreateTab(self, name:str, dataI:Optional[dict]=None) -> bool:
+    def CreateTab(
+        self,
+        name:str,
+        dataI:Optional[cMethod.BaseUserData]=None,
+        ) -> bool:
         """Create a tab.
 
             Parameters
             ----------
             name: str
                 One of the values in section Names of config for tabs
-            dataI: dict or None
-                Initial data for the tab
+            dataI: cMethod.BaseUserData or None
+                Data class representation of user input. Default is None.
 
             Returns
             -------

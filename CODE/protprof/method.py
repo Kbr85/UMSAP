@@ -15,7 +15,8 @@
 
 
 #region -------------------------------------------------------------> Imports
-from typing import Optional, Union
+from dataclasses import dataclass, field
+from typing      import Optional, Union
 
 import pandas as pd
 import numpy  as np
@@ -23,17 +24,58 @@ from scipy                       import stats
 from statsmodels.stats.multitest import multipletests
 
 from config.config import config as mConfig
+from core     import method    as cMethod
 from core     import statistic as cStatistic
 from dataprep import method    as dataMethod
 #endregion ----------------------------------------------------------> Imports
+
+
+#region -------------------------------------------------------------> Classes
+@dataclass
+class UserData(cMethod.BaseUserData):
+    """Representation of the input data for the Proteome Profiling Analysis
+        Pane.
+    """
+    #region ---------------------------------------------------------> Options
+    colFirstPart:list[str] = field(default_factory=lambda:
+        mConfig.prot.dfcolFirstPart)
+    colThirdLevel:list[str] = field(default_factory=lambda:
+        mConfig.prot.dfcolCLevel)
+    #------------------------------>
+    dO:list = field(default_factory=lambda:                                     # Options for output printing
+        ['iFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift', 'width',
+         'scoreVal', 'indSample', 'alpha', 'correctedP', 'ocTargetProt',
+         'ocGene', 'ocScore', 'ocExcludeR', 'labelA', 'labelB', 'ctrlType',
+         'ctrlName', 'resCtrl', 'dfTargetProt', 'dfGene', 'dfScore',
+         'dfExcludeR', 'dfResCtrl',
+        ])
+    longestKey:int = 17                                                         # Length of the longest Key in dI
+    #endregion ------------------------------------------------------> Options
+#---
+
+
+@dataclass
+class ProtAnalysis():
+    """Data class to hold the info regarding a Proteome Profiling analysis in
+        an UMSAP file.
+    """
+    #region --------------------------------------------------------> Options
+    df:pd.DataFrame                                                             # Result
+    alpha:float                                                                 # Significance level
+    filterS:dict                                                                # Filters
+    labelA:list[str]                                                            # Conditions
+    labelB:list[str]                                                            # Relevant Points
+    ctrlType:str
+    ctrlName:str
+    #endregion -----------------------------------------------------> Options
+#endregion ----------------------------------------------------------> Classes
 
 
 #region -------------------------------------------------------------> Methods
 def ProtProf(                                                                   # pylint: disable=dangerous-default-value
     *args,
     df:pd.DataFrame = pd.DataFrame(),                                           # pylint: disable=unused-argument
-    rDO:dict        = {},
-    rDExtra:dict    = {},
+    rDO:UserData    = UserData(),
     resetIndex:bool = True,
     **kwargs
     ) -> tuple[dict, str, Optional[Exception]]:
@@ -45,10 +87,8 @@ def ProtProf(                                                                   
             For compatibility. They are ignore here.
         df: pd.DataFrame
             DataFrame read from CSV file.
-        rDO: dict
-            rDO dictionary from the PrepareRun step of the analysis.
-        rDExtra: dict
-            Extra parameters.
+        rDO: UserData
+            Data class with user input.
         resetIndex: bool
             Reset index of dfS (True) or not (False). Default is True.
         **kwargs:
@@ -90,17 +130,17 @@ def ProtProf(                                                                   
         """
         #region -------------------------------------------------------> Index
         #------------------------------> First Three Columns
-        aL = rDExtra['cLDFThreeCol']
-        bL = rDExtra['cLDFThreeCol']
-        cL = rDExtra['cLDFThreeCol']
+        aL = rDO.colFirstPart
+        bL = rDO.colFirstPart
+        cL = rDO.colFirstPart
         #------------------------------> Columns per Point
-        n = len(rDExtra['cLDFThirdLevel'])
+        n = len(rDO.colThirdLevel)
         #------------------------------> Other columns
-        for c in rDO['Cond']:
-            for t in rDO['RP']:
+        for c in rDO.labelA:
+            for t in rDO.labelB:
                 aL = aL + n*[c]
                 bL = bL + n*[t]
-                cL = cL + rDExtra['cLDFThirdLevel']
+                cL = cL + rDO.colThirdLevel
         #------------------------------>
         idx = pd.MultiIndex.from_arrays([aL[:], bL[:], cL[:]])
         #endregion ----------------------------------------------------> Index
@@ -134,9 +174,9 @@ def ProtProf(                                                                   
             list[list[int]]
         """
         #region ---------------------------------------------------> List
-        colC = rDO['df']['ResCtrl'][0][0]
+        colC = rDO.dfResCtrl[0][0]
         #------------------------------>
-        colD = rDO['df']['ResCtrl'][c+1][t]
+        colD = rDO.dfResCtrl[c+1][t]
         #endregion ------------------------------------------------> List
 
         return [colC, colD]
@@ -158,9 +198,9 @@ def ProtProf(                                                                   
             list[list[int]]
         """
         #region ---------------------------------------------------> List
-        colC = rDO['df']['ResCtrl'][0][t]
+        colC = rDO.dfResCtrl[0][t]
         #------------------------------>
-        colD = rDO['df']['ResCtrl'][c+1][t]
+        colD = rDO.dfResCtrl[c+1][t]
         #endregion ------------------------------------------------> List
 
         return [colC, colD]
@@ -182,9 +222,9 @@ def ProtProf(                                                                   
             list[list[int]]
         """
         #region ---------------------------------------------------> List
-        colC = rDO['df']['ResCtrl'][c][0]
+        colC = rDO.dfResCtrl[c][0]
         #------------------------------>
-        colD = rDO['df']['ResCtrl'][c][t+1]
+        colD = rDO.dfResCtrl[c][t+1]
         #endregion ------------------------------------------------> List
 
         return [colC, colD]
@@ -208,7 +248,7 @@ def ProtProf(                                                                   
         #region ---------------------------------------------------> List
         colC = []
         #------------------------------>
-        colD = rDO['df']['ResCtrl'][c][t]
+        colD = rDO.dfResCtrl[c][t]
         #endregion ------------------------------------------------> List
 
         return [colC, colD]
@@ -251,7 +291,7 @@ def ProtProf(                                                                   
 
         #region --------------------------------------------> Log2 Intensities
         dfLogI = dfS.copy()
-        if rDO['TransMethod'] != 'Log2':
+        if rDO.tran != 'Log2':
             if colC:
                 dfLogI.iloc[:,colC+colD] = np.log2(dfLogI.iloc[:,colC+colD])
             else:
@@ -275,25 +315,25 @@ def ProtProf(                                                                   
         #endregion ------------------------------------------------> FCz
 
         #region ---------------------------------------------------> FC CI
-        if rDO['RawI']:
-            if rDO['IndS']:
+        if rDO.rawInt:
+            if rDO.indSample:
                 dfR.loc[:,(cN, tN, 'CI')] = cStatistic.CI_Mean_Diff(             # type: ignore
-                    dfLogI.iloc[:,colC], dfLogI.iloc[:,colD], rDO['Alpha']
+                    dfLogI.iloc[:,colC], dfLogI.iloc[:,colD], rDO.alpha
                 ).loc[:,'CI'].to_numpy()
             else:
                 val = dfLogI.iloc[:,colC] - dfLogI.iloc[:,colD]
                 dfR.loc[:,(cN,tN,'CI')] = cStatistic.CI_Sample(                 # type: ignore
-                    val, rDO['Alpha']
+                    val, rDO.alpha
                 ).loc[:,'CI'].to_numpy()
         else:
             dfR.loc[:,(cN, tN, 'CI')] = cStatistic.CI_Sample(                  # type: ignore
-                dfLogI.iloc[:,colD], rDO['Alpha']
+                dfLogI.iloc[:,colD], rDO.alpha
             ).loc[:,'CI'].to_numpy()
         #endregion ------------------------------------------------> FC CI
 
         #region -----------------------------------------------------------> P
-        if rDO['RawI']:
-            if rDO['IndS']:
+        if rDO.rawInt:
+            if rDO.indSample:
                 dfR.loc[:,(cN,tN,'P')] = stats.ttest_ind(                       # type: ignore
                     dfLogI.iloc[:,colC],
                     dfLogI.iloc[:,colD],
@@ -326,17 +366,17 @@ def ProtProf(                                                                   
         #endregion --------------------------------------------------------> P
 
         #region ----------------------------------------------------------> Pc
-        if rDO['CorrectP'] != 'None':
+        if rDO.correctedP != 'None':
             dfR.loc[:,(cN,tN,'Pc')] = multipletests(                            # type: ignore
                 dfR.loc[:,(cN,tN,'P')],                                         # type: ignore
-                rDO['Alpha'],
-                mConfig.core.oCorrectP[rDO['CorrectP']]
+                rDO.alpha,
+                mConfig.core.oCorrectP[rDO.correctedP]
             )[1]
         #endregion -------------------------------------------------------> Pc
 
         #region ------------------------------------------------> Round to .XX
-        dfR.loc[:,(cN,tN,rDExtra['cLDFThirdLevel'])] = (                        # type: ignore
-            dfR.loc[:,(cN,tN,rDExtra['cLDFThirdLevel'])].round(2)               # type: ignore
+        dfR.loc[:,(cN,tN,rDO.colThirdLevel)] = (                                # type: ignore
+            dfR.loc[:,(cN,tN,rDO.colThirdLevel)].round(2)                       # type: ignore
         )
         #endregion ---------------------------------------------> Round to .XX
 
@@ -369,10 +409,10 @@ def ProtProf(                                                                   
     #region -------------------------------------------------------> Calculate
     dfR = EmptyDFR()
     #------------------------------>
-    for c, cN in enumerate(rDO['Cond']):
-        for t, tN in enumerate(rDO['RP']):
+    for c, cN in enumerate(rDO.labelA):
+        for t, tN in enumerate(rDO.labelB):
             #------------------------------> Control & Data Column
-            colC, colD = dColCtrlData[rDO['ControlT']](c, t)
+            colC, colD = dColCtrlData[rDO.ctrlType](c, t)
             #------------------------------> Calculate data
             try:
                 CalcOutData(cN, tN, colC, colD)

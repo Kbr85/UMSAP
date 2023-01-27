@@ -42,74 +42,62 @@ class Test_CorrA(unittest.TestCase):
     def setUp(self):
         """Set test"""
         self.df = cFile.ReadCSV2DF(fileA)
-        self.dict1 = {
-            'Cero' : False,
-            'TransMethod' : 'Log2',
-            'NormMethod'  : 'Median',
-            'ImpMethod'   : 'None',
-            'Shift'       : 1.8,
-            'Width'       : 0.3,
-            'CorrMethod'  : 'Pearson',
-            'oc' : {
-                'Column' : [98,99,100,101,102],
-            },
-            'df' : {
-                'ColumnR'     : [0,1,2,3,4],
-                'ColumnF'     : [0,1,2,3,4],
-                'ResCtrlFlat' : [0,1,2,3,4],
-            }
-        }
-        self.dict2 = {
-            'Cero' : False,
-            'TransMethod' : 'None',
-            'NormMethod'  : 'None',
-            'ImpMethod'   : 'None',
-            'Shift'       : 1.8,
-            'Width'       : 0.3,
-            'CorrMethod'  : 'Pearson',
-            'oc' : {
-                'Column' : [98,99,100,101,102],
-            },
-            'df' : {
-                'ColumnR'     : [0,1,2,3,4],
-                'ColumnF'     : [0,1,2,3,4],
-                'ResCtrlFlat' : [0,1,2,3,4],
-            }
-        }
-        self.dict3 = {
-            'Cero' : True,
-            'TransMethod' : 'Log2',
-            'NormMethod'  : 'Median',
-            'ImpMethod'   : 'None',
-            'Shift'       : 1.8,
-            'Width'       : 0.3,
-            'CorrMethod'  : 'Pearson',
-            'oc' : {
-                'Column' : [98,99,100,101,102],
-            },
-            'df' : {
-                'ColumnR'     : [0,1,2,3,4],
-                'ColumnF'     : [0,1,2,3,4],
-                'ResCtrlFlat' : [0,1,2,3,4],
-            }
-        }
-        self.dict4 = {
-            'Cero' : True,
-            'TransMethod' : 'Log2',
-            'NormMethod'  : 'Median',
-            'ImpMethod'   : 'None',
-            'Shift'       : 1.8,
-            'Width'       : 0.3,
-            'CorrMethod'  : 'Kendall',
-            'oc' : {
-                'Column' : [98,99,100,101,102],
-            },
-            'df' : {
-                'ColumnR'     : [0,1,2,3,4],
-                'ColumnF'     : [0,1,2,3,4],
-                'ResCtrlFlat' : [0,1,2,3,4],
-            }
-        }
+        self.test1 = corrMethod.UserData(
+            cero          = False,
+            tran          = 'Log2',
+            norm          = 'Median',
+            imp           = 'None',
+            shift         = 1.8,
+            width         = 0.3,
+            corr          = 'Pearson',
+            ocColumn      = [98,99,100,101,102],
+            ocResCtrlFlat = [98,99,100,101,102],
+            dfColumnF     = [0,1,2,3,4],
+            dfColumnR     = [0,1,2,3,4],
+            dfResCtrlFlat = [0,1,2,3,4],
+        )
+        self.test2 = corrMethod.UserData(
+            cero          = False,
+            tran          = 'None',
+            norm          = 'None',
+            imp           = 'None',
+            shift         = 1.8,
+            width         = 0.3,
+            corr          = 'Pearson',
+            ocColumn      = [98,99,100,101,102],
+            ocResCtrlFlat = [98,99,100,101,102],
+            dfColumnF     = [0,1,2,3,4],
+            dfColumnR     = [0,1,2,3,4],
+            dfResCtrlFlat = [0,1,2,3,4],
+        )
+        self.test3 = corrMethod.UserData(
+            cero          = True,
+            tran          = 'Log2',
+            norm          = 'Median',
+            imp           = 'None',
+            shift         = 1.8,
+            width         = 0.3,
+            corr          = 'Pearson',
+            ocColumn      = [98,99,100,101,102],
+            ocResCtrlFlat = [98,99,100,101,102],
+            dfColumnF     = [0,1,2,3,4],
+            dfColumnR     = [0,1,2,3,4],
+            dfResCtrlFlat = [0,1,2,3,4],
+        )
+        self.test4 = corrMethod.UserData(
+            cero          = True,
+            tran          = 'Log2',
+            norm          = 'Median',
+            imp           = 'None',
+            shift         = 1.8,
+            width         = 0.3,
+            corr          = 'Kendall',
+            ocColumn      = [98,99,100,101,102],
+            ocResCtrlFlat = [98,99,100,101,102],
+            dfColumnF     = [0,1,2,3,4],
+            dfColumnR     = [0,1,2,3,4],
+            dfResCtrlFlat = [0,1,2,3,4],
+        )
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -118,14 +106,14 @@ class Test_CorrA(unittest.TestCase):
         """Test method output"""
         #------------------------------>
         tInput = [
-            (self.df, self.dict1, True, corrA_1),
-            (self.df, self.dict2, True, corrA_2),
-            (self.df, self.dict3, True, corrA_3),
-            (self.df, self.dict4, True, corrA_4),
+            (self.df, self.test1, True, corrA_1, 'Test - 1'),
+            (self.df, self.test2, True, corrA_2, 'Test - 2'),
+            (self.df, self.test3, True, corrA_3, 'Test - 3'),
+            (self.df, self.test4, True, corrA_4, 'Test - 4'),
         ]
         #------------------------------>
-        for a,b,c,d in tInput:
-            with self.subTest(f"df={a}, rDO={b}, resetIndex={c}"):
+        for a,b,c,d,g in tInput:
+            with self.subTest(f"{g}"):
                 #------------------------------>
                 result = corrMethod.CorrA(
                     df=a, rDO=b, resetIndex=c)[0]['dfR']

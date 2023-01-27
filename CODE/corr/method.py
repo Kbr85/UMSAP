@@ -15,19 +15,46 @@
 
 
 #region -------------------------------------------------------------> Imports
-from typing import Optional
+from dataclasses import dataclass, field
+from typing      import Optional
 
 import pandas as pd
 
+from core     import method as cMethod
 from dataprep import method as dataMethod
 #endregion ----------------------------------------------------------> Imports
+
+
+#region -------------------------------------------------------------> Classes
+@dataclass
+class UserData(cMethod.BaseUserData):
+    """Representation of the input data for the Correlation Analysis Pane."""
+    #region ---------------------------------------------------------> Options
+    dO:list = field(default_factory=lambda:
+        ['iFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift', 'width',
+         'corr', 'ocResCtrlFlat', 'dfColumnR', 'dfColumnF', 'dfResCtrlFlat',
+        ])
+    longestKey:int = 18                                                         # Length of the longest Key in dI
+    #endregion ------------------------------------------------------> Options
+#---
+
+@dataclass
+class CorrAnalysis():
+    """Data class to hold the info regarding a CorrA in an UMSAP file."""
+    #region --------------------------------------------------------> Options
+    df:pd.DataFrame                                                             # Results as dataframe
+    numCol:int                                                                  # Total number of columns
+    numColList:list[int]                                                        # Column numbers
+    #endregion -----------------------------------------------------> Options
+#---
+#endregion ----------------------------------------------------------> Classes
 
 
 #region -------------------------------------------------------------> Methods
 def CorrA(                                                                      # pylint: disable=dangerous-default-value
     *args,                                                                      # pylint: disable=unused-argument
     df:pd.DataFrame = pd.DataFrame(),
-    rDO:dict        = {},
+    rDO:UserData    = UserData(),
     resetIndex:bool = True,
     **kwargs,
     ) -> tuple[dict, str, Optional[Exception]]:
@@ -78,7 +105,7 @@ def CorrA(                                                                      
 
     #region -----------------------------------------------------------> CorrA
     try:
-        dfR = tOut[0]['dfIm'].corr(method=rDO['CorrMethod'].lower())
+        dfR = tOut[0]['dfIm'].corr(method=rDO.corr.lower())
     except Exception as e:
         return ({}, 'Correlation coefficients calculation failed.', e)
     else:

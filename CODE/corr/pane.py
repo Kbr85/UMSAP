@@ -16,15 +16,15 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from typing  import Union
+from typing  import Union, Optional
 
 import wx
 
 from config.config import config as mConfig
-from core import pane   as cPane
-from core import widget as cWidget
+from core import pane      as cPane
+from core import widget    as cWidget
 from core import validator as cValidator
-from corr import method as corrMethod
+from corr import method    as corrMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -36,42 +36,12 @@ class CorrA(cPane.BaseConfPanel):
         ----------
         parent: wx.Window
             Parent of the widgets.
-        dataI: dict
+        dataI: corrMethod.UserData or None
             Initial data provided by the user in a previous analysis.
-            This contains both I and CI dicts e.g. {'I': I, 'CI': CI}
+            Default is None.
 
         Notes
         -----
-        The structures of self.rDO and self.rDI are:
-        rDO: dict
-            Dict with the processed user input
-            {
-                'uFile'      : 'umsap file path',
-                'iFile'      : 'data file path',
-                'ID'         : 'Analysis ID',
-                "Cero"       : 'Boolean, how to treat cero values',
-                'TransMethod': 'transformation method',
-                'NormMethod' : 'normalization method',
-                'Shift'      : float,
-                'Width'      : float,
-                'ImpMethod'  : 'imputation method',
-                'CorrMethod' : 'correlation method',
-                'oc'         : {
-                    'Column' : [selected columns as integers],
-                    'ColumnF': [columns that must contain floats],
-                }
-                'df'         : {
-                    'ColumnR'     : [cero based list of result columns],
-                    'ColumnF'     : [cero based list of float columns],
-                    'ResCtrlFlat' : [cero based flat list of result & control],
-                },
-            }
-        rDI: dict
-            Similar to 'do' but:
-                - No oc and df dict
-                - With the values given by the user
-                - Keys as in the GUI of the tab plus empty space.
-
         Running the analysis results in the creation of:
         - Parent Folder/
             - Input_Data_Files/
@@ -91,8 +61,8 @@ class CorrA(cPane.BaseConfPanel):
             'Correlation-Analysis : {
                 '20210324-165609 - bla': {
                     'V' : config.dictVersion,
-                    'I' : self.d,
-                    'CI': self.do,
+                    'I' : Dict with User Input as given. Keys are label like in the Tab GUI,
+                    'CI': Dict with Processed User Input. Keys are attributes of UserData,
                     'DP': {
                         'dfF' : Name of file with initial data as float
                         'dfT' : Name of file with transformed data.
@@ -129,13 +99,16 @@ class CorrA(cPane.BaseConfPanel):
     cTitlePD        = 'Calculating Correlation Coefficients'
     cGaugePD        = 20
     cTTHelp         = mConfig.core.ttBtnHelp.format(cURL)
-    rLLenLongest    = len(cLCorrMethod)
     rMainData       = '{}_{}-CorrelationCoefficients-Data.txt'
     rAnalysisMethod = corrMethod.CorrA
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent:wx.Window, dataI:dict={}):                        # pylint: disable=dangerous-default-value
+    def __init__(
+        self,
+        parent:wx.Window,
+        dataI:Optional[corrMethod.UserData]=None,
+        ) -> None:
         """"""
         #region -----------------------------------------------> Initial setup
         super().__init__(parent)
@@ -145,7 +118,7 @@ class CorrA(cPane.BaseConfPanel):
         self.wCorrMethod = cWidget.StaticTextComboBox(self.wSbValue,
             label     = self.cLCorrMethod,
             tooltip   = f'Select the {self.cLCorrMethod}.',
-            choices   = list(mConfig.corr.oCorrMethod.values()),
+            choices   = mConfig.corr.oCorrMethod,
             validator = cValidator.IsNotEmpty(),
         )
         self.wStListI = wx.StaticText(
@@ -288,7 +261,8 @@ class CorrA(cPane.BaseConfPanel):
         #endregion -----------------------------------------------------> Test
 
         #region -------------------------------------------------------> DataI
-        self.SetInitialData(dataI)
+        if dataI is not None:
+            self.SetInitialData(dataI)
         #endregion ----------------------------------------------------> DataI
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -313,56 +287,50 @@ class CorrA(cPane.BaseConfPanel):
     #endregion ------------------------------------------------> Event Methods
 
     #region ---------------------------------------------------> Class Methods
-    def SetInitialData(self, dataI:dict={}) -> bool:                            # pylint: disable=dangerous-default-value
+    def SetInitialData(self, dataI:corrMethod.UserData) -> bool:                            # pylint: disable=dangerous-default-value
         """Set initial data.
 
             Parameters
             ----------
-            dataI: dict
-                Data to fill all fields and repeat an analysis. See Notes.
+            dataI: corrMethod.UserData
+                Data class representation of the already run analysis.
 
             Returns
             -------
             bool
         """
         #region --------------------------------------------------------> Add
-        if dataI:
-            #------------------------------>
-            dataInit = dataI['uFile'].parent / mConfig.core.fnDataInit
-            iFile = dataInit / dataI['I'][self.cLiFile]
-            #------------------------------>
-            self.wUFile.wTc.SetValue(str(dataI['uFile']))
-            self.wIFile.wTc.SetValue(str(iFile))
-            self.wId.wTc.SetValue(dataI['CI']['ID'])
-            #------------------------------>
-            self.wCeroB.wCb.SetValue(dataI['I'][self.cLCeroTreatD])
-            self.wTransMethod.wCb.SetValue(dataI['I'][self.cLTransMethod])
-            self.wNormMethod.wCb.SetValue(dataI['I'][self.cLNormMethod])
-            self.wImputationMethod.wCb.SetValue(dataI['I'][self.cLImputation])
-            self.wShift.wTc.SetValue(dataI['I'].get(self.cLShift, self.cValShift))
-            self.wWidth.wTc.SetValue(dataI['I'].get(self.cLWidth, self.cValWidth))
-            #------------------------------>
-            if iFile.exists:
-                #------------------------------> Add columns with the same order
-                l = []
-                for k in dataI['CI']['oc']['Column']:
-                    if len(l) == 0:
-                        l.append(k)
-                        continue
-                    #------------------------------>
-                    if k > l[-1]:
-                        l.append(k)
-                        continue
-                    #------------------------------>
-                    self.wLCtrlI.SelectList(l)
-                    self.OnAdd('fEvent')
-                    #------------------------------>
-                    l = [k]
-                #------------------------------> Last past
+        self.wUFile.wTc.SetValue(str(dataI.uFile))
+        self.wIFile.wTc.SetValue(str(dataI.iFile))
+        self.wId.wTc.SetValue(dataI.ID)
+        self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
+        self.wTransMethod.wCb.SetValue(dataI.tran)
+        self.wNormMethod.wCb.SetValue(dataI.norm)
+        self.wImputationMethod.wCb.SetValue(dataI.imp)
+        self.wShift.wTc.SetValue(str(dataI.shift))
+        self.wWidth.wTc.SetValue(str(dataI.width))
+        #------------------------------>
+        if dataI.iFile.is_file() and dataI.iFile.exists:
+            #------------------------------> Add columns with the same order
+            l = []
+            for k in dataI.ocResCtrlFlat:
+                if len(l) == 0:
+                    l.append(k)
+                    continue
+                #------------------------------>
+                if k > l[-1]:
+                    l.append(k)
+                    continue
+                #------------------------------>
                 self.wLCtrlI.SelectList(l)
                 self.OnAdd('fEvent')
-            #------------------------------>
-            self.OnImpMethod('fEvent')
+                #------------------------------>
+                l = [k]
+            #------------------------------> Last past
+            self.wLCtrlI.SelectList(l)
+            self.OnAdd('fEvent')
+        #------------------------------>
+        self.OnImpMethod('fEvent')
         #endregion -----------------------------------------------------> Add
 
         return True
@@ -371,7 +339,7 @@ class CorrA(cPane.BaseConfPanel):
 
     #region ---------------------------------------------------> Run Analysis
     def CheckInput(self) -> bool:
-        """Check user input
+        """Check user input.
 
             Returns
             -------
@@ -405,57 +373,45 @@ class CorrA(cPane.BaseConfPanel):
         #region -------------------------------------------------------> Input
         msgStep = self.cLPdPrepare + 'User input, reading'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-
+        #------------------------------> Read
         col  = [int(x) for x in self.wLCtrlO.GetColContent(0)]
         colF = list(range(0, len(col)))
         impMethod = self.wImputationMethod.wCb.GetValue()
-        #------------------------------> As given
-        self.rDI = {
-            self.EqualLenLabel(self.cLiFile) : (
-                self.wIFile.wTc.GetValue()),
-            self.EqualLenLabel(self.cLId) : (
-                self.wId.wTc.GetValue()),
-            self.EqualLenLabel(self.cLCeroTreatD) : (
-                self.wCeroB.wCb.GetValue()),
-            self.EqualLenLabel(self.cLTransMethod) : (
-                self.wTransMethod.wCb.GetValue()),
-            self.EqualLenLabel(self.cLNormMethod) : (
-                self.wNormMethod.wCb.GetValue()),
-            self.EqualLenLabel(self.cLImputation) : (
-                impMethod),
-            self.EqualLenLabel(self.cLShift) : (
-                self.wShift.wTc.GetValue()),
-            self.EqualLenLabel(self.cLWidth) : (
-                self.wWidth.wTc.GetValue()),
-            self.EqualLenLabel(self.cLCorrMethod) : (
-                self.wCorrMethod.wCb.GetValue()),
-            self.EqualLenLabel('Selected Columns') : col,
+        dI = {
+            'iFileN'       : self.cLiFile,
+            'ID'           : self.cLId,
+            'cero'         : self.cLCeroTreatD,
+            'tran'         : self.cLTransMethod,
+            'norm'         : self.cLNormMethod,
+            'imp'          : self.cLImputation,
+            'corr'         : self.cLCorrMethod,
+            'ocResCtrlFlat': 'Selected Columns',
         }
+        if impMethod == mConfig.data.lONormDist:
+            dI['shift'] = self.cLShift
+            dI['width'] = self.cLWidth
         #------------------------------>
         msgStep = self.cLPdPrepare + 'User input, processing'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #------------------------------> Dict with all values
-        self.rDO = {
-            'uFile'      : Path(self.wUFile.wTc.GetValue()),
-            'iFile'      : Path(self.wIFile.wTc.GetValue()),
-            'ID'         : self.wId.wTc.GetValue(),
-            'Cero'       : mConfig.core.oYesNo[self.wCeroB.wCb.GetValue()],
-            'TransMethod': self.wTransMethod.wCb.GetValue(),
-            'NormMethod' : self.wNormMethod.wCb.GetValue(),
-            'ImpMethod'  : impMethod,
-            'Shift'      : float(self.wShift.wTc.GetValue()),
-            'Width'      : float(self.wWidth.wTc.GetValue()),
-            'CorrMethod' : self.wCorrMethod.wCb.GetValue(),
-            'oc'         : {
-                'Column'  : col,
-                'ColumnF' : col,
-            },
-            'df'         : {
-                'ColumnR'    : colF,
-                'ColumnF'    : colF,
-                'ResCtrlFlat': colF,
-            }
-        }
+        #------------------------------> Create DataClass Instance
+        self.rDO = corrMethod.UserData(
+            uFile         = Path(self.wUFile.wTc.GetValue()),
+            iFile         = Path(self.wIFile.wTc.GetValue()),
+            ID            = self.wId.wTc.GetValue(),
+            cero          = mConfig.core.oYesNo[self.wCeroB.wCb.GetValue()],
+            tran          = self.wTransMethod.wCb.GetValue(),
+            norm          = self.wNormMethod.wCb.GetValue(),
+            imp           = impMethod,
+            shift         = float(self.wShift.wTc.GetValue()),
+            width         = float(self.wWidth.wTc.GetValue()),
+            corr          = self.wCorrMethod.wCb.GetValue(),
+            ocColumn      = col,
+            ocResCtrlFlat = col,
+            dfColumnR     = colF,
+            dfColumnF     = colF,
+            dfResCtrlFlat = colF,
+            dI            = dI,
+        )
         #endregion ----------------------------------------------------> Input
 
         #region ---------------------------------------------------> Super
@@ -482,7 +438,7 @@ class CorrA(cPane.BaseConfPanel):
             mConfig.core.fnTrans.format(self.rDate, '03')  : self.dfT,
             mConfig.core.fnNorm.format(self.rDate, '04')   : self.dfN,
             mConfig.core.fnImp.format(self.rDate, '05')    : self.dfIm,
-            self.rMainData.format(self.rDate, '06')   : self.dfR,
+            self.rMainData.format(self.rDate, '06')        : self.dfR,
         }
         stepDict['R'] = self.rMainData.format(self.rDate, '06')
         #endregion -----------------------------------------------> Data Steps
