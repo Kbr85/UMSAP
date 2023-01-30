@@ -26,10 +26,8 @@ from corr import method as corrMethod
 from main import menu   as mMenu
 
 if TYPE_CHECKING:
-    import pandas as pd
-    #------------------------------>
-    from result import window as resWindow
     from result import file   as resFile
+    from result import window as resWindow
 #endregion ----------------------------------------------------------> Imports
 
 
