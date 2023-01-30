@@ -445,6 +445,24 @@ class BaseWindowResult(BaseWindow):
         """
         return (self.rData.date, {'MenuDate':self.rData.date})
     #---
+
+    def UpdateUMSAPData(self) -> bool:
+        """Update the window after the UMSAP file have been updated.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        self.rObj  = self.cParent.rObj                                          # type: ignore
+        self.rData = self.rObj.dConfigure[self.cSection]()
+        self.rDate, menuData = self.SetDateMenuDate()
+        menuBar = self.GetMenuBar()
+        menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(menuData)
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
     #endregion ------------------------------------------------> Class methods
 #---
 
@@ -706,24 +724,6 @@ class BaseWindowResultListText(BaseWindowResult):
         self.wLC.wLCS.wLC.SetFocus()
         self.OnListSelect('fEvent')
         #------------------------------>
-        return True
-    #---
-
-    def UpdateUMSAPData(self) -> bool:
-        """Update the window after the UMSAP file have been updated.
-
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------->
-        self.rObj  = self.cParent.rObj                                          # type: ignore
-        self.rData = self.rObj.dConfigure[self.cSection]()
-        self.rDate, menuData = self.SetDateMenuDate()
-        menuBar = self.GetMenuBar()
-        menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(menuData)
-        #endregion ------------------------------------------------>
-
         return True
     #---
     #endregion ------------------------------------------------> Class Methods
