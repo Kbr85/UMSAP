@@ -514,7 +514,7 @@ class UMSAPControl(cWindow.BaseWindow):
             selItems: dict
                 Keys are Section names and values selected items.
             *args
-                For compatibility. They are ignore.
+                For compatibility. They are ignored.
 
             Returns
             -------
@@ -530,13 +530,12 @@ class UMSAPControl(cWindow.BaseWindow):
             #------------------------------> Analysis
             for item in v:
                 #------------------------------> Folder
-                folder.append(
-                    self.rObj.rStepDataP/f"{item.split(' - ')[0]}_{k.replace(' ', '-')}")
+                folder.append(self.rObj.rStepDataP/f"{item.split(' - ')[0]}_{k.replace(' ', '-')}")
                 #------------------------------> Files
                 iVal = iter(self.rObj.rData[k][item]['I'].values())
-                inputF.append(next(iVal))
+                inputF.append(self.rObj.rInputFileP/next(iVal))
                 if k in self.cLSecSeqF:
-                    inputF.append(next(iVal))
+                    inputF.append(self.rObj.rInputFileP/next(iVal))
                 #------------------------------> Delete Analysis
                 self.rObj.rData[k].pop(item)
             #------------------------------> Section
@@ -563,11 +562,11 @@ class UMSAPControl(cWindow.BaseWindow):
         folder = list(set(folder))
         [shutil.rmtree(x) for x in folder]                                      # pylint: disable=expression-not-assigned
         #------------------------------>
-        inputF = list(set(inputF))
+        inputF      = list(set(inputF))
         inputNeeded = self.rObj.GetInputFiles()
         for iFile in inputF:
             if iFile not in inputNeeded:
-                (self.rObj.rInputFileP/iFile).unlink()
+                iFile.unlink()
         #endregion ----------------------------------------------------->
 
         #region --------------------------------------------------->

@@ -59,6 +59,7 @@ class UMSAPFile():
     # No Test
     #region -----------------------------------------------------> Class setup
     SeqF = [mConfig.tarp.nMod, mConfig.limp.nMod]
+    #------------------------------>
     rUserDataClass = {
         mConfig.corr.nUtil : corrMethod.UserData,
         mConfig.data.nUtil : dataMethod.UserData,
@@ -84,7 +85,7 @@ class UMSAPFile():
         self.rStepDataP  = self.rFileP.parent / mConfig.core.fnDataSteps
         self.rInputFileP = self.rFileP.parent / mConfig.core.fnDataInit
         #------------------------------>
-        self.dConfigure = {# Configure methods. Keys are section names.
+        self.dConfigure = {                                                     # Configure methods. Keys are section names.
             mConfig.corr.nUtil: self.ConfigureDataCorrA,
             mConfig.data.nUtil: self.ConfigureDataDataPrep,
             mConfig.prot.nMod : self.ConfigureDataProtProf,
@@ -107,13 +108,11 @@ class UMSAPFile():
             -------
             bool
         """
-        #region ---------------------------------------------------> Variables
+        #region --------------------------------------------------->
         oPath = tPath if tPath is not None else self.rFileP
-        #endregion ------------------------------------------------> Variables
-
-        #region ---------------------------------------------------> Write
+        #------------------------------>
         cFile.WriteJSON(oPath, self.rData)
-        #endregion ------------------------------------------------> Write
+        #endregion ------------------------------------------------>
 
         return True
     #---
@@ -130,7 +129,7 @@ class UMSAPFile():
                 corrMethod.CorrAnalysis.
         """
         #region ---------------------------------------------------> Variables
-        data = cMethod.BaseAnalysis()
+        data  = cMethod.BaseAnalysis()
         pathB = mConfig.corr.nUtil.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
@@ -221,7 +220,7 @@ class UMSAPFile():
                 dataMethod.DataPrepAnalysis.
         """
         #region ---------------------------------------------------> Variables
-        data = cMethod.BaseAnalysis()
+        data  = cMethod.BaseAnalysis()
         pathA = tDate.split(" - ")[0]
         pathB = tSection.replace(" ", "-")
         tPath = self.rStepDataP / f'{pathA}_{pathB}'
@@ -232,8 +231,9 @@ class UMSAPFile():
             dp = {j:cFile.ReadCSV2DF(tPath/w) for j,w in self.rData[tSection][tDate]['DP'].items()}
         except Exception as e:
             raise ValueError(f"Data for analysis {tDate} is corrupted.") from e
+        #------------------------------>
         try:
-            numColList = self.rData[tSection][tDate]['CI']['oc']['Column']
+            numColList = self.rData[tSection][tDate]['CI']['oc']['Column']      # Keep support for previous versions
         except KeyError:
             numColList = self.rData[tSection][tDate]['CI']['ocResCtrlFlat']
         #------------------------------>
@@ -274,7 +274,7 @@ class UMSAPFile():
                 continue
             #------------------------------>
             try:
-                numColList = v['CI']['oc']['Column']
+                numColList = v['CI']['oc']['Column']                            # Keep support for older versions
             except KeyError:
                 numColList = v['CI']['ocResCtrlFlat']
             #------------------------------>
@@ -316,8 +316,8 @@ class UMSAPFile():
                 data.error.append(k)
                 continue
             #------------------------------> Alpha
-            try:                                                                # Keep backward compatibility
-                alpha    = v['CI']['Alpha']
+            try:
+                alpha    = v['CI']['Alpha']                                     # Keep support for older versions
                 labelA   = v['CI']['Cond']
                 labelB   = v['CI']['RP']
                 ctrlType = v['CI']['ControlT']
@@ -371,7 +371,7 @@ class UMSAPFile():
                 continue
             #------------------------------>
             try:
-                labelB     = v['CI']['Band']
+                labelB     = v['CI']['Band']                                     # Keep support for older versions
                 labelA     = v['CI']['Lane']
                 alpha      = v['CI']['Alpha']
                 protLength = v['CI']['ProtLength']
@@ -413,7 +413,7 @@ class UMSAPFile():
                 with value tarpMethod.TarpAnalysis.
         """
         #region ---------------------------------------------------> Variables
-        data = cMethod.BaseAnalysis()
+        data  = cMethod.BaseAnalysis()
         pathB = mConfig.tarp.nMod.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
@@ -430,7 +430,7 @@ class UMSAPFile():
                 continue
             #------------------------------>
             try:
-                exp        = v['CI']['Exp']
+                exp        = v['CI']['Exp']                                     # Keep support for older versions
                 ctrl       = v['CI']['ControlL']
                 alpha      = v['CI']['Alpha']
                 protLength = v['CI']['ProtLength']
@@ -572,11 +572,13 @@ class UMSAPFile():
                 if 'Data' in k:
                     fileN = self.rData[tSection][tDate]['I'][k]
                     data['iFile'] = self.rInputFileP / fileN
-                if 'Results - Control' in k:
-                    data['resCtrl'] = self.rData[tSection][tDate]['I'][k]
+                #------------------------------>
                 if 'Sequences File' in k:
                     fileN = self.rData[tSection][tDate]['I'][k]
                     data['seqFile'] = self.rInputFileP / fileN
+                #------------------------------>
+                if 'Results - Control' in k:
+                    data['resCtrl'] = self.rData[tSection][tDate]['I'][k]
             #endregion -------------------------------------------------> Data
 
             return data
@@ -589,9 +591,9 @@ class UMSAPFile():
         if cCheck.VersionCompare('2.2.1', fileV)[0]:
             data = OldVersion()                                                 # Old Files <= 2.2.0 with json format
         else:
-            data            = self.rData[tSection][tDate]['CI']                 # > 2.2.0
-            data['uFile']   = self.rFileP
-            data['iFile']   = self.rInputFileP / data['iFileN']
+            data          = self.rData[tSection][tDate]['CI']                   # > 2.2.0
+            data['uFile'] = self.rFileP
+            data['iFile'] = self.rInputFileP / data['iFileN']
             try:
                 data['seqFile'] = self.rInputFileP / data['seqFileN']
             except KeyError:
@@ -747,23 +749,22 @@ class UMSAPFile():
             Returns
             -------
             list[str]
-                List of the files
+                List of full file paths.
 
             Notes
             -----
-            This assumes files are added to I as the first and second items
+            This assumes files are added to I as the first and second items.
+            Full path to the files are returned.
         """
         #region --------------------------------------------------->
         inputF = []
-        #endregion ------------------------------------------------>
-
-        #region --------------------------------------------------->
+        #------------------------------>
         for k,v in self.rData.items():
             for w in v.values():
-                iVal = iter(w['I'].values())
-                inputF.append(next(iVal))
+                iVal   = iter(w['I'].values())
+                inputF.append(self.rInputFileP/next(iVal))
                 if k in self.SeqF:
-                    inputF.append(next(iVal))
+                    inputF.append(self.rInputFileP/next(iVal))
         #endregion ------------------------------------------------>
 
         return inputF
