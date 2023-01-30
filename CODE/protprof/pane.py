@@ -666,6 +666,8 @@ class ProtProf(cPane.BaseConfPanelMod):
             'tran'        : self.cLTransMethod,
             'norm'        : self.cLNormMethod,
             'imp'         : self.cLImputation,
+            'shift'       : self.cLShift,
+            'width'       : self.cLWidth,
             'scoreVal'    : self.cLScoreVal,
             'indSample'   : self.cLSample,
             'alpha'       : self.cLAlpha,
@@ -678,11 +680,11 @@ class ProtProf(cPane.BaseConfPanelMod):
             'labelB'      : self.cLRP,
             'ctrlType'    : f"Control {self.cLCtrlType}",
             'ctrlName'    : f"Control {self.cLCtrlName}",
-            'ocResCtrl'   : mConfig.core.lStResCtrlS,
+            'resCtrl'     : mConfig.core.lStResCtrlS,
         }
-        if impMethod == mConfig.data.lONormDist:
-            dI['shift'] = self.cLShift
-            dI['width'] = self.cLWidth
+        if impMethod != mConfig.data.lONormDist:
+            dI.pop('shift')
+            dI.pop('width')
         #------------------------------> Create dataclass
         msgStep = self.cLPdPrepare + 'User input, processing'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
@@ -712,7 +714,7 @@ class ProtProf(cPane.BaseConfPanelMod):
             labelA        = self.rLbDict[0],
             labelB        = self.rLbDict[1],
             ctrlType      = self.rLbDict['ControlType'],
-            ctrlName      = self.rLbDict['Control'],
+            ctrlName      = self.rLbDict['Control'][0],
             dfTargetProt  = 0,
             dfGene        = 1,
             dfScore       = 2,

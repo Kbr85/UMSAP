@@ -519,6 +519,8 @@ class LimProt(cPane.BaseConfPanelMod2):
             'tran'        : self.cLTransMethod,
             'norm'        : self.cLNormMethod,
             'imp'         : self.cLImputation,
+            'shift'       : self.cLShift,
+            'width'       : self.cLWidth,
             'targetProt'  : self.cLTargetProt,
             'scoreVal'    : self.cLScoreVal,
             'alpha'       : self.cLAlpha,
@@ -530,14 +532,14 @@ class LimProt(cPane.BaseConfPanelMod2):
             'ocSeq'       : f'{self.cLSeqCol} Column',
             'ocTargetProt': self.cLDetectedProt,
             'ocScore'     : self.cLScoreCol,
-            'ocResCtrl'   : mConfig.core.lStResCtrlS,
+            'resCtrl'     : mConfig.core.lStResCtrlS,
             'labelA'      : self.cLLane,
             'labelB'      : self.cLBand,
             'ctrlName'    : f'Control {self.cLCtrlName}',
         }
-        if impMethod == mConfig.data.lONormDist:
-            dI['shift'] = self.cLShift
-            dI['width'] = self.cLWidth
+        if impMethod != mConfig.data.lONormDist:
+            dI.pop('shift')
+            dI.pop('width')
         #endregion --------------------------------------------------------> d
 
         #region ----------------------------------------------------------> do

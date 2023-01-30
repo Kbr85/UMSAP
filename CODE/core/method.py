@@ -149,7 +149,12 @@ class BaseUserData():
         #------------------------------>
         for k,v in self.dI.items():
             label = f"{v}{(self.longestKey - len(v))*' '}"
-            dictO[label] = str(getattr(self, k))
+            val   = getattr(self, k)
+            #------------------------------>
+            if isinstance(val, (list, tuple)):
+                val = ', '.join(map(str, val))
+            #------------------------------>
+            dictO[label] = str(val)
         #endregion ------------------------------------------------>
 
         return dictO

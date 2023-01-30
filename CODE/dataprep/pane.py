@@ -275,11 +275,13 @@ class DataPrep(cPane.BaseConfPanel):
             'tran'         : self.cLTransMethod,
             'norm'         : self.cLNormMethod,
             'imp'          : self.cLImputation,
-            'ocResCtrlFlat': self.cLColAnalysis,
+            'shift'        : self.cLShift,
+            'width'        : self.cLWidth,
+            'resCtrl'      : self.cLColAnalysis,
         }
-        if impMethod == mConfig.data.lONormDist:
-            dI['shift'] = self.cLShift
-            dI['width'] = self.cLWidth
+        if impMethod != mConfig.data.lONormDist:
+            dI.pop('shift')
+            dI.pop('width')
         #------------------------------> Dict with all values
         msgStep = self.cLPdPrepare + 'User input, processing'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
@@ -294,6 +296,7 @@ class DataPrep(cPane.BaseConfPanel):
             imp           = impMethod,
             shift         = float(self.wShift.wTc.GetValue()),
             width         = float(self.wWidth.wTc.GetValue()),
+            resCtrl       = ', '.join(map(str, colAnalysis)),
             ocColumn      = colAnalysis,                                        # type: ignore
             ocResCtrlFlat = colAnalysis,                                        # type: ignore
             dfColumnR     = resCtrlFlat,
