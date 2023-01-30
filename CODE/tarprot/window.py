@@ -1314,9 +1314,12 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
             bool
         """
         #region --------------------------------------------------->
-        if 1 > (xf := round(x)) > len(self.rPos):
+        xf = round(x)
+        #------------------------------>
+        if not 1 <= xf <= len(self.rPos):
             self.wStatBar.SetStatusText('')
             return False
+        #------------------------------>
         pos = self.rPos[xf-1]
         #endregion ------------------------------------------------>
 
@@ -1725,7 +1728,7 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
         idx = pd.IndexSlice
         df = self.rData.loc[:,idx[self.rNat,['Win',self.rAllC],:]]              # type: ignore
         df = df.dropna(how='all')
-        if 0 >= xf >= df.shape[0]:
+        if not 0 <= xf < df.shape[0]:
             self.wStatBar.SetStatusText('')
             return False
         #endregion ------------------------------------------------>
