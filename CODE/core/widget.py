@@ -27,8 +27,8 @@ import webbrowser
 import wx
 import wx.lib.mixins.listctrl as listmix
 
-import matplotlib         as mpl
-import matplotlib.patches as patches
+import matplotlib as mpl
+from matplotlib                        import patches
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 
 from config.config import config as mConfig

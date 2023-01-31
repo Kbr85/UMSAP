@@ -28,12 +28,12 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 
 from config.config import config as mConfig
-from core   import check     as cCheck
-from core   import file      as cFile
-from core   import method    as cMethod
-from core   import validator as cValidator
-from core   import widget    as cWidget
-from core   import window    as cWindow
+from core import check     as cCheck
+from core import file      as cFile
+from core import method    as cMethod
+from core import validator as cValidator
+from core import widget    as cWidget
+from core import window    as cWindow
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -684,10 +684,8 @@ class BaseConfPanel(
                 {
                     date : {
                         'V' : config.dictVersion,
-                        'I' : self.d,
-                        'CI': dtsMethod.DictVal2Str(
-                            self.do, self.changeKey, new=True,
-                        ),
+                        'I' : User Input for UMSAPCtrl,
+                        'CI': User Input with correct python type,
                         'R' : Results,
                     }
                 }
@@ -1106,6 +1104,8 @@ class BaseConfPanel(
             self.rDlg.SuccessMessage(
                 self.cLPdDone, eTime=f"{self.cLPdElapsed} {self.rDeltaT}")
         else:
+            self.rDFile = []
+            #------------------------------>
             self.rDlg.ErrorMessage(
                 self.cLPdError,error=self.rMsgError,tException=self.rException)
         #endregion ------------------------------------> Dlg progress dialogue
@@ -1237,10 +1237,6 @@ class BaseConfPanelMod2(BaseConfPanelMod):
         rightDelete: Boolean
             Enables clearing wx.StaticBox input with right click.
     """
-    #region ---------------------------------------------------> Class Setup
-    rChangeKey = ['iFile', 'uFile', 'seqFile']
-    #endregion ------------------------------------------------> Class Setup
-
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent:wx.Window, rightDelete:bool=True) -> None:
         """ """
@@ -1830,13 +1826,13 @@ class BaseResControlExpConf(wx.Panel):
         #region --------------------------------------------------> Add Labels
         #------------------------------> Set the label numbers
         for k, v in self.cTopParent.rLbDict.items():                            # type: ignore
-            if k != 'Control' and k != 'ControlType':
+            if k not in ['Control', 'ControlType']:
                 self.rLSectWidget[k].wTc.SetValue(str(len(v)))
         #------------------------------> Create labels fields
         self.OnLabelNumber('test')
         #------------------------------> Fill. 2 iterations needed. Improve
         for k, v in self.cTopParent.rLbDict.items():                            # type: ignore
-            if k != 'Control' and k != 'ControlType':
+            if k not in ['Control', 'ControlType']:
                 for j, t in enumerate(v):
                     self.rLSectTcDict[k][j].SetValue(t)
             elif k == 'Control':

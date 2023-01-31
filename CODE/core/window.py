@@ -2777,8 +2777,8 @@ class UserInputText(BaseDialogOkCancel):
             self.EndModal(1)
             self.Close()
             return True
-        else:
-            return False
+        #------------------------------>
+        return False
         #endregion ------------------------------------------------> Return
     #---
 
