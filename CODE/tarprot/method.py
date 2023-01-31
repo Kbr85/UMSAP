@@ -46,7 +46,7 @@ class UserData(cMethod.BaseUserData):
     colSecLevel:list[str] = field(default_factory=lambda:
         mConfig.tarp.dfcolBLevel)
     #------------------------------>
-    dO:list = field(default_factory=lambda:                                     # Options for output printing
+    dO:list = field(default_factory=lambda:                                     # Attr printed to UMSAP file
         ['iFileN', 'seqFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift',
          'width', 'targetProt', 'scoreVal', 'alpha', 'posAA', 'winHist',
          'ocSeq', 'ocTargetProt', 'ocScore', 'resCtrl', 'labelA', 'ctrlName',
@@ -64,17 +64,17 @@ class TarpAnalysis():
     """
     #region --------------------------------------------------------> Options
     df:pd.DataFrame                                                             # Results as dataframe
-    labelA:list[str]
-    ctrlName:str
-    alpha:float
-    protLength:list[int]
-    protLoc:list[int]
-    protDelta:Optional[int]
-    targetProt:str
-    CpR:str
-    CEvol:str
-    AA:dict[str,str]
-    Hist:dict[str,str]
+    labelA:list[str]                                                            # Exp's labels
+    ctrlName:str                                                                # Control Name
+    alpha:float                                                                 # Significance level
+    protLength:list[int]                                                        # Length of Rec and Nat Prot
+    protLoc:list[int]                                                           # Location of Nat Prot in Rec Prot
+    protDelta:Optional[int]                                                     # To convert Rec Res Num to Nat Res Num
+    targetProt:str                                                              # Name of Target Protein
+    CpR:str                                                                     # Name of CpR File
+    CEvol:str                                                                   # Name of CEvol file
+    AA:dict[str,str]                                                            # Label for Menu Item (key) and File name (value)
+    Hist:dict[str,str]                                                          # Label for Menu Item (key) and File name (value)
     #endregion -----------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------------> Classes
@@ -129,7 +129,7 @@ def TarProt(
     """
     # Test in test.unit.tarprot.test_method.Test_TarProt
     #region ------------------------------------------------> Helper Functions
-    def EmptyDFR() -> pd.DataFrame:
+    def _emptyDFR() -> pd.DataFrame:
         """Creates the empty df for the results.
 
             Returns
@@ -168,7 +168,7 @@ def TarProt(
         return df
     #---
 
-    def PrepareAncova(
+    def _prepareAncova(
         rowC:int,
         row:namedtuple,                                                         # type: ignore
         rowN:int
@@ -245,7 +245,7 @@ def TarProt(
 
     #region --------------------------------------------------------> Analysis
     #------------------------------> Empty dfR
-    dfR = EmptyDFR()
+    dfR = _emptyDFR()
     #------------------------------> N, C Res Num
     dfR, msgError, tException = cMethod.NCResNumbers(dfR, rDO, seqNat=True)
     if dfR.empty:
@@ -261,7 +261,7 @@ def TarProt(
     for row in dfS.itertuples(index=False):
         try:
             #------------------------------> Ancova df & Int
-            dfAncova = PrepareAncova(k, row, totalRowAncovaDF)
+            dfAncova = _prepareAncova(k, row, totalRowAncovaDF)
             #------------------------------> P value
             dfR.loc[k,idx] = cStatistic.Test_slope(dfAncova, nGroups)           # type: ignore
         except Exception as e:
@@ -323,7 +323,7 @@ def R2AA(
     """
     # Test in test.unit.tarprot.test_method.Test_R2AA
     #region ---------------------------------------------------> Helper Method
-    def AddNewAA(
+    def _addNewAA(
         dfO:pd.DataFrame,
         r:int,
         pos:int,
@@ -391,11 +391,11 @@ def R2AA(
             #------------------------------>
             n = seq.find(s)
             if n > 0:
-                dfO = AddNewAA(dfO, n, pos, seq, l)                             # type: ignore
+                dfO = _addNewAA(dfO, n, pos, seq, l)                             # type: ignore
             #------------------------------>
             c = n+len(s)
             if c < protL:
-                dfO = AddNewAA(dfO, c, pos, seq, l)                             # type: ignore
+                dfO = _addNewAA(dfO, c, pos, seq, l)                             # type: ignore
     #endregion ------------------------------------------------> Fill
 
     #region ---------------------------------------------------> Random Cleavage
@@ -406,7 +406,7 @@ def R2AA(
     dfT = pd.DataFrame(0, columns=idx, index=mConfig.core.lAA1+['Chi'])         # type: ignore
     dfO = pd.concat([dfO, dfT], axis=1)
     for k,_ in enumerate(seq[1:-1], start=1):                                   # Exclude first and last residue
-        dfO = AddNewAA(dfO, k, pos, seq, c)
+        dfO = _addNewAA(dfO, k, pos, seq, c)
     #endregion ------------------------------------------------> Random Cleavage
 
     #region ---------------------------------------------------> Group
@@ -594,7 +594,7 @@ def R2CEvol(df:pd.DataFrame, alpha:float, protL:list[int]) -> pd.DataFrame:
     """
     # Test in test.unit.tarprot.test_method.Test_R2CEvol
     #region -------------------------------------------------> Helper Function
-    def IntL2MeanI(a:list, alpha:float) -> float:
+    def _intL2MeanI(a:list, alpha:float) -> float:
         """Calculate the intensity average.
 
             Parameters
@@ -638,7 +638,7 @@ def R2CEvol(df:pd.DataFrame, alpha:float, protL:list[int]) -> pd.DataFrame:
     resL  = [x for x in resL if x > -1 and x < lastR]
     #------------------------------>
     for e in label:
-        dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])       # type: ignore
+        dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(_intL2MeanI, axis=1, raw=True, args=[alpha])       # type: ignore
     #------------------------------>
     maxN = dfT.loc[:,idx[:,'Int']].max().max()                                                                          # type: ignore
     minN = dfT.loc[:,idx[:,'Int']].min().min()                                                                          # type: ignore
@@ -670,7 +670,7 @@ def R2CEvol(df:pd.DataFrame, alpha:float, protL:list[int]) -> pd.DataFrame:
         resL = sorted(resL)
         #------------------------------>
         for e in label:
-            dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(IntL2MeanI, axis=1, raw=True, args=[alpha])   # type: ignore
+            dfT.loc[:,idx[e,'Int']] = dfT.loc[:,idx[e,['Int','P']]].apply(_intL2MeanI, axis=1, raw=True, args=[alpha])   # type: ignore
         #------------------------------>
         maxN = dfT.loc[:,idx[:,'Int']].max().max()                                                                      # type: ignore
         minN = dfT.loc[:,idx[:,'Int']].min().min()                                                                      # type: ignore
@@ -724,7 +724,7 @@ def R2SeqAlignment(
     """
     # No Test
     #region -------------------------------------------------> Helper Function
-    def GetString(
+    def _getString(
         df:pd.DataFrame,
         seq:str,
         rec:bool,
@@ -788,7 +788,7 @@ def R2SeqAlignment(
         #------------------------------>
         Story.append(Paragraph(f'{e} Recombinant Sequence'))
         Story.append(Spacer(1,20))
-        nCero, tString = GetString(df, seqR, True, alpha, e, lenSeqR)
+        nCero, tString = _getString(df, seqR, True, alpha, e, lenSeqR)
         for s in range(0, lenSeqR, tLength):
             #------------------------------>
             printString = ''
@@ -814,7 +814,7 @@ def R2SeqAlignment(
             #------------------------------>
             Story.append(Paragraph(f'{e} Native Sequence'))
             Story.append(Spacer(1,20))
-            nCero, tString = GetString(df, seqN, False, alpha, e, lenSeqN)
+            nCero, tString = _getString(df, seqN, False, alpha, e, lenSeqN)
             for s in range(0, lenSeqN, tLength):
                 #------------------------------>
                 printString = ''

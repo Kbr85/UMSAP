@@ -295,8 +295,6 @@ class TarProt(cPane.BaseConfPanelMod2):
             self.OnImpMethod('fEvent')
             self.wShift.wTc.SetValue('1.8')
             self.wWidth.wTc.SetValue('0.3')
-        else:
-            pass
         #endregion -----------------------------------------------------> Test
 
         #region -------------------------------------------------------> DataI
