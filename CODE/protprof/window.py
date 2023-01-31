@@ -1955,8 +1955,8 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #region ---------------------------------------------------> Pick
         if self.rPickLabel:
             return self.PickLabel(ind)
-        else:
-            return self.PickShow(ind)
+        #------------------------------>
+        return self.PickShow(ind)
         #endregion ------------------------------------------------> Pick
     #---
 
@@ -2521,7 +2521,8 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
-        self.rObj.rData[self.cSection][self.rDateC]['F'] = filterDict
+        dataP = getattr(self.rObj.rData, self.rDateC)
+        dataP.filterS = filterDict
         #------------------------------>
         if self.rObj.Save():
             getattr(self.rData, self.rDateC).filterS = filterDict
