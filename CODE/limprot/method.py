@@ -40,7 +40,7 @@ class UserData(cMethod.BaseUserData):
     colThirdLevel:list[str] = field(default_factory=lambda:
         mConfig.limp.dfcolCLevel)
     #------------------------------>
-    dO:list = field(default_factory=lambda:                                     # Options for output printing
+    dO:list = field(default_factory=lambda:                                     # Attr printed to UMSAP file
         ['iFileN', 'seqFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift',
          'width', 'targetProt', 'scoreVal', 'alpha', 'beta', 'gamma', 'theta',
          'thetaM', 'indSample', 'ocSeq', 'ocTargetProt', 'ocScore', 'resCtrl',
@@ -58,13 +58,13 @@ class LimpAnalysis():
     """
     #region --------------------------------------------------------> Options
     df:pd.DataFrame                                                             # Results as dataframe
-    labelA:list[str]
-    labelB:list[str]
-    alpha:float
-    protLength:list[int]
-    protLoc:list[int]
-    protDelta:Optional[int]
-    targetProt:str
+    labelA:list[str]                                                            # Lane's labels
+    labelB:list[str]                                                            # Band's labels
+    alpha:float                                                                 # Significance level
+    protLength:list[int]                                                        # Length of Rec and Nat proteins
+    protLoc:list[int]                                                           # Location of Nat Seq in Rec Seq
+    protDelta:Optional[int]                                                     # Used to convert Rec Res Num to Nat Res Num
+    targetProt:str                                                              # Name of Target Prot
     #endregion -----------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------------> Classes
@@ -122,7 +122,7 @@ def LimProt(                                                                    
     """
     # Test in test.unit.limp.test_method.Test_LimProt
     #region ------------------------------------------------> Helper Functions
-    def EmptyDFR() -> 'pd.DataFrame':
+    def _emptyDFR() -> 'pd.DataFrame':
         """Creates the empty df for the results.
 
             Returns
@@ -160,7 +160,7 @@ def LimProt(                                                                    
         return df
     #---
 
-    def CalcOutData(
+    def _calcOutData(
         bN:str,
         lN:str,
         colC:list[int],
@@ -242,7 +242,7 @@ def LimProt(                                                                    
 
     #region --------------------------------------------------------> Analysis
     #------------------------------> Empty dfR
-    dfR = EmptyDFR()
+    dfR = _emptyDFR()
     #------------------------------> N, C Res Num
     dfR, msgError, tException = cMethod.NCResNumbers(
         dfR, rDO, seqNat=True)
@@ -271,7 +271,7 @@ def LimProt(                                                                    
             #------------------------------> Calculate data
             if colD:
                 try:
-                    CalcOutData(bN, lN, colC, colD, equal_var=equal_var)
+                    _calcOutData(bN, lN, colC, colD, equal_var=equal_var)
                 except Exception as e:
                     msg = (f'Calculation of the Limited Proteolysis data for '
                            f'point {bN} - {lN} failed.')

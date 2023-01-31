@@ -1081,7 +1081,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
             -------
             bool
         """
-        def Helper(coord, label, style):
+        def _helper(coord, label, style):
             """"""
             #------------------------------>
             head = Paragraph(label)
@@ -1109,19 +1109,19 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
 
         #region ---------------------------------------------------> Gel
         coord = self.SeqHighAll()
-        Story.append(Helper(coord, 'Gel', styles['Seq']))
+        Story.append(_helper(coord, 'Gel', styles['Seq']))
         Story.append(Spacer(1, 18))
         #endregion ------------------------------------------------> All
 
         #region ---------------------------------------------------> B/L
         for k,l in enumerate(self.rLanes):
             coord = self.SeqHighBL(bl=k)
-            Story.append(Helper(coord, l, styles['Seq']))
+            Story.append(_helper(coord, l, styles['Seq']))
             Story.append(Spacer(1, 18))
         #------------------------------>
         for k,b in enumerate(self.rBands):
             coord = self.SeqHighBL(bb=k)
-            Story.append(Helper(coord, b, styles['Seq']))
+            Story.append(_helper(coord, b, styles['Seq']))
             Story.append(Spacer(1, 18))
         #endregion ------------------------------------------------> B/L
 
@@ -1129,7 +1129,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         for j,l in enumerate(self.rLanes):
             for k,b in enumerate(self.rBands):
                 coord = self.SeqHighSpot(spot=[k,j])
-                Story.append(Helper(coord,f'{l} - {b}', styles['Seq']))
+                Story.append(_helper(coord,f'{l} - {b}', styles['Seq']))
                 Story.append(Spacer(1, 18))
         #endregion -------------------------------------------------> Gel Spot
 

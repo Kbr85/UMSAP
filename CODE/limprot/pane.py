@@ -126,15 +126,11 @@ class LimProt(cPane.BaseConfPanelMod2):
     cTTThetaMax = (f'Maximum value for the calculated Confidence interval. It '
         f'is only used if {cLTheta} is left empty.\ne.g. 8')
     #------------------------------> Needed by BaseConfPanel
-    cURL         = f"{mConfig.core.urlTutorial}/limited-proteolysis"
-    cSection     = mConfig.limp.nMod
-    cTitlePD     = f"Running {mConfig.limp.nMod} Analysis"
-    cGaugePD     = 34
-    rMainData    = '{}_{}-LimitedProteolysis-Data.txt'
-    # rDExtra: dict = {
-    #     'cLDFFirstThree' : cLDFFirstThree,
-    #     'cLDFThirdLevel' : cLDFThirdLevel,
-    # }
+    cURL            = f"{mConfig.core.urlTutorial}/limited-proteolysis"
+    cSection        = mConfig.limp.nMod
+    cTitlePD        = f"Running {mConfig.limp.nMod} Analysis"
+    cGaugePD        = 34
+    rMainData       = '{}_{}-LimitedProteolysis-Data.txt'
     rAnalysisMethod = limpMethod.LimProt
     #------------------------------> Optional configuration
     cTTHelp = mConfig.core.ttBtnHelp.format(cURL)
@@ -384,8 +380,6 @@ class LimProt(cPane.BaseConfPanelMod2):
         if dataI is not None:
             self.SetInitialData(dataI)
         #endregion ----------------------------------------------------> DataI
-
-
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -543,11 +537,9 @@ class LimProt(cPane.BaseConfPanelMod2):
         #endregion --------------------------------------------------------> d
 
         #region ----------------------------------------------------------> do
-        #------------------------------> Dict with all values
-        #--------------> Step
         msgStep = self.cLPdPrepare + 'User input, processing'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        #-------------->
+        #------------------------------>
         self.rDO = limpMethod.UserData(
             uFile         = Path(self.wUFile.wTc.GetValue()),
             iFile         = Path(self.wIFile.wTc.GetValue()),
