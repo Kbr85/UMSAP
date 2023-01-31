@@ -404,8 +404,8 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
             #------------------------------>
             for k in self.rSelColNum:
                 tIDX = self.rDataC.numColList.index(k)
-                self.rSelColIdx.append(tIDX)
                 #------------------------------>
+                self.rSelColIdx.append(tIDX)
                 self.rSelColName.append(str(self.rDataC.df.columns[tIDX]))
             #------------------------------>
             self.Plot()
