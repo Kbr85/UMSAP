@@ -190,11 +190,11 @@ class BaseConfPanel(
                                     f'method.'))
         self.cTTShift = getattr(
             self, 'cTTShift', ('Factor to shift the center of the normal '
-                               'distribution used to replace missing. '
+                               'distribution used to replace missing '
                                'values\ne.g. 1.8'))
         self.cTTWidth = getattr(
             self, 'cTTWidth', ('Factor to control the width of the normal '
-                               'distribution used to replace missing. '
+                               'distribution used to replace missing '
                                'values\ne.g. 0.3'))
         #------------------------------> URL
         self.cURL = getattr(self, 'cURL', mConfig.core.urlTutorial)
