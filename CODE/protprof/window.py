@@ -1524,8 +1524,8 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             #------------------------------>
             msg = ('The selected point is an overlap of several proteins.')
             tException = (
-                'The numbers of the proteins included in the selected '
-                'point are:\n {str(ind)[1:-1]}')
+                f'The numbers of the proteins included in the selected '
+                f'point are:\n {str(ind)[1:-1]}')
             cWindow.Notification(
                 'warning',
                 msg        = msg,
@@ -2521,8 +2521,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
-        dataP = getattr(self.rObj.rData, self.rDateC)
-        dataP.filterS = filterDict
+        self.rObj.rData[mConfig.prot.nMod][self.rDateC]['F'] = filterDict
         #------------------------------>
         if self.rObj.Save():
             getattr(self.rData, self.rDateC).filterS = filterDict

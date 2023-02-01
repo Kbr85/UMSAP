@@ -77,13 +77,13 @@ class BaseUserData():
     targetProt:str = ''                                                         # Target Protein
     scoreVal:float = 0                                                          # Minimum Score value
     #------------------------------> Statistic options
-    rawInt:bool    = False                                                      # Raw intensity or ration of intensity
-    indSample:bool = False                                                      # Samples are independent or not
-    alpha:float    = 0                                                          # Significance level
-    beta:float     = 0                                                          # Beta level
-    gamma:float    = 0                                                          # Chi squared test level
-    thetaM:Optional[float] = None                                               # Equivalence Test maximum possible difference
-    theta:Optional[float]  = None                                               # Equivalence Test threshold. None implies calculate a value based on Control experiments
+    rawInt:bool               = False                                           # Raw intensity or ration of intensity
+    indSample:LIT_IndSample   = 'i'                                             # Samples are independent or not
+    alpha:float               = 0                                               # Significance level
+    beta:float                = 0                                               # Beta level
+    gamma:float               = 0                                               # Chi squared test level
+    thetaM:Optional[float]    = None                                            # Equivalence Test maximum possible difference
+    theta:Optional[float]     = None                                            # Equivalence Test threshold. None implies calculate a value based on Control experiments
     correctedP:LIT_CorrectedP = ''                                              # Method to correct P values for multiple test
     #------------------------------> Result - Control
     labelA:list[str] = field(default_factory=list)

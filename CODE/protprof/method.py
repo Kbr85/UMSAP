@@ -45,8 +45,8 @@ class UserData(cMethod.BaseUserData):
     dO:list = field(default_factory=lambda:                                     # Attr printed to UMSAP file
         ['iFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift', 'width',
          'scoreVal', 'indSample', 'alpha', 'correctedP', 'ocTargetProt',
-         'ocGene', 'ocScore', 'ocExcludeR', 'labelA', 'labelB', 'ctrlType',
-         'ctrlName', 'resCtrl', 'dfTargetProt', 'dfGene', 'dfScore',
+         'ocGene', 'ocScore', 'ocExcludeR', 'ocColumn', 'labelA', 'labelB',
+         'ctrlType', 'ctrlName', 'resCtrl', 'dfTargetProt', 'dfGene', 'dfScore',
          'dfExcludeR', 'dfResCtrl',
         ])
     longestKey:int = 17                                                         # Length of the longest Key in dI
@@ -316,7 +316,7 @@ def ProtProf(                                                                   
 
         #region ---------------------------------------------------> FC CI
         if rDO.rawInt:
-            if rDO.indSample:
+            if rDO.indSample == 'i':
                 dfR.loc[:,(cN, tN, 'CI')] = cStatistic.CI_Mean_Diff(             # type: ignore
                     dfLogI.iloc[:,colC], dfLogI.iloc[:,colD], rDO.alpha
                 ).loc[:,'CI'].to_numpy()
@@ -333,7 +333,7 @@ def ProtProf(                                                                   
 
         #region -----------------------------------------------------------> P
         if rDO.rawInt:
-            if rDO.indSample:
+            if rDO.indSample == 'i':
                 dfR.loc[:,(cN,tN,'P')] = stats.ttest_ind(                       # type: ignore
                     dfLogI.iloc[:,colC],
                     dfLogI.iloc[:,colD],
