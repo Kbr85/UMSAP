@@ -38,7 +38,8 @@ class UserData(cMethod.BaseUserData):
     #region ---------------------------------------------------------> Options
     dO:list = field(default_factory=lambda:                                     # Attr printed to UMSAP file
         ['iFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift',
-         'width', 'ocResCtrlFlat', 'dfColumnR', 'dfColumnF', 'dfResCtrlFlat',
+         'width', 'ocResCtrlFlat', 'ocColumn', 'dfColumnR', 'dfColumnF',
+         'dfResCtrlFlat',
         ])
     longestKey:int = 20                                                         # Length of the longest Key in dI
     #endregion ------------------------------------------------------> Options

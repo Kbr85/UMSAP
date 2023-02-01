@@ -171,6 +171,10 @@ class Configuration():
         'Independent Samples': 'i',
         'Paired Samples': 'p',
     })
+    oSamplesP:dict  = field(default_factory=lambda: {                           # Sample type for statistics
+        'i': 'Independent Samples',
+        'p': 'Paired Samples',
+    })
     oCorrectP:dict = field(default_factory=lambda: {                            # P Correction
         ''                     : '',
         'None'                 : 'None',

@@ -413,14 +413,16 @@ class LimProt(cPane.BaseConfPanelMod2):
         self.wTargetProt.wTc.SetValue(dataI.targetProt)
         self.wScoreVal.wTc.SetValue(str(dataI.scoreVal))
         self.wAlpha.wTc.SetValue(str(dataI.alpha))
-        self.wSample.wCb.SetValue(str(dataI.indSample))
+        self.wSample.wCb.SetValue(mConfig.core.oSamplesP[dataI.indSample])
         self.wBeta.wTc.SetValue(str(dataI.beta))
         self.wGamma.wTc.SetValue(str(dataI.gamma))
-        self.wTheta.wTc.SetValue(str(dataI.theta))
-        self.wThetaMax.wTc.SetValue(str(dataI.thetaM))
+        theta = str(dataI.theta) if dataI.theta is not None else ''
+        self.wTheta.wTc.SetValue(theta)
+        thetaM = str(dataI.thetaM) if dataI.thetaM is not None else ''
+        self.wThetaMax.wTc.SetValue(thetaM)
         #------------------------------> Columns
         self.wSeqCol.wTc.SetValue(str(dataI.ocSeq))
-        self.wDetectedProt.wTc.SetValue(str(dataI.targetProt))
+        self.wDetectedProt.wTc.SetValue(str(dataI.ocTargetProt))
         self.wScore.wTc.SetValue(str(dataI.ocScore))
         self.wTcResults.SetValue(dataI.resCtrl)
         self.rLbDict[0] = dataI.labelA
@@ -506,30 +508,30 @@ class LimProt(cPane.BaseConfPanelMod2):
         resCtrlDFFlat = cMethod.ResControl2Flat(resCtrlDF)
         #--------------> dI
         dI = {
-            'iFileN'      : self.cLiFile,
-            'seqFileN'    : self.cLSeqFile,
-            'ID'          : self.cLId,
-            'cero'        : self.cLCeroTreatD,
-            'tran'        : self.cLTransMethod,
-            'norm'        : self.cLNormMethod,
-            'imp'         : self.cLImputation,
-            'shift'       : self.cLShift,
-            'width'       : self.cLWidth,
-            'targetProt'  : self.cLTargetProt,
-            'scoreVal'    : self.cLScoreVal,
-            'alpha'       : self.cLAlpha,
-            'indSample'   : self.cLSample,
-            'beta'        : self.cLBeta,
-            'gamma'       : self.cLGamma,
-            'theta'       : self.cLTheta,
-            'thetaM'      : self.cLThetaMax,
-            'ocSeq'       : f'{self.cLSeqCol} Column',
-            'ocTargetProt': self.cLDetectedProt,
-            'ocScore'     : self.cLScoreCol,
-            'resCtrl'     : mConfig.core.lStResCtrlS,
-            'labelA'      : self.cLLane,
-            'labelB'      : self.cLBand,
-            'ctrlName'    : f'Control {self.cLCtrlName}',
+            'iFileN'       : self.cLiFile,
+            'seqFileN'     : self.cLSeqFile,
+            'ID'           : self.cLId,
+            'cero'         : self.cLCeroTreatD,
+            'tran'         : self.cLTransMethod,
+            'norm'         : self.cLNormMethod,
+            'imp'          : self.cLImputation,
+            'shift'        : self.cLShift,
+            'width'        : self.cLWidth,
+            'targetProt'   : self.cLTargetProt,
+            'scoreVal'     : self.cLScoreVal,
+            'alpha'        : self.cLAlpha,
+            'indSample'    : self.cLSample,
+            'beta'         : self.cLBeta,
+            'gamma'        : self.cLGamma,
+            'theta'        : self.cLTheta,
+            'thetaM'       : self.cLThetaMax,
+            'ocSeq'        : f'{self.cLSeqCol} Column',
+            'ocTargetProt' : self.cLDetectedProt,
+            'ocScore'      : self.cLScoreCol,
+            'resCtrl'      : mConfig.core.lStResCtrlS,
+            'labelA'       : self.cLLane,
+            'labelB'       : self.cLBand,
+            'ctrlName'     : f'Control {self.cLCtrlName}',
         }
         if impMethod != mConfig.data.lONormDist:
             dI.pop('shift')

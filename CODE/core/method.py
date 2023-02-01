@@ -40,6 +40,7 @@ if TYPE_CHECKING:
 LIT_Comp       = Literal['lt', 'le', 'e', 'ge', 'gt']
 LIT_CompEq     = Literal['e', 'ne']
 LIT_NumType    = Literal['int', 'float']
+LIT_IndSample  = Literal['i', 'p']
 LIT_Region     = Literal['start', 'end']
 LIT_Tran       = Literal['', 'None', 'Log2']
 LIT_Norm       = Literal['', 'None', 'Median']
@@ -152,6 +153,9 @@ class BaseUserData():
             #------------------------------>
             if isinstance(val, (list, tuple)):
                 val = ', '.join(map(str, val))
+            #------------------------------>
+            if k == 'indSample':
+                val = PrintIndSample(val)
             #------------------------------>
             dictO[label] = str(val)
         #endregion ------------------------------------------------>
@@ -890,6 +894,30 @@ def LCtrlFillColNames(lc:wx.ListCtrl, fileP:Union[Path, str]) -> bool:
 
 
 #region --------------------------------------------------------------> Others
+def PrintIndSample(val:LIT_IndSample) -> str:
+    """Pretty Print Independent Sample choice to UMSAP File.
+
+        Parameters
+        ----------
+        val: str
+            One of the 'i' or 'p'.
+
+        Returns
+        -------
+        str
+            Value to print in the UMSAP File
+    """
+    #region -------------------------------------------------------->
+    try:
+        valO = mConfig.core.oSamplesP[val]
+    except KeyError:
+        valO = ''
+    #endregion ----------------------------------------------------->
+
+    return valO
+#---
+
+
 def NCResNumbers(
     dfR:pd.DataFrame,
     rDO:BaseUserData,

@@ -235,7 +235,7 @@ class UMSAPFile():
         try:
             numColList = self.rData[tSection][tDate]['CI']['oc']['Column']      # Keep support for previous versions
         except KeyError:
-            numColList = self.rData[tSection][tDate]['CI']['ocResCtrlFlat']
+            numColList = self.rData[tSection][tDate]['CI']['ocColumn']
         #------------------------------>
         setattr(data, tDate, dataMethod.DataAnalysis(
             dp         = dp,
@@ -276,7 +276,7 @@ class UMSAPFile():
             try:
                 numColList = v['CI']['oc']['Column']                            # Keep support for older versions
             except KeyError:
-                numColList = v['CI']['ocResCtrlFlat']
+                numColList = v['CI']['ocColumn']
             #------------------------------>
             setattr(data, k, dataMethod.DataAnalysis(
                 dp         = dp,
@@ -567,7 +567,7 @@ class UMSAPFile():
                         data[kTranslator[k]] = v
                     except KeyError:
                         pass
-            #------------------------------>
+            #------------------------------> Files
             for k in self.rData[tSection][tDate]['I'].keys():
                 if 'Data' in k:
                     fileN = self.rData[tSection][tDate]['I'][k]
@@ -579,6 +579,12 @@ class UMSAPFile():
                 #------------------------------>
                 if 'Results - Control' in k:
                     data['resCtrl'] = self.rData[tSection][tDate]['I'][k]
+            #------------------------------> Independent Samples
+            if data.get('indSample', None) is not None:
+                if data['indSample']:
+                    data['indSample'] = 'i'
+                else:
+                    data['indSample'] = 'p'
             #endregion -------------------------------------------------> Data
 
             return data
