@@ -86,9 +86,6 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
     def __init__(self, parent:'resWindow.UMSAPControl') -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.cParent = parent
-        self.cTitle  = f"{parent.cTitle} - {self.cSection} - {self.rDateC}"
-        #------------------------------>
         self.rObj:'resFile.UMSAPFile'   = parent.rObj                           # UMSAP object
         self.rData:cMethod.BaseAnalysis = self.rObj.dConfigure[self.cSection]() # Data for CorrA in file
         #------------------------------> Check there is something to plot
@@ -113,6 +110,9 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         self.rSelColNum:list[int]  = []                                         # Selected Column numbers
         self.rSelColName:list[str] = []                                         # Selected Column names
         self.rSelColIdx:list[int]  = []                                         # Selected 0 based list of column numbers
+        #------------------------------>
+        self.cParent = parent
+        self.cTitle  = f"{parent.cTitle} - {self.cSection} - {self.rDateC}"
         #------------------------------>
         super().__init__(parent)
         #------------------------------>
@@ -155,9 +155,10 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
             #------------------------------>
             xf = int(x)
             yf = int(y)
-            zf = f'{self.rDataPlot.iat[yf,xf]:.2f}'
             #------------------------------>
             try:
+                zf = f'{self.rDataPlot.iat[yf,xf]:.2f}'
+                #------------------------------>
                 if self.rCol:
                     xs = self.rSelColName[xf]
                     ys = self.rSelColName[yf]
@@ -243,11 +244,11 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         #region -------------------------------------------> Update parameters
         if tDate:
             self.rDateC = tDate
+            self.rDataC = getattr(self.rData, self.rDateC)
             self.SetColDetails()
         #------------------------------>
-        self.rDataC = getattr(self.rData, self.rDateC)
-        self.rCol   = col if col is not None else self.rCol
-        self.rBar   = bar if bar is not None else self.rBar
+        self.rCol = col if col is not None else self.rCol
+        self.rBar = bar if bar is not None else self.rBar
         #endregion ----------------------------------------> Update parameters
 
         #region --------------------------------------------------> Update GUI

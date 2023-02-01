@@ -307,6 +307,7 @@ class CorrA(cPane.BaseConfPanel):
         self.wTransMethod.wCb.SetValue(dataI.tran)
         self.wNormMethod.wCb.SetValue(dataI.norm)
         self.wImputationMethod.wCb.SetValue(dataI.imp)
+        self.wCorrMethod.wCb.SetValue(dataI.corr)
         self.wShift.wTc.SetValue(str(dataI.shift))
         self.wWidth.wTc.SetValue(str(dataI.width))
         #------------------------------>
