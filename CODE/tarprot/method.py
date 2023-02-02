@@ -49,9 +49,9 @@ class UserData(cMethod.BaseUserData):
     dO:list = field(default_factory=lambda:                                     # Attr printed to UMSAP file
         ['iFileN', 'seqFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift',
          'width', 'targetProt', 'scoreVal', 'alpha', 'posAA', 'winHist',
-         'ocSeq', 'ocTargetProt', 'ocScore', 'resCtrl', 'labelA', 'ctrlName',
-         'dfSeq', 'dfTargetProt', 'dfScore', 'dfResCtrl', 'protLength',
-         'protLoc', 'protDelta',
+         'ocSeq', 'ocTargetProt', 'ocScore', 'ocColumn', 'resCtrl', 'labelA',
+         'ctrlName', 'dfSeq', 'dfTargetProt', 'dfScore', 'dfResCtrl',
+         'protLength', 'protLoc', 'protDelta',
         ])
     longestKey:int = 17                                                         # Length of the longest Key in dI
     #endregion ------------------------------------------------------> Options

@@ -540,6 +540,7 @@ class BaseMenuFurtherAnalysis(BaseMenu):
             the content.
     """
     #region -----------------------------------------------------> Class Setup
+    cLNatProt   = mConfig.core.lmNatSeq
     cLClearSel  = 'Clear Selections'
     cLDupWin    = 'Duplicate Window'
     cLExpData   = 'Export Data'
@@ -590,7 +591,7 @@ class BaseMenuFurtherAnalysis(BaseMenu):
             #------------------------------> Add Item
             # pylint: disable=attribute-defined-outside-init
             self.miNat = self.Append(
-                -1, mConfig.core.lmNatSeq, kind=wx.ITEM_CHECK)
+                -1, self.cLNatProt, kind=wx.ITEM_CHECK)
             self.Bind(wx.EVT_MENU, tMethod, source=self.miNat)
             #------------------------------> IDMap
             if idMap:

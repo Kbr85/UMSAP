@@ -270,6 +270,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         #region -----------------------------------------------------> Peptide
         self.SetAxisInt()
         self.wPlot['Sec'].rCanvas.draw()
+        self.wPlot['Sec'].ZoomResetSetValues()
         #endregion --------------------------------------------------> Peptide
 
         #region ---------------------------------------------------> Win Title
@@ -1815,7 +1816,7 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
         self.rUMSAP = parent.cParent
         self.rObj   = parent.rObj
         self.rData  = self.rObj.GetFAData(
-            parent.cSection, parent.rDateC,fileN, [0,1])
+            parent.cSection, self.cDateC, fileN, [0,1])
         self.rLabel = self.rData.columns.unique(level=1).tolist()
         data = getattr(parent.rData, self.cDateC)
         self.rProtLength = data.protLength

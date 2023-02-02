@@ -322,13 +322,14 @@ class ToolCpR(cMenu.BaseMenuFurtherAnalysis):
             show = False
         #------------------------------>
         sel = self.miSel.IsChecked()
+        eventLabel = self.GetLabelText(event.GetId())
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
         #------------------------------> Selection mode
-        if sel and self.GetLabelText(event.GetId()) != mConfig.core.lmNatSeq:
+        if sel and eventLabel not in [self.cLNatProt, self.cLNatProtLoc]:
             #------------------------------> Check mark set to false
-            [x.Check(False) for x in self.rItems]                               # pylint: disable=expression-not-assigned
+            _ = [x.Check(False) for x in self.rItems]
             self.Check(event.GetId(), True)
         #------------------------------> Labels
         label = [x.GetItemLabel() for x in self.rItems if x.IsChecked()]
@@ -361,7 +362,7 @@ class ToolCpR(cMenu.BaseMenuFurtherAnalysis):
         #------------------------------>
         self.rItems[0].Check()
         #------------------------------> Uncheck all items
-        [x.Check(False) for x in self.rItems[1:]]                               # pylint: disable=expression-not-assigned
+        _ = [x.Check(False) for x in self.rItems[1:]]
         #------------------------------>
         try:
             self.miNat.Check(False)
