@@ -2092,7 +2092,7 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
         self.rUMSAP = parent.cParent
         self.rObj   = parent.rObj
         self.rData  = self.rObj.GetFAData(
-            parent.cSection, parent.rDateC, fileN, [0,1])
+            parent.cSection, self.cDateC, fileN, [0,1])
         self.rLabel = self.rData.columns.unique(level=1).tolist()
         self.rIdx   = {}
         data = getattr(parent.rData, self.cDateC)
