@@ -1054,7 +1054,7 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
         self.rUMSAP  = parent.cParent
         self.rObj    = parent.rObj
         self.rData   = self.rObj.GetFAData(
-            parent.cSection, parent.rDateC, fileN, [0,1])
+            parent.cSection, self.cDateC, fileN, [0,1])
         self.rRecSeq = self.rObj.GetRecSeq(parent.cSection, dateC)
         menuData     = self.SetMenuDate()
         self.rPos    = menuData['Pos']
@@ -1528,7 +1528,7 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
         self.rUMSAP = parent.cParent
         self.rObj   = parent.rObj
         self.rData  = self.rObj.GetFAData(
-            parent.cSection, parent.rDateC,fileN, [0,1,2])
+            parent.cSection, self.cDateC, fileN, [0,1,2])
         self.rLabel      = self.rData.columns.unique(level=2).tolist()[1:]
         data = getattr(parent.rData, self.cDateC)
         self.rProtLength = data.protLength
