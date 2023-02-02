@@ -572,6 +572,24 @@ class ToolTarProt(cMenu.BaseMenuMainResult):
 
         return True
     #---
+
+    def UpdateOtherItems(self, menuData:dict, tDate:wx.MenuItem) -> bool:
+        """Update Further Analysis.
+
+            Parameters
+            ----------
+            menuData: dict
+                Updated menu content.
+            tDate: wx.MenuItem
+                Currently selected Analysis ID
+
+            Returns
+            -------
+            bool
+        """
+        return self.mFurtherA.UpdateFurtherAnalysis(
+            tDate.GetItemLabelText(), menuData=menuData['FA'])
+    #---
     #endregion ------------------------------------------------> Class Methods
 #---
 
