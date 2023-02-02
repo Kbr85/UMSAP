@@ -1570,7 +1570,7 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
         #region --------------------------------------------------->
         menuData['Label'] = [k for k in self.rLabel]
         #------------------------------>
-        if self.rProtLength[1] is not None:
+        if self.rProtLength[1]:
             menuData['Nat'] = True
         else:
             menuData['Nat'] = False
@@ -1857,7 +1857,7 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
         #region --------------------------------------------------->
         menuData['Label'] = [k for k in self.rLabel]
         #------------------------------>
-        if self.rProtLength[1] is not None:
+        if self.rProtLength[1]:
             menuData['Nat'] = True
         else:
             menuData['Nat'] = False
@@ -1920,7 +1920,7 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
             self.wPlot[0].rAxes.plot(x,y, color=tColor)
         #------------------------------>
         if self.rNat == self.cNat[False] and protLoc:
-            if self.rProtLoc[0] is not None:
+            if self.rProtLoc[0] > -1:
                 self.wPlot[0].rAxes.vlines(
                     self.rProtLoc[0],0,yMax,linestyles='dashed',color='black',zorder=1)
                 self.wPlot[0].rAxes.vlines(
@@ -2139,7 +2139,7 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
         #region --------------------------------------------------->
         menuData['Label'] = [k for k in self.rLabel]
         #------------------------------>
-        if self.rProtLength[1] is not None:
+        if self.rProtLength[1]:
             menuData['Nat'] = True
         else:
             menuData['Nat'] = False
