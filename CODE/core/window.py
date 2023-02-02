@@ -1354,7 +1354,7 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         #endregion ------------------------------------------------> Variables
 
         #region --------------------------------------------------->
-        if self.rProtLoc[0] is not None:
+        if self.rProtLoc[0] > -1:
             #------------------------------>
             natProt.append(self.rProtLoc)
             a, b = self.rProtLoc

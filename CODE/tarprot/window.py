@@ -316,7 +316,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
 
         #region --------------------------------------------------->
         #------------------------------>
-        if self.rProtLoc[0] is not None:
+        if self.rProtLoc[0] > -1:
             xtick = [1] + list(self.rProtLoc) + [self.rProtLength]
         else:
             xtick = [1] + [self.rProtLength]

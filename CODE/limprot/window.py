@@ -661,7 +661,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
 
         #region --------------------------------------------------->
         #------------------------------>
-        if self.rProtLoc[0] is not None:
+        if self.rProtLoc[0] > -1:
             xtick = [1] + list(self.rProtLoc) + [self.rProtLength]
         else:
             xtick = [1] + [self.rProtLength]
@@ -990,7 +990,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         #region ---------------------------------------------------> Info
         n, c = self.rFragments[tKey]["Coord"][fragC[2]]
         #------------------------------>
-        if self.rProtLoc[0] is not None:
+        if self.rProtLoc[0] > -1:
             if self.rProtLoc[0] <= n <= self.rProtLoc[1]:
                 nnat = n + self.rProtDelta
             else:
