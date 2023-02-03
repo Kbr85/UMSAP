@@ -312,7 +312,7 @@ class Configuration():
             self.root         = self.cwd.parent.parent.parent
             self.res          = self.root / 'Resources'
             self.toolMenuIdx  = 2
-        elif self.os == 'Window':
+        elif self.os == 'Windows':
             self.commOpen     = 'start'
             self.copyShortCut = 'Ctrl'
             self.deltaWin     = 20
