@@ -1061,8 +1061,13 @@ class BaseConfPanel(
         msgStep = self.cLPdRun + self.cLPdRunText
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------>
-        dfDict, self.rMsgError, self.rException = self.rAnalysisMethod(
-            df=self.rIFileObj.rDf, rDO=self.rDO)
+        try:
+            dfDict, self.rMsgError, self.rException = self.rAnalysisMethod(
+                df=self.rIFileObj.rDf, rDO=self.rDO)
+        except Exception as e:
+            self.rMsgError = 'Main Analysis failed.'
+            self.rException = e
+            return False
         #------------------------------>
         if dfDict:
             for k,v in dfDict.items():
