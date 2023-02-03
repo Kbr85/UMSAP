@@ -26,6 +26,7 @@ from corr import method as corrMethod
 from main import menu   as mMenu
 
 if TYPE_CHECKING:
+    from result import file   as resFile
     from result import window as resWindow
 #endregion ----------------------------------------------------------> Imports
 
@@ -50,6 +51,8 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         rData: cMethod.BaseAnalysis
             For each CorrA a new attribute 'Date-ID' is added with value
             corrMethod.CorrAnalysis.
+        rDataC: corrMethod.CorrAnalysis
+            Data for the currently selected date - ID.
         rDataPlot: pd.DF
             Data to plot and search the values for the wx.StatusBar.
         rDate: [parent.obj.confData[Section].keys()]
@@ -57,6 +60,7 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         rDateC: one of rDate
             Current selected date
         rNorm: mpl.colors.Normalize
+            Color for the color bar
         rObj: parent.obj
             Pointer to the UMSAPFile object in parent.
         rSelColIdx: list[int]
@@ -82,27 +86,30 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
     def __init__(self, parent:'resWindow.UMSAPControl') -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.rObj  = parent.rObj
-        self.rData:cMethod.BaseAnalysis = self.rObj.dConfigure[self.cSection]()
-        self.rDate, menuData = self.SetDateMenuDate()
-        #------------------------------> Nothing found
-        self.ReportPlotDataError()
+        self.rObj:'resFile.UMSAPFile'   = parent.rObj                           # UMSAP object
+        self.rData:cMethod.BaseAnalysis = self.rObj.dConfigure[self.cSection]() # Data for CorrA in file
+        #------------------------------> Check there is something to plot
+        try:
+            self.ReportPlotDataError()
+        except ValueError as e:
+            raise ValueError from e
         #------------------------------>
-        self.rDateC = self.rDate[0]
-        self.rDataC:corrMethod.CorrAnalysis = getattr(self.rData, self.rDateC)
-        self.rBar   = False
-        self.rCol   = True
-        self.rNorm  = mpl.colors.Normalize(vmin=-1, vmax=1)
-        self.rCmap  = cMethod.MatplotLibCmap(
+        self.rDate, menuData = self.SetDateMenuDate()                           # List of ID and data for Tool menu
+        self.rDateC:str = self.rDate[0]                                         # Currently selected date
+        self.rDataC:corrMethod.CorrAnalysis = getattr(self.rData, self.rDateC)  # Data for currently selected date
+        self.rBar:bool = False                                                  # Show Color Bar (T)
+        self.rCol:bool = True                                                   # Show Column numbers (T) or names (F)
+        self.rNorm = mpl.colors.Normalize(vmin=-1, vmax=1)                      # Color Bar color
+        self.rCmap = cMethod.MatplotLibCmap(                                    # Color map for corr coefficients
             N   = mConfig.corr.CMAP['N'],
             c1  = mConfig.corr.CMAP['c1'],
             c2  = mConfig.corr.CMAP['c2'],
             c3  = mConfig.corr.CMAP['c3'],
             bad = mConfig.corr.CMAP['NA'],
         )
-        self.rSelColNum  = []
-        self.rSelColIdx  = []
-        self.rSelColName = []
+        self.rSelColNum:list[int]  = []                                         # Selected Column numbers
+        self.rSelColName:list[str] = []                                         # Selected Column names
+        self.rSelColIdx:list[int]  = []                                         # Selected 0 based list of column numbers
         #------------------------------>
         self.cParent = parent
         self.cTitle  = f"{parent.cTitle} - {self.cSection} - {self.rDateC}"
@@ -121,8 +128,8 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         #endregion ------------------------------------------------>
 
         #region ----------------------------------------------------> Position
-        self.SetColDetails(self.rDateC)
-        self.UpdateResultWindow()
+        self.SetColDetails()
+        self.Plot()
         self.WinPos()
         self.Show()
         #endregion -------------------------------------------------> Position
@@ -144,12 +151,12 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         """
         #region ----------------------------------------------> Statusbar Text
         if event.inaxes:
+            x, y = event.xdata, event.ydata
+            #------------------------------>
+            xf = int(x)
+            yf = int(y)
+            #------------------------------>
             try:
-                #------------------------------> Set x,y,z
-                x, y = event.xdata, event.ydata
-                #------------------------------>
-                xf = int(x)
-                yf = int(y)
                 zf = f'{self.rDataPlot.iat[yf,xf]:.2f}'
                 #------------------------------>
                 if self.rCol:
@@ -158,12 +165,13 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
                 else:
                     xs = self.rSelColNum[xf]
                     ys = self.rSelColNum[yf]
-                #------------------------------> Print
-                self.wStatBar.SetStatusText(
-                    f"x = '{str(xs)}'   y = '{str(ys)}'   cc = {str(zf)}"
-                )
-            except Exception:
+            except IndexError:
                 self.wStatBar.SetStatusText('')
+                return False
+            #------------------------------> Print
+            self.wStatBar.SetStatusText(
+                f"x = '{str(xs)}'   y = '{str(ys)}'   cc = {str(zf)}"
+            )
         else:
             self.wStatBar.SetStatusText('')
         #endregion -------------------------------------------> Statusbar Text
@@ -195,23 +203,17 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         return True
     #---
 
-    def SetColDetails(self, tDate:str) -> bool:
+    def SetColDetails(self) -> bool:
         """"Set the values of self.rSelColX to its default values, all values
             in the analysis.
-
-            Parameters
-            ----------
-            tDate: str
-                A date in the section e.g. '20210129-094504 - bla'
 
             Returns
             -------
             bool
         """
         #region -------------------------------------------------------->
-        data = getattr(self.rData, tDate)
-        self.rSelColName = data.df.columns.values
-        self.rSelColNum  = data.numColList
+        self.rSelColName = self.rDataC.df.columns.values.tolist()
+        self.rSelColNum  = self.rDataC.numColList
         self.rSelColIdx  = [x for x,_ in enumerate(self.rSelColNum)]
         #endregion ----------------------------------------------------->
 
@@ -240,16 +242,31 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
             bool
         """
         #region -------------------------------------------> Update parameters
-        tDate = tDate if tDate else self.rDateC
-        if tDate != self.rDateC:
-            self.SetColDetails(tDate)
+        if tDate:
+            self.rDateC = tDate
+            self.rDataC = getattr(self.rData, self.rDateC)
+            self.SetColDetails()
         #------------------------------>
-        self.rDateC = tDate
-        self.rDataC = getattr(self.rData, self.rDateC)
-        self.rCol   = col if col is not None else self.rCol
-        self.rBar   = bar if bar is not None else self.rBar
+        self.rCol = col if col is not None else self.rCol
+        self.rBar = bar if bar is not None else self.rBar
         #endregion ----------------------------------------> Update parameters
 
+        #region --------------------------------------------------> Update GUI
+        self.Plot()
+        #------------------------------>
+        self.PlotTitle()
+        #endregion -----------------------------------------------> Update GUI
+
+        return True
+    #---
+
+    def Plot(self) -> bool:
+        """Plot data.
+
+            Returns
+            -------
+            bool
+        """
         #region --------------------------------------------------------> Axis
         self.SetAxis()
         #endregion -----------------------------------------------------> Axis
@@ -280,10 +297,6 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         self.wPlot[0].rCanvas.draw()
         #endregion ----------------------------------------------> Zoom & Draw
 
-        #region --------------------------------------------------->
-        self.PlotTitle()
-        #endregion ------------------------------------------------>
-
         return True
     #---
 
@@ -305,7 +318,7 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
 
         if (tLen := len(self.rSelColIdx)) <= 30:
             step = 1
-        elif tLen > 30 and tLen <= 60:
+        elif 30 < tLen <= 60:
             step = 2
         else:
             step = 3
@@ -357,8 +370,8 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         """
         #region ---------------------------------------------------> All
         if showAllCol == mConfig.corr.lmAllCol:
-            self.SetColDetails(self.rDateC)
-            self.UpdateResultWindow()
+            self.SetColDetails()
+            self.Plot()
             return True
         #endregion ------------------------------------------------> All
 
@@ -386,17 +399,17 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         )
         #------------------------------> Get the selected values
         if dlg.ShowModal():
-            self.rSelColNum  = dlg.wLCtrlO.GetColContent(0)
+            self.rSelColNum  = [int(x) for x in dlg.wLCtrlO.GetColContent(0)]
             self.rSelColIdx  = []
             self.rSelColName = []
             #------------------------------>
             for k in self.rSelColNum:
-                tIDX = self.rDataC.numColList.index(int(k))
-                self.rSelColIdx.append(tIDX)
+                tIDX = self.rDataC.numColList.index(k)
                 #------------------------------>
-                self.rSelColName.append(self.rDataC.df.columns[tIDX])
+                self.rSelColIdx.append(tIDX)
+                self.rSelColName.append(str(self.rDataC.df.columns[tIDX]))
             #------------------------------>
-            self.UpdateResultWindow()
+            self.Plot()
         #endregion ----------------------------------------------> Get New Sel
 
         dlg.Destroy()

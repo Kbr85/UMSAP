@@ -329,53 +329,6 @@ class Test_ExpandRange(unittest.TestCase):
     #---
     #endregion ----------------------------------------------> Expected Output
 #---
-
-
-class Test_DictVal2Str(unittest.TestCase):
-    """Test for core.method.DictVal2Str"""
-    #region -----------------------------------------------------> Class Setup
-    def setUp(self):
-        """Set test"""
-        self.iDict = {
-            1    : Path('/k/d/c'),
-            'B'  : 3,
-            '2'  : [1,2,3,4,5],
-            'All': 'This is already a str',
-        }
-        self.allDict = {
-            1    : str(Path('/k/d/c')),
-            'B'  : str(3),
-            '2'  : str([1,2,3,4,5]),
-            'All': str('This is already a str'),
-        }
-        self.pathDict = {
-            1    : str(Path('/k/d/c')),
-            'B'  : 3,
-            '2'  : [1,2,3,4,5],
-            'All': 'This is already a str',
-        }
-    #---
-    #endregion --------------------------------------------------> Class Setup
-
-    #region -------------------------------------------------> Expected Output
-    def test_expected_output(self):
-        """Test for the expected output"""
-        #------------------------------>
-        tInput = [
-            (self.iDict,                [], True, self.iDict),
-            (self.iDict,               [1], True, self.pathDict),
-            (self.iDict, [1,'B','2','All'], True, self.allDict),
-        ]
-        #------------------------------>
-        for a,b,c,d in tInput:
-            with self.subTest(f"iDict={a}, changeKey={b}, new={c}"):
-                #------------------------------>
-                result = cMethod.DictVal2Str(a, changeKey=b, new=c)
-                #------------------------------>
-                self.assertEqual(result, d)
-    #---
-    #endregion ----------------------------------------------> Expected Output
-#---
 #endregion -----------------------------------------------------------> String
 
 

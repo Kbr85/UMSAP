@@ -90,7 +90,8 @@ def LoadUMSAPFile(
 
     return True
 #---
-
-
-pub.subscribe(LoadUMSAPFile, 'load_umsap')
 #endregion ----------------------------------------------------------> Methods
+
+#region -------------------------------------------------> PubSub Subscription
+pub.subscribe(LoadUMSAPFile, 'load_umsap')
+#endregion ----------------------------------------------> PubSub Subscription

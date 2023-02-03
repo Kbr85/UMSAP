@@ -251,7 +251,7 @@ class FastaFile():
         rHeaderRec: str
             Header for the Recombinant sequence.
         rSeqLengthNat: int
-            Length of the Native sequence. 0 if native sequence is not present
+            Length of the Native sequence. 0 if native sequence is not present.
         rSeqLengthRec: int
             Length of the Recombinant sequence.
         rSeqNat: str
@@ -666,7 +666,8 @@ class PDBFile():
             -------
             bool
         """
-        def Line2PDBFormat(row:np.ndarray, buff):
+        #region -------------------------------------------------------->
+        def _line2PDBFormat(row:np.ndarray, buff):
             """Apply the correct format to the row in the DataFrame and write
                 the line to the buffer.
 
@@ -683,6 +684,8 @@ class PDBFile():
             """
             buff.write(f'{self.cPDBformat.format(*row)}\n')
         #---
+        #endregion ----------------------------------------------------->
+
         #region --------------------------------------------------->
         df = self.rDFAtom[self.rDFAtom['Chain'] == chain].copy()
         df = df.replace(np.nan, '')
@@ -690,7 +693,7 @@ class PDBFile():
 
         #region --------------------------------------------------->
         buff = open(fileP, 'w', encoding="utf-8")
-        df.apply(Line2PDBFormat, raw=True, axis=1, args=[buff])                 # type: ignore
+        df.apply(_line2PDBFormat, raw=True, axis=1, args=[buff])                # type: ignore
         buff.write('END')
         buff.close()
         #endregion ------------------------------------------------>
@@ -716,8 +719,8 @@ class PDBFile():
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
-        dfd  = dfd.drop_duplicates(subset='ResNum', keep='first', inplace=False)
-        dfd  = dfd.loc[dfd.loc[:,'ResName'].isin(mConfig.core.oAA3toAA)]
+        dfd = dfd.drop_duplicates(subset='ResNum', keep='first', inplace=False)
+        dfd = dfd.loc[dfd.loc[:,'ResName'].isin(mConfig.core.oAA3toAA)]
         seq = dfd['ResName'].tolist()
         #endregion ------------------------------------------------>
 

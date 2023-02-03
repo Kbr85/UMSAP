@@ -36,9 +36,10 @@ LIT_Imp  = Literal['', 'None', 'Normal Distribution']
 class UserData(cMethod.BaseUserData):
     """Representation of the input data for the Correlation Analysis Pane"""
     #region ---------------------------------------------------------> Options
-    dO:list = field(default_factory=lambda:
+    dO:list = field(default_factory=lambda:                                     # Attr printed to UMSAP file
         ['iFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift',
-         'width', 'ocResCtrlFlat', 'dfColumnR', 'dfColumnF', 'dfResCtrlFlat',
+         'width', 'ocResCtrlFlat', 'ocColumn', 'dfColumnR', 'dfColumnF',
+         'dfResCtrlFlat',
         ])
     longestKey:int = 20                                                         # Length of the longest Key in dI
     #endregion ------------------------------------------------------> Options

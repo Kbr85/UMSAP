@@ -270,6 +270,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         #region -----------------------------------------------------> Peptide
         self.SetAxisInt()
         self.wPlot['Sec'].rCanvas.draw()
+        self.wPlot['Sec'].ZoomResetSetValues()
         #endregion --------------------------------------------------> Peptide
 
         #region ---------------------------------------------------> Win Title
@@ -315,7 +316,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
 
         #region --------------------------------------------------->
         #------------------------------>
-        if self.rProtLoc[0] is not None:
+        if self.rProtLoc[0] > -1:
             xtick = [1] + list(self.rProtLoc) + [self.rProtLength]
         else:
             xtick = [1] + [self.rProtLength]
@@ -1053,7 +1054,7 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
         self.rUMSAP  = parent.cParent
         self.rObj    = parent.rObj
         self.rData   = self.rObj.GetFAData(
-            parent.cSection, parent.rDateC, fileN, [0,1])
+            parent.cSection, self.cDateC, fileN, [0,1])
         self.rRecSeq = self.rObj.GetRecSeq(parent.cSection, dateC)
         menuData     = self.SetMenuDate()
         self.rPos    = menuData['Pos']
@@ -1314,9 +1315,12 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
             bool
         """
         #region --------------------------------------------------->
-        if 1 > (xf := round(x)) > len(self.rPos):
+        xf = round(x)
+        #------------------------------>
+        if not 1 <= xf <= len(self.rPos):
             self.wStatBar.SetStatusText('')
             return False
+        #------------------------------>
         pos = self.rPos[xf-1]
         #endregion ------------------------------------------------>
 
@@ -1524,7 +1528,7 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
         self.rUMSAP = parent.cParent
         self.rObj   = parent.rObj
         self.rData  = self.rObj.GetFAData(
-            parent.cSection, parent.rDateC,fileN, [0,1,2])
+            parent.cSection, self.cDateC, fileN, [0,1,2])
         self.rLabel      = self.rData.columns.unique(level=2).tolist()[1:]
         data = getattr(parent.rData, self.cDateC)
         self.rProtLength = data.protLength
@@ -1566,7 +1570,7 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
         #region --------------------------------------------------->
         menuData['Label'] = [k for k in self.rLabel]
         #------------------------------>
-        if self.rProtLength[1] is not None:
+        if self.rProtLength[1]:
             menuData['Nat'] = True
         else:
             menuData['Nat'] = False
@@ -1725,7 +1729,7 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
         idx = pd.IndexSlice
         df = self.rData.loc[:,idx[self.rNat,['Win',self.rAllC],:]]              # type: ignore
         df = df.dropna(how='all')
-        if 0 >= xf >= df.shape[0]:
+        if not 0 <= xf < df.shape[0]:
             self.wStatBar.SetStatusText('')
             return False
         #endregion ------------------------------------------------>
@@ -1812,7 +1816,7 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
         self.rUMSAP = parent.cParent
         self.rObj   = parent.rObj
         self.rData  = self.rObj.GetFAData(
-            parent.cSection, parent.rDateC,fileN, [0,1])
+            parent.cSection, self.cDateC, fileN, [0,1])
         self.rLabel = self.rData.columns.unique(level=1).tolist()
         data = getattr(parent.rData, self.cDateC)
         self.rProtLength = data.protLength
@@ -1853,7 +1857,7 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
         #region --------------------------------------------------->
         menuData['Label'] = [k for k in self.rLabel]
         #------------------------------>
-        if self.rProtLength[1] is not None:
+        if self.rProtLength[1]:
             menuData['Nat'] = True
         else:
             menuData['Nat'] = False
@@ -1916,7 +1920,7 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
             self.wPlot[0].rAxes.plot(x,y, color=tColor)
         #------------------------------>
         if self.rNat == self.cNat[False] and protLoc:
-            if self.rProtLoc[0] is not None:
+            if self.rProtLoc[0] > -1:
                 self.wPlot[0].rAxes.vlines(
                     self.rProtLoc[0],0,yMax,linestyles='dashed',color='black',zorder=1)
                 self.wPlot[0].rAxes.vlines(
@@ -2088,7 +2092,7 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
         self.rUMSAP = parent.cParent
         self.rObj   = parent.rObj
         self.rData  = self.rObj.GetFAData(
-            parent.cSection, parent.rDateC, fileN, [0,1])
+            parent.cSection, self.cDateC, fileN, [0,1])
         self.rLabel = self.rData.columns.unique(level=1).tolist()
         self.rIdx   = {}
         data = getattr(parent.rData, self.cDateC)
@@ -2135,7 +2139,7 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
         #region --------------------------------------------------->
         menuData['Label'] = [k for k in self.rLabel]
         #------------------------------>
-        if self.rProtLength[1] is not None:
+        if self.rProtLength[1]:
             menuData['Nat'] = True
         else:
             menuData['Nat'] = False

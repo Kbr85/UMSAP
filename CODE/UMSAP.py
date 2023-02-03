@@ -179,7 +179,7 @@ class SplashWindow(wx.adv.SplashScreen):
         return True
         #endregion -----------------------------------------> Destroy & Return
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Event methods
 #---
 #endregion ----------------------------------------------------------> Classes
 

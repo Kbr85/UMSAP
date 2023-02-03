@@ -42,11 +42,11 @@ class UserData(cMethod.BaseUserData):
     colThirdLevel:list[str] = field(default_factory=lambda:
         mConfig.prot.dfcolCLevel)
     #------------------------------>
-    dO:list = field(default_factory=lambda:                                     # Options for output printing
+    dO:list = field(default_factory=lambda:                                     # Attr printed to UMSAP file
         ['iFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift', 'width',
          'scoreVal', 'indSample', 'alpha', 'correctedP', 'ocTargetProt',
-         'ocGene', 'ocScore', 'ocExcludeR', 'labelA', 'labelB', 'ctrlType',
-         'ctrlName', 'resCtrl', 'dfTargetProt', 'dfGene', 'dfScore',
+         'ocGene', 'ocScore', 'ocExcludeR', 'ocColumn', 'labelA', 'labelB',
+         'ctrlType', 'ctrlName', 'resCtrl', 'dfTargetProt', 'dfGene', 'dfScore',
          'dfExcludeR', 'dfResCtrl',
         ])
     longestKey:int = 17                                                         # Length of the longest Key in dI
@@ -120,7 +120,7 @@ def ProtProf(                                                                   
     """
     # Test in test.unit.protprof.test_method.Test_ProtProf
     #region ------------------------------------------------> Helper Functions
-    def EmptyDFR() -> pd.DataFrame:
+    def _emptyDFR() -> pd.DataFrame:
         """Creates the empty data frame for the output. This data frame contains
             the values for Gene, Protein and Score.
 
@@ -158,7 +158,7 @@ def ProtProf(                                                                   
         return df
     #---
 
-    def ColCtrlData_OC(c:int, t:int) -> list[list[int]]:
+    def _colCtrlData_OC(c:int, t:int) -> list[list[int]]:
         """Get the Ctrl and Data columns for the given condition and relevant
             point when Control Type is: One Control.
 
@@ -182,7 +182,7 @@ def ProtProf(                                                                   
         return [colC, colD]
     #---
 
-    def ColCtrlData_OCC(c:int, t:int) -> list[list[int]]:
+    def _colCtrlData_OCC(c:int, t:int) -> list[list[int]]:
         """Get the Ctrl and Data columns for the given condition and relevant
             point when Control Type is: One Control per Column.
 
@@ -206,7 +206,7 @@ def ProtProf(                                                                   
         return [colC, colD]
     #---
 
-    def ColCtrlData_OCR(c:int, t:int) -> list[list[int]]:
+    def _colCtrlData_OCR(c:int, t:int) -> list[list[int]]:
         """Get the Ctrl and Data columns for the given condition and relevant
             point when Control Type is: One Control per Row
 
@@ -230,7 +230,7 @@ def ProtProf(                                                                   
         return [colC, colD]
     #---
 
-    def ColCtrlData_Ratio(c:int, t:int) -> list[list[int]]:
+    def _colCtrlData_Ratio(c:int, t:int) -> list[list[int]]:
         """Get the Ctrl and Data columns for the given condition and relevant
             point when Control Type is: Data as Ratios.
 
@@ -254,7 +254,7 @@ def ProtProf(                                                                   
         return [colC, colD]
     #---
 
-    def CalcOutData(cN:str, tN:str, colC:list[int], colD:list[int]) -> bool:
+    def _calcOutData(cN:str, tN:str, colC:list[int], colD:list[int]) -> bool:
         """Calculate the data for the main output dataframe.
 
             Parameters
@@ -316,7 +316,7 @@ def ProtProf(                                                                   
 
         #region ---------------------------------------------------> FC CI
         if rDO.rawInt:
-            if rDO.indSample:
+            if rDO.indSample == 'i':
                 dfR.loc[:,(cN, tN, 'CI')] = cStatistic.CI_Mean_Diff(             # type: ignore
                     dfLogI.iloc[:,colC], dfLogI.iloc[:,colD], rDO.alpha
                 ).loc[:,'CI'].to_numpy()
@@ -333,7 +333,7 @@ def ProtProf(                                                                   
 
         #region -----------------------------------------------------------> P
         if rDO.rawInt:
-            if rDO.indSample:
+            if rDO.indSample == 'i':
                 dfR.loc[:,(cN,tN,'P')] = stats.ttest_ind(                       # type: ignore
                     dfLogI.iloc[:,colC],
                     dfLogI.iloc[:,colD],
@@ -386,10 +386,10 @@ def ProtProf(                                                                   
 
     #region -------------------------------------------------------> Variables
     dColCtrlData = {
-        mConfig.prot.oControlType['OC']   : ColCtrlData_OC,
-        mConfig.prot.oControlType['OCC']  : ColCtrlData_OCC,
-        mConfig.prot.oControlType['OCR']  : ColCtrlData_OCR,
-        mConfig.prot.oControlType['Ratio']: ColCtrlData_Ratio,
+        mConfig.prot.oControlType['OC']   : _colCtrlData_OC,
+        mConfig.prot.oControlType['OCC']  : _colCtrlData_OCC,
+        mConfig.prot.oControlType['OCR']  : _colCtrlData_OCR,
+        mConfig.prot.oControlType['Ratio']: _colCtrlData_Ratio,
     }
     #endregion ----------------------------------------------------> Variables
 
@@ -407,7 +407,7 @@ def ProtProf(                                                                   
     #endregion ---------------------------------------------------------> Sort
 
     #region -------------------------------------------------------> Calculate
-    dfR = EmptyDFR()
+    dfR = _emptyDFR()
     #------------------------------>
     for c, cN in enumerate(rDO.labelA):
         for t, tN in enumerate(rDO.labelB):
@@ -415,7 +415,7 @@ def ProtProf(                                                                   
             colC, colD = dColCtrlData[rDO.ctrlType](c, t)
             #------------------------------> Calculate data
             try:
-                CalcOutData(cN, tN, colC, colD)
+                _calcOutData(cN, tN, colC, colD)
             except Exception as e:
                 msg = (f'Calculation of the Proteome Profiling data for '
                        f'point {cN} - {tN} failed.')

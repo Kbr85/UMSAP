@@ -190,6 +190,7 @@ class BaseWindowResult(BaseWindow):
         self.rDate  = getattr(self, 'rDate',  [])
         self.rDateC = getattr(self, 'rDateC', '')
         self.rData  = getattr(self, 'rData',  cMethod.BaseAnalysis())
+        self.rDataC = getattr(self, 'rDataC', pd.DataFrame())
         self.rDf    = getattr(self, 'rDf',    pd.DataFrame())
         self.rObj: resFile.UMSAPFile
         #------------------------------>
@@ -249,8 +250,9 @@ class BaseWindowResult(BaseWindow):
         """
         #region ---------------------------------------------> Nothing to Plot
         if len(self.rData.date) < 1:
-            msg = (f'All {self.cSection} in file {self.rObj.rFileP.name} are '
-                f'corrupted or were not found.')
+            msg = (f'All entries for {self.cSection} in file '
+                   f'{self.rObj.rFileP.name} are corrupted or were not found.')
+            Notification('errorU', msg=msg)
             raise ValueError(msg)
         #endregion ------------------------------------------> Nothing to Plot
 
@@ -310,11 +312,10 @@ class BaseWindowResult(BaseWindow):
             p   = Path(dlg.GetPath())
             tDF = df
             if tDF is None:
-                data = getattr(self.rData, self.rDateC)
-                tDF = data.df if df is None else df
+                tDF = self.rDataC.df if df is None else df
             #------------------------------> Export
             try:
-                cFile.WriteDF2CSV(p, tDF)
+                cFile.WriteDF2CSV(p, tDF)                                       # type: ignore
             except Exception as e:
                 Notification(
                     'errorF',
@@ -444,6 +445,24 @@ class BaseWindowResult(BaseWindow):
                 }
         """
         return (self.rData.date, {'MenuDate':self.rData.date})
+    #---
+
+    def UpdateUMSAPData(self) -> bool:
+        """Update the window after the UMSAP file have been updated.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        self.rObj  = self.cParent.rObj                                          # type: ignore
+        self.rData = self.rObj.dConfigure[self.cSection]()
+        self.rDate, menuData = self.SetDateMenuDate()
+        menuBar = self.GetMenuBar()
+        menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(menuData)
+        #endregion ------------------------------------------------>
+
+        return True
     #---
     #endregion ------------------------------------------------> Class methods
 #---
@@ -706,24 +725,6 @@ class BaseWindowResultListText(BaseWindowResult):
         self.wLC.wLCS.wLC.SetFocus()
         self.OnListSelect('fEvent')
         #------------------------------>
-        return True
-    #---
-
-    def UpdateUMSAPData(self) -> bool:
-        """Update the window after the UMSAP file have been updated.
-
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------->
-        self.rObj  = self.cParent.rObj                                          # type: ignore
-        self.rData = self.rObj.dConfigure[self.cSection]()
-        self.rDate, menuData = self.SetDateMenuDate()
-        menuBar = self.GetMenuBar()
-        menuBar.GetMenu(menuBar.FindMenu('Tools')).UpdateDateItems(menuData)
-        #endregion ------------------------------------------------>
-
         return True
     #---
     #endregion ------------------------------------------------> Class Methods
@@ -1353,7 +1354,7 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         #endregion ------------------------------------------------> Variables
 
         #region --------------------------------------------------->
-        if self.rProtLoc[0] is not None:
+        if self.rProtLoc[0] > -1:
             #------------------------------>
             natProt.append(self.rProtLoc)
             a, b = self.rProtLoc
@@ -2776,8 +2777,8 @@ class UserInputText(BaseDialogOkCancel):
             self.EndModal(1)
             self.Close()
             return True
-        else:
-            return False
+        #------------------------------>
+        return False
         #endregion ------------------------------------------------> Return
     #---
 

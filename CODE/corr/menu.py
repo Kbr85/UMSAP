@@ -24,7 +24,7 @@ from core import menu as cMenu
 
 #region -------------------------------------------------------------> Classes
 class ToolCorrA(cMenu.BaseMenuMainResult):
-    """Creates the Tools menu for a Correlation Analysis Plot window
+    """Creates the Tools menu for a Correlation Analysis Plot window.
 
         Parameters
         ----------
@@ -56,7 +56,7 @@ class ToolCorrA(cMenu.BaseMenuMainResult):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.miColName   = self.Append(-1, self.cLColName, kind=wx.ITEM_CHECK)
+        self.miColName = self.Append(-1, self.cLColName, kind=wx.ITEM_CHECK)
         self.miColName.Check(check=True)
         #------------------------------>
         self.AppendSeparator()

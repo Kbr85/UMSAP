@@ -33,6 +33,7 @@ from main     import menu      as mMenu
 from dataprep import method    as dataMethod
 
 if TYPE_CHECKING:
+    from result import file   as resFile
     from result import window as resWindow
 #endregion ----------------------------------------------------------> Imports
 
@@ -95,6 +96,8 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         rData: cMethod.BaseAnalysis
             For each DataPrep a new attribute 'Date-ID' is added with value
             dataMethod.DataPrepAnalysis.
+        rDataC: dataMethod.DataPrepAnalysis
+            Data for currently selected date - ID.
         rDataPlot: dict[str: pd.DataFrame]
             DataFrames with the data.
         rDate: list of str
@@ -156,12 +159,16 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.rObj     = parent.rObj
+        self.rObj:'resFile.UMSAPFile' = parent.rObj
         self.cTitle   = title
         self.tSection = tSection if tSection else self.cSection
         self.tDate    = tDate
         self.SetWindow(parent, tSection, tDate)
-        self.ReportPlotDataError()
+        #------------------------------>
+        try:
+            self.ReportPlotDataError()
+        except ValueError as e:
+            raise ValueError from e
         #------------------------------>
         super().__init__(parent=parent)
         #endregion --------------------------------------------> Initial Setup
@@ -303,14 +310,13 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         #region -----------------------------------------------> Set Variables
         if self.cTitle:
             self.rFromUMSAPFile = False
-            self.rData = self.rObj.dConfigure[self.cSection](tSection, tDate)
-            self.rDate = []
+            self.rData  = self.rObj.dConfigure[self.cSection](tSection, tDate)
+            self.rDate  = []
             self.rDateC = parent.rDateC                                         # type:ignore
         else:
             self.rFromUMSAPFile = True
             self.rData  = self.rObj.dConfigure[self.cSection]()
             self.rDate  = self.rData.date
-            #------------------------------>
             self.rDateC = self.rDate[0]
             self.cTitle = (
                 f"{parent.cTitle} - {self.cSection} - {self.rDateC}")           # type: ignore
@@ -637,7 +643,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
 
             Parameters
             ----------
-            date: str or None
+            date: str
                 Given date to plot.
 
             Returns
@@ -646,11 +652,10 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         """
         #region ---------------------------------------------------> Variables
         if tDate:
-            data = getattr(self.rData, tDate)
-            self.rDataPlot = data.dp
             self.rDateC = tDate
-        else:
-            self.rDataPlot = self.rDataC.dp
+            self.rDataC = getattr(self.rData, self.rDateC)
+        #------------------------------>
+        self.rDataPlot = self.rDataC.dp
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> wx.ListCtrl

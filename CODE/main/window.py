@@ -22,8 +22,8 @@ import wx
 from wx.lib.agw import aui
 
 from config.config import config as mConfig
-from core     import window as cWindow
 from core     import method as cMethod
+from core     import window as cWindow
 from corr     import tab    as corrTab
 from dataprep import tab    as dataTab
 from help     import method as hMethod
@@ -51,7 +51,7 @@ class WindowMain(cWindow.BaseWindow):
             Methods to create the tabs.
     """
     #region -----------------------------------------------------> Class Setup
-    cName = mConfig.main.nwMain
+    cName  = mConfig.main.nwMain
     cTitle = mConfig.main.twMain
     #------------------------------>
     dTab = {

@@ -295,8 +295,6 @@ class TarProt(cPane.BaseConfPanelMod2):
             self.OnImpMethod('fEvent')
             self.wShift.wTc.SetValue('1.8')
             self.wWidth.wTc.SetValue('0.3')
-        else:
-            pass
         #endregion -----------------------------------------------------> Test
 
         #region -------------------------------------------------------> DataI
@@ -397,6 +395,8 @@ class TarProt(cPane.BaseConfPanelMod2):
             'tran'        : self.cLTransMethod,
             'norm'        : self.cLNormMethod,
             'imp'         : self.cLImputation,
+            'shift'       : self.cLShift,
+            'width'       : self.cLWidth,
             'targetProt'  : self.cLTargetProt,
             'scoreVal'    : self.cLScoreVal,
             'alpha'       : self.cLAlpha,
@@ -405,13 +405,13 @@ class TarProt(cPane.BaseConfPanelMod2):
             'ocSeq'       : f'{self.cLSeqCol} Column',
             'ocTargetProt': self.cLDetectedProt,
             'ocScore'     : self.cLScoreCol,
-            'ocResCtrl'   : mConfig.core.lStResCtrlS,
+            'resCtrl'     : mConfig.core.lStResCtrlS,
             'labelA'      : self.cLExp,
             'ctrlName'    : f'Control {self.cLCtrlName}',
         }
-        if impMethod == mConfig.data.lONormDist:
-            dI['shift'] = self.cLShift
-            dI['width'] = self.cLWidth
+        if impMethod != mConfig.data.lONormDist:
+            dI.pop('shift')
+            dI.pop('width')
         #endregion --------------------------------------------------------> d
 
         #region ----------------------------------------------------------> do

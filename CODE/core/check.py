@@ -545,6 +545,7 @@ def UniqueColNumbers(                                                           
         >>> (False, ('NotUnique', '3', 'Duplicated element: 3'))
     """
     # Test in test.unit.core.test_check.Test_UniqueColNumbers
+    #region -------------------------------------------------> Helper Function
     def _strip_split(tEle: Union[str, list[str]], sep: str) -> list[str]:
         """Strip individual elements in the given list/str
 
@@ -572,6 +573,8 @@ def UniqueColNumbers(                                                           
         #------------------------------>
         return [x.strip() for x in out]
     #---
+    #endregion ----------------------------------------------> Helper Function
+
     #region -----------------------------------------------------> Check input
     try:
         value = list(map(str, value))

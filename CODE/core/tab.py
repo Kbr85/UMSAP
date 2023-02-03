@@ -205,7 +205,7 @@ class ResControlExp(wx.Panel):
         #------------------------------> Size
         self.cSLCTrlCol = getattr(self, 'cSLCTrlCol', mConfig.core.sLCtrlColI)
         #------------------------------>
-        super().__init__(parent, name=self.cName)
+        super().__init__(parent, name=self.cName, size=(500,500))
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -258,7 +258,7 @@ class ResControlExp(wx.Panel):
                 ).PaneBorder(
                     visible=True,
                 ).BestSize(
-                    (100,100)
+                    (200,100)
             )
         )
         self._mgr.Update()

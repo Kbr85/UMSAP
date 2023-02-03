@@ -15,7 +15,6 @@
 
 
 #region -------------------------------------------------------------> Imports
-import copy
 import itertools
 import traceback
 from dataclasses import dataclass, field
@@ -41,6 +40,7 @@ if TYPE_CHECKING:
 LIT_Comp       = Literal['lt', 'le', 'e', 'ge', 'gt']
 LIT_CompEq     = Literal['e', 'ne']
 LIT_NumType    = Literal['int', 'float']
+LIT_IndSample  = Literal['i', 'p']
 LIT_Region     = Literal['start', 'end']
 LIT_Tran       = Literal['', 'None', 'Log2']
 LIT_Norm       = Literal['', 'None', 'Median']
@@ -77,13 +77,13 @@ class BaseUserData():
     targetProt:str = ''                                                         # Target Protein
     scoreVal:float = 0                                                          # Minimum Score value
     #------------------------------> Statistic options
-    rawInt:bool    = False                                                      # Raw intensity or ration of intensity
-    indSample:bool = False                                                      # Samples are independent or not
-    alpha:float    = 0                                                          # Significance level
-    beta:float     = 0                                                          # Beta level
-    gamma:float    = 0                                                          # Chi squared test level
-    thetaM:Optional[float] = None                                               # Equivalence Test maximum possible difference
-    theta:Optional[float]  = None                                               # Equivalence Test threshold. None implies calculate a value based on Control experiments
+    rawInt:bool               = False                                           # Raw intensity or ration of intensity
+    indSample:LIT_IndSample   = 'i'                                             # Samples are independent or not
+    alpha:float               = 0                                               # Significance level
+    beta:float                = 0                                               # Beta level
+    gamma:float               = 0                                               # Chi squared test level
+    thetaM:Optional[float]    = None                                            # Equivalence Test maximum possible difference
+    theta:Optional[float]     = None                                            # Equivalence Test threshold. None implies calculate a value based on Control experiments
     correctedP:LIT_CorrectedP = ''                                              # Method to correct P values for multiple test
     #------------------------------> Result - Control
     labelA:list[str] = field(default_factory=list)
@@ -149,7 +149,15 @@ class BaseUserData():
         #------------------------------>
         for k,v in self.dI.items():
             label = f"{v}{(self.longestKey - len(v))*' '}"
-            dictO[label] = str(getattr(self, k))
+            val   = getattr(self, k)
+            #------------------------------>
+            if isinstance(val, (list, tuple)):
+                val = ', '.join(map(str, val))
+            #------------------------------>
+            if k == 'indSample':
+                val = PrintIndSample(val)
+            #------------------------------>
+            dictO[label] = str(val)
         #endregion ------------------------------------------------>
 
         return dictO
@@ -611,55 +619,6 @@ def ExpandRange(
 #endregion ---------------------------------------------------> Number methods
 
 
-#region ----------------------------------------------------------------> Dict
-def DictVal2Str(                                                                # pylint: disable=dangerous-default-value
-    iDict:dict,
-    changeKey:list = [],
-    new:bool       = False,
-    ) -> dict:
-    """Returns a dict with values turn to str for all keys or only those in
-        changeKey.
-
-        Parameters
-        ----------
-        iDict: dict
-            Initial dict.
-        changeKey: list of keys
-            Only modify this keys.
-        new: boolean
-            Do not modify iDict (True) or modify in place (False).
-            Default is False.
-
-        Returns
-        -------
-        dict:
-            with the corresponding values turned to str.
-
-        Examples
-        --------
-        >>> DictVal2Str({1:Path('/k/d/c'), 'B':3})
-        >>> {1: '/k/d/c', 'B': '3'}
-        >>> DictVal2Str({1:Path('/k/d/c'), 'B':3}, changeKey=[1])
-        >>> {1: '/k/d/c', 'B': 3}
-    """
-    # Test in test.unit.core.test_method.Test_DictVal2Str
-    #region -------------------------------------------------------> Variables
-    if new:
-        oDict = copy.deepcopy(iDict)
-    else:
-        oDict = iDict
-    #endregion ----------------------------------------------------> Variables
-
-    #region ---------------------------------------------------> Change values
-    for k in changeKey:
-        oDict[k] = str(oDict[k])
-    #endregion ------------------------------------------------> Change values
-
-    return oDict
-#---
-#endregion -------------------------------------------------------------> Dict
-
-
 #region --------------------------------------------------------> pd.DataFrame
 def DFFilterByColS(
     df:pd.DataFrame,
@@ -696,9 +655,9 @@ def DFFilterByColS(
     dfo = df.copy()
     #------------------------------> Filter
     if comp == 'e':
-        dfo = df.loc[df.iloc[:,col] == refStr]
+        dfo = dfo.loc[dfo.iloc[:,col] == refStr]
     elif comp == 'ne':
-        dfo = df.loc[df.iloc[:,col] != refStr]
+        dfo = dfo.loc[dfo.iloc[:,col] != refStr]
     else:
         msg = mConfig.core.mNotImplementedFull.format(
             comp, 'comp', LIT_CompEq)
@@ -781,15 +740,15 @@ def DFFilterByColN(
     dfo = df.copy()
     #------------------------------> Filter
     if comp == 'lt':
-        dfo = df.loc[(df.iloc[:,col] < refVal).any(axis=1)]                     # type: ignore
+        dfo = dfo.loc[(dfo.iloc[:,col] < refVal).any(axis=1)]                     # type: ignore
     elif comp == 'le':
-        dfo = df.loc[(df.iloc[:,col] <= refVal).any(axis=1)]                    # type: ignore
+        dfo = dfo.loc[(dfo.iloc[:,col] <= refVal).any(axis=1)]                    # type: ignore
     elif comp == 'e':
-        dfo = df.loc[(df.iloc[:,col] == refVal).any(axis=1)]                    # type: ignore
+        dfo = dfo.loc[(dfo.iloc[:,col] == refVal).any(axis=1)]                    # type: ignore
     elif comp == 'ge':
-        dfo = df.loc[(df.iloc[:,col] >= refVal).any(axis=1)]                    # type: ignore
+        dfo = dfo.loc[(dfo.iloc[:,col] >= refVal).any(axis=1)]                    # type: ignore
     elif comp == 'gt':
-        dfo = df.loc[(df.iloc[:,col] > refVal).any(axis=1)]                     # type: ignore
+        dfo = dfo.loc[(dfo.iloc[:,col] > refVal).any(axis=1)]                     # type: ignore
     else:
         msg = mConfig.core.mNotImplementedFull.format(comp, 'comp', LIT_Comp)
         raise ValueError(msg)
@@ -935,6 +894,30 @@ def LCtrlFillColNames(lc:wx.ListCtrl, fileP:Union[Path, str]) -> bool:
 
 
 #region --------------------------------------------------------------> Others
+def PrintIndSample(val:LIT_IndSample) -> str:
+    """Pretty Print Independent Sample choice to UMSAP File.
+
+        Parameters
+        ----------
+        val: str
+            One of the 'i' or 'p'.
+
+        Returns
+        -------
+        str
+            Value to print in the UMSAP File
+    """
+    #region -------------------------------------------------------->
+    try:
+        valO = mConfig.core.oSamplesP[val]
+    except KeyError:
+        valO = ''
+    #endregion ----------------------------------------------------->
+
+    return valO
+#---
+
+
 def NCResNumbers(
     dfR:pd.DataFrame,
     rDO:BaseUserData,
@@ -960,7 +943,7 @@ def NCResNumbers(
     """
     # Test in test.unit.core.test_method.Test_NCResNumbers
     #region --------------------------------------------> Helper Functions
-    def NCTerm(
+    def _ncTerm(
         row:list[str],
         seqObj:cFile.FastaFile,
         seqType:str,
@@ -998,7 +981,7 @@ def NCResNumbers(
     try:
         dfR.iloc[:,rDO.dfNC] = dfR.iloc[
             :,[rDO.dfSeq, 1]].apply(
-                NCTerm,                                                         # type: ignore
+                _ncTerm,                                                        # type: ignore
                 axis        = 1,
                 raw         = True,
                 result_type = 'expand',                                         # type: ignore

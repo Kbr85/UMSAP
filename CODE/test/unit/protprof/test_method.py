@@ -48,7 +48,7 @@ class Test_ProtProf(unittest.TestCase):
             width         = 0.3,
             scoreVal      = 320.0,
             rawInt        = True,
-            indSample     = True,
+            indSample     = 'i',
             alpha         = 0.05,
             correctedP    = 'Benjamini - Hochberg',
             ocTargetProt  = 0,

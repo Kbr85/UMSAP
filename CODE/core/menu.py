@@ -411,32 +411,32 @@ class BaseMenuMainResult(BaseMenu):
         # Update menu specific items, e.g. Further Analysis or Cond, RP in
         # ProtProf - Volcano Plot. Also update GUI if checked is not the
         # analysis currently displayed.
-        self.UpdateOtherItems(menuItem, not checkedFound) # type: ignore
+        self.UpdateOtherItems(menuData, menuItem) # type: ignore
         #endregion ---------------------------------------> Update Other Items
+
+        #region --------------------------------------------------> Update GUI
+        if not checkedFound:
+            self.GetWindow().UpdateResultWindow(menuItem.GetItemLabelText())    # type: ignore
+        #endregion -----------------------------------------------> Update GUI
 
         return True
     #---
 
-    def UpdateOtherItems(self, tDate:wx.MenuItem, updateGUI:bool) -> bool:
+    def UpdateOtherItems(self, menuData:dict, tDate:wx.MenuItem) -> bool:       # pylint: disable=unused-argument
         """Update specific items in the menu after the Analysis IDs were
             updated. Override as needed.
 
             Parameters
             ----------
+            menuData: dict
+                Updated menu content.
             tDate: wx.MenuItem
                 Currently selected Analysis ID
-            updateGUI: bool
-                Update (True) the data displayed or not (False).
 
             Returns
             -------
             bool
         """
-        #region ---------------------------------------------------> Update GUI
-        if updateGUI:
-            self.OnMethodKey(wx.MenuEvent(id=tDate.GetId()))
-        #endregion ------------------------------------------------> Update GUI
-
         return True
     #---
 
@@ -540,6 +540,7 @@ class BaseMenuFurtherAnalysis(BaseMenu):
             the content.
     """
     #region -----------------------------------------------------> Class Setup
+    cLNatProt   = mConfig.core.lmNatSeq
     cLClearSel  = 'Clear Selections'
     cLDupWin    = 'Duplicate Window'
     cLExpData   = 'Export Data'
@@ -590,7 +591,7 @@ class BaseMenuFurtherAnalysis(BaseMenu):
             #------------------------------> Add Item
             # pylint: disable=attribute-defined-outside-init
             self.miNat = self.Append(
-                -1, mConfig.core.lmNatSeq, kind=wx.ITEM_CHECK)
+                -1, self.cLNatProt, kind=wx.ITEM_CHECK)
             self.Bind(wx.EVT_MENU, tMethod, source=self.miNat)
             #------------------------------> IDMap
             if idMap:

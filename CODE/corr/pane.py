@@ -307,6 +307,7 @@ class CorrA(cPane.BaseConfPanel):
         self.wTransMethod.wCb.SetValue(dataI.tran)
         self.wNormMethod.wCb.SetValue(dataI.norm)
         self.wImputationMethod.wCb.SetValue(dataI.imp)
+        self.wCorrMethod.wCb.SetValue(dataI.corr)
         self.wShift.wTc.SetValue(str(dataI.shift))
         self.wWidth.wTc.SetValue(str(dataI.width))
         #------------------------------>
@@ -384,12 +385,14 @@ class CorrA(cPane.BaseConfPanel):
             'tran'         : self.cLTransMethod,
             'norm'         : self.cLNormMethod,
             'imp'          : self.cLImputation,
+            'shift'        : self.cLShift,
+            'width'        : self.cLWidth,
             'corr'         : self.cLCorrMethod,
-            'ocResCtrlFlat': 'Selected Columns',
+            'resCtrl'      : 'Selected Columns',
         }
-        if impMethod == mConfig.data.lONormDist:
-            dI['shift'] = self.cLShift
-            dI['width'] = self.cLWidth
+        if impMethod != mConfig.data.lONormDist:
+            dI.pop('shift')
+            dI.pop('width')
         #------------------------------>
         msgStep = self.cLPdPrepare + 'User input, processing'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
@@ -405,6 +408,7 @@ class CorrA(cPane.BaseConfPanel):
             shift         = float(self.wShift.wTc.GetValue()),
             width         = float(self.wWidth.wTc.GetValue()),
             corr          = self.wCorrMethod.wCb.GetValue(),
+            resCtrl       = ', '.join(map(str,col)),
             ocColumn      = col,
             ocResCtrlFlat = col,
             dfColumnR     = colF,

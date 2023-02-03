@@ -440,7 +440,7 @@ class ProtProf(cPane.BaseConfPanelMod):
         self.wWidth.wTc.SetValue(str(dataI.width))
         #------------------------------> Values
         self.wScoreVal.wTc.SetValue(str(dataI.scoreVal))
-        self.wSample.wCb.SetValue(str(dataI.indSample))
+        self.wSample.wCb.SetValue(mConfig.core.oSamplesP[dataI.indSample])
         self.wAlpha.wTc.SetValue(str(dataI.alpha))
         self.wCorrectP.wCb.SetValue(dataI.correctedP)
         #------------------------------> Columns
@@ -648,7 +648,6 @@ class ProtProf(cPane.BaseConfPanelMod):
         impMethod     = self.wImputationMethod.wCb.GetValue()
         a = self.rLbDict['ControlType'] == mConfig.prot.oControlType['Ratio']
         rawI          = False if a else True
-        indSample     = self.wSample.wCb.GetValue()
         detectedProt  = int(self.wDetectedProt.wTc.GetValue())
         geneName      = int(self.wGeneName.wTc.GetValue())
         scoreCol      = int(self.wScore.wTc.GetValue())
@@ -658,7 +657,7 @@ class ProtProf(cPane.BaseConfPanelMod):
         resCtrlFlat   = cMethod.ResControl2Flat(resCtrl)
         resCtrlDF     = cMethod.ResControl2DF(resCtrl, 2+len(excludeProt)+1)
         resCtrlDFFlat = cMethod.ResControl2Flat(resCtrlDF)
-        ocColumn      = [detectedProt, geneName, scoreCol] + excludeProt + resCtrlFlat
+        ocColumn      = [geneName, detectedProt, scoreCol] + excludeProt + resCtrlFlat
         dI = {
             'iFileN'      : self.cLiFile,
             'ID'          : self.cLId,
@@ -666,6 +665,8 @@ class ProtProf(cPane.BaseConfPanelMod):
             'tran'        : self.cLTransMethod,
             'norm'        : self.cLNormMethod,
             'imp'         : self.cLImputation,
+            'shift'       : self.cLShift,
+            'width'       : self.cLWidth,
             'scoreVal'    : self.cLScoreVal,
             'indSample'   : self.cLSample,
             'alpha'       : self.cLAlpha,
@@ -678,11 +679,11 @@ class ProtProf(cPane.BaseConfPanelMod):
             'labelB'      : self.cLRP,
             'ctrlType'    : f"Control {self.cLCtrlType}",
             'ctrlName'    : f"Control {self.cLCtrlName}",
-            'ocResCtrl'   : mConfig.core.lStResCtrlS,
+            'resCtrl'     : mConfig.core.lStResCtrlS,
         }
-        if impMethod == mConfig.data.lONormDist:
-            dI['shift'] = self.cLShift
-            dI['width'] = self.cLWidth
+        if impMethod != mConfig.data.lONormDist:
+            dI.pop('shift')
+            dI.pop('width')
         #------------------------------> Create dataclass
         msgStep = self.cLPdPrepare + 'User input, processing'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
@@ -699,7 +700,7 @@ class ProtProf(cPane.BaseConfPanelMod):
             width         = float(self.wWidth.wTc.GetValue()),
             scoreVal      = float(self.wScoreVal.wTc.GetValue()),
             rawInt        = rawI,
-            indSample     = True if indSample=='Independent Samples' else False,
+            indSample     = self.cOSample[self.wSample.wCb.GetValue()],
             alpha         = float(self.wAlpha.wTc.GetValue()),
             correctedP    = self.wCorrectP.wCb.GetValue(),
             ocTargetProt  = detectedProt,
@@ -712,9 +713,9 @@ class ProtProf(cPane.BaseConfPanelMod):
             labelA        = self.rLbDict[0],
             labelB        = self.rLbDict[1],
             ctrlType      = self.rLbDict['ControlType'],
-            ctrlName      = self.rLbDict['Control'],
-            dfTargetProt  = 0,
-            dfGene        = 1,
+            ctrlName      = self.rLbDict['Control'][0],
+            dfGene        = 0,
+            dfTargetProt  = 1,
             dfScore       = 2,
             dfExcludeR    = [2+x for x in range(1, len(excludeProt)+1)],
             dfResCtrl     = resCtrlDF,

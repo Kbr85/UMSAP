@@ -27,8 +27,8 @@ import webbrowser
 import wx
 import wx.lib.mixins.listctrl as listmix
 
-import matplotlib         as mpl
-import matplotlib.patches as patches
+import matplotlib as mpl
+from matplotlib                        import patches
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 
 from config.config import config as mConfig
@@ -1077,6 +1077,7 @@ class MyListCtrl(wx.ListCtrl):
         pasteUnique:bool     = True,
         selAll:bool          = True,
         style:int            =  wx.LC_REPORT,
+        size:tuple[int,int]  = (200, 200),
         data:list[list]      = [],
         color:str            = mConfig.core.cZebra,
         **kwargs,
@@ -1097,7 +1098,7 @@ class MyListCtrl(wx.ListCtrl):
             False: self.SearchReport,
         }
         #------------------------------>
-        wx.ListCtrl.__init__(self, parent, style=style)
+        wx.ListCtrl.__init__(self, parent, style=style, size=size)
         #------------------------------> Set Item Count if virtual
         if self.IsVirtual():
             #------------------------------>
@@ -1746,6 +1747,7 @@ class MyListCtrlZebra(MyListCtrl, listmix.ListRowHighlighter):
         pasteUnique:bool     = True,
         selAll:bool          = True,
         style:int            = wx.LC_REPORT,
+        size:tuple[int,int]  = (200, 200),
         data:list[list]      = [],
         ) -> None:
         """"""
@@ -1763,6 +1765,7 @@ class MyListCtrlZebra(MyListCtrl, listmix.ListRowHighlighter):
             pasteUnique     = pasteUnique,
             selAll          = selAll,
             style           = style,
+            size            = size,
             data            = data,
             color           = color,
         )
@@ -1830,6 +1833,7 @@ class MyListCtrlZebraMaxWidth(MyListCtrlZebra, listmix.ListCtrlAutoWidthMixin):
         pasteUnique:bool     = True,
         selAll:bool          = True,
         style:int            = wx.LC_REPORT,
+        size:tuple[int,int]  = (200, 200),
         data:list[list]      = [],
         ) -> None:
         """"""
@@ -1848,6 +1852,7 @@ class MyListCtrlZebraMaxWidth(MyListCtrlZebra, listmix.ListCtrlAutoWidthMixin):
             pasteUnique     = pasteUnique,
             selAll          = selAll,
             style           = style,
+            size            = size,
             data            = data,
         )
 
