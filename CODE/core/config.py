@@ -46,16 +46,15 @@ class Configuration():
     ttLCtrlPasteMod:str  = field(init=False)
     #------------------------------> General Options
     cwd:Path         = Path(__file__)                                           # Config file path
-    development:bool = True                                                     # Development (True) or Production (False)
     dictVersion:dict = field(default_factory=lambda: {                          # To write into output files
-        'Version': '2.2.1 (beta)',
+        'Version': '2.2.1',
     })
     dtFormat:str     = '%Y%m%d-%H%M%S'                                          # Date Time format
     fConfig:Path     = Path.home() / '.umsap_config.json'                       # Path to user configuration file
     os:str           = platform.system()                                        # Current operating system
     software:str     = 'UMSAP'                                                  # Software short name
     softwareF:str    = 'Utilities for Mass Spectrometry Analysis of Proteins'   # Software full name
-    version:str      = '2.2.1 (beta)'                                           # String to write in the output files
+    version:str      = '2.2.1'                                                  # String to write in the output files
     winNumber:dict   = field(default_factory=lambda: {})                        # Keys: Windows ID - Values: Total number of opened windows, except conf win
     #------------------------------> Name & Title
     ndResCtrlExp:str      = 'Name Dialog Results & Control Experiments'         # Unique name for wx, not shown to user
@@ -317,12 +316,8 @@ class Configuration():
             self.copyShortCut = 'Ctrl'
             self.deltaWin     = 20
             self.toolMenuIdx  = 2
-            if self.development:
-                self.root = self.cwd.parent.parent.parent
-                self.res  = self.root / 'Resources'
-            else:
-                self.root = self.cwd.parent.parent
-                self.res  = self.root / 'RESOURCES/'
+            self.root         = self.cwd.parent.parent
+            self.res          = self.root / 'RESOURCES/'
         else:
             self.commOpen     = 'xdg-open'
             self.copyShortCut = 'Ctrl'

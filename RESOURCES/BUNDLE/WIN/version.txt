@@ -31,21 +31,13 @@ StringFileInfo(
     u'040904B0',
     [StringStruct(u'CompanyName', u''),
     StringStruct(u'FileDescription', u'UMSAP.exe'),
-<<<<<<< HEAD:2-RESOURCES/BUNDLE/WIN/version.txt
-    StringStruct(u'FileVersion', u'2.1.0'),
-=======
-    StringStruct(u'FileVersion', u'2.2.0 (beta)'),
->>>>>>> development:RESOURCES/BUNDLE/WIN/version.txt
+    StringStruct(u'FileVersion', u'2.2.1'),
     StringStruct(u'InternalName', u'umsap'),
     StringStruct(u'LegalCopyright', u'Copyright (c) 2017 Kenny Bravo Rodriguez'),
     StringStruct(u'OriginalFilename', u'UMSAP.exe'),
     StringStruct(u'ProductName', u'UMSAP'),
-<<<<<<< HEAD:2-RESOURCES/BUNDLE/WIN/version.txt
-    StringStruct(u'ProductVersion', u'2.1.0')])
-=======
-    StringStruct(u'ProductVersion', u'2.2.0 (beta)')])
->>>>>>> development:RESOURCES/BUNDLE/WIN/version.txt
-  ]), 
+    StringStruct(u'ProductVersion', u'2.2.1')])
+  ]),
 VarFileInfo([VarStruct(u'Translation', [1033, 1200])])
   ]
 )

@@ -23,9 +23,6 @@ import wx.adv
 #endregion ----------------------------------------------------------> Imports
 
 
-DEVELOPMENT = True                                                              # Development (True) or Production (False)
-
-
 #region -------------------------------------------------------------> Classes
 class UmsapApp(wx.App):
     """Start the UMSAP app."""
@@ -49,13 +46,6 @@ class UmsapApp(wx.App):
             fileRoot = Path(__file__).parent
         imgFullPath = f'{fileRoot}{imgPath}'
         #endregion ------------------------------------------------> Variables
-
-        #region -------------------------------------------------> Development
-        if DEVELOPMENT:
-            imgPath     = '/Resources/IMAGES/SPLASHSCREEN/splash.png'
-            fileRoot    = Path(__file__).parent.parent
-            imgFullPath = f'{fileRoot}{imgPath}'
-        #endregion ----------------------------------------------> Development
 
         #region ------------------------------------------------> SplashScreen
         SplashWindow(str(imgFullPath))
