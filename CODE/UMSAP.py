@@ -150,10 +150,10 @@ class SplashWindow(wx.adv.SplashScreen):
         )
         #------------------------------> Adapt to Win/Linux
         if mConfig.core.os == "Windows":
-            fSeqAlignFont     = fSeqAlignFont.SetPointSize(12)
-            fTreeItemFileData = fTreeItemFileData.SetPointSize(10)
+            fSeqAlignFont.SetPointSize(12)
+            fTreeItemFileData.SetPointSize(10)
         if mConfig.core.os not in ['Windows', 'Darwin']:
-            fSeqAlignFont = fSeqAlignFont.SetPointSize(11)
+            fSeqAlignFont.SetPointSize(11)
         #------------------------------> Add to config
         mConfig.core.fSeqAlign              = fSeqAlignFont
         mConfig.core.fTreeItem              = fTreeItem
