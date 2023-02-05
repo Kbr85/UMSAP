@@ -6,7 +6,10 @@ block_cipher = None
 a = Analysis(['UMSAP.py'],
              pathex=['C:\\Users\\bravo\\Desktop\\SharedFolders\\BORRAR-GUI'],
              binaries=[],
-             datas=[('RESOURCES', 'RESOURCES/.')],
+             datas=[
+                ('RESOURCES', 'RESOURCES/.'),
+                ('C:\\Users\\bravo\\AppData\\Local\\Continuum\\miniconda3\\envs\\wxapps-3.9\\Lib\\site-packages\\Bio\\Align\\substitution_matrices\\data\\BLOSUM62', 'Bio\\Align\\substitution_matrices\\data\\'),
+             ],
              hiddenimports=['wx._xml'],
              hookspath=[],
              runtime_hooks=[],

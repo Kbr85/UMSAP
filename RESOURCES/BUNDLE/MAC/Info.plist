@@ -32,11 +32,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-<<<<<<< HEAD:2-RESOURCES/BUNDLE/MAC/Info.plist
-	<string>2.1.0</string>
-=======
-	<string>2.2.0 (beta)</string>
->>>>>>> development:RESOURCES/BUNDLE/MAC/Info.plist
+	<string>2.2.1</string>
 	<key>NSAppleScriptEnabled</key>
 	<false/>
 	<key>NSHighResolutionCapable</key>

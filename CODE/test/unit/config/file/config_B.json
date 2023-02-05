@@ -1,0 +1,11 @@
+{
+    "core": {
+        "checkUpdate": true,
+        "DPI": 100,
+        "MatPlotMargin": 0.025,
+        "BadOption"  : 0
+    },
+    "BadSection": {
+        "Something": 0
+    }
+}
