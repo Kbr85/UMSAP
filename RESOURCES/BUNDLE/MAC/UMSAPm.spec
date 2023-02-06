@@ -6,7 +6,10 @@ block_cipher = None
 a = Analysis(['UMSAP.py'],
              pathex=['/Users/bravo/TEMP-GUI/BORRAR-UMSAP/'],
              binaries=[],
-             datas=[ ('RESOURCES', '.') ],
+             datas=[
+                ('RESOURCES', '.'),
+                ('/Users/bravo/miniconda3/envs/wxapps-3.9/lib/python3.9/site-packages/Bio/Align/substitution_matrices/data/BLOSUM62', 'Bio/Align/substitution_matrices/data/'),
+             ],
              hiddenimports=['wx._xml'],
              hookspath=[],
              runtime_hooks=[],
@@ -39,7 +42,7 @@ app = BUNDLE(coll,
                'NSHighResolutionCapable': 'True',
                'NSPrincipleClass': 'NSApplication',
                'NSAppleScriptEnabled': False,
-               'CFBundleShortVersionString': '2.2.0',
+               'CFBundleShortVersionString': '2.2.2',
                'CFBundleDocumentTypes': [
                   {
                     'CFBundleTypeName': 'My File Format',
@@ -47,6 +50,7 @@ app = BUNDLE(coll,
                     'LSItemContentTypes': ['com.example.myformat'],
                     'LSHandlerRank': 'Owner'
                     }
-                ]
+                ],
+                'NSHumanReadableCopyright': 'Copyright © 2017 Kenny Bravo Rodriguez. All rights reserved.',
             },
             )
