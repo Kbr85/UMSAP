@@ -72,6 +72,8 @@ class DataPrep(cPane.BaseConfPanel):
                 }
             }
         }
+        Each pd.DataFrame in DP contains a header with the column name and values
+        are the data processed values.
     """
     #region -----------------------------------------------------> Class setup
     #------------------------------> Label

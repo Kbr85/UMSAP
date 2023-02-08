@@ -91,8 +91,10 @@ class TarProt(cPane.BaseConfPanelMod2):
 
         The result data frame has the following structure:
 
-        Sequence Score Nterm Cterm NtermF CtermF Exp1, Exp1,..., ExpN, ExpN
-        Sequence Score Nterm Cterm NtermF CtermF IntL,    P,..., IntL, P
+        Sequence Score Nterm Cterm NtermF CtermF Ctrl Ctrl  Exp1, Exp1,..., ExpN, ExpN
+        Sequence Score Nterm Cterm NtermF CtermF IntL,   P, IntL,    P,..., IntL, P
+
+        All p values in (Ctrl P) are NA
     """
     #region -----------------------------------------------------> Class setup
     cName = mConfig.tarp.nPane

@@ -98,7 +98,7 @@ class ProtProf(cPane.BaseConfPanelMod):
 
         The result data frame has the following structure:
 
-        Gene Protein Score C1 ..... CN
+        Gene Protein Score C1 .....  CN
         Gene Protein Score RP1 ..... RPN
         Gene Protein Score aveC stdC ave std P Pc FC CI FCz
 
