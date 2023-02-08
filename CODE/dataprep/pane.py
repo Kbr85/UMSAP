@@ -37,9 +37,6 @@ class DataPrep(cPane.BaseConfPanel):
         ----------
         parent: wx.Window
             Parent of the pane.
-        dataI: dataMethod.UseData or None
-            Initial data provided by the user in a previous analysis.
-            Default is None.
 
         Notes
         -----
@@ -93,11 +90,7 @@ class DataPrep(cPane.BaseConfPanel):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(
-        self,
-        parent:wx.Window,
-        dataI:Optional[dataMethod.UserData]=None,
-        ) -> None:
+    def __init__(self, parent:wx.Window) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(parent)
@@ -186,21 +179,16 @@ class DataPrep(cPane.BaseConfPanel):
         else:
             pass
         #endregion -----------------------------------------------------> Test
-
-        #region -------------------------------------------------------> DataI
-        if dataI is not None:
-            self.SetInitialData(dataI)
-        #endregion ----------------------------------------------------> DataI
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class Methods
-    def SetInitialData(self, dataI:dataMethod.UserData) -> bool:
+    def SetInitialData(self, dataI:Optional[dataMethod.UserData]) -> bool:
         """Set initial data.
 
             Parameters
             ----------
-            dataI: dataMethod.UserData
+            dataI: dataMethod.UserData or None
                 Data to fill all fields and repeat an analysis.
 
             Returns
@@ -208,19 +196,20 @@ class DataPrep(cPane.BaseConfPanel):
             True
         """
         #region -------------------------------------------------> Fill Fields
-        self.wUFile.wTc.SetValue(str(dataI.uFile))
-        self.wIFile.wTc.SetValue(str(dataI.iFile))
-        self.wId.wTc.SetValue(dataI.ID)
-        self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
-        self.wTransMethod.wCb.SetValue(dataI.tran)
-        self.wNormMethod.wCb.SetValue(dataI.norm)
-        self.wImputationMethod.wCb.SetValue(dataI.imp)
-        self.wShift.wTc.SetValue(str(dataI.shift))
-        self.wWidth.wTc.SetValue(str(dataI.width))
-        self.wColAnalysis.wTc.SetValue(" ".join(map(str, dataI.ocResCtrlFlat)))
-        #------------------------------>
-        self.OnIFileLoad('fEvent')
-        self.OnImpMethod('fEvent')
+        if dataI is not None:
+            self.wUFile.wTc.SetValue(str(dataI.uFile))
+            self.wIFile.wTc.SetValue(str(dataI.iFile))
+            self.wId.wTc.SetValue(dataI.ID)
+            self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
+            self.wTransMethod.wCb.SetValue(dataI.tran)
+            self.wNormMethod.wCb.SetValue(dataI.norm)
+            self.wImputationMethod.wCb.SetValue(dataI.imp)
+            self.wShift.wTc.SetValue(str(dataI.shift))
+            self.wWidth.wTc.SetValue(str(dataI.width))
+            self.wColAnalysis.wTc.SetValue(" ".join(map(str, dataI.ocResCtrlFlat)))
+            #------------------------------>
+            self.IFileEnter(dataI.iFile)
+            self.OnImpMethod('fEvent')
         #endregion ----------------------------------------------> Fill Fields
 
         return True

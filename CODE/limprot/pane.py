@@ -37,9 +37,6 @@ class LimProt(cPane.BaseConfPanelMod2):
         ----------
         parent: wx.Window
             Parent of the pane.
-        dataI: limpMethod.UserData or None
-            Initial data provided by the user in a previous analysis.
-            Default is None.
 
         Attributes
         ----------
@@ -137,11 +134,7 @@ class LimProt(cPane.BaseConfPanelMod2):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(
-        self,
-        parent,
-        dataI:Optional[limpMethod.UserData]=None,
-        ) -> None:
+    def __init__(self, parent) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(parent)
@@ -375,21 +368,16 @@ class LimProt(cPane.BaseConfPanelMod2):
         else:
             pass
         #endregion -----------------------------------------------------> Test
-
-        #region -------------------------------------------------------> DataI
-        if dataI is not None:
-            self.SetInitialData(dataI)
-        #endregion ----------------------------------------------------> DataI
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class Event
-    def SetInitialData(self, dataI:limpMethod.UserData) -> bool:
+    def SetInitialData(self, dataI:Optional[limpMethod.UserData]) -> bool:
         """Set initial data.
 
             Parameters
             ----------
-            dataI : dict
+            dataI : limpMethod.UserData or None
                 Data to fill all fields and repeat an analysis.
 
             Returns
@@ -397,40 +385,41 @@ class LimProt(cPane.BaseConfPanelMod2):
             bool
         """
         #region -------------------------------------------------> Fill Fields
-        #------------------------------> Files
-        self.wUFile.wTc.SetValue(str(dataI.uFile))
-        self.wIFile.wTc.SetValue(str(dataI.iFile))
-        self.wSeqFile.wTc.SetValue(str(dataI.seqFile))
-        self.wId.wTc.SetValue(dataI.ID)
-        #------------------------------> Data Preparation
-        self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
-        self.wTransMethod.wCb.SetValue(dataI.tran)
-        self.wNormMethod.wCb.SetValue(dataI.norm)
-        self.wImputationMethod.wCb.SetValue(dataI.imp)
-        self.wShift.wTc.SetValue(str(dataI.shift))
-        self.wWidth.wTc.SetValue(str(dataI.width))
-        #------------------------------> Values
-        self.wTargetProt.wTc.SetValue(dataI.targetProt)
-        self.wScoreVal.wTc.SetValue(str(dataI.scoreVal))
-        self.wAlpha.wTc.SetValue(str(dataI.alpha))
-        self.wSample.wCb.SetValue(mConfig.core.oSamplesP[dataI.indSample])
-        self.wBeta.wTc.SetValue(str(dataI.beta))
-        self.wGamma.wTc.SetValue(str(dataI.gamma))
-        theta = str(dataI.theta) if dataI.theta is not None else ''
-        self.wTheta.wTc.SetValue(theta)
-        thetaM = str(dataI.thetaM) if dataI.thetaM is not None else ''
-        self.wThetaMax.wTc.SetValue(thetaM)
-        #------------------------------> Columns
-        self.wSeqCol.wTc.SetValue(str(dataI.ocSeq))
-        self.wDetectedProt.wTc.SetValue(str(dataI.ocTargetProt))
-        self.wScore.wTc.SetValue(str(dataI.ocScore))
-        self.wTcResults.SetValue(dataI.resCtrl)
-        self.rLbDict[0] = dataI.labelA
-        self.rLbDict[1] = dataI.labelB
-        self.rLbDict['Control'] = [dataI.ctrlName]
-        #------------------------------>
-        self.OnIFileLoad('fEvent')
-        self.OnImpMethod('fEvent')
+        if dataI is not None:
+            #------------------------------> Files
+            self.wUFile.wTc.SetValue(str(dataI.uFile))
+            self.wIFile.wTc.SetValue(str(dataI.iFile))
+            self.wSeqFile.wTc.SetValue(str(dataI.seqFile))
+            self.wId.wTc.SetValue(dataI.ID)
+            #------------------------------> Data Preparation
+            self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
+            self.wTransMethod.wCb.SetValue(dataI.tran)
+            self.wNormMethod.wCb.SetValue(dataI.norm)
+            self.wImputationMethod.wCb.SetValue(dataI.imp)
+            self.wShift.wTc.SetValue(str(dataI.shift))
+            self.wWidth.wTc.SetValue(str(dataI.width))
+            #------------------------------> Values
+            self.wTargetProt.wTc.SetValue(dataI.targetProt)
+            self.wScoreVal.wTc.SetValue(str(dataI.scoreVal))
+            self.wAlpha.wTc.SetValue(str(dataI.alpha))
+            self.wSample.wCb.SetValue(mConfig.core.oSamplesP[dataI.indSample])
+            self.wBeta.wTc.SetValue(str(dataI.beta))
+            self.wGamma.wTc.SetValue(str(dataI.gamma))
+            theta = str(dataI.theta) if dataI.theta is not None else ''
+            self.wTheta.wTc.SetValue(theta)
+            thetaM = str(dataI.thetaM) if dataI.thetaM is not None else ''
+            self.wThetaMax.wTc.SetValue(thetaM)
+            #------------------------------> Columns
+            self.wSeqCol.wTc.SetValue(str(dataI.ocSeq))
+            self.wDetectedProt.wTc.SetValue(str(dataI.ocTargetProt))
+            self.wScore.wTc.SetValue(str(dataI.ocScore))
+            self.wTcResults.SetValue(dataI.resCtrl)
+            self.rLbDict[0] = dataI.labelA
+            self.rLbDict[1] = dataI.labelB
+            self.rLbDict['Control'] = [dataI.ctrlName]
+            #------------------------------>
+            self.IFileEnter(dataI.iFile)
+            self.OnImpMethod('fEvent')
         #endregion ----------------------------------------------> Fill Fields
 
         return True

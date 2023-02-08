@@ -39,9 +39,6 @@ class TarProt(cPane.BaseConfPanelMod2):
         ----------
         parent: wx.Window
             Parent of the pane.
-        dataI: tarpMethod.UserData or None
-            Initial data provided by the user in a previous analysis.
-            Default is None.
 
         Attributes
         ----------
@@ -127,11 +124,7 @@ class TarProt(cPane.BaseConfPanelMod2):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(
-        self,
-        parent,
-        dataI:Optional[tarpMethod.UserData]=None,
-        ) -> None:                          # pylint: disable=dangerous-default-value
+    def __init__(self, parent) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(parent)
@@ -298,65 +291,58 @@ class TarProt(cPane.BaseConfPanelMod2):
             self.wShift.wTc.SetValue('1.8')
             self.wWidth.wTc.SetValue('0.3')
         #endregion -----------------------------------------------------> Test
-
-        #region -------------------------------------------------------> DataI
-        if dataI is not None:
-            self.SetInitialData(dataI)
-        #endregion ----------------------------------------------------> DataI
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class Event
-    def SetInitialData(self, dataI:tarpMethod.UserData) -> bool:                            # pylint: disable=dangerous-default-value
+    def SetInitialData(self, dataI:Optional[tarpMethod.UserData]) -> bool:
         """Set initial data.
 
             Parameters
             ----------
-            dataI : dict
+            dataI : tarpMethod.UserData or None
                 Data to fill all fields and repeat an analysis.
 
             Returns
             -------
             bool
         """
-        #region --------------------------------------------------->
-        posAA   = str(dataI.posAA) if dataI.posAA is not None else ''
-        if dataI.winHist is not None:
-            winHist = " ".join(map(str, dataI.winHist))
-        else:
-            winHist = ''
-        #endregion ------------------------------------------------>
-
-        #region -------------------------------------------------> Fill Fields
-        #------------------------------> Files
-        self.wUFile.wTc.SetValue(str(dataI.uFile))
-        self.wIFile.wTc.SetValue(str(dataI.iFile))
-        self.wSeqFile.wTc.SetValue(str(dataI.seqFile))
-        self.wId.wTc.SetValue(dataI.ID)
-        #------------------------------> Data Preparation
-        self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
-        self.wTransMethod.wCb.SetValue(dataI.tran)
-        self.wNormMethod.wCb.SetValue(dataI.norm)
-        self.wImputationMethod.wCb.SetValue(dataI.imp)
-        self.wShift.wTc.SetValue(str(dataI.shift))
-        self.wWidth.wTc.SetValue(str(dataI.width))
-        #------------------------------> Values
-        self.wTargetProt.wTc.SetValue(dataI.targetProt)
-        self.wScoreVal.wTc.SetValue(str(dataI.scoreVal))
-        self.wAlpha.wTc.SetValue(str(dataI.alpha))
-        self.wAAPos.wTc.SetValue(posAA)
-        self.wHist.wTc.SetValue(winHist)
-        #------------------------------> Columns
-        self.wSeqCol.wTc.SetValue(str(dataI.ocSeq))
-        self.wDetectedProt.wTc.SetValue(str(dataI.ocTargetProt))
-        self.wScore.wTc.SetValue(str(dataI.ocScore))
-        self.wTcResults.SetValue(dataI.resCtrl)
-        self.rLbDict[0] = dataI.labelA
-        self.rLbDict['Control'] = list(dataI.ctrlName)
-        #------------------------------>
-        self.OnIFileLoad('fEvent')
-        self.OnImpMethod('fEvent')
-        #endregion ----------------------------------------------> Fill Fields
+        #region -------------------------------------------------------->
+        if dataI is not None:
+            posAA = str(dataI.posAA) if dataI.posAA is not None else ''
+            if dataI.winHist is not None:
+                winHist = " ".join(map(str, dataI.winHist))
+            else:
+                winHist = ''
+            #------------------------------> Files
+            self.wUFile.wTc.SetValue(str(dataI.uFile))
+            self.wIFile.wTc.SetValue(str(dataI.iFile))
+            self.wSeqFile.wTc.SetValue(str(dataI.seqFile))
+            self.wId.wTc.SetValue(dataI.ID)
+            #------------------------------> Data Preparation
+            self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
+            self.wTransMethod.wCb.SetValue(dataI.tran)
+            self.wNormMethod.wCb.SetValue(dataI.norm)
+            self.wImputationMethod.wCb.SetValue(dataI.imp)
+            self.wShift.wTc.SetValue(str(dataI.shift))
+            self.wWidth.wTc.SetValue(str(dataI.width))
+            #------------------------------> Values
+            self.wTargetProt.wTc.SetValue(dataI.targetProt)
+            self.wScoreVal.wTc.SetValue(str(dataI.scoreVal))
+            self.wAlpha.wTc.SetValue(str(dataI.alpha))
+            self.wAAPos.wTc.SetValue(posAA)
+            self.wHist.wTc.SetValue(winHist)
+            #------------------------------> Columns
+            self.wSeqCol.wTc.SetValue(str(dataI.ocSeq))
+            self.wDetectedProt.wTc.SetValue(str(dataI.ocTargetProt))
+            self.wScore.wTc.SetValue(str(dataI.ocScore))
+            self.wTcResults.SetValue(dataI.resCtrl)
+            self.rLbDict[0] = dataI.labelA
+            self.rLbDict['Control'] = list(dataI.ctrlName)
+            #------------------------------>
+            self.IFileEnter(dataI.iFile)
+            self.OnImpMethod('fEvent')
+        #endregion ----------------------------------------------------->
 
         return True
     #---
