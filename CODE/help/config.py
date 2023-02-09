@@ -32,6 +32,12 @@ class Configuration():
     twAbout: str               = 'About UMSAP'
     tdPrefUpdate:str           = 'Preferences'
     tdCheckUpdate:str          = 'Check for Updates'
+    #------------------------------>
+    kwAbout:str      = 'help.About'
+    kwTutorial:str   = 'help.Tutorial'
+    kwManual:str     = 'help.Manual'
+    kwCheckUp:str    = 'help.CheckUp'
+    kwPreference:str = 'help.Preference'
     #------------------------------> Converter for user options
     converter:dict = field(default_factory=lambda: {})
 #---

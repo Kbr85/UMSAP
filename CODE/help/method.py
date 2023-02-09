@@ -15,9 +15,13 @@
 
 
 #region -------------------------------------------------------------> Imports
+import _thread
+import os
+import webbrowser
 from typing import Literal, Optional
 
 import requests
+from pubsub import pub
 
 import wx
 
@@ -120,4 +124,107 @@ def UpdateCheck(
 
     return True
 #---
+
+
+def About() -> bool:
+    """Show the About UMSAP window.
+
+        Returns
+        -------
+        bool
+    """
+    #region --------------------------------------------------->
+    try:
+        hWindow.WindowAbout()
+    except Exception as e:
+        msg = 'Failed to show the About UMSAP window.'
+        cWindow.Notification('errorU', msg=msg, tException=e)
+        return False
+    #endregion ------------------------------------------------>
+
+    return True
+#---
+
+
+def Manual() -> bool:
+    """Show the About UMSAP window.
+
+        Returns
+        -------
+        bool
+    """
+    #region -------------------------------------------------------->
+    try:
+        os.system(f'{mConfig.core.commOpen} {mConfig.core.fManual}')
+    except Exception as e:
+        msg = 'Failed to open the manual of UMSAP.'
+        cWindow.Notification('errorU', msg=msg, tException=e)
+        return False
+    #endregion ----------------------------------------------------->
+
+    return True
+#---
+
+def Tutorial() -> bool:
+    """Show the tutorial.
+
+        Returns
+        -------
+        bool
+    """
+    #region --------------------------------------------------->
+    try:
+        webbrowser.open_new(f'{mConfig.core.urlTutorial}/start')
+    except Exception as e:
+        msg = 'Failed to open the url with the tutorials for UMSAP.'
+        cWindow.Notification('errorU', msg=msg, tException=e)
+        return False
+    #endregion ------------------------------------------------>
+
+    return True
+#---
+
+def CheckUpdate() -> bool:
+    """Check for updates.
+
+        Parameters
+        ----------
+        event: wx.MenuEvent
+            Information about the event.
+
+        Returns
+        -------
+        bool
+    """
+    _thread.start_new_thread(UpdateCheck, ('menu',))
+    return True
+#---
+
+def Preference() -> bool:
+    """Set UMSAP preferences.
+
+        Returns
+        -------
+        bool
+    """
+    #region -------------------------------------------------------->
+    try:
+        hWindow.Preference()
+    except Exception as e:
+        msg = 'Failed to show the Preferences window.'
+        cWindow.Notification('errorU', msg=msg, tException=e)
+        return False
+    #endregion ----------------------------------------------------->
+
+    return True
+#---
 #endregion ----------------------------------------------------------> Methods
+
+
+#region ------------------------------------------------> PubSub Subscriptions
+pub.subscribe(About, mConfig.help.kwAbout)
+pub.subscribe(Manual, mConfig.help.kwManual)
+pub.subscribe(Preference, mConfig.help.kwPreference)
+pub.subscribe(Tutorial, mConfig.help.kwTutorial)
+pub.subscribe(CheckUpdate, mConfig.help.kwCheckUp)
+#endregion ---------------------------------------------> PubSub Subscriptions
