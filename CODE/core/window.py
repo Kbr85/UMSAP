@@ -1053,11 +1053,15 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
         #region ---------------------------------------------------> Get Path
         if dlg.ShowModal() == wx.ID_OK:
             #------------------------------> Variables
-            p = Path(dlg.GetPath())
+            p    = Path(dlg.GetPath())
+            date = cMethod.StrNow()
             #------------------------------> Export
             try:
                 for k, v in self.wPlot.items():
                     fPath = p / self.cImgName[k].format(self.rDateC)
+                    #------------------------------> Do not overwrite
+                    if fPath.exists():
+                        fPath = fPath.with_stem(f"{fPath.stem} - {date}")
                     #------------------------------> Write
                     v.rFigure.savefig(fPath)
             except Exception as e:

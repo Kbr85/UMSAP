@@ -27,6 +27,7 @@ import wx
 
 from config.config import config as mConfig
 from core     import file      as cFile
+from core     import method    as cMethod
 from core     import statistic as cStatistic
 from core     import window    as cWindow
 from main     import menu      as mMenu
@@ -766,13 +767,17 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         #region ---------------------------------------------------> Get Path
         if dlg.ShowModal() == wx.ID_OK:
             #------------------------------> Variables
-            p = Path(dlg.GetPath())
-            col = self.wLC.wLCS.wLC.OnGetItemText(self.rLCIdx, 1)
+            p    = Path(dlg.GetPath())
+            col  = self.wLC.wLCS.wLC.OnGetItemText(self.rLCIdx, 1)
+            date = cMethod.StrNow()
             #------------------------------> Export
             try:
                 for k, v in self.wPlot.dPlot.items():
                     #------------------------------> file path
                     fPath = p / self.cImgName[k].format(self.rDateC, col, 'pdf')
+                    #------------------------------> Do not overwrite
+                    if fPath.exists():
+                        fPath = fPath.with_stem(f"{fPath.stem} - {date}")
                     #------------------------------> Write
                     v.rFigure.savefig(fPath)
             except Exception as e:

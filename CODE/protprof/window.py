@@ -1702,7 +1702,8 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #region ---------------------------------------------------> Get Path
         if dlg.ShowModal() == wx.ID_OK:
             #------------------------------> Variables
-            p = Path(dlg.GetPath())
+            p    = Path(dlg.GetPath())
+            date = cMethod.StrNow()
             #------------------------------> Export
             try:
                 for k, v in self.wPlot.dPlot.items():
@@ -1713,6 +1714,9 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
                         nameP = f'{self.rLCIdx}'
                     #------------------------------> file path
                     fPath = p / self.cImgName[k].format(self.rDateC, nameP)
+                    #------------------------------> Do not overwrite
+                    if fPath.exists():
+                        fPath = fPath.with_stem(f"{fPath.stem} - {date}")
                     #------------------------------> Write
                     v.rFigure.savefig(fPath)
             except Exception as e:
