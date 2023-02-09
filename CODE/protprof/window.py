@@ -175,8 +175,8 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
     #------------------------------> Other
     cNPlotCol = 2
     cImgName   = {
-        'Vol': '{}-Vol-{}.pdf',
-        'FC' : '{}-Evol-{}.pdf',
+        mConfig.prot.kwVol: '{}-Vol-{}.pdf',
+        mConfig.prot.kwFC : '{}-Evol-{}.pdf',
     }
     #------------------------------> Color
     cCV      = mConfig.prot.cCV
@@ -229,27 +229,27 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #------------------------------> Methods
         dKeyMethod = {
             #------------------------------> Set Range of Plots
-            mConfig.prot.kwScaleNo      : self.LockScale,
-            mConfig.prot.kwScaleAnalysis: self.LockScale,
-            mConfig.prot.kwScaleProject : self.LockScale,
-            'No Set'      : self.SetRangeNo,
-            'Analysis Set': self.SetRangeDate,
-            'Project Set' : self.SetRangeProject,
+            mConfig.prot.kwScaleNo               : self.LockScale,
+            mConfig.prot.kwScaleAnalysis         : self.LockScale,
+            mConfig.prot.kwScaleProject          : self.LockScale,
+            f'{mConfig.prot.lmScaleNo} Set'      : self.SetRangeNo,
+            f'{mConfig.prot.lmScaleAnalysis} Set': self.SetRangeDate,
+            f'{mConfig.prot.lmScaleProject} Set' : self.SetRangeProject,
             #------------------------------> Get DF for Text Intensities
             mConfig.prot.oControlType['OC']   : self.GetDF4TextInt_OC,
             mConfig.prot.oControlType['OCC']  : self.GetDF4TextInt_OCC,
             mConfig.prot.oControlType['OCR']  : self.GetDF4TextInt_OCR,
             mConfig.prot.oControlType['Ratio']: self.GetDF4TextInt_RatioI,
             #------------------------------> Colors
-            mConfig.prot.kwVolPlotColorConf  : self.VolColorConf,
-            mConfig.prot.kwVolPlotColorScheme: self.VolDraw,
-            'Hyperbolic Curve Color'         : self.GetColorHyCurve,
-            'P - Log2FC Color'               : self.GetColorPLog2FC,
-            'Z Score Color'                  : self.GetColorZScore,
+            mConfig.prot.kwVolPlotColorConf           : self.VolColorConf,
+            mConfig.prot.kwVolPlotColorScheme         : self.VolDraw,
+            f'{mConfig.prot.lmFilterHypCurve} Color'  : self.GetColorHyCurve,
+            f'{mConfig.prot.lmColorSchemePLog2} Color': self.GetColorPLog2FC,
+            f'{mConfig.prot.lmFilterZScore} Color'    : self.GetColorZScore,
             #------------------------------> Lines
-            'Hyperbolic Curve Line': self.DrawLinesHypCurve,
-            'P - Log2FC Line'      : self.DrawLinesPLog2FC,
-            'Z Score Line'         : self.DrawLinesZScore,
+            f'{mConfig.prot.lmFilterHypCurve} Line'  : self.DrawLinesHypCurve,
+            f'{mConfig.prot.lmColorSchemePLog2} Line': self.DrawLinesPLog2FC,
+            f'{mConfig.prot.lmFilterZScore} Line'    : self.DrawLinesZScore,
             #------------------------------> Filter methods
             mConfig.prot.kwFilterApplyAll  : self.FilterApply,
             mConfig.prot.kwFilterApplyAuto : self.AutoFilter,

@@ -112,6 +112,11 @@ class Configuration():
     kwWinUpdate:str    = 'General Tool Update Result Window'
     kwZoomReset:str    = 'General Tool Reset Zoom One'
     kwZoomResetAll:str = 'General Tool Reset Zoom All'
+    kwNat:str          = 'nat'                                                  # Methods keywords
+    kwShift:str        = 'Shift'
+    kwAlt:str          = 'Alt'
+    kwMain:str         = 'Main'
+    kwSec:str          = 'Sec'
     #------------------------------> Sizes
     sLCtrlColI:list[int] = field(default_factory=lambda: [50, 150])             # Size for # Name columns in a wx.ListCtrl
     sTc:tuple[int,int]         = (50, 22)                                       # wx.TextCtrl

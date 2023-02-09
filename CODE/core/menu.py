@@ -478,8 +478,8 @@ class BaseMenuMainResultSubMenu(BaseMenu):
     """
     #region -----------------------------------------------------> Class setup
     rKeys = {
-        'Shift': 'Main',
-        'Alt'  : 'Sec',
+        mConfig.core.kwShift: mConfig.core.kwMain,
+        mConfig.core.kwAlt  : mConfig.core.kwSec,
     }
     #------------------------------>
     cLExpImg    = 'Export Image'

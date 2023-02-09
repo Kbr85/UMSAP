@@ -53,6 +53,8 @@ class Configuration():
     kwFAPDBMap             = 'Tool Further Analysis PDB Map'
     kwAAExp:str            = 'Tool AA AA'
     kwAAPos:str            = 'Tool AA Pos'
+    kwMon:str              = 'mon'                                              # Methods keywords
+    kwAllCleavage:str      = 'allC'
     #------------------------------> DF Columns
     dfcolFirstPart:list[str] = field(default_factory=lambda:
         ['Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF','CtermF'])

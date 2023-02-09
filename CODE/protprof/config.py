@@ -105,6 +105,9 @@ class Configuration():
     kwVolPlotColorScheme:str = 'Vol Plot Color Scheme'
     kwVolPlotLabelPick:str   = 'Vol Plot Pick Label'
     kwVolPlotLabelProt:str   = 'Vol Plot Add Label'
+    kwFC:str                 = 'FC'                                             # Methods keyword
+    kwVol:str                = 'Vol'
+    kwMode:str               = 'mode'
     #------------------------------> DataFrame Columns
     dfcolFirstPart:list[str] = field(default_factory=lambda:
         ['Gene', 'Protein', 'Score'])
