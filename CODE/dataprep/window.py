@@ -15,6 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
+import shutil
 from pathlib import Path
 from typing  import Union, Optional, TYPE_CHECKING
 
@@ -26,7 +27,6 @@ from scipy  import stats
 import wx
 
 from config.config import config as mConfig
-from core     import file      as cFile
 from core     import method    as cMethod
 from core     import statistic as cStatistic
 from core     import window    as cWindow
@@ -710,13 +710,6 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             -------
             bool
         """
-        #region -----------------------------------> Check Something to Export
-        if self.rLCIdx < 0:
-            msg = 'Please select one of the analyzed columns first.'
-            cWindow.Notification('warning', msg=msg)
-            return False
-        #endregion --------------------------------> Check Something to Export
-
         #region --------------------------------------------------> Dlg window
         dlg = cWindow.DirSelect(parent=self)
         #endregion -----------------------------------------------> Dlg window
@@ -725,14 +718,16 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         if dlg.ShowModal() == wx.ID_OK:
             #------------------------------> Variables
             p = Path(dlg.GetPath())
-            col = self.wLC.wLCS.wLC.OnGetItemText(self.rLCIdx, 1)
             #------------------------------> Export
             try:
-                for k, v in self.rDataPlot.items():
-                    #------------------------------> file path
-                    fPath = p/self.cFileName[k].format(self.rDateC, col, 'txt')
-                    #------------------------------> Write
-                    cFile.WriteDF2CSV(fPath, v)
+                date = self.rDateC.split(' - ')[0]
+                sec = self.cSection.replace(' ', '-')
+                origin = self.rObj.rStepDataP / f'{date}_{sec}'
+                for k in origin.iterdir():
+                    name = f'{self.rDateC} - {(k.stem).split("_")[1]}'
+                    dest = p / f'{name}{k.suffix}'
+                    #------------------------------>
+                    shutil.copy(k, dest)
             except Exception as e:
                 cWindow.Notification(
                     'errorF',
