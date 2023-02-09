@@ -2226,6 +2226,11 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
         self.wLC.wLCS.wLC.SetNewData(data)
         #endregion ------------------------------------------------>
 
+        #region ----------------------------------------------> Update Row Num
+        self._mgr.GetPane(self.wLC).Caption(f'{self.cTList} ({len(data)})')
+        self._mgr.Update()
+        #endregion -------------------------------------------> Update Row Num
+
         return True
     #---
 
