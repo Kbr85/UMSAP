@@ -1768,6 +1768,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             tBtnLabel   = 'Add Protein',
             color       = mConfig.core.cZebra,
             tStLabel    = [self.cLProtLAvail, self.cLProtLShow],
+            allowEmpty  = True,
         )
         #------------------------------> Get the selected values
         if dlg.ShowModal():
@@ -1782,9 +1783,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
                     self.rLabelProt.remove(z)
             #------------------------------>
             for y in rowL:
-                if y in self.rLabelProt:
-                    pass
-                else:
+                if y not in self.rLabelProt:
                     self.rLabelProt.append(y)
         #endregion ----------------------------------------------> Get New Sel
 

@@ -1638,9 +1638,12 @@ class ListSelect(BaseDialogOkCancel):
         color:str                   = mConfig.core.cZebra,
         rightDelete:bool            = True,
         style:int                   = wx.LC_REPORT|wx.LC_VIRTUAL,
+        allowEmpty:bool             = False,
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
+        self.rAllowEmpty = allowEmpty
+        #------------------------------>
         if tStLabel:
             self.cStLabel = tStLabel
         else:
@@ -1749,6 +1752,13 @@ class ListSelect(BaseDialogOkCancel):
             -------
             bool
         """
+        #region -------------------------------------------------------->
+        if self.rAllowEmpty:
+            self.EndModal(1)
+            self.Close()
+            return True
+        #endregion ----------------------------------------------------->
+
         #region ----------------------------------------------------> Validate
         if self.wLCtrlO.GetItemCount() > 0:
             self.EndModal(1)
