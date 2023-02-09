@@ -108,6 +108,8 @@ class Configuration():
     kwFC:str                 = 'FC'                                             # Methods keyword
     kwVol:str                = 'Vol'
     kwMode:str               = 'mode'
+    #------------------------------> List
+    lFilter:list = field(default_factory=list)
     #------------------------------> DataFrame Columns
     dfcolFirstPart:list[str] = field(default_factory=lambda:
         ['Gene', 'Protein', 'Score'])

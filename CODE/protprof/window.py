@@ -2488,7 +2488,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             -------
             bool
         """
-        self.cParent.rCopiedFilters = [x for x in self.rFilterList]             # type: ignore
+        mConfig.prot.lFilter = [x for x in self.rFilterList]                    # type: ignore
         return True
     #---
 
@@ -2500,7 +2500,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             True
         """
         #region ---------------------------------------------------> Copy
-        self.rFilterList = [x for x in self.cParent.rCopiedFilters]             # type: ignore
+        self.rFilterList = [x for x in mConfig.prot.lFilter]                    # type: ignore
         #endregion ------------------------------------------------> Copy
 
         #region --------------------------------------------------->

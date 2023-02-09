@@ -55,8 +55,6 @@ class UMSAPControl(cWindow.BaseWindow):
             Keys are section names and values the Window to plot the results
         dSectionTab: dict
             Keys are section names and values the corresponding config.name
-        rCopiedFilter: list
-            Copy of the List of applied filters in a ProtProfPlot Window
         rDataInitPath: Path
             Path to the folder with the Initial files.
         rDataStepPath: Path
@@ -109,8 +107,6 @@ class UMSAPControl(cWindow.BaseWindow):
         self.rSection = {}
         #------------------------------> Reference to plot windows
         self.rWindow = {}
-        #------------------------------> Copied Filters
-        self.rCopiedFilters = []
         #------------------------------>
         super().__init__(parent=parent)
         #------------------------------>
