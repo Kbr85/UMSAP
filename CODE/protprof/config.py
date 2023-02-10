@@ -111,6 +111,8 @@ class Configuration():
     #------------------------------> List
     lFilter:list = field(default_factory=list)
     #------------------------------> DataFrame Columns
+    dfColGene = ('Gene', 'Gene', 'Gene')
+    dfColProt = ('Protein', 'Protein', 'Protein')
     dfcolFirstPart:list[str] = field(default_factory=lambda:
         ['Gene', 'Protein', 'Score'])
     dfcolCLevel:list[str] = field(default_factory=lambda:

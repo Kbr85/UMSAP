@@ -191,6 +191,9 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
     cFCLines = mConfig.prot.cFCLines
     cVol     = mConfig.prot.cVol
     cVolSel  = mConfig.prot.cVolSel
+    #------------------------------> Columns in DF
+    cColGene = mConfig.prot.dfColGene
+    cColProt = mConfig.prot.dfColProt
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -1487,7 +1490,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region --------------------------------------------------->
-        col = [('Gene','Gene','Gene'),('Protein','Protein','Protein')]
+        col = [self.cColGene, self.cColProt]
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
@@ -1553,9 +1556,9 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
 
     def UpdateResultWindow(
         self,
-        tDate:str='',
-        cond:str='',
-        rp:str='',
+        tDate:str              = '',
+        cond:str               = '',
+        rp:str                 = '',
         corrP:Optional[bool]   = None,
         showAll:Optional[bool] = None,
         t0:Optional[float]     = None,
@@ -1593,7 +1596,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         self.rT0         = t0 if t0 is not None else self.rT0
         self.rS0         = s0 if s0 is not None else self.rS0
         self.rDf         = getattr(self.rData, self.rDateC).df.copy()
-        self.rLabelProt  = [] if tDate else self.rLabelProt
+        self.rLabelProt  = self.UpdateLabelProt() if tDate else self.rLabelProt
         self.rLabelProtD = {} if tDate else self.rLabelProtD
         #endregion -----------------------------------------> Update variables
 
@@ -1632,6 +1635,34 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #endregion ---------------------------------------------------> Title
 
         return True
+    #---
+
+    def UpdateLabelProt(self) -> list:
+        """Update the LabelProt list when the date changes.
+
+            Returns
+            -------
+            list
+                Row in the new self.rDf that matches the gene and protein in
+                self.rLabelProt
+        """
+        #region -------------------------------------------------------->
+        listO = []
+        #------------------------------>
+        for r in self.rLabelProt:
+            dfR = self.rDf.loc[
+                (self.rDf[self.cColGene]==r[1]) & (self.rDf[self.cColProt]==r[2])]
+            #------------------------------>
+            if not dfR.empty:
+                row = dfR.index.tolist()[0]
+                listO.append(
+                    [str(row),
+                     dfR.loc[row,self.cColGene],
+                     dfR.loc[row,self.cColProt]
+                ])
+        #endregion ----------------------------------------------------->
+
+        return listO
     #---
 
     def LockScale(self, mode:str, updatePlot:bool=True) -> bool:
@@ -2219,8 +2250,6 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
                  {'gText': uText, 'updateL': False},
                  f'{self.cLFLog2FC} {op} {val}']
             )
-        else:
-            pass
         #endregion ---------------------------------------> Update Filter List
 
         return True
