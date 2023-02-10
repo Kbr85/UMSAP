@@ -631,11 +631,11 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #------------------------------>
         dX = self.wPlot.dPlot['Vol'].rAxes.get_xlim()
         dX = dX[1] - dX[0]
-        dX = dX * 0.002
+        dX = dX * 0.01
 
         dY = self.wPlot.dPlot['Vol'].rAxes.get_ylim()
         dY = dY[1] - dY[0]
-        dY = dY * 0.002
+        dY = dY * 0.01
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
@@ -657,7 +657,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
                     x+dX,y-dY, prot[1], va='top')
             else:
                 self.rLabelProtD[tKey] = self.wPlot.dPlot['Vol'].rAxes.text(
-                    x+dX,y-dY, prot[1], ha='right',va='top')
+                    x-dX,y-dY, prot[1], ha='right',va='top')
         #------------------------------>
         self.wPlot.dPlot['Vol'].rCanvas.draw()
         #endregion ------------------------------------------------>
