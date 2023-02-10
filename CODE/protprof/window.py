@@ -16,7 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from typing  import Union, Optional, TYPE_CHECKING
+from typing  import Union, Optional, Literal, TYPE_CHECKING
 
 import numpy  as np
 import pandas as pd
@@ -39,6 +39,13 @@ from protprof import method    as protMethod
 if TYPE_CHECKING:
     from result import window as resWindow
 #endregion ----------------------------------------------------------> Imports
+
+
+LIT_Z_LINES = Literal[
+    f'{mConfig.prot.lmFilterZScore} Line',
+    f'{mConfig.prot.lmFilterHypCurve} Line',
+    f'{mConfig.prot.lmColorSchemePLog2} Line'
+]
 
 
 #region -------------------------------------------------------------> Classes
@@ -224,6 +231,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         self.rLabelProtD  = {}
         self.rPickLabel   = False
         self.rVolLines    = ['Hyperbolic Curve Line']
+        self.rVolLinesZ   = f'{mConfig.prot.lmFilterZScore} Line'
         #------------------------------>
         super().__init__(parent)
         #------------------------------> Methods
@@ -1372,6 +1380,8 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             -------
             bool
         """
+        if self.rVolLinesZ != f'{mConfig.prot.lmFilterZScore} Line':
+            self.dKeyMethod[self.rVolLinesZ]()                                  # type: ignore
         return True
     #---
 
@@ -1809,11 +1819,12 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             self.rZ,
             self.rP,
             self.rLog2FC,
-            parent=self,
+            parent    = self,
+            checkInit = self.rVolLinesZ,
         )
         #------------------------------>
         if dlg.ShowModal():
-            self.rT0, self.rS0, self.rP, self.rLog2FC, self.rZ = (
+            self.rT0, self.rS0, self.rP, self.rLog2FC, self.rZ, self.rVolLinesZ = (
                 dlg.GetVal())
             self.VolDraw()
         else:
@@ -2582,6 +2593,12 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         parent: wx.Window
             Parent of the wx.Dialog
     """
+    #region -----------------------------------------------------> Class Setup
+    cNLineNone = f'{mConfig.prot.lmFilterZScore} Line'
+    cNLineHyp  = f'{mConfig.prot.lmFilterHypCurve} Line'
+    cNLinePLog = f'{mConfig.prot.lmColorSchemePLog2} Line'
+    #endregion --------------------------------------------------> Class Setup
+
     #region --------------------------------------------------> Instance setup
     def __init__(
         self,
@@ -2591,6 +2608,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         p:float,
         fc:float,
         parent:Optional[wx.Window]=None,
+        checkInit:LIT_Z_LINES = f'{mConfig.prot.lmFilterZScore} Line',
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -2601,6 +2619,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
             'P' : str(p),
             'FC': str(fc),
         }
+        self.rCheck = checkInit
         #------------------------------>
         super().__init__(title='Color Scheme Parameters', parent=parent)
         #endregion --------------------------------------------> Initial Setup
@@ -2625,7 +2644,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         )
         self.wS0.wTc.SetValue(self.rValInit['S0'])
 
-        self.wsbPFC = wx.StaticBox(self, label='Log2FC - P')
+        self.wsbPFC = wx.StaticBox(self, label='P - Log2[FC]')
         self.wP = cWidget.StaticTextCtrl(
             self.wsbPFC,
             stLabel   = 'P',
@@ -2654,6 +2673,14 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
                     numType='float', vMin=0, vMax=100, nN=1),
         )
         self.wZ.wTc.SetValue(self.rValInit['Z'])
+        self.wStShow = wx.StaticText(self.wsbZ, label='Show')
+        self.wCbNone = wx.RadioButton(
+            self.wsbZ, label='None', name=self.cNLineNone)
+        self.wCbHyp  = wx.RadioButton(
+            self.wsbZ, label='Hyperbolic Curve', name=self.cNLineHyp)
+        self.wCbPLog = wx.RadioButton(
+            self.wsbZ, label='P - Log2[FC] Lines', name=self.cNLinePLog)
+        self.FindWindowByName(self.rCheck, self).SetValue(True)
         #------------------------------>
         self.rWList = {
             'T0': self.wT0.wTc,
@@ -2679,9 +2706,15 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         self.sFlexPFC.Add(self.wFC.wTc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
         self.sFlexPFC.AddGrowableCol(1,1)
 
-        self.sFlexZ = wx.FlexGridSizer(2,2,1,1)
+        self.sFlexZ = wx.FlexGridSizer(4,2,1,1)
         self.sFlexZ.Add(self.wZ.wSt, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
         self.sFlexZ.Add(self.wZ.wTc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexZ.Add(self.wStShow, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexZ.Add(self.wCbNone, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexZ.AddStretchSpacer()
+        self.sFlexZ.Add(self.wCbHyp, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexZ.AddStretchSpacer()
+        self.sFlexZ.Add(self.wCbPLog, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
         self.sFlexZ.AddGrowableCol(1,1)
 
         self.ssbHC = wx.StaticBoxSizer(self.wsbHC, wx.VERTICAL)
@@ -2708,6 +2741,10 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         self.Fit()
         #endregion ---------------------------------------------------> Sizers
 
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_RADIOBUTTON, self.OnCheckChange)
+        #endregion -----------------------------------------------------> Bind
+
         #region ---------------------------------------------> Window position
         if parent is not None:
             self.CenterOnParent()
@@ -2715,7 +2752,23 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
+    #region ---------------------------------------------------> Event Methods
+    def OnCheckChange(self, event:wx.CommandEvent) -> bool:
+        """Update
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        self.rCheck = event.GetEventObject().GetName()
+        return True
+    #---
+
     def OnOK(self, event:wx.CommandEvent) -> bool:
         """Validate user information and close the window.
 
@@ -2747,7 +2800,9 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
 
         return True
     #---
+    #endregion ------------------------------------------------> Event Methods
 
+    #region ---------------------------------------------------> Class methods
     def GetVal(self):
         """Get the selected values.
 
@@ -2761,6 +2816,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
             float(self.wP.wTc.GetValue()),
             float(self.wFC.wTc.GetValue()),
             float(self.wZ.wTc.GetValue()),
+            self.rCheck,
         )
     #---
     #endregion ------------------------------------------------> Class methods
