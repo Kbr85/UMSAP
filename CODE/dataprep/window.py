@@ -128,7 +128,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
     cLNPlot   = ['Init', 'Transf', 'Norm', 'Imp']
     cNPlotCol = 2
     #------------------------------>
-    cSWindow = (900,800)
+    cSWindow = (1000,900)
     #------------------------------>
     cLCStyle = wx.LC_REPORT|wx.LC_SINGLE_SEL|wx.LC_VIRTUAL
     #------------------------------> Label

@@ -738,9 +738,15 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
         ----------
         parent: wx.Window or None
             Parent of the window. Default None.
+        statusbar: wx.StatusBar or None
+            To print info from plots to the wx.StatusBar. Default is None.
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent:Optional[wx.Window]=None) -> None:
+    def __init__(
+        self,
+        parent:Optional[wx.Window]=None,
+        statusbar:Optional[wx.StatusBar]=None
+        ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cLNPlot   = getattr(self, 'cLNPlot',   ['Plot 1', 'Plot 2'])
@@ -760,7 +766,7 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
 
         #region -----------------------------------------------------> Widgets
         self.wPlot = cPane.NPlots(
-            self, self.cLNPlot, self.cNPlotCol, statusbar=self.wStatBar)
+            self, self.cLNPlot, self.cNPlotCol, statusbar=statusbar)
         #endregion --------------------------------------------------> Widgets
 
         #region ---------------------------------------------------------> AUI

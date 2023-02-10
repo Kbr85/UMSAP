@@ -1315,9 +1315,7 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
             bool
         """
         #region --------------------------------------------------->
-        xf = round(x)
-        #------------------------------>
-        if not 1 <= xf <= len(self.rPos):
+        if not 1 <= (xf := round(x)) <= len(self.rPos):
             self.wStatBar.SetStatusText('')
             return False
         #------------------------------>
@@ -1368,7 +1366,7 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
             bool
         """
         #region --------------------------------------------------->
-        if 1 > (xf := round(x)) > len(mConfig.core.lAA1):
+        if not 1 <= (xf := round(x)) <= len(mConfig.core.lAA1):
             self.wStatBar.SetStatusText('')
             return False
         aa = mConfig.core.lAA1[xf-1]
@@ -1749,7 +1747,7 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
 
         #region --------------------------------------------------->
         win = f'{df.iat[xf-1, 0]:.0f}-{df.iat[xf, 0]:.0f}'
-        clv = f'{df.iat[xf-1,df.columns.get_loc(idx[self.rNat,self.rAllC,exp])]}'
+        clv = f'{df.iat[xf-1,df.columns.get_loc(idx[self.rNat,self.rAllC,exp])]:.0f}'
         text = (f'Win={win}  Exp={exp}  Cleavages={clv}')
         #------------------------------>
         self.wStatBar.SetStatusText(text)

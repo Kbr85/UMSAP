@@ -546,9 +546,9 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         self.wPlot.dPlot['Vol'].rAxes.set_title(
             f'C: {self.rCondC} RP: {self.rRpC}')
         self.wPlot.dPlot['Vol'].rAxes.set_xlabel(
-            "log$_{2}$[Fold Change]", fontweight="bold")
+            "log$_{2}$[FC]", fontweight="bold")
         self.wPlot.dPlot['Vol'].rAxes.set_ylabel(
-            "-log$_{10}$[P values]", fontweight="bold")
+            "-log$_{10}$[p]", fontweight="bold")
         #------------------------------>
         return True
     #---
@@ -725,7 +725,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         self.wPlot.dPlot['FC'].rAxes.set_xlabel(
             'Relevant Points', fontweight="bold")
         self.wPlot.dPlot['FC'].rAxes.set_ylabel(
-            "log$_{2}$[Fold Change]", fontweight="bold")
+            "log$_{2}$[FC]", fontweight="bold")
         #endregion ---------------------------------------------------> Labels
 
         #region ---------------------------------------------------> X - Axis
