@@ -45,12 +45,23 @@ class UserData(cMethod.BaseUserData):
     #endregion ------------------------------------------------------> Options
 #---
 
+@dataclass
+class DataSteps():
+    """Data class to hold the pd.DataFrames for the Data Preparation steps"""
+    #region ---------------------------------------------------------> Options
+    dfF:pd.DataFrame  = pd.DataFrame()                                          # Floated data
+    dfT:pd.DataFrame  = pd.DataFrame()                                          # Transformed data
+    dfN:pd.DataFrame  = pd.DataFrame()                                          # Normalized data
+    dfIm:pd.DataFrame = pd.DataFrame()                                          # Imputed data
+    #endregion ------------------------------------------------------> Options
+#---
+
 
 @dataclass
 class DataAnalysis():
     """Data class to hold the info regarding a DataPrep in an UMSAP file."""
     #region --------------------------------------------------------> Options
-    dp:dict[str,pd.DataFrame]                                                   # Results as dataframe
+    dp:DataSteps                                                                # Results as dataframe
     numColList:list[int]                                                        # Column numbers
     #endregion -----------------------------------------------------> Options
 #endregion ----------------------------------------------------------> Classes

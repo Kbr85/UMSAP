@@ -126,6 +126,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
     cTText   = 'Statistic Information'
     #------------------------------>
     cLNPlot   = ['Init', 'Transf', 'Norm', 'Imp']
+    cLAttr    = ['dfF', 'dfT', 'dfN', 'dfIm']
     cNPlotCol = 2
     #------------------------------>
     cSWindow = (1000,900)
@@ -391,7 +392,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
 
         #region ----------------------------------------------------> Get Data
         data = []
-        for k,n in enumerate(self.rDataPlot['dfF'].columns.values.tolist()):
+        for k,n in enumerate(self.rDataPlot.dfF.columns.values.tolist()):
             colN = str(self.rDataC.numColList[k])
             data.append([colN, n])
         #endregion -------------------------------------------------> Get Data
@@ -421,7 +422,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region ---------------------------------------------------> Variables
-        x = self.rDataPlot['dfF'].iloc[:,col]
+        x = self.rDataPlot.dfF.iloc[:,col]
         x = x[np.isfinite(x)]
         #------------------------------>
         nBin = cStatistic.HistBin(x)[0]
@@ -458,7 +459,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region ---------------------------------------------------> Variables
-        x = self.rDataPlot['dfT'].iloc[:,col]
+        x = self.rDataPlot.dfT.iloc[:,col]
         x = x[np.isfinite(x)]
         #------------------------------>
         nBin = cStatistic.HistBin(x)[0]
@@ -505,7 +506,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region ---------------------------------------------------> Variables
-        x = self.rDataPlot['dfN'].iloc[:,col]
+        x = self.rDataPlot.dfN.iloc[:,col]
         x = x[np.isfinite(x)]
         #------------------------------>
         nBin = cStatistic.HistBin(x)[0]
@@ -552,7 +553,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region ---------------------------------------------------> Variables
-        x = self.rDataPlot['dfIm'].iloc[:,col]
+        x = self.rDataPlot.dfIm.iloc[:,col]
         x = x[np.isfinite(x)]
         #------------------------------>
         nBin = cStatistic.HistBin(x)[0]
@@ -572,9 +573,9 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             a[0], margin=mConfig.core.MatPlotMargin))
         self.wPlot.dPlot['Imp'].ZoomResetSetValues()
         #------------------------------>
-        idx = np.where(self.rDataPlot['dfF'].iloc[:,col].isna())[0]
+        idx = np.where(self.rDataPlot.dfF.iloc[:,col].isna())[0]
         if len(idx) > 0:
-            y = self.rDataPlot['dfIm'].iloc[idx,col]
+            y = self.rDataPlot.dfIm.iloc[idx,col]
             if y.count() > 0:
                 self.wPlot.dPlot['Imp'].rAxes.hist(
                     y, bins=nBin, density=False, color='C2')
@@ -610,21 +611,21 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         #endregion -------------------------------------------------> Empty DF
 
         #region --------------------------------------------> Calculate values
-        for r,k in enumerate(self.rDataPlot):
+        for r,k in enumerate(self.cLAttr):
             #------------------------------> N
-            df.iat[r,1] = self.rDataPlot[k].shape[0]
+            df.iat[r,1] = getattr(self.rDataPlot, k).shape[0]
             #------------------------------> NA
-            df.iat[r,2] = self.rDataPlot[k].iloc[:,col].isnull().sum()
+            df.iat[r,2] = getattr(self.rDataPlot, k).iloc[:,col].isnull().sum()
             #------------------------------> Mean
-            df.iat[r,3] = self.rDataPlot[k].iloc[:,col].mean()
+            df.iat[r,3] = getattr(self.rDataPlot, k).iloc[:,col].mean()
             #------------------------------> Median
-            df.iat[r,4] = self.rDataPlot[k].iloc[:,col].median()
+            df.iat[r,4] = getattr(self.rDataPlot, k).iloc[:,col].median()
             # #------------------------------> SD
-            df.iat[r,5] = self.rDataPlot[k].iloc[:,col].std()
+            df.iat[r,5] = getattr(self.rDataPlot, k).iloc[:,col].std()
             # #------------------------------> Kurtosis
-            df.iat[r,6] = self.rDataPlot[k].iloc[:,col].kurt()
+            df.iat[r,6] = getattr(self.rDataPlot, k).iloc[:,col].kurt()
             # #------------------------------> Skewness
-            df.iat[r,7] = self.rDataPlot[k].iloc[:,col].skew()
+            df.iat[r,7] = getattr(self.rDataPlot, k).iloc[:,col].skew()
         #endregion -----------------------------------------> Calculate values
 
         #region ---------------------------------------------> Remove Old Text
@@ -656,7 +657,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             self.rDateC = tDate
             self.rDataC = getattr(self.rData, self.rDateC)
         #------------------------------>
-        self.rDataPlot = self.rDataC.dp
+        self.rDataPlot:dataMethod.DataSteps = self.rDataC.dp
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> wx.ListCtrl

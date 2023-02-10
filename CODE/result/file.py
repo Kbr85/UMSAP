@@ -238,7 +238,7 @@ class UMSAPFile():
             numColList = self.rData[tSection][tDate]['CI']['ocColumn']
         #------------------------------>
         setattr(data, tDate, dataMethod.DataAnalysis(
-            dp         = dp,
+            dp         = dataMethod.DataSteps(**dp),
             numColList = numColList,
         ))
         data.date.append(tDate)
@@ -279,7 +279,7 @@ class UMSAPFile():
                 numColList = v['CI']['ocColumn']
             #------------------------------>
             setattr(data, k, dataMethod.DataAnalysis(
-                dp         = dp,
+                dp         = dataMethod.DataSteps(**dp),
                 numColList = numColList,
             ))
             data.date.append(k)
