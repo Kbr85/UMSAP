@@ -1265,7 +1265,8 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         #------------------------------>
         k = 1
         for k,v in enumerate(tKeyLabel, start=1):
-            for j,f in enumerate(self.rFragments[v]['Coord']):
+            frag = getattr(self.rFragments, v)
+            for j,f in enumerate(frag.coord):
                 self.rRectsFrag.append(mpatches.Rectangle(
                     (f[0], k-0.2),
                     (f[1]-f[0]),

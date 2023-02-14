@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from datetime    import datetime
 from operator    import itemgetter
 from pathlib     import Path
-from typing      import Literal, Union, Optional, TYPE_CHECKING
+from typing      import Literal, Union, Optional, Any, TYPE_CHECKING
 
 import matplotlib as mpl
 import numpy      as np
@@ -216,6 +216,94 @@ class BaseAnalysis():
     error:list[str] = field(default_factory=list)                               # List of analysis with errors.
     date:list[str]  = field(default_factory=list)                               # List of analysis with no error.
     #endregion ------------------------------------------------>
+#---
+
+
+@dataclass
+class LabelDetail():
+    """Details about each protein fragment for the given experimental label.
+
+        Attributes
+        ----------
+        coord : [(x1, x2),...., (xN, xM)]
+            First and last residue number of the fragment in Recombinant Protein
+            sequence.
+        coordN: [(x1, x2),.(NaN, NaN)..., (xN, xM)]
+            First and last residue number of the fragment in Native Protein
+            sequence.
+        seq   : [Aligned Seq1, ...., Aligned SeqN]
+            Sequence alignment within the fragment as a str.
+        seqL  : [Flat List with Seqs1, ...., Flat List with SeqsN]
+            Flat list of peptide sequences withing the fragment.
+        np    : [Number of peptides1, ...., NpN]
+            Number of peptides in each fragment.
+        npNat : [Number of native peptides1, ...., NpNatN]
+            Number of native peptides in each fragment.
+        nc    : [Number of cleavages1, ...., NcN]
+            Number of unique cleavages in each fragment.
+        ncNat : [Number of native cleavages1, ....., NcNatN]
+            Number of unique cleavages in each fragment for the Native sequence.
+        nFrag : (Number of fragments, Number of fragments Nat)
+            Total number of fragments for the experiment in the Recombinant and
+            Native sequence.
+        ncT   : (Number of cleavages for the Exp as a whole, Nat),
+            Total number of cleavages for the experiment in the Recombinant and
+            Native sequence.
+
+        Notes
+        -----
+        - All list have the same length.
+        - nFrag and nCT are tuples with two values each.
+    """
+    #region ---------------------------------------------------------> Options
+    coord:list[tuple[int,int]]                        = field(default_factory=list)
+    coordN:list[tuple[Union[int,Any],Union[int,Any]]] = field(default_factory=list)
+    seq:list[str]                                     = field(default_factory=list)
+    seqL:list[list[str]]                              = field(default_factory=list)
+    np:list[int]                                      = field(default_factory=list)
+    npNat:list[int]                                   = field(default_factory=list)
+    nc:list[int]                                      = field(default_factory=list)
+    ncNat:list[int]                                   = field(default_factory=list)
+    nFrag:tuple[int,int]                              = (0,0)
+    nCT:tuple[int,int]                                = (0,0)
+    #endregion ------------------------------------------------------> Options
+#---
+
+
+@dataclass
+class Fragment():
+    """Information about protein fragments.
+
+        Notes
+        -----
+        For each label there will be an attribute with an instance of
+        LabelDetail as value.
+    """
+    #region ---------------------------------------------------------> Options
+    label:list[str] = field(default_factory=list)                               # List of labels
+    #endregion ------------------------------------------------------> Options
+
+    #region ---------------------------------------------------> Class Methods
+    def NumEmptyFrag(self) -> int:
+        """Get the total number of empty frag.
+
+            Return
+            ------
+            int
+        """
+        #region -------------------------------------------------------->
+        total = 0
+        #------------------------------>
+        for k in self.label:
+            frag = getattr(self, k)
+            #------------------------------>
+            if not frag.coord:
+                total += 1
+        #endregion ----------------------------------------------------->
+
+        return total
+    #---
+    #endregion ------------------------------------------------> Class Methods
 #---
 #endregion ----------------------------------------------------------> Classes
 
@@ -1077,7 +1165,7 @@ def Fragments(
     comp:LIT_Comp,
     protL:int,
     protLoc:list[int],
-    ) -> dict:
+    ) -> Fragment:
     """Creates the dict holding the fragments identified in the analysis.
 
         Parameters
@@ -1097,46 +1185,18 @@ def Fragments(
 
         Returns
         -------
-        dict:
-            {
-                'Exp1' : {
-                    'Coord' : [(x1, x2),...., (xN, xM)],
-                    'CoordN': [(x1, x2),.(NaN, NaN)..., (xN, xM)]
-                    'Seq'   : [Aligned Seq1, ...., Aligned SeqN],
-                    'SeqL   : [Flat List with Seqs1, ...., Flat List with SeqsN],
-                    'Np'    : [Number of peptides1, ...., NpN],
-                    'NpNat  : [Number of native peptides1, ...., NpNatN],
-                    'Nc'    : [Number of cleavages1, ...., NcN],
-                    'NcNat' : [Number of native cleavages1, ....., NcNatN],
-                    'NFrag' : (Number of fragments, Number of fragments Nat),
-                    'NcT'   : (Number of cleavages for the Exp as a whole,
-                               Number of cleavages for the Exp as a whole Nat),
-                },
-                'ExpN' : {},
-            }
-        - All list inside each Exp have the same length
-        - NFrag and NcT are tuples with two values each.
-        - Keys Exp1,...,ExpN are variables and depend on the module calling the
-        method.
+        Fragment instance.
     """
     # Test in test.unit.core.test_method.Test_Fragments
     #region -------------------------------------------------------> Variables
-    dictO = {}
+    fragment = Fragment()
     #endregion ----------------------------------------------------> Variables
 
     #region --------------------------------------------------->
     for c in range(5, df.shape[1]):
-        colK = str(df.columns.values[c])
-        #------------------------------> Prepare dictO
-        dictO[colK]           = {}
-        dictO[colK]['Coord']  = []
-        dictO[colK]['CoordN'] = []
-        dictO[colK]['Seq']    = []
-        dictO[colK]['SeqL']   = []
-        dictO[colK]['Np']     = []
-        dictO[colK]['NpNat']  = []
-        dictO[colK]['Nc']     = []
-        dictO[colK]['NcNat']  = []
+        colK = '-'.join(map(str, df.columns.values[c]))
+        fragment.label.append(colK)
+        labelDetail = LabelDetail()
         #------------------------------> Filter df
         dfE = DFFilterByColN(df, [c], val, comp)
         #------------------------------> Total cleavages for the experiment
@@ -1177,8 +1237,7 @@ def Fragments(
                     ncLNat.append(cf)
                     nctLNat.append(cf)
         else:
-            dictO[colK]['NcT'] = []
-            dictO[colK]['NFrag'] = []
+            setattr(fragment, colK, labelDetail)
             continue
         #------------------------------> Other rows
         for r in range(1, dfE.shape[0]):
@@ -1218,14 +1277,14 @@ def Fragments(
                     cf = ccf
             else:
                 #------------------------------> Add Fragment
-                dictO[colK]['Coord'].append((n,c))
-                dictO[colK]['CoordN'].append((nf,cf))
-                dictO[colK]['Seq'].append(seq)
-                dictO[colK]['SeqL'].append(seqL)
-                dictO[colK]['Np'].append(nP)
-                dictO[colK]['NpNat'].append(npNat)
-                dictO[colK]['Nc'].append(len(set(ncL)))
-                dictO[colK]['NcNat'].append(len(set(ncLNat)))
+                labelDetail.coord.append((n,c))
+                labelDetail.coordN.append((nf,cf))
+                labelDetail.seq.append(seq)
+                labelDetail.seqL.append(seqL)
+                labelDetail.np.append(nP)
+                labelDetail.npNat.append(npNat)
+                labelDetail.nc.append(len(set(ncL)))
+                labelDetail.ncNat.append(len(set(ncLNat)))
                 #------------------------------> Start new Fragment
                 seq    = seqC
                 n      = nc
@@ -1259,22 +1318,25 @@ def Fragments(
                         ncLNat.append(cf)
                         nctLNat.append(cf)
         #------------------------------> Catch the last line
-        dictO[colK]['Coord'].append((n,c))
-        dictO[colK]['CoordN'].append((nf,cf))
-        dictO[colK]['Seq'].append(seq)
-        dictO[colK]['SeqL'].append(seqL)
-        dictO[colK]['Np'].append(nP)
-        dictO[colK]['NpNat'].append(npNat)
-        dictO[colK]['Nc'].append(len(set(ncL)))
-        dictO[colK]['NcNat'].append(len(set(ncLNat)))
+        labelDetail.coord.append((n,c))
+        labelDetail.coordN.append((nf,cf))
+        labelDetail.seq.append(seq)
+        labelDetail.seqL.append(seqL)
+        labelDetail.np.append(nP)
+        labelDetail.npNat.append(npNat)
+        labelDetail.nc.append(len(set(ncL)))
+        labelDetail.ncNat.append(len(set(ncLNat)))
         #------------------------------>
-        dictO[colK]['NcT'] = [len(set(nctL)), len(set(nctLNat))]
+        labelDetail.nCT = (len(set(nctL)), len(set(nctLNat)))
         #------------------------------>
-        nFragN = [x for x in dictO[colK]['CoordN'] if not pd.isna(x[0]) or not pd.isna(x[1])]
-        dictO[colK]['NFrag'] = [len(dictO[colK]['Coord']), len(nFragN)]
+        nFragN = [x for x in labelDetail.coordN if not pd.isna(x[0]) or not pd.isna(x[1])]
+        labelDetail.nFrag = (len(labelDetail.coord), len(nFragN))
+        #------------------------------>
+        setattr(fragment, colK, labelDetail)
     #endregion ------------------------------------------------>
 
-    return dictO
+    print(fragment.label)
+    return fragment
 #---
 
 
