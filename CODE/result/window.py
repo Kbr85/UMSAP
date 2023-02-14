@@ -23,17 +23,18 @@ import wx
 import wx.lib.agw.customtreectrl as wxCT
 
 from config.config import config as mConfig
-from core     import file   as cFile
-from core     import method as cMethod
-from core     import window as cWindow
-from corr     import window as corrWindow
-from dataprep import window as dataWindow
-from limprot  import window as limpWindow
-from main     import menu   as mMenu
-from main     import window as mWindow
-from protprof import window as protWindow
-from result   import file   as resFile
-from tarprot  import window as tarpWindow
+from core     import file      as cFile
+from core     import generator as cGenerator
+from core     import method    as cMethod
+from core     import window    as cWindow
+from corr     import window    as corrWindow
+from dataprep import window    as dataWindow
+from limprot  import window    as limpWindow
+from main     import menu      as mMenu
+from main     import window    as mWindow
+from protprof import window    as protWindow
+from result   import file      as resFile
+from tarprot  import window    as tarpWindow
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -876,32 +877,21 @@ class UMSAPAddDelExport(cWindow.BaseDialogOkCancel):
         #region --------------------------------------------------->
         if checked:
             #------------------------------> Check all children
-            for child in item.GetChildren():
-                child.Set3StateValue(wx.CHK_CHECKED)
-                for gchild in child.GetChildren():
-                    gchild.Set3StateValue(wx.CHK_CHECKED)
+            for child in cGenerator.FindChildren(item):
+                child.Set3StateValue(wx.CHK_CHECKED)                            # type: ignore
             #------------------------------> Check parent or not
-            parent = item.GetParent()
-            if parent is not None:
-                if all([x.IsChecked() for x in parent.GetChildren()]):
-                    parent.Set3StateValue(wx.CHK_CHECKED)
-                    gparent = parent.GetParent()
-                    if gparent is not None:
-                        if all([x.IsChecked() for x in gparent.GetChildren()]):
-                            gparent.Set3StateValue(wx.CHK_CHECKED)
+            for parent in cGenerator.FindParent(item):
+                if isinstance(parent, wxCT.GenericTreeItem):
+                    if all([x.IsChecked() for x in parent.GetChildren()]):
+                        parent.Set3StateValue(wx.CHK_CHECKED)
         else:
             #------------------------------> Uncheck all children
-            for child in item.GetChildren():
-                child.Set3StateValue(wx.CHK_UNCHECKED)
-                for gchild in child.GetChildren():
-                    gchild.Set3StateValue(wx.CHK_UNCHECKED)
+            for child in cGenerator.FindChildren(item):
+                child.Set3StateValue(wx.CHK_UNCHECKED)                          # type: ignore
             #------------------------------> Unchecked all parent
-            parent = item.GetParent()
-            if parent is not None:
-                parent.Set3StateValue(wx.CHK_UNCHECKED)
-                gparent = parent.GetParent()
-                if gparent is not None:
-                    gparent.Set3StateValue(wx.CHK_UNCHECKED)
+            for parent in cGenerator.FindParent(item):
+                if isinstance(parent, wxCT.GenericTreeItem):
+                    parent.Set3StateValue(wx.CHK_UNCHECKED)
         #------------------------------>
         self.Update()
         self.Refresh()

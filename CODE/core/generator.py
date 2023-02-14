@@ -100,4 +100,28 @@ def FindChildren(parent:wx.Window) -> Iterator[wx.Window]:
         yield from FindChildren(child)
     #endregion ------------------------------------------------------> Iterate
 #---
+
+
+def FindParent(child:wx.Window) -> Iterator[wx.Window]:
+    """Find all parents of a widget.
+
+        Parameters
+        ----------
+        child : wx.Window
+            Child widgets to search for.
+
+        Yield
+        -----
+        wx.Window
+            Each parent of child.
+    """
+    # No test
+    #region ---------------------------------------------------------> Iterate
+    parent = child.GetParent()
+    #------------------------------>
+    if parent is not None:
+        yield parent
+        yield from FindParent(parent)
+    #endregion ------------------------------------------------------> Iterate
+#---
 #endregion ----------------------------------------------------------> Methods
