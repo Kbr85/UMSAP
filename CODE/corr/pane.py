@@ -229,29 +229,6 @@ class CorrA(cPane.BaseConfPanel):
         }
         self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #endregion -------------------------------------------> checkUserInput
-
-        #region --------------------------------------------------------> Test
-        if mConfig.core.development:
-            import getpass                                                      # pylint: disable=import-outside-toplevel
-            user = getpass.getuser()
-            if mConfig.core.os == "Darwin":
-                self.wUFile.wTc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
-                fDataTemp = "/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt"
-                self.wIFile.wTc.SetValue(fDataTemp)
-                self.IFileEnter(fDataTemp)
-            elif mConfig.core.os == 'Windows':
-                self.wUFile.wTc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
-                self.wIFile.wTc.SetValue(str(Path(f'C:/Users/{user}/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt')))
-            self.wId.wTc.SetValue("Beta Version Dev")
-            self.wCeroB.wCb.SetValue("Yes")
-            self.wTransMethod.wCb.SetValue("Log2")
-            self.wNormMethod.wCb.SetValue("Median")
-            self.wImputationMethod.wCb.SetValue("Normal Distribution")
-            self.OnImpMethod('fEvent')
-            self.wShift.wTc.SetValue('1.8')
-            self.wWidth.wTc.SetValue('0.3')
-            self.wCorrMethod.wCb.SetValue("Pearson")
-        #endregion -----------------------------------------------------> Test
     #---
     #endregion -----------------------------------------------> Instance setup
 
