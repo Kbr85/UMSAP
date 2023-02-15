@@ -34,7 +34,9 @@ class Configuration():
     lmSelCol:str = 'Select Columns'                                             # lm: Label for wx.MenuItem
     lmAllCol:str = 'All Columns'
     #------------------------------> Keywords for Menu
-    kwCol:str = 'ToolCorrA Select Column'
+    kwCol:str    = 'ToolCorrA Select Column'
+    kwColKey:str = 'col'                                                        # Methods keyword
+    kwBar:str    = 'bar'
     #------------------------------> Options
     oCorrMethod:list = field(default_factory=lambda:                            # Correlation Methods
         ['', 'Pearson', 'Kendall', 'Spearman'])

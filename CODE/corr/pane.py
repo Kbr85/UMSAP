@@ -36,9 +36,6 @@ class CorrA(cPane.BaseConfPanel):
         ----------
         parent: wx.Window
             Parent of the widgets.
-        dataI: corrMethod.UserData or None
-            Initial data provided by the user in a previous analysis.
-            Default is None.
 
         Notes
         -----
@@ -104,11 +101,7 @@ class CorrA(cPane.BaseConfPanel):
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(
-        self,
-        parent:wx.Window,
-        dataI:Optional[corrMethod.UserData]=None,
-        ) -> None:
+    def __init__(self, parent:wx.Window) -> None:
         """"""
         #region -----------------------------------------------> Initial setup
         super().__init__(parent)
@@ -237,10 +230,28 @@ class CorrA(cPane.BaseConfPanel):
         self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #endregion -------------------------------------------> checkUserInput
 
-        #region -------------------------------------------------------> DataI
-        if dataI is not None:
-            self.SetInitialData(dataI)
-        #endregion ----------------------------------------------------> DataI
+        #region --------------------------------------------------------> Test
+        if mConfig.core.development:
+            import getpass                                                      # pylint: disable=import-outside-toplevel
+            user = getpass.getuser()
+            if mConfig.core.os == "Darwin":
+                self.wUFile.wTc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
+                fDataTemp = "/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt"
+                self.wIFile.wTc.SetValue(fDataTemp)
+                self.IFileEnter(fDataTemp)
+            elif mConfig.core.os == 'Windows':
+                self.wUFile.wTc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
+                self.wIFile.wTc.SetValue(str(Path(f'C:/Users/{user}/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt')))
+            self.wId.wTc.SetValue("Beta Version Dev")
+            self.wCeroB.wCb.SetValue("Yes")
+            self.wTransMethod.wCb.SetValue("Log2")
+            self.wNormMethod.wCb.SetValue("Median")
+            self.wImputationMethod.wCb.SetValue("Normal Distribution")
+            self.OnImpMethod('fEvent')
+            self.wShift.wTc.SetValue('1.8')
+            self.wWidth.wTc.SetValue('0.3')
+            self.wCorrMethod.wCb.SetValue("Pearson")
+        #endregion -----------------------------------------------------> Test
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -264,12 +275,12 @@ class CorrA(cPane.BaseConfPanel):
     #endregion ------------------------------------------------> Event Methods
 
     #region ---------------------------------------------------> Class Methods
-    def SetInitialData(self, dataI:corrMethod.UserData) -> bool:                            # pylint: disable=dangerous-default-value
+    def SetInitialData(self, dataI:Optional[corrMethod.UserData]) -> bool:
         """Set initial data.
 
             Parameters
             ----------
-            dataI: corrMethod.UserData
+            dataI: corrMethod.UserData or None
                 Data class representation of the already run analysis.
 
             Returns
@@ -277,38 +288,39 @@ class CorrA(cPane.BaseConfPanel):
             bool
         """
         #region --------------------------------------------------------> Add
-        self.wUFile.wTc.SetValue(str(dataI.uFile))
-        self.wIFile.wTc.SetValue(str(dataI.iFile))
-        self.wId.wTc.SetValue(dataI.ID)
-        self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
-        self.wTransMethod.wCb.SetValue(dataI.tran)
-        self.wNormMethod.wCb.SetValue(dataI.norm)
-        self.wImputationMethod.wCb.SetValue(dataI.imp)
-        self.wCorrMethod.wCb.SetValue(dataI.corr)
-        self.wShift.wTc.SetValue(str(dataI.shift))
-        self.wWidth.wTc.SetValue(str(dataI.width))
-        #------------------------------>
-        if dataI.iFile.is_file() and dataI.iFile.exists:
-            #------------------------------> Add columns with the same order
-            l = []
-            for k in dataI.ocResCtrlFlat:
-                if len(l) == 0:
-                    l.append(k)
-                    continue
-                #------------------------------>
-                if k > l[-1]:
-                    l.append(k)
-                    continue
-                #------------------------------>
+        if dataI is not None:
+            self.wUFile.wTc.SetValue(str(dataI.uFile))
+            self.wIFile.wTc.SetValue(str(dataI.iFile))
+            self.wId.wTc.SetValue(dataI.ID)
+            self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
+            self.wTransMethod.wCb.SetValue(dataI.tran)
+            self.wNormMethod.wCb.SetValue(dataI.norm)
+            self.wImputationMethod.wCb.SetValue(dataI.imp)
+            self.wCorrMethod.wCb.SetValue(dataI.corr)
+            self.wShift.wTc.SetValue(str(dataI.shift))
+            self.wWidth.wTc.SetValue(str(dataI.width))
+            #------------------------------>
+            if dataI.iFile.is_file() and dataI.iFile.exists:
+                #------------------------------> Add columns with the same order
+                l = []
+                for k in dataI.ocResCtrlFlat:
+                    if len(l) == 0:
+                        l.append(k)
+                        continue
+                    #------------------------------>
+                    if k > l[-1]:
+                        l.append(k)
+                        continue
+                    #------------------------------>
+                    self.wLCtrlI.SelectList(l)
+                    self.OnAdd('fEvent')
+                    #------------------------------>
+                    l = [k]
+                #------------------------------> Last past
                 self.wLCtrlI.SelectList(l)
                 self.OnAdd('fEvent')
-                #------------------------------>
-                l = [k]
-            #------------------------------> Last past
-            self.wLCtrlI.SelectList(l)
-            self.OnAdd('fEvent')
-        #------------------------------>
-        self.OnImpMethod('fEvent')
+            #------------------------------>
+            self.OnImpMethod('fEvent')
         #endregion -----------------------------------------------------> Add
 
         return True

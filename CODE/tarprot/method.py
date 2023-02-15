@@ -318,8 +318,13 @@ def R2AA(
         Returns
         -------
         pd.DataFrame
-            AA Label1       LabelN
-            AA -2 -1 1 2 P  -2 -1 1 2 P
+            AA Label1        LabelN
+            AA PN P1 P1' PN' PN P1 P1' PN'
+
+        Notes
+        -----
+        Last Row is Chi and values are -1, 0, 1 for test not done,
+        not-significant and significant respectively.
     """
     # Test in test.unit.tarprot.test_method.Test_R2AA
     #region ---------------------------------------------------> Helper Method
@@ -450,6 +455,15 @@ def R2Hist(
         Returns
         -------
         pd.DataFrame
+            Rec                     Nat
+            Win All       Unique    Win All       Unique
+            Win Exp1 ExpN Exp1 ExpN Win Exp1 ExpN Exp1 ExpN
+            0   0
+            25  0
+
+        Notes
+        -----
+        Histogram windows are constructed as 0-25, 25-next_row.
     """
     # Test in test.unit.tarprot.test_method.Test_R2Hist
     #region ---------------------------------------------------> Variables
@@ -530,6 +544,12 @@ def R2CpR(df:pd.DataFrame, alpha:float, protL:list[int]) -> pd.DataFrame:
         Returns
         -------
         pd.DataFrame
+            Rec       Nat
+            Exp1 ExpN Exp1 ExpN
+
+        Notes
+        -----
+        Index in the returned pd.DataFrame works as 0 based residue number.
     """
     # Test in test.unit.tarprot.test_method.Test_R2CpR
     #region -------------------------------------------------------------> dfO
@@ -591,6 +611,12 @@ def R2CEvol(df:pd.DataFrame, alpha:float, protL:list[int]) -> pd.DataFrame:
         Returns
         -------
         pd.DataFrame
+            Rec       Nat
+            Exp1 ExpN Exp1 ExpN
+
+        Notes
+        -----
+        Index in the returned pd.DataFrame works as 0 based residue number.
     """
     # Test in test.unit.tarprot.test_method.Test_R2CEvol
     #region -------------------------------------------------> Helper Function

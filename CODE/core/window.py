@@ -738,9 +738,15 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
         ----------
         parent: wx.Window or None
             Parent of the window. Default None.
+        statusbar: wx.StatusBar or None
+            To print info from plots to the wx.StatusBar. Default is None.
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent:Optional[wx.Window]=None) -> None:
+    def __init__(
+        self,
+        parent:Optional[wx.Window]=None,
+        statusbar:Optional[wx.StatusBar]=None
+        ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cLNPlot   = getattr(self, 'cLNPlot',   ['Plot 1', 'Plot 2'])
@@ -760,7 +766,7 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
 
         #region -----------------------------------------------------> Widgets
         self.wPlot = cPane.NPlots(
-            self, self.cLNPlot, self.cNPlotCol, statusbar=self.wStatBar)
+            self, self.cLNPlot, self.cNPlotCol, statusbar=statusbar)
         #endregion --------------------------------------------------> Widgets
 
         #region ---------------------------------------------------------> AUI
@@ -1040,7 +1046,7 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
     #---
 
     def ExportImgAll(self) -> bool:
-        """Export all plots to a pdf image.
+        """Export all plots to a tiff image.
 
             Returns
             -------
@@ -1053,11 +1059,15 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
         #region ---------------------------------------------------> Get Path
         if dlg.ShowModal() == wx.ID_OK:
             #------------------------------> Variables
-            p = Path(dlg.GetPath())
+            p    = Path(dlg.GetPath())
+            date = cMethod.StrNow()
             #------------------------------> Export
             try:
                 for k, v in self.wPlot.items():
                     fPath = p / self.cImgName[k].format(self.rDateC)
+                    #------------------------------> Do not overwrite
+                    if fPath.exists():
+                        fPath = fPath.with_stem(f"{fPath.stem} - {date}")
                     #------------------------------> Write
                     v.rFigure.savefig(fPath)
             except Exception as e:
@@ -1255,7 +1265,8 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         #------------------------------>
         k = 1
         for k,v in enumerate(tKeyLabel, start=1):
-            for j,f in enumerate(self.rFragments[v]['Coord']):
+            frag = getattr(self.rFragments, v)
+            for j,f in enumerate(frag.coord):
                 self.rRectsFrag.append(mpatches.Rectangle(
                     (f[0], k-0.2),
                     (f[1]-f[0]),
@@ -1634,9 +1645,12 @@ class ListSelect(BaseDialogOkCancel):
         color:str                   = mConfig.core.cZebra,
         rightDelete:bool            = True,
         style:int                   = wx.LC_REPORT|wx.LC_VIRTUAL,
+        allowEmpty:bool             = False,
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
+        self.rAllowEmpty = allowEmpty
+        #------------------------------>
         if tStLabel:
             self.cStLabel = tStLabel
         else:
@@ -1745,6 +1759,13 @@ class ListSelect(BaseDialogOkCancel):
             -------
             bool
         """
+        #region -------------------------------------------------------->
+        if self.rAllowEmpty:
+            self.EndModal(1)
+            self.Close()
+            return True
+        #endregion ----------------------------------------------------->
+
         #region ----------------------------------------------------> Validate
         if self.wLCtrlO.GetItemCount() > 0:
             self.EndModal(1)

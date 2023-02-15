@@ -46,6 +46,8 @@ class ToolCorrA(cMenu.BaseMenuMainResult):
     #------------------------------>
     cVWinUpdate = mConfig.core.kwWinUpdate
     cVCorrACol  = mConfig.corr.kwCol
+    cVCol       = mConfig.corr.kwColKey
+    cVBar       = mConfig.corr.kwBar
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance Setup
@@ -81,8 +83,8 @@ class ToolCorrA(cMenu.BaseMenuMainResult):
         self.rIDMap = self.rIDMap | rIDMap
         #------------------------------>
         rKeyMap = {
-            self.miColName.GetId(): 'col',
-            self.miColBar.GetId() : 'bar',
+            self.miColName.GetId(): self.cVCol,
+            self.miColBar.GetId() : self.cVBar,
         }
         self.rKeyMap = self.rKeyMap | rKeyMap
         #endregion ----------------------------------------------------> Names

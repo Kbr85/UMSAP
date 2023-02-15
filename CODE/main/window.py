@@ -148,11 +148,14 @@ class WindowMain(cWindow.BaseWindow):
         if win is None:
             #------------------------------> Create tab
             try:
-                tab = self.dTab[name](self.wNotebook, dataI)
+                tab = self.dTab[name](self.wNotebook)
             except Exception as e:
                 msg = f'Failed to create the {name} tab.'
                 cWindow.Notification('errorU', msg=msg, tException=e, parent=self)
                 return False
+            #------------------------------> Initial Data
+            if name != mConfig.main.ntStart:
+                tab.wConf.SetInitialData(dataI)                                 # Tab needs to be fully created before adding initial data
             #------------------------------> Add
             self.wNotebook.AddPage(tab, tab.tTitle, select=True)
         else:
