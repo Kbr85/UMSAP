@@ -1335,7 +1335,6 @@ def Fragments(
         setattr(fragment, colK, labelDetail)
     #endregion ------------------------------------------------>
 
-    print(fragment.label)
     return fragment
 #---
 

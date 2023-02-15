@@ -59,6 +59,8 @@ class Configuration():
     dfcolFirstPart:list[str] = field(default_factory=lambda:
         ['Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF','CtermF'])
     dfcolBLevel:list[str] = field(default_factory=lambda: ['Int', 'P'])
+    #------------------------------> Further Analysis Key in UMSAP File
+    faID:list[str] = field(default_factory=lambda: ['AA', 'Hist'])
     #------------------------------> Colors
     cXaa:str  = 'GREY'
     cCtrl:str = 'black'

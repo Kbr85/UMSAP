@@ -263,7 +263,6 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             self.rProtLength,
             self.rProtLoc,
         )
-        print(self.rFragments.label)
         #------------------------------>
         self.DrawFragments()
         #endregion ------------------------------------------------> Fragments
