@@ -1046,7 +1046,7 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
     #---
 
     def ExportImgAll(self) -> bool:
-        """Export all plots to a pdf image.
+        """Export all plots to a tiff image.
 
             Returns
             -------

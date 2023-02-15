@@ -182,8 +182,8 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
     #------------------------------> Other
     cNPlotCol = 2
     cImgName   = {
-        mConfig.prot.kwVol: '{}-Vol-{}.pdf',
-        mConfig.prot.kwFC : '{}-Evol-{}.pdf',
+        mConfig.prot.kwVol: '{}-Vol-{}.tiff',
+        mConfig.prot.kwFC : '{}-Evol-{}.tiff',
     }
     #------------------------------> Color
     cCV      = mConfig.prot.cCV
@@ -1730,7 +1730,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
     #---
 
     def ExportImgAll(self) -> bool:
-        """Export all plots to a pdf image.
+        """Export all plots to a tiff image.
 
             Returns
             -------

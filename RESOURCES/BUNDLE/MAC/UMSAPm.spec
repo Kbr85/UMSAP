@@ -9,6 +9,8 @@ a = Analysis(['UMSAP.py'],
              datas=[
                 ('RESOURCES', '.'),
                 ('/Users/bravo/miniconda3/envs/wxapps-3.9/lib/python3.9/site-packages/Bio/Align/substitution_matrices/data/BLOSUM62', 'Bio/Align/substitution_matrices/data/'),
+                ('/Users/bravo/miniconda3/envs/wxapps-3.9/lib/python3.9/site-packages/matplotlib/backends/backend_svg.py',            'matplotlib/backends/'),
+                ('/Users/bravo/miniconda3/envs/wxapps-3.9/lib/python3.9/site-packages/matplotlib/backends/backend_mixed.py',          'matplotlib/backends/'),
              ],
              hiddenimports=['wx._xml'],
              hookspath=[],

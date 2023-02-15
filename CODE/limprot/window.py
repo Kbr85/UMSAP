@@ -124,8 +124,8 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
     cSWindow = (1100, 900)
     #------------------------------>
     cImgName   = {
-        mConfig.core.kwMain: '{}-Protein-Fragments.pdf',
-        mConfig.core.kwSec : '{}-Gel-Representation.pdf',
+        mConfig.core.kwMain: '{}-Protein-Fragments.tiff',
+        mConfig.core.kwSec : '{}-Gel-Representation.tiff',
     }
     #endregion --------------------------------------------------> Class setup
 

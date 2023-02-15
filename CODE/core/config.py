@@ -125,10 +125,9 @@ class Configuration():
     sWinPlot:tuple[int,int]    = (560, 560)                                     # Result window size
     #------------------------------> File Extensions
     elData:str         = 'txt files (*.txt)|*.txt'                              # For wx.Dialogs
-    elMatPlotSaveI:str = ('Portable Document File (*.pdf)|*.pdf|'
-                          'Portable Network Graphic (*.png)|*.png|'
+    elMatPlotSaveI:str = ('Portable Network Graphic (*.png)|*.png|'
                           'Scalable Vector Graphic (*.svg)|*.svg|'
-                          'Tagged Image File (*.tif)|*.tif')
+                          'Tagged Image File (*.tiff)|*.tiff')
     elPDB:str          = 'PDB files (*.pdb)|*.pdb'
     elPDF:str          = 'PDF files (*.pdf)|*.pdf'
     elSeq:str          = ('Text files (*.txt)|*.txt|'
@@ -137,7 +136,7 @@ class Configuration():
     #-->
     esData:list[str]         = field(default_factory=lambda: ['.txt'])          # First item is default
     esMatPlotSaveI:list[str] = field(default_factory=lambda:
-        ['pdf', 'png', 'svg', 'tif'])
+        ['png', 'svg', 'tiff'])
     esPDB:list[str]          = field(default_factory=lambda: ['.pdb'])
     esPDF:list[str]          = field(default_factory=lambda: ['.pdf'])
     esSeq:list[str]          = field(default_factory=lambda: ['.txt', '.fasta'])

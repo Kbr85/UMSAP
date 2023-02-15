@@ -743,7 +743,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
     #---
 
     def ExportImgAll(self) -> bool:
-        """Export all plots to a pdf image.
+        """Export all plots to a tiff image.
 
             Returns
             -------
@@ -770,7 +770,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             try:
                 for k, v in self.wPlot.dPlot.items():
                     #------------------------------> file path
-                    fPath = p / self.cImgName[k].format(self.rDateC, col, 'pdf')
+                    fPath = p / self.cImgName[k].format(self.rDateC, col, 'tiff')
                     #------------------------------> Do not overwrite
                     if fPath.exists():
                         fPath = fPath.with_stem(f"{fPath.stem} - {date}")
