@@ -38,9 +38,6 @@ class ProtProf(cPane.BaseConfPanelMod):
         ----------
         parent: wx.Widget
             Parent of the pane
-        dataI: protMethod.UserData or None
-            Initial data provided by the user in a previous analysis.
-            Default is None.
 
         Attributes
         ----------
@@ -98,7 +95,7 @@ class ProtProf(cPane.BaseConfPanelMod):
 
         The result data frame has the following structure:
 
-        Gene Protein Score C1 ..... CN
+        Gene Protein Score C1 .....  CN
         Gene Protein Score RP1 ..... RPN
         Gene Protein Score aveC stdC ave std P Pc FC CI FCz
 
@@ -139,11 +136,7 @@ class ProtProf(cPane.BaseConfPanelMod):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(
-        self,
-        parent,
-        dataI:Optional[protMethod.UserData]=None,
-        ) -> None:
+    def __init__(self, parent) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         #------------------------------> Base attributes and setup
@@ -342,21 +335,16 @@ class ProtProf(cPane.BaseConfPanelMod):
         self.rCheckUnique = [self.wDetectedProt.wTc, self.wGeneName.wTc,
             self.wScore.wTc, self.wExcludeProt.wTc, self.wTcResults]
         #endregion -------------------------------------------> checkUserInput
-
-        #region -------------------------------------------------------> DataI
-        if dataI is not None:
-            self.SetInitialData(dataI)
-        #endregion ----------------------------------------------------> DataI
     #---
     #endregion -----------------------------------------------> Instance setup
 
     #region --------------------------------------------------> Class Methods
-    def SetInitialData(self, dataI:protMethod.UserData) -> bool:
+    def SetInitialData(self, dataI:Optional[protMethod.UserData]) -> bool:
         """Set initial data.
 
             Parameters
             ----------
-            dataI : dict or None
+            dataI : protMethod.UserData or None
                 Data to fill all fields and repeat an analysis. See Notes.
 
             Returns
@@ -364,34 +352,35 @@ class ProtProf(cPane.BaseConfPanelMod):
             True
         """
         #region -------------------------------------------------> Fill Fields
-        self.wUFile.wTc.SetValue(str(dataI.uFile))
-        self.wIFile.wTc.SetValue(str(dataI.iFile))
-        self.wId.wTc.SetValue(dataI.ID)
-        #------------------------------>
-        self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
-        self.wTransMethod.wCb.SetValue(dataI.tran)
-        self.wNormMethod.wCb.SetValue(dataI.norm)
-        self.wImputationMethod.wCb.SetValue(dataI.imp)
-        self.wShift.wTc.SetValue(str(dataI.shift))
-        self.wWidth.wTc.SetValue(str(dataI.width))
-        #------------------------------> Values
-        self.wScoreVal.wTc.SetValue(str(dataI.scoreVal))
-        self.wSample.wCb.SetValue(mConfig.core.oSamplesP[dataI.indSample])
-        self.wAlpha.wTc.SetValue(str(dataI.alpha))
-        self.wCorrectP.wCb.SetValue(dataI.correctedP)
-        #------------------------------> Columns
-        self.wDetectedProt.wTc.SetValue(str(dataI.ocTargetProt))
-        self.wGeneName.wTc.SetValue(str(dataI.ocGene))
-        self.wScore.wTc.SetValue(str(dataI.ocScore))
-        self.wExcludeProt.wTc.SetValue(" ".join(map(str, dataI.ocExcludeR)))
-        self.wTcResults.SetValue(dataI.resCtrl)
-        self.rLbDict[0] = dataI.labelA
-        self.rLbDict[1] = dataI.labelB
-        self.rLbDict['ControlType'] = dataI.ctrlType
-        self.rLbDict['Control'] = dataI.ctrlName
-        #------------------------------>
-        self.OnIFileLoad('fEvent')
-        self.OnImpMethod('fEvent')
+        if dataI is not None:
+            self.wUFile.wTc.SetValue(str(dataI.uFile))
+            self.wIFile.wTc.SetValue(str(dataI.iFile))
+            self.wId.wTc.SetValue(dataI.ID)
+            #------------------------------>
+            self.wCeroB.wCb.SetValue('Yes' if dataI.cero else 'No')
+            self.wTransMethod.wCb.SetValue(dataI.tran)
+            self.wNormMethod.wCb.SetValue(dataI.norm)
+            self.wImputationMethod.wCb.SetValue(dataI.imp)
+            self.wShift.wTc.SetValue(str(dataI.shift))
+            self.wWidth.wTc.SetValue(str(dataI.width))
+            #------------------------------> Values
+            self.wScoreVal.wTc.SetValue(str(dataI.scoreVal))
+            self.wSample.wCb.SetValue(mConfig.core.oSamplesP[dataI.indSample])
+            self.wAlpha.wTc.SetValue(str(dataI.alpha))
+            self.wCorrectP.wCb.SetValue(dataI.correctedP)
+            #------------------------------> Columns
+            self.wDetectedProt.wTc.SetValue(str(dataI.ocTargetProt))
+            self.wGeneName.wTc.SetValue(str(dataI.ocGene))
+            self.wScore.wTc.SetValue(str(dataI.ocScore))
+            self.wExcludeProt.wTc.SetValue(" ".join(map(str, dataI.ocExcludeR)))
+            self.wTcResults.SetValue(dataI.resCtrl)
+            self.rLbDict[0] = dataI.labelA
+            self.rLbDict[1] = dataI.labelB
+            self.rLbDict['ControlType'] = dataI.ctrlType
+            self.rLbDict['Control'] = dataI.ctrlName
+            #------------------------------>
+            self.IFileEnter(dataI.iFile)
+            self.OnImpMethod('fEvent')
         #endregion ----------------------------------------------> Fill Fields
 
         return True

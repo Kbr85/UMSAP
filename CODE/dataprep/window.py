@@ -15,6 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
+import shutil
 from pathlib import Path
 from typing  import Union, Optional, TYPE_CHECKING
 
@@ -26,7 +27,7 @@ from scipy  import stats
 import wx
 
 from config.config import config as mConfig
-from core     import file      as cFile
+from core     import method    as cMethod
 from core     import statistic as cStatistic
 from core     import window    as cWindow
 from main     import menu      as mMenu
@@ -125,9 +126,10 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
     cTText   = 'Statistic Information'
     #------------------------------>
     cLNPlot   = ['Init', 'Transf', 'Norm', 'Imp']
+    cLAttr    = ['dfF', 'dfT', 'dfN', 'dfIm']
     cNPlotCol = 2
     #------------------------------>
-    cSWindow = (900,800)
+    cSWindow = (1000,900)
     #------------------------------>
     cLCStyle = wx.LC_REPORT|wx.LC_SINGLE_SEL|wx.LC_VIRTUAL
     #------------------------------> Label
@@ -390,7 +392,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
 
         #region ----------------------------------------------------> Get Data
         data = []
-        for k,n in enumerate(self.rDataPlot['dfF'].columns.values.tolist()):
+        for k,n in enumerate(self.rDataPlot.dfF.columns.values.tolist()):
             colN = str(self.rDataC.numColList[k])
             data.append([colN, n])
         #endregion -------------------------------------------------> Get Data
@@ -420,7 +422,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region ---------------------------------------------------> Variables
-        x = self.rDataPlot['dfF'].iloc[:,col]
+        x = self.rDataPlot.dfF.iloc[:,col]
         x = x[np.isfinite(x)]
         #------------------------------>
         nBin = cStatistic.HistBin(x)[0]
@@ -457,7 +459,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region ---------------------------------------------------> Variables
-        x = self.rDataPlot['dfT'].iloc[:,col]
+        x = self.rDataPlot.dfT.iloc[:,col]
         x = x[np.isfinite(x)]
         #------------------------------>
         nBin = cStatistic.HistBin(x)[0]
@@ -504,7 +506,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region ---------------------------------------------------> Variables
-        x = self.rDataPlot['dfN'].iloc[:,col]
+        x = self.rDataPlot.dfN.iloc[:,col]
         x = x[np.isfinite(x)]
         #------------------------------>
         nBin = cStatistic.HistBin(x)[0]
@@ -551,7 +553,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region ---------------------------------------------------> Variables
-        x = self.rDataPlot['dfIm'].iloc[:,col]
+        x = self.rDataPlot.dfIm.iloc[:,col]
         x = x[np.isfinite(x)]
         #------------------------------>
         nBin = cStatistic.HistBin(x)[0]
@@ -571,9 +573,9 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             a[0], margin=mConfig.core.MatPlotMargin))
         self.wPlot.dPlot['Imp'].ZoomResetSetValues()
         #------------------------------>
-        idx = np.where(self.rDataPlot['dfF'].iloc[:,col].isna())[0]
+        idx = np.where(self.rDataPlot.dfF.iloc[:,col].isna())[0]
         if len(idx) > 0:
-            y = self.rDataPlot['dfIm'].iloc[idx,col]
+            y = self.rDataPlot.dfIm.iloc[idx,col]
             if y.count() > 0:
                 self.wPlot.dPlot['Imp'].rAxes.hist(
                     y, bins=nBin, density=False, color='C2')
@@ -609,21 +611,21 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         #endregion -------------------------------------------------> Empty DF
 
         #region --------------------------------------------> Calculate values
-        for r,k in enumerate(self.rDataPlot):
+        for r,k in enumerate(self.cLAttr):
             #------------------------------> N
-            df.iat[r,1] = self.rDataPlot[k].shape[0]
+            df.iat[r,1] = getattr(self.rDataPlot, k).shape[0]
             #------------------------------> NA
-            df.iat[r,2] = self.rDataPlot[k].iloc[:,col].isnull().sum()
+            df.iat[r,2] = getattr(self.rDataPlot, k).iloc[:,col].isnull().sum()
             #------------------------------> Mean
-            df.iat[r,3] = self.rDataPlot[k].iloc[:,col].mean()
+            df.iat[r,3] = getattr(self.rDataPlot, k).iloc[:,col].mean()
             #------------------------------> Median
-            df.iat[r,4] = self.rDataPlot[k].iloc[:,col].median()
+            df.iat[r,4] = getattr(self.rDataPlot, k).iloc[:,col].median()
             # #------------------------------> SD
-            df.iat[r,5] = self.rDataPlot[k].iloc[:,col].std()
+            df.iat[r,5] = getattr(self.rDataPlot, k).iloc[:,col].std()
             # #------------------------------> Kurtosis
-            df.iat[r,6] = self.rDataPlot[k].iloc[:,col].kurt()
+            df.iat[r,6] = getattr(self.rDataPlot, k).iloc[:,col].kurt()
             # #------------------------------> Skewness
-            df.iat[r,7] = self.rDataPlot[k].iloc[:,col].skew()
+            df.iat[r,7] = getattr(self.rDataPlot, k).iloc[:,col].skew()
         #endregion -----------------------------------------> Calculate values
 
         #region ---------------------------------------------> Remove Old Text
@@ -655,7 +657,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             self.rDateC = tDate
             self.rDataC = getattr(self.rData, self.rDateC)
         #------------------------------>
-        self.rDataPlot = self.rDataC.dp
+        self.rDataPlot:dataMethod.DataSteps = self.rDataC.dp
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> wx.ListCtrl
@@ -709,13 +711,6 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             -------
             bool
         """
-        #region -----------------------------------> Check Something to Export
-        if self.rLCIdx < 0:
-            msg = 'Please select one of the analyzed columns first.'
-            cWindow.Notification('warning', msg=msg)
-            return False
-        #endregion --------------------------------> Check Something to Export
-
         #region --------------------------------------------------> Dlg window
         dlg = cWindow.DirSelect(parent=self)
         #endregion -----------------------------------------------> Dlg window
@@ -724,14 +719,16 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         if dlg.ShowModal() == wx.ID_OK:
             #------------------------------> Variables
             p = Path(dlg.GetPath())
-            col = self.wLC.wLCS.wLC.OnGetItemText(self.rLCIdx, 1)
             #------------------------------> Export
             try:
-                for k, v in self.rDataPlot.items():
-                    #------------------------------> file path
-                    fPath = p/self.cFileName[k].format(self.rDateC, col, 'txt')
-                    #------------------------------> Write
-                    cFile.WriteDF2CSV(fPath, v)
+                date = self.rDateC.split(' - ')[0]
+                sec = self.cSection.replace(' ', '-')
+                origin = self.rObj.rStepDataP / f'{date}_{sec}'
+                for k in origin.iterdir():
+                    name = f'{self.rDateC} - {(k.stem).split("_")[1]}'
+                    dest = p / f'{name}{k.suffix}'
+                    #------------------------------>
+                    shutil.copy(k, dest)
             except Exception as e:
                 cWindow.Notification(
                     'errorF',
@@ -746,7 +743,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
     #---
 
     def ExportImgAll(self) -> bool:
-        """Export all plots to a pdf image.
+        """Export all plots to a tiff image.
 
             Returns
             -------
@@ -766,13 +763,17 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         #region ---------------------------------------------------> Get Path
         if dlg.ShowModal() == wx.ID_OK:
             #------------------------------> Variables
-            p = Path(dlg.GetPath())
-            col = self.wLC.wLCS.wLC.OnGetItemText(self.rLCIdx, 1)
+            p    = Path(dlg.GetPath())
+            col  = self.wLC.wLCS.wLC.OnGetItemText(self.rLCIdx, 1)
+            date = cMethod.StrNow()
             #------------------------------> Export
             try:
                 for k, v in self.wPlot.dPlot.items():
                     #------------------------------> file path
-                    fPath = p / self.cImgName[k].format(self.rDateC, col, 'pdf')
+                    fPath = p / self.cImgName[k].format(self.rDateC, col, 'tiff')
+                    #------------------------------> Do not overwrite
+                    if fPath.exists():
+                        fPath = fPath.with_stem(f"{fPath.stem} - {date}")
                     #------------------------------> Write
                     v.rFigure.savefig(fPath)
             except Exception as e:

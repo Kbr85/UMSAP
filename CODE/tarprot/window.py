@@ -65,8 +65,8 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             Copy of the data used to plot
         rExp: list[str]
             Experiments in the analysis.
-        rFragments: dict
-            Dict with the info for the fragments. See mMethod.Fragments.
+        rFragments: cMethod.Fragment
+            Class with the info for the fragments. See cMethod.Fragment.
         rFragSelC: list[band, lane, fragment]
             Coordinates for the currently selected fragment. 0 based.
         rFragSelLine: matplotlib line
@@ -100,8 +100,8 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
     cSWindow = (1100, 800)
     #------------------------------>
     cImgName   = {
-        'Main': '{}-Protein-Fragments.pdf',
-        'Sec' : '{}-Intensity-Representation.pdf',
+        mConfig.core.kwMain: '{}-Protein-Fragments.tiff',
+        mConfig.core.kwSec : '{}-Intensity-Representation.tiff',
     }
     #------------------------------>
     cFragment = mConfig.tarp.cFragment
@@ -293,7 +293,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
 
         #region --------------------------------------------------------> Keys
         for k,v in enumerate(self.rExp):
-            tKeyLabel[f"{(v, 'P')}"] = f'{k}'
+            tKeyLabel[f'{v}-P'] = f'{k}'
         #endregion -----------------------------------------------------> Keys
 
         #region -------------------------------------------------------> Super
@@ -361,11 +361,12 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         for k in self.rRectsFrag:
             k.set_linewidth(self.cGelLineWidth)
         #------------------------------> Get Keys
-        fKeys = [f'{(x, "P")}' for x in self.rExp]
+        fKeys = [f'{x}-P' for x in self.rExp]
         #------------------------------> Highlight
         j = 0
         for k in fKeys:
-            for p in self.rFragments[k]['SeqL']:
+            frag = getattr(self.rFragments, k)
+            for p in frag.seqL:
                 if self.rPeptide in p:
                     self.rRectsFrag[j].set_linewidth(2.0)
                 else:
@@ -468,22 +469,18 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             bool
         """
         #region ---------------------------------------------------> Info
+        fragData = getattr(self.rFragments, tKey)
         #------------------------------> Fragments
-        frag =  (f'{self.rFragments[tKey]["NFrag"][0]}'
-                 f'({self.rFragments[tKey]["NFrag"][1]})')
-        clSiteExp = (f'{self.rFragments[tKey]["NcT"][0]}'
-                     f'({self.rFragments[tKey]["NcT"][1]})')
-        seqExp = (f'{sum(self.rFragments[tKey]["Np"])}'
-                  f'({sum(self.rFragments[tKey]["NpNat"])})')
+        frag =  f'{fragData.nFrag[0]}({fragData.nFrag[1]})'
+        clSiteExp = (f'{fragData.nCT[0]}({fragData.nCT[1]})')
+        seqExp = (f'{sum(fragData.np)}({sum(fragData.npNat)})')
         #------------------------------> Res Numbers
-        n, c = self.rFragments[tKey]["Coord"][fragC[1]]
-        nf, cf = self.rFragments[tKey]["CoordN"][fragC[1]]
+        n, c = fragData.coord[fragC[1]]
+        nf, cf = fragData.coordN[fragC[1]]
         #------------------------------> Sequences
-        tNP = (f'{self.rFragments[tKey]["Np"][fragC[1]]}'
-              f'({self.rFragments[tKey]["NpNat"][fragC[1]]})')
+        tNP = (f'{fragData.np[fragC[1]]}({fragData.npNat[fragC[1]]})')
         #------------------------------> Cleavages
-        clSite = (f'{self.rFragments[tKey]["Nc"][fragC[1]]}'
-                  f'({self.rFragments[tKey]["NcNat"][fragC[1]]})')
+        clSite = (f'{fragData.nc[fragC[1]]}({fragData.ncNat[fragC[1]]})')
         #------------------------------> Labels
         expL, fragL = cMethod.StrEqualLength(                                   # pylint: disable=unbalanced-tuple-unpacking
             [self.rExp[fragC[0]], f'Fragment {fragC[1]+1}'])
@@ -502,7 +499,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         self.wText.AppendText(f'{fragL}: Nterm {n}({nf}), Cterm {c}({cf})\n')
         self.wText.AppendText(f'{emptySpace}Peptides {tNP}, Cleavage sites {clSite}\n\n')
         self.wText.AppendText('Sequences in the fragment:\n\n')
-        self.wText.AppendText(f'{self.rFragments[tKey]["Seq"][fragC[1]]}')
+        self.wText.AppendText(f'{fragData.seq[fragC[1]]}')
         self.wText.SetInsertionPoint(0)
         #endregion ------------------------------------------------>
 
@@ -963,9 +960,9 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         x = round(x)
         y = round(y)
         #------------------------------>
-        tKey = f'{(self.rExp[fragC[0]], "P")}'
+        tKey = f'{self.rExp[fragC[0]]}-P'
         #------------------------------>
-        x1, x2 = self.rFragments[tKey]['Coord'][fragC[1]]
+        x1, x2 = getattr(self.rFragments, tKey).coord[fragC[1]]
         #endregion ------------------------------------------------> Variables
 
         #region ------------------------------------------> Highlight Fragment
@@ -1315,9 +1312,7 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
             bool
         """
         #region --------------------------------------------------->
-        xf = round(x)
-        #------------------------------>
-        if not 1 <= xf <= len(self.rPos):
+        if not 1 <= (xf := round(x)) <= len(self.rPos):
             self.wStatBar.SetStatusText('')
             return False
         #------------------------------>
@@ -1368,7 +1363,7 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
             bool
         """
         #region --------------------------------------------------->
-        if 1 > (xf := round(x)) > len(mConfig.core.lAA1):
+        if not 1 <= (xf := round(x)) <= len(mConfig.core.lAA1):
             self.wStatBar.SetStatusText('')
             return False
         aa = mConfig.core.lAA1[xf-1]
@@ -1749,7 +1744,7 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
 
         #region --------------------------------------------------->
         win = f'{df.iat[xf-1, 0]:.0f}-{df.iat[xf, 0]:.0f}'
-        clv = f'{df.iat[xf-1,df.columns.get_loc(idx[self.rNat,self.rAllC,exp])]}'
+        clv = f'{df.iat[xf-1,df.columns.get_loc(idx[self.rNat,self.rAllC,exp])]:.0f}'
         text = (f'Win={win}  Exp={exp}  Cleavages={clv}')
         #------------------------------>
         self.wStatBar.SetStatusText(text)
@@ -2225,6 +2220,11 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
             data.append([str(k+1)])
         self.wLC.wLCS.wLC.SetNewData(data)
         #endregion ------------------------------------------------>
+
+        #region ----------------------------------------------> Update Row Num
+        self._mgr.GetPane(self.wLC).Caption(f'{self.cTList} ({len(data)})')
+        self._mgr.Update()
+        #endregion -------------------------------------------> Update Row Num
 
         return True
     #---

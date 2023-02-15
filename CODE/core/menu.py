@@ -17,6 +17,8 @@
 #region -------------------------------------------------------------> Imports
 from typing import Callable
 
+from pubsub import pub
+
 import wx
 
 from config.config import config as mConfig
@@ -36,6 +38,8 @@ class BaseMenu(wx.Menu):
             Maps menu items's ID with the keywords of the corresponding
             functions in the win, e.g.
             {self.miMon.GetId(): 'mon',}
+        rPubSub: dict
+            Maps wx.MenuItems with pubsub messages.
 
         Notes
         -----
@@ -52,6 +56,7 @@ class BaseMenu(wx.Menu):
         #region -----------------------------------------------> Initial Setup
         self.rIDMap  = {}
         self.rKeyMap = {}
+        self.rPubSub = {}
         #------------------------------>
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
@@ -59,6 +64,23 @@ class BaseMenu(wx.Menu):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event methods
+    def OnPubSub(self, event:wx.MenuEvent) -> bool:
+        """Send PubSub message.
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event
+
+
+            Returns
+            -------
+            bool
+        """
+        pub.sendMessage(self.rPubSub[event.GetId()])
+        return True
+    #---
+
     def OnMethod(self, event:wx.MenuEvent) -> bool:
         """Call the corresponding method in the window with no arguments or
             keyword arguments.
@@ -478,8 +500,8 @@ class BaseMenuMainResultSubMenu(BaseMenu):
     """
     #region -----------------------------------------------------> Class setup
     rKeys = {
-        'Shift': 'Main',
-        'Alt'  : 'Sec',
+        mConfig.core.kwShift: mConfig.core.kwMain,
+        mConfig.core.kwAlt  : mConfig.core.kwSec,
     }
     #------------------------------>
     cLExpImg    = 'Export Image'

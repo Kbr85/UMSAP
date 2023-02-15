@@ -34,7 +34,7 @@ class ToolProtProfFCEvolution(cMenu.BaseMenu):
     cVZoomReset = mConfig.core.kwZoomReset
     cVFCShowAll = mConfig.prot.kwFCShowAll
     #------------------------------>
-    cVFC = 'FC'
+    cVFC = mConfig.prot.kwFC
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
@@ -193,6 +193,7 @@ class ToolProtProfLockPlotScale(cMenu.BaseMenu):
     cVNo       = mConfig.prot.kwScaleNo
     cVAnalysis = mConfig.prot.kwScaleAnalysis
     cVProject  = mConfig.prot.kwScaleProject
+    cVMode     = mConfig.prot.kwMode
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
@@ -218,9 +219,9 @@ class ToolProtProfLockPlotScale(cMenu.BaseMenu):
         self.rIDMap = self.rIDMap | rIDMap
         #------------------------------>
         rKeyMap = {
-            self.miNo.GetId()     : 'mode',
-            self.miDate.GetId()   : 'mode',
-            self.miProject.GetId(): 'mode',
+            self.miNo.GetId()     : self.cVMode,
+            self.miDate.GetId()   : self.cVMode,
+            self.miProject.GetId(): self.cVMode,
         }
         self.rKeyMap = self.rKeyMap | rKeyMap
         #endregion ---------------------------------------------------> nameID

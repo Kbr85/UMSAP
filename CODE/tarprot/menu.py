@@ -166,8 +166,8 @@ class ToolHist(cMenu.BaseMenuFurtherAnalysis):
     cLUniqCleavage = 'Unique Cleavages'
     #------------------------------>
     cVWinUpdate = mConfig.core.kwWinUpdate
-    cVNatKey    = 'nat'
-    cVAllC      = 'allC'
+    cVNatKey    = mConfig.core.kwNat
+    cVAllC      = mConfig.tarp.kwAllCleavage
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
@@ -405,7 +405,7 @@ class ToolCleavageEvol(cMenu.BaseMenuFurtherAnalysis):
     #------------------------------>
     cVWinUpdate = mConfig.core.kwWinUpdate
     #------------------------------>
-    cVMon = 'mon'
+    cVMon = mConfig.tarp.kwMon
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup

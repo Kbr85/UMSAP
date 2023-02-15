@@ -47,14 +47,14 @@ class Configuration():
     #------------------------------> General Options
     cwd:Path         = Path(__file__)                                           # Config file path
     dictVersion:dict = field(default_factory=lambda: {                          # To write into output files
-        'Version': '2.2.1',
+        'Version': '2.2.2',
     })
     dtFormat:str     = '%Y%m%d-%H%M%S'                                          # Date Time format
     fConfig:Path     = Path.home() / '.umsap_config.json'                       # Path to user configuration file
     os:str           = platform.system()                                        # Current operating system
     software:str     = 'UMSAP'                                                  # Software short name
     softwareF:str    = 'Utilities for Mass Spectrometry Analysis of Proteins'   # Software full name
-    version:str      = '2.2.1'                                                  # String to write in the output files
+    version:str      = '2.2.2'                                                  # String to write in the output files
     winNumber:dict   = field(default_factory=lambda: {})                        # Keys: Windows ID - Values: Total number of opened windows, except conf win
     #------------------------------> Name & Title
     ndResCtrlExp:str      = 'Name Dialog Results & Control Experiments'         # Unique name for wx, not shown to user
@@ -111,6 +111,11 @@ class Configuration():
     kwWinUpdate:str    = 'General Tool Update Result Window'
     kwZoomReset:str    = 'General Tool Reset Zoom One'
     kwZoomResetAll:str = 'General Tool Reset Zoom All'
+    kwNat:str          = 'nat'                                                  # Methods keywords
+    kwShift:str        = 'Shift'
+    kwAlt:str          = 'Alt'
+    kwMain:str         = 'Main'
+    kwSec:str          = 'Sec'
     #------------------------------> Sizes
     sLCtrlColI:list[int] = field(default_factory=lambda: [50, 150])             # Size for # Name columns in a wx.ListCtrl
     sTc:tuple[int,int]         = (50, 22)                                       # wx.TextCtrl
@@ -119,10 +124,9 @@ class Configuration():
     sWinPlot:tuple[int,int]    = (560, 560)                                     # Result window size
     #------------------------------> File Extensions
     elData:str         = 'txt files (*.txt)|*.txt'                              # For wx.Dialogs
-    elMatPlotSaveI:str = ('Portable Document File (*.pdf)|*.pdf|'
-                          'Portable Network Graphic (*.png)|*.png|'
+    elMatPlotSaveI:str = ('Portable Network Graphic (*.png)|*.png|'
                           'Scalable Vector Graphic (*.svg)|*.svg|'
-                          'Tagged Image File (*.tif)|*.tif')
+                          'Tagged Image File (*.tiff)|*.tiff')
     elPDB:str          = 'PDB files (*.pdb)|*.pdb'
     elPDF:str          = 'PDF files (*.pdf)|*.pdf'
     elSeq:str          = ('Text files (*.txt)|*.txt|'
@@ -131,7 +135,7 @@ class Configuration():
     #-->
     esData:list[str]         = field(default_factory=lambda: ['.txt'])          # First item is default
     esMatPlotSaveI:list[str] = field(default_factory=lambda:
-        ['pdf', 'png', 'svg', 'tif'])
+        ['png', 'svg', 'tiff'])
     esPDB:list[str]          = field(default_factory=lambda: ['.pdb'])
     esPDF:list[str]          = field(default_factory=lambda: ['.pdf'])
     esSeq:list[str]          = field(default_factory=lambda: ['.txt', '.fasta'])

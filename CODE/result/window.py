@@ -23,17 +23,18 @@ import wx
 import wx.lib.agw.customtreectrl as wxCT
 
 from config.config import config as mConfig
-from core     import file   as cFile
-from core     import method as cMethod
-from core     import window as cWindow
-from corr     import window as corrWindow
-from dataprep import window as dataWindow
-from limprot  import window as limpWindow
-from main     import menu   as mMenu
-from main     import window as mWindow
-from protprof import window as protWindow
-from result   import file   as resFile
-from tarprot  import window as tarpWindow
+from core     import file      as cFile
+from core     import generator as cGenerator
+from core     import method    as cMethod
+from core     import window    as cWindow
+from corr     import window    as corrWindow
+from dataprep import window    as dataWindow
+from limprot  import window    as limpWindow
+from main     import menu      as mMenu
+from main     import window    as mWindow
+from protprof import window    as protWindow
+from result   import file      as resFile
+from tarprot  import window    as tarpWindow
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -55,8 +56,6 @@ class UMSAPControl(cWindow.BaseWindow):
             Keys are section names and values the Window to plot the results
         dSectionTab: dict
             Keys are section names and values the corresponding config.name
-        rCopiedFilter: list
-            Copy of the List of applied filters in a ProtProfPlot Window
         rDataInitPath: Path
             Path to the folder with the Initial files.
         rDataStepPath: Path
@@ -109,8 +108,6 @@ class UMSAPControl(cWindow.BaseWindow):
         self.rSection = {}
         #------------------------------> Reference to plot windows
         self.rWindow = {}
-        #------------------------------> Copied Filters
-        self.rCopiedFilters = []
         #------------------------------>
         super().__init__(parent=parent)
         #------------------------------>
@@ -412,8 +409,6 @@ class UMSAPControl(cWindow.BaseWindow):
                         self.rObj.rData[k][runN]['I'][next(keyI)] = nameF
                     else:
                         fileD[initStep/dataFile] = folderInit/dataFile
-                else:
-                    pass
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
@@ -520,12 +515,14 @@ class UMSAPControl(cWindow.BaseWindow):
             -------
             bool
         """
-        #region --------------------------------------------------->
-        inputF = []
-        folder = []
-        #endregion ------------------------------------------------>
+        #region ---------------------------------------------------> Variables
+        inputF  = []
+        inputFA = []
+        folder  = []
+        fa      = selItems.pop('FA')
+        #endregion ------------------------------------------------> Variables
 
-        #region --------------------------------------------------->
+        #region ---------------------------------------------------> Sections
         for k,v in selItems.items():
             #------------------------------> Analysis
             for item in v:
@@ -556,7 +553,23 @@ class UMSAPControl(cWindow.BaseWindow):
             #------------------------------>
             self.OnClose('fEvent')
             return True
-        #endregion ------------------------------------------------>
+        #endregion ------------------------------------------------> Sections
+
+        #region --------------------------------------------> Further Analysis
+        for k, v in fa.items():
+            for j,w in v.items():
+                date = j.split(' - ')[0]
+                folderP = self.rObj.rStepDataP/f"{date}_{k.replace(' ', '-')}"
+                for fileN in w:
+                    faID, key = fileN.split(' - ')
+                    #------------------------------> Remove from umsap file
+                    try:
+                        name = self.rObj.rData[k][j][faID].pop(key)
+                    except KeyError:
+                        continue                                                # Section was already deleted
+                    #------------------------------> Add to delete file
+                    inputFA.append(folderP/name)
+        #endregion -----------------------------------------> Further Analysis
 
         #region -------------------------------------------------------->
         folder = list(set(folder))
@@ -564,9 +577,8 @@ class UMSAPControl(cWindow.BaseWindow):
         #------------------------------>
         inputF      = list(set(inputF))
         inputNeeded = self.rObj.GetInputFiles()
-        for iFile in inputF:
-            if iFile not in inputNeeded:
-                iFile.unlink()
+        [iFile.unlink() for iFile in inputF if iFile not in inputNeeded]        # pylint: disable=expression-not-assigned
+        [faFile.unlink() for faFile in inputFA]                                 # pylint: disable=expression-not-assigned
         #endregion ----------------------------------------------------->
 
         #region --------------------------------------------------->
@@ -810,6 +822,17 @@ class UMSAPAddDelExport(cWindow.BaseDialogOkCancel):
         ----------
         rSelItem: dict
             Key are sections and values selected items.
+            {
+                Correlation Analysis : ['20230208-182358 - Beta Version Dev', '20230209-110746 - Test - 2'],
+                Proteome Profiling   : ['20230208-182703 - Beta Test Dev'],
+                Targeted Proteolysis : ['20230208-182928 - Beta Test Dev', '20230214-123241 - NO - FA'],
+                'FA':
+                    {
+                        'Targeted Proteolysis' : {
+                            20230208-182928 - Beta Test Dev: ['AA - 20230208-182928-5', 'Hist - 20230208-182928-[25]'],
+                            20230209-112525 - Test - 2     : ['Hist - 20230209-112525-[25]', 'Hist - 20230209-112525_[50]'],
+                    },
+        }
     """
     #region -----------------------------------------------------> Class setup
     cSize = (400, 700)
@@ -818,14 +841,18 @@ class UMSAPAddDelExport(cWindow.BaseDialogOkCancel):
         mConfig.res.lmToolDel: 'Delete',
         mConfig.res.lmToolExp: 'Export',
     }
+    cFAList = mConfig.tarp.faID                                                 # List of FA IDs in UMSAP file
+    cFADict = {                                                                 # Key are section names & values List of FA IDs in UMSAP file
+        mConfig.tarp.nMod: mConfig.tarp.faID,
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
     def __init__(self, obj:resFile.UMSAPFile, mode:str) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.rObj = obj
-        self.mode = mode
+        self.rObj  = obj
+        self.rMode = mode
         #------------------------------>
         self.cLBtn = self.cLBtnOpt[mode]
         self.cTitle = f'{self.cLBtn} data from: {self.rObj.rFileP.name}'
@@ -873,39 +900,34 @@ class UMSAPAddDelExport(cWindow.BaseDialogOkCancel):
             bool
         """
         #region --------------------------------------------------->
-        item     = event.GetItem()                                              # type: ignore
-        checked  = self.wTrc.IsItemChecked(item)
+        item    = event.GetItem()                                               # type: ignore
+        checked = self.wTrc.IsItemChecked(item)
+        #------------------------------>
+        if item.GetData() is not None and checked:                              # Skip for Further Analysis entries
+            event.Skip()
+            return True
+        #------------------------------>
+
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
         if checked:
             #------------------------------> Check all children
-            for child in item.GetChildren():
-                child.Set3StateValue(wx.CHK_CHECKED)
-                for gchild in child.GetChildren():
-                    gchild.Set3StateValue(wx.CHK_CHECKED)
+            for child in cGenerator.FindChildren(item):
+                child.Set3StateValue(wx.CHK_CHECKED)                            # type: ignore
             #------------------------------> Check parent or not
-            parent = item.GetParent()
-            if parent is not None:
-                if all([x.IsChecked() for x in parent.GetChildren()]):
-                    parent.Set3StateValue(wx.CHK_CHECKED)
-                    gparent = parent.GetParent()
-                    if gparent is not None:
-                        if all([x.IsChecked() for x in gparent.GetChildren()]):
-                            gparent.Set3StateValue(wx.CHK_CHECKED)
+            for parent in cGenerator.FindParent(item):
+                if isinstance(parent, wxCT.GenericTreeItem):
+                    if all([x.IsChecked() for x in parent.GetChildren()]):
+                        parent.Set3StateValue(wx.CHK_CHECKED)
         else:
             #------------------------------> Uncheck all children
-            for child in item.GetChildren():
-                child.Set3StateValue(wx.CHK_UNCHECKED)
-                for gchild in child.GetChildren():
-                    gchild.Set3StateValue(wx.CHK_UNCHECKED)
+            for child in cGenerator.FindChildren(item):
+                child.Set3StateValue(wx.CHK_UNCHECKED)                          # type: ignore
             #------------------------------> Unchecked all parent
-            parent = item.GetParent()
-            if parent is not None:
-                parent.Set3StateValue(wx.CHK_UNCHECKED)
-                gparent = parent.GetParent()
-                if gparent is not None:
-                    gparent.Set3StateValue(wx.CHK_UNCHECKED)
+            for parent in cGenerator.FindParent(item):
+                if isinstance(parent, wxCT.GenericTreeItem):
+                    parent.Set3StateValue(wx.CHK_UNCHECKED)
         #------------------------------>
         self.Update()
         self.Refresh()
@@ -928,22 +950,38 @@ class UMSAPAddDelExport(cWindow.BaseDialogOkCancel):
             bool
         """
         #region --------------------------------------------------->
-        root = self.wTrc.GetRootItem()
-        self.rSelItems = {}
+        root    = self.wTrc.GetRootItem()
         checked = []
+        #------------------------------>
+        self.rSelItems = {}
+        if self.rMode == mConfig.res.lmToolDel:
+            self.rSelItems['FA'] = {}
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
         for child in root.GetChildren():                                        # type: ignore
             #------------------------------>
-            childN = child.GetText()
+            childN  = child.GetText()
             gchildL = child.GetChildren()
             #------------------------------>
             for gchild in gchildL:
+                gchildN = gchild.GetText()
+                #------------------------------>
                 if gchild.IsChecked():
-                    self.rSelItems[childN] = self.rSelItems.get(childN, [])
-                    self.rSelItems[childN].append(gchild.GetText())
                     checked.append(True)
+                    #------------------------------>
+                    self.rSelItems[childN] = self.rSelItems.get(childN, [])
+                    self.rSelItems[childN].append(gchildN)
+                #------------------------------>
+                if self.rMode == mConfig.res.lmToolDel:
+                    for fa in gchild.GetChildren():
+                        if fa.IsChecked() and fa.GetData() is not None:
+                            checked.append(True)
+                            #------------------------------>
+                            self.rSelItems['FA'][childN] = self.rSelItems['FA'].get(childN, {})
+                            self.rSelItems['FA'][childN][gchildN] = self.rSelItems['FA'][childN].get(gchildN, [])
+                            #------------------------------>
+                            self.rSelItems['FA'][childN][gchildN].append(fa.GetText())
         #------------------------------>
         if not checked:
             msg = ('There are no analysis selected. Please select something '
@@ -978,17 +1016,27 @@ class UMSAPAddDelExport(cWindow.BaseDialogOkCancel):
         #endregion -------------------------------------------------> Add root
 
         #region ------------------------------------------------> Add elements
-        for a, b in self.rObj.rData.items():
-            #------------------------------> Add section node
+        for a, b in self.rObj.rData.items():                                    # Add section node
             childa = self.wTrc.AppendItem(root, a, ct_type=1)
-            for c, d in b.items():
-                #------------------------------> Add date node
+            for c, d in b.items():                                              # Add date node
                 childb = self.wTrc.AppendItem(childa, c, ct_type=1)
-                for e, f in d['I'].items():
-                    #------------------------------> Add date items
-                    childc = self.wTrc.AppendItem(childb, f"{e}: {f}")
+                #------------------------------>
+                z = self.rMode == mConfig.res.lmToolDel
+                y = any(x in self.cFAList for x in d.keys())
+                if z and y:                                                     # Further Analysis only for Deleting
+                    for x in self.cFADict[a]:
+                        for e in d[x].keys():
+                            self.wTrc.AppendItem(childb, f'{x} - {e}', ct_type=1, data=1)
+                #------------------------------>
+                if a in self.cFADict and z:
+                    childc = self.wTrc.AppendItem(childb, 'Analysis Details')
+                else:
+                    childc = childb
+                #------------------------------>
+                for g, h in d['I'].items():                                     # Add Analysis Details
+                    child = self.wTrc.AppendItem(childc, f"{g}: {h}")
                     self.wTrc.SetItemFont(
-                        childc, mConfig.core.fTreeItemDataFile)
+                        child, mConfig.core.fTreeItemDataFile)
         #endregion ---------------------------------------------> Add elements
 
         #region -------------------------------------------------> Expand root

@@ -40,8 +40,6 @@ class BaseConfTab(wx.Panel):
         ----------
         parent: wx.Window
             Parent of the tab.
-        dataI: dict
-            Initial data provided by the user to redo a previous analysis.
 
         Attributes
         ----------
@@ -60,7 +58,7 @@ class BaseConfTab(wx.Panel):
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent:wx.Window, dataI:dict={}) -> None:                # pylint: disable=dangerous-default-value
+    def __init__(self, parent:wx.Window) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cParent    = parent
@@ -72,7 +70,7 @@ class BaseConfTab(wx.Panel):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        self.wConf = self.dConfPanel[self.cName](self, dataI)
+        self.wConf = self.dConfPanel[self.cName](self)
         #endregion --------------------------------------------------> Widgets
 
         #region -------------------------------------------------> Aui control
@@ -113,18 +111,16 @@ class BaseConfListTab(BaseConfTab):
         ----------
         parent: wx.Window
             Parent of the tab.
-        dataI: dict or None
-            Initial data provided by the user to performed a previous analysis.
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent:wx.Window, dataI:dict={}) -> None:                # pylint: disable=dangerous-default-value
+    def __init__(self, parent:wx.Window) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cLCColLabel  = getattr(self, 'cLCColLabel',  mConfig.core.lLCtrlColNameI)
         self.cSColSize    = getattr(self, 'cLCColSize',   mConfig.core.sLCtrlColI)
         self.cLCPaneTitle = getattr(self, 'cLCPaneTitle', mConfig.core.tpList)
         #------------------------------>
-        super().__init__(parent, dataI=dataI)
+        super().__init__(parent)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets

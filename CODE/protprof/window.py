@@ -16,7 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from typing  import Union, Optional, TYPE_CHECKING
+from typing  import Union, Optional, Literal, TYPE_CHECKING
 
 import numpy  as np
 import pandas as pd
@@ -39,6 +39,13 @@ from protprof import method    as protMethod
 if TYPE_CHECKING:
     from result import window as resWindow
 #endregion ----------------------------------------------------------> Imports
+
+
+LIT_Z_LINES = Literal[
+    f'{mConfig.prot.lmFilterZScore} Line',
+    f'{mConfig.prot.lmFilterHypCurve} Line',
+    f'{mConfig.prot.lmColorSchemePLog2} Line'
+]
 
 
 #region -------------------------------------------------------------> Classes
@@ -175,8 +182,8 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
     #------------------------------> Other
     cNPlotCol = 2
     cImgName   = {
-        'Vol': '{}-Vol-{}.pdf',
-        'FC' : '{}-Evol-{}.pdf',
+        mConfig.prot.kwVol: '{}-Vol-{}.tiff',
+        mConfig.prot.kwFC : '{}-Evol-{}.tiff',
     }
     #------------------------------> Color
     cCV      = mConfig.prot.cCV
@@ -184,6 +191,9 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
     cFCLines = mConfig.prot.cFCLines
     cVol     = mConfig.prot.cVol
     cVolSel  = mConfig.prot.cVolSel
+    #------------------------------> Columns in DF
+    cColGene = mConfig.prot.dfColGene
+    cColProt = mConfig.prot.dfColProt
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -224,32 +234,33 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         self.rLabelProtD  = {}
         self.rPickLabel   = False
         self.rVolLines    = ['Hyperbolic Curve Line']
+        self.rVolLinesZ   = f'{mConfig.prot.lmFilterZScore} Line'
         #------------------------------>
         super().__init__(parent)
         #------------------------------> Methods
         dKeyMethod = {
             #------------------------------> Set Range of Plots
-            mConfig.prot.kwScaleNo      : self.LockScale,
-            mConfig.prot.kwScaleAnalysis: self.LockScale,
-            mConfig.prot.kwScaleProject : self.LockScale,
-            'No Set'      : self.SetRangeNo,
-            'Analysis Set': self.SetRangeDate,
-            'Project Set' : self.SetRangeProject,
+            mConfig.prot.kwScaleNo               : self.LockScale,
+            mConfig.prot.kwScaleAnalysis         : self.LockScale,
+            mConfig.prot.kwScaleProject          : self.LockScale,
+            f'{mConfig.prot.lmScaleNo} Set'      : self.SetRangeNo,
+            f'{mConfig.prot.lmScaleAnalysis} Set': self.SetRangeDate,
+            f'{mConfig.prot.lmScaleProject} Set' : self.SetRangeProject,
             #------------------------------> Get DF for Text Intensities
             mConfig.prot.oControlType['OC']   : self.GetDF4TextInt_OC,
             mConfig.prot.oControlType['OCC']  : self.GetDF4TextInt_OCC,
             mConfig.prot.oControlType['OCR']  : self.GetDF4TextInt_OCR,
             mConfig.prot.oControlType['Ratio']: self.GetDF4TextInt_RatioI,
             #------------------------------> Colors
-            mConfig.prot.kwVolPlotColorConf  : self.VolColorConf,
-            mConfig.prot.kwVolPlotColorScheme: self.VolDraw,
-            'Hyperbolic Curve Color'         : self.GetColorHyCurve,
-            'P - Log2FC Color'               : self.GetColorPLog2FC,
-            'Z Score Color'                  : self.GetColorZScore,
+            mConfig.prot.kwVolPlotColorConf           : self.VolColorConf,
+            mConfig.prot.kwVolPlotColorScheme         : self.VolDraw,
+            f'{mConfig.prot.lmFilterHypCurve} Color'  : self.GetColorHyCurve,
+            f'{mConfig.prot.lmColorSchemePLog2} Color': self.GetColorPLog2FC,
+            f'{mConfig.prot.lmFilterZScore} Color'    : self.GetColorZScore,
             #------------------------------> Lines
-            'Hyperbolic Curve Line': self.DrawLinesHypCurve,
-            'P - Log2FC Line'      : self.DrawLinesPLog2FC,
-            'Z Score Line'         : self.DrawLinesZScore,
+            f'{mConfig.prot.lmFilterHypCurve} Line'  : self.DrawLinesHypCurve,
+            f'{mConfig.prot.lmColorSchemePLog2} Line': self.DrawLinesPLog2FC,
+            f'{mConfig.prot.lmFilterZScore} Line'    : self.DrawLinesZScore,
             #------------------------------> Filter methods
             mConfig.prot.kwFilterApplyAll  : self.FilterApply,
             mConfig.prot.kwFilterApplyAuto : self.AutoFilter,
@@ -538,9 +549,9 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         self.wPlot.dPlot['Vol'].rAxes.set_title(
             f'C: {self.rCondC} RP: {self.rRpC}')
         self.wPlot.dPlot['Vol'].rAxes.set_xlabel(
-            "log$_{2}$[Fold Change]", fontweight="bold")
+            "log$_{2}$[FC]", fontweight="bold")
         self.wPlot.dPlot['Vol'].rAxes.set_ylabel(
-            "-log$_{10}$[P values]", fontweight="bold")
+            "-log$_{10}$[p]", fontweight="bold")
         #------------------------------>
         return True
     #---
@@ -623,11 +634,11 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #------------------------------>
         dX = self.wPlot.dPlot['Vol'].rAxes.get_xlim()
         dX = dX[1] - dX[0]
-        dX = dX * 0.002
+        dX = dX * 0.01
 
         dY = self.wPlot.dPlot['Vol'].rAxes.get_ylim()
         dY = dY[1] - dY[0]
-        dY = dY * 0.002
+        dY = dY * 0.01
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
@@ -649,7 +660,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
                     x+dX,y-dY, prot[1], va='top')
             else:
                 self.rLabelProtD[tKey] = self.wPlot.dPlot['Vol'].rAxes.text(
-                    x+dX,y-dY, prot[1], ha='right',va='top')
+                    x-dX,y-dY, prot[1], ha='right',va='top')
         #------------------------------>
         self.wPlot.dPlot['Vol'].rCanvas.draw()
         #endregion ------------------------------------------------>
@@ -717,7 +728,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         self.wPlot.dPlot['FC'].rAxes.set_xlabel(
             'Relevant Points', fontweight="bold")
         self.wPlot.dPlot['FC'].rAxes.set_ylabel(
-            "log$_{2}$[Fold Change]", fontweight="bold")
+            "log$_{2}$[FC]", fontweight="bold")
         #endregion ---------------------------------------------------> Labels
 
         #region ---------------------------------------------------> X - Axis
@@ -1372,6 +1383,8 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             -------
             bool
         """
+        if self.rVolLinesZ != f'{mConfig.prot.lmFilterZScore} Line':
+            self.dKeyMethod[self.rVolLinesZ]()                                  # type: ignore
         return True
     #---
 
@@ -1477,7 +1490,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region --------------------------------------------------->
-        col = [('Gene','Gene','Gene'),('Protein','Protein','Protein')]
+        col = [self.cColGene, self.cColProt]
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
@@ -1543,9 +1556,9 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
 
     def UpdateResultWindow(
         self,
-        tDate:str='',
-        cond:str='',
-        rp:str='',
+        tDate:str              = '',
+        cond:str               = '',
+        rp:str                 = '',
         corrP:Optional[bool]   = None,
         showAll:Optional[bool] = None,
         t0:Optional[float]     = None,
@@ -1583,7 +1596,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         self.rT0         = t0 if t0 is not None else self.rT0
         self.rS0         = s0 if s0 is not None else self.rS0
         self.rDf         = getattr(self.rData, self.rDateC).df.copy()
-        self.rLabelProt  = [] if tDate else self.rLabelProt
+        self.rLabelProt  = self.UpdateLabelProt() if tDate else self.rLabelProt
         self.rLabelProtD = {} if tDate else self.rLabelProtD
         #endregion -----------------------------------------> Update variables
 
@@ -1622,6 +1635,34 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #endregion ---------------------------------------------------> Title
 
         return True
+    #---
+
+    def UpdateLabelProt(self) -> list:
+        """Update the LabelProt list when the date changes.
+
+            Returns
+            -------
+            list
+                Row in the new self.rDf that matches the gene and protein in
+                self.rLabelProt
+        """
+        #region -------------------------------------------------------->
+        listO = []
+        #------------------------------>
+        for r in self.rLabelProt:
+            dfR = self.rDf.loc[
+                (self.rDf[self.cColGene]==r[1]) & (self.rDf[self.cColProt]==r[2])]
+            #------------------------------>
+            if not dfR.empty:
+                row = dfR.index.tolist()[0]
+                listO.append(
+                    [str(row),
+                     dfR.loc[row,self.cColGene],
+                     dfR.loc[row,self.cColProt]
+                ])
+        #endregion ----------------------------------------------------->
+
+        return listO
     #---
 
     def LockScale(self, mode:str, updatePlot:bool=True) -> bool:
@@ -1689,7 +1730,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
     #---
 
     def ExportImgAll(self) -> bool:
-        """Export all plots to a pdf image.
+        """Export all plots to a tiff image.
 
             Returns
             -------
@@ -1702,7 +1743,8 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #region ---------------------------------------------------> Get Path
         if dlg.ShowModal() == wx.ID_OK:
             #------------------------------> Variables
-            p = Path(dlg.GetPath())
+            p    = Path(dlg.GetPath())
+            date = cMethod.StrNow()
             #------------------------------> Export
             try:
                 for k, v in self.wPlot.dPlot.items():
@@ -1713,6 +1755,9 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
                         nameP = f'{self.rLCIdx}'
                     #------------------------------> file path
                     fPath = p / self.cImgName[k].format(self.rDateC, nameP)
+                    #------------------------------> Do not overwrite
+                    if fPath.exists():
+                        fPath = fPath.with_stem(f"{fPath.stem} - {date}")
                     #------------------------------> Write
                     v.rFigure.savefig(fPath)
             except Exception as e:
@@ -1764,6 +1809,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             tBtnLabel   = 'Add Protein',
             color       = mConfig.core.cZebra,
             tStLabel    = [self.cLProtLAvail, self.cLProtLShow],
+            allowEmpty  = True,
         )
         #------------------------------> Get the selected values
         if dlg.ShowModal():
@@ -1778,9 +1824,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
                     self.rLabelProt.remove(z)
             #------------------------------>
             for y in rowL:
-                if y in self.rLabelProt:
-                    pass
-                else:
+                if y not in self.rLabelProt:
                     self.rLabelProt.append(y)
         #endregion ----------------------------------------------> Get New Sel
 
@@ -1806,11 +1850,12 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             self.rZ,
             self.rP,
             self.rLog2FC,
-            parent=self,
+            parent    = self,
+            checkInit = self.rVolLinesZ,
         )
         #------------------------------>
         if dlg.ShowModal():
-            self.rT0, self.rS0, self.rP, self.rLog2FC, self.rZ = (
+            self.rT0, self.rS0, self.rP, self.rLog2FC, self.rZ, self.rVolLinesZ = (
                 dlg.GetVal())
             self.VolDraw()
         else:
@@ -2205,8 +2250,6 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
                  {'gText': uText, 'updateL': False},
                  f'{self.cLFLog2FC} {op} {val}']
             )
-        else:
-            pass
         #endregion ---------------------------------------> Update Filter List
 
         return True
@@ -2485,7 +2528,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             -------
             bool
         """
-        self.cParent.rCopiedFilters = [x for x in self.rFilterList]             # type: ignore
+        mConfig.prot.lFilter = [x for x in self.rFilterList]                    # type: ignore
         return True
     #---
 
@@ -2497,7 +2540,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             True
         """
         #region ---------------------------------------------------> Copy
-        self.rFilterList = [x for x in self.cParent.rCopiedFilters]             # type: ignore
+        self.rFilterList = [x for x in mConfig.prot.lFilter]                    # type: ignore
         #endregion ------------------------------------------------> Copy
 
         #region --------------------------------------------------->
@@ -2579,6 +2622,12 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         parent: wx.Window
             Parent of the wx.Dialog
     """
+    #region -----------------------------------------------------> Class Setup
+    cNLineNone = f'{mConfig.prot.lmFilterZScore} Line'
+    cNLineHyp  = f'{mConfig.prot.lmFilterHypCurve} Line'
+    cNLinePLog = f'{mConfig.prot.lmColorSchemePLog2} Line'
+    #endregion --------------------------------------------------> Class Setup
+
     #region --------------------------------------------------> Instance setup
     def __init__(
         self,
@@ -2588,6 +2637,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         p:float,
         fc:float,
         parent:Optional[wx.Window]=None,
+        checkInit:LIT_Z_LINES = f'{mConfig.prot.lmFilterZScore} Line',
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -2598,6 +2648,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
             'P' : str(p),
             'FC': str(fc),
         }
+        self.rCheck = checkInit
         #------------------------------>
         super().__init__(title='Color Scheme Parameters', parent=parent)
         #endregion --------------------------------------------> Initial Setup
@@ -2622,7 +2673,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         )
         self.wS0.wTc.SetValue(self.rValInit['S0'])
 
-        self.wsbPFC = wx.StaticBox(self, label='Log2FC - P')
+        self.wsbPFC = wx.StaticBox(self, label='P - Log2[FC]')
         self.wP = cWidget.StaticTextCtrl(
             self.wsbPFC,
             stLabel   = 'P',
@@ -2651,6 +2702,14 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
                     numType='float', vMin=0, vMax=100, nN=1),
         )
         self.wZ.wTc.SetValue(self.rValInit['Z'])
+        self.wStShow = wx.StaticText(self.wsbZ, label='Show')
+        self.wCbNone = wx.RadioButton(
+            self.wsbZ, label='None', name=self.cNLineNone)
+        self.wCbHyp  = wx.RadioButton(
+            self.wsbZ, label='Hyperbolic Curve', name=self.cNLineHyp)
+        self.wCbPLog = wx.RadioButton(
+            self.wsbZ, label='P - Log2[FC] Lines', name=self.cNLinePLog)
+        self.FindWindowByName(self.rCheck, self).SetValue(True)
         #------------------------------>
         self.rWList = {
             'T0': self.wT0.wTc,
@@ -2676,9 +2735,15 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         self.sFlexPFC.Add(self.wFC.wTc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
         self.sFlexPFC.AddGrowableCol(1,1)
 
-        self.sFlexZ = wx.FlexGridSizer(2,2,1,1)
+        self.sFlexZ = wx.FlexGridSizer(4,2,1,1)
         self.sFlexZ.Add(self.wZ.wSt, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
         self.sFlexZ.Add(self.wZ.wTc, 0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexZ.Add(self.wStShow, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexZ.Add(self.wCbNone, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexZ.AddStretchSpacer()
+        self.sFlexZ.Add(self.wCbHyp, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sFlexZ.AddStretchSpacer()
+        self.sFlexZ.Add(self.wCbPLog, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
         self.sFlexZ.AddGrowableCol(1,1)
 
         self.ssbHC = wx.StaticBoxSizer(self.wsbHC, wx.VERTICAL)
@@ -2705,6 +2770,10 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         self.Fit()
         #endregion ---------------------------------------------------> Sizers
 
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_RADIOBUTTON, self.OnCheckChange)
+        #endregion -----------------------------------------------------> Bind
+
         #region ---------------------------------------------> Window position
         if parent is not None:
             self.CenterOnParent()
@@ -2712,7 +2781,23 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
+    #region ---------------------------------------------------> Event Methods
+    def OnCheckChange(self, event:wx.CommandEvent) -> bool:
+        """Update
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        self.rCheck = event.GetEventObject().GetName()
+        return True
+    #---
+
     def OnOK(self, event:wx.CommandEvent) -> bool:
         """Validate user information and close the window.
 
@@ -2744,7 +2829,9 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
 
         return True
     #---
+    #endregion ------------------------------------------------> Event Methods
 
+    #region ---------------------------------------------------> Class methods
     def GetVal(self):
         """Get the selected values.
 
@@ -2758,6 +2845,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
             float(self.wP.wTc.GetValue()),
             float(self.wFC.wTc.GetValue()),
             float(self.wZ.wTc.GetValue()),
+            self.rCheck,
         )
     #---
     #endregion ------------------------------------------------> Class methods
