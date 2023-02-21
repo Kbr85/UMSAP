@@ -157,6 +157,9 @@ class BaseUserData():
             if k == 'indSample':
                 val = PrintIndSample(val)
             #------------------------------>
+            if k == 'method':
+                val = PrintMethod(val)
+            #------------------------------>
             dictO[label] = str(val)
         #endregion ------------------------------------------------>
 
@@ -998,6 +1001,30 @@ def PrintIndSample(val:LIT_IndSample) -> str:
     #region -------------------------------------------------------->
     try:
         valO = mConfig.core.oSamplesP[val]
+    except KeyError:
+        valO = ''
+    #endregion ----------------------------------------------------->
+
+    return valO
+#---
+
+
+def PrintMethod(val) -> str:
+    """Pretty Print Method choice to UMSAP File.
+
+        Parameters
+        ----------
+        val: str
+            One of the 'slope' or 'ttest'.
+
+        Returns
+        -------
+        str
+            Value to print in the UMSAP File
+    """
+    #region -------------------------------------------------------->
+    try:
+        valO = mConfig.tarp.oMethodP[val]
     except KeyError:
         valO = ''
     #endregion ----------------------------------------------------->

@@ -317,7 +317,7 @@ def ProtProf(                                                                   
         #region ---------------------------------------------------> FC CI
         if rDO.rawInt:
             if rDO.indSample == 'i':
-                dfR.loc[:,(cN, tN, 'CI')] = cStatistic.CI_Mean_Diff(             # type: ignore
+                dfR.loc[:,(cN, tN, 'CI')] = cStatistic.CI_Mean_Diff(            # type: ignore
                     dfLogI.iloc[:,colC], dfLogI.iloc[:,colD], rDO.alpha
                 ).loc[:,'CI'].to_numpy()
             else:
@@ -326,7 +326,7 @@ def ProtProf(                                                                   
                     val, rDO.alpha
                 ).loc[:,'CI'].to_numpy()
         else:
-            dfR.loc[:,(cN, tN, 'CI')] = cStatistic.CI_Sample(                  # type: ignore
+            dfR.loc[:,(cN, tN, 'CI')] = cStatistic.CI_Sample(                   # type: ignore
                 dfLogI.iloc[:,colD], rDO.alpha
             ).loc[:,'CI'].to_numpy()
         #endregion ------------------------------------------------> FC CI
@@ -334,20 +334,30 @@ def ProtProf(                                                                   
         #region -----------------------------------------------------------> P
         if rDO.rawInt:
             if rDO.indSample == 'i':
-                dfR.loc[:,(cN,tN,'P')] = stats.ttest_ind(                       # type: ignore
+                p = stats.ttest_ind(                                            # type: ignore
                     dfLogI.iloc[:,colC],
                     dfLogI.iloc[:,colD],
                     equal_var  = False,
                     nan_policy = 'omit',
                     axis       = 1,
                 ).pvalue
+                #------------------------------>
+                if np.ma.isMaskedArray(p):
+                    p = np.ma.filled(p, np.nan)
+                #------------------------------>
+                dfR.loc[:,(cN,tN,'P')] = p
             else:
-                dfR.loc[:,(cN,tN,'P')] = stats.ttest_rel(                       # type: ignore
+                p = stats.ttest_rel(                                            # type: ignore
                     dfLogI.iloc[:,colC],
                     dfLogI.iloc[:,colD],
                     axis       = 1,
                     nan_policy = 'omit',
                 ).pvalue
+                #------------------------------>
+                if np.ma.isMaskedArray(p):
+                    p = np.ma.filled(p, np.nan)
+                #------------------------------>
+                dfR.loc[:,(cN,tN,'P')] = p
         else:
             #------------------------------> Dummy 0 columns
             dfLogI['TEMP_Col_Full_00'] = 0
@@ -356,13 +366,18 @@ def ProtProf(                                                                   
             colCF.append(dfLogI.columns.get_loc('TEMP_Col_Full_00'))
             colCF.append(dfLogI.columns.get_loc('TEMP_Col_Full_01'))
             #------------------------------>
-            dfR.loc[:,(cN,tN,'P')] = stats.ttest_ind(                           # type: ignore
+            p = stats.ttest_ind(                                                # type: ignore
                 dfLogI.iloc[:,colCF],
                 dfLogI.iloc[:,colD],
                 equal_var  = False,
                 nan_policy = 'omit',
                 axis       = 1,
             ).pvalue
+            #------------------------------>
+            if np.ma.isMaskedArray(p):
+                p = np.ma.filled(p, np.nan)
+            #------------------------------>
+            dfR.loc[:,(cN,tN,'P')] = p
         #endregion --------------------------------------------------------> P
 
         #region ----------------------------------------------------------> Pc

@@ -604,6 +604,10 @@ class UMSAPFile():
                 data['seqFile'] = self.rInputFileP / data['seqFileN']
             except KeyError:
                 pass
+        #------------------------------>
+        if data.get('method') is None and tSection == mConfig.tarp.nMod:
+            data['method']    = 'slope'
+            data['indSample'] = 'i'
         #endregion -----------------------------------------------------> Data
 
         #region ---------------------------------------------------> DataClass

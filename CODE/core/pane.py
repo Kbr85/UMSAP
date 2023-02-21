@@ -527,17 +527,18 @@ class BaseConfPanel(
             -------
             bool
         """
+        #region -------------------------------------------------------->
         if self.wImputationMethod.wCb.GetValue() == mConfig.data.lONormDist:
             self.sSizer.Show(self.sImpNorm, show=True, recursive=True)
-            self.sSizer.Layout()
-            self.SetupScrolling()
         else:
             self.sSizer.Show(self.sImpNorm, show=False, recursive=True)
             self.wShift.wTc.SetValue(self.cValShift)
             self.wWidth.wTc.SetValue(self.cValWidth)
-            self.sSizer.Layout()
-            self.SetupScrolling()
         #------------------------------>
+        self.sSizer.Layout()
+        self.SetupScrolling()
+        #endregion ----------------------------------------------------->
+
         return True
     #---
 
@@ -553,9 +554,12 @@ class BaseConfPanel(
             -------
             bool
         """
+        #region -------------------------------------------------------->
         super().OnClear(event)
-        self.OnImpMethod('fEvent')
         #------------------------------>
+        self.OnImpMethod('fEvent')
+        #endregion ----------------------------------------------------->
+
         return True
     #---
     #endregion ------------------------------------------------> Event Methods

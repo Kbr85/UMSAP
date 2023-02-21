@@ -44,6 +44,7 @@ class Configuration():
     lmClearPeptide:str  = 'Peptide'                                             # lm: Label for wx.MenuItem
     lmClearFragment:str = 'Fragment'
     lmClearAll:str      = 'All'
+    lOSampleReq:str     = 't-Test'                                              # Option label
     #------------------------------> Keywords for wx.MenuItems
     kwClearPeptide:str     = 'Tool Clear Peptide'
     kwClearFragment:str    = 'Tool Clear Fragment'
@@ -58,9 +59,26 @@ class Configuration():
     #------------------------------> DF Columns
     dfcolFirstPart:list[str] = field(default_factory=lambda:
         ['Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF','CtermF'])
-    dfcolBLevel:list[str] = field(default_factory=lambda: ['Int', 'P'])
+    dfcolBLevel:list[str]    = field(default_factory=lambda: ['Int', 'P'])
+    #------------------------------> Options
+    oMethod:dict = field(default_factory=lambda: {                              # Analysis Method
+        ''      : '',
+        'Slope' : 'slope',
+        't-Test': 'ttest',
+    })
+    oMethodP:dict = field(default_factory=lambda: {                             # Pretty print method
+        'slope' : 'Slope',
+        'ttest' : 't-Test',
+    })
     #------------------------------> Further Analysis Key in UMSAP File
     faID:list[str] = field(default_factory=lambda: ['AA', 'Hist'])
+    #------------------------------> Messages
+    mRepNum:str = ('To perform a Targeted Proteolysis analysis using Paired '
+                   'Samples the number of replicates in experiments and the '
+                   'control must be the same.\nThe number of replicates in '
+                   'the following experiments does not match the number of '
+                   'replicates in the control.\n{}'
+    )
     #------------------------------> Colors
     cXaa:str  = 'GREY'
     cCtrl:str = 'black'

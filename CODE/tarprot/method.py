@@ -17,10 +17,11 @@
 #region -------------------------------------------------------------> Imports
 from collections import namedtuple
 from dataclasses import dataclass, field
-from typing      import Optional, TYPE_CHECKING
+from typing      import Optional, Literal, Union, TYPE_CHECKING
 
 import numpy  as np
 import pandas as pd
+from scipy import stats
 
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus      import SimpleDocTemplate, Paragraph, Spacer
@@ -36,6 +37,9 @@ if TYPE_CHECKING:
 #endregion ----------------------------------------------------------> Imports
 
 
+LIT_METHOD = Literal['slope', 'ttest']
+
+
 #region -------------------------------------------------------------> Classes
 @dataclass
 class UserData(cMethod.BaseUserData):
@@ -45,13 +49,14 @@ class UserData(cMethod.BaseUserData):
         mConfig.tarp.dfcolFirstPart)
     colSecLevel:list[str] = field(default_factory=lambda:
         mConfig.tarp.dfcolBLevel)
+    method:LIT_METHOD = 'ttest'
     #------------------------------>
     dO:list = field(default_factory=lambda:                                     # Attr printed to UMSAP file
         ['iFileN', 'seqFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift',
-         'width', 'targetProt', 'scoreVal', 'alpha', 'posAA', 'winHist',
-         'ocSeq', 'ocTargetProt', 'ocScore', 'ocColumn', 'resCtrl', 'labelA',
-         'ctrlName', 'dfSeq', 'dfTargetProt', 'dfScore', 'dfResCtrl',
-         'protLength', 'protLoc', 'protDelta',
+         'width', 'method', 'indSample', 'targetProt', 'scoreVal', 'alpha',
+         'posAA', 'winHist', 'ocSeq', 'ocTargetProt', 'ocScore', 'ocColumn',
+         'resCtrl', 'labelA', 'ctrlName', 'dfSeq', 'dfTargetProt', 'dfScore',
+         'dfResCtrl', 'protLength', 'protLoc', 'protDelta',
         ])
     longestKey:int = 17                                                         # Length of the longest Key in dI
     #endregion ------------------------------------------------------> Options
@@ -168,18 +173,11 @@ def TarProt(
         return df
     #---
 
-    def _prepareAncova(
-        rowC:int,
-        row:namedtuple,                                                         # type: ignore
-        rowN:int
-        ) -> pd.DataFrame:
-        """Prepare the dataframe used to perform the ANCOVA test and add the
-            intensity to self.dfR.
+    def _prepareAncova(row:namedtuple, rowN:int) -> pd.DataFrame:
+        """Prepare the dataframe used to perform the ANCOVA test.
 
             Parameters
             ----------
-            rowC: int
-                Current row index in self.dfR.
             row: namedtuple
                 Row from self.dfS.
             rowN: int
@@ -206,8 +204,6 @@ def TarProt(
                 xC.append(1)
                 xCt.append(5)
                 yC.append(row[r])
-        #--------------> Add to self.dfR
-        dfR.at[rowC,(rDO.ctrlName,'Int')] = str(yC)
         #------------------------------> Points
         for k,r in enumerate(rDO.dfResCtrl[1:], start=1):
             #------------------------------>
@@ -219,8 +215,6 @@ def TarProt(
                     xE.append(5)
                     yE.append(row[rE])
             #------------------------------>
-            dfR.at[rowC,(rDO.labelA[k-1], 'Int')] = str(yE)
-            #------------------------------>
             a = xC + xCt
             b = yC + yC
             c = xC + xE
@@ -231,9 +225,129 @@ def TarProt(
             dfAncova.loc[range(0, len(c)),f'Xe{k}'] = c                         # type: ignore
             dfAncova.loc[range(0, len(d)),f'Ye{k}'] = d                         # type: ignore
         #endregion ------------------------------------------------>
+
         return dfAncova
     #---
+
+    def _int_col(k:int, row:tuple) -> bool:
+        """Set the intensity list.
+
+            Parameters
+            ----------
+            k: int
+                Row index
+            row: tuple
+                Row from dfS.
+
+            Returns
+            -------
+            bool
+        """
+        #region ------------------------------------------------------> Helper
+        def _get_list(valT:Union[list,tuple]) -> list:
+            """Get intensities as a list, discarding NA values."""
+            #region --------------------------------------------------->
+            listO = []
+            for x in valT:
+                if np.isfinite(x):
+                    listO.append(x)
+            #endregion ------------------------------------------------>
+
+            return listO
+        #---
+        #endregion ---------------------------------------------------> Helper
+
+        #region --------------------------------------------------------> Ctrl
+        a = rDO.dfResCtrl[0][0][0]
+        b = rDO.dfResCtrl[0][0][-1] + 1
+        dfR.loc[k,(rDO.ctrlName, 'Int')] = str(_get_list(row[a:b]))
+        #endregion -----------------------------------------------------> Ctrl
+
+        #region ---------------------------------------------------------> Exp
+        for j,v in enumerate(rDO.dfResCtrl[1:]):
+            labelC = rDO.labelA[j]
+            a      = v[0][0]
+            b      = v[0][-1] + 1
+            #------------------------------>
+            dfR.loc[k,(labelC, 'Int')] = str(_get_list(row[a:b]))
+        #endregion ------------------------------------------------------> Exp
+
+        return True
+    #---
+
+    def _slope() -> tuple[bool, str, Optional[Exception]]:
+        """Calculate P values using method slope"""
+        #region -------------------------------------------------------->
+        totalRowAncovaDF = 2*max([len(x[0]) for x in rDO.dfResCtrl])
+        nGroups = [2 for x in rDO.dfResCtrl]
+        nGroups = nGroups[1:]
+        idx = pd.IndexSlice
+        idx = idx[rDO.labelA, 'P']
+        #-------------->
+        k = 0
+        for row in dfS.itertuples(index=False):
+            try:
+                dfAncova = _prepareAncova(row, totalRowAncovaDF)
+                #------------------------------> P value
+                dfR.loc[k,idx] = cStatistic.Test_slope(dfAncova, nGroups)       # type: ignore
+            except Exception as e:
+                msg = (f'P value calculation failed for peptide {row[0]}.')
+                return (False, msg, e)
+            k = k + 1
+        #endregion ----------------------------------------------------->
+
+        return (True, '', None)
+    #---
+
+    def _ttest() -> tuple[bool, str, Optional[Exception]]:
+        """Calculate p values using a T-test"""
+        #region -------------------------------------------------------->
+        ctrl = rDO.dfResCtrl[0][0]
+        #------------------------------>
+        if rDO.indSample == 'i':
+            for k,v in enumerate(rDO.dfResCtrl[1:]):
+                colL = rDO.labelA[k]
+                #------------------------------>
+                p = stats.ttest_ind(                                            # type: ignore
+                    dfS.iloc[:,ctrl],
+                    dfS.iloc[:,v[0]],
+                    equal_var   = False,
+                    nan_policy  = 'omit',
+                    axis        = 1,
+                    alternative = 'less',
+                ).pvalue
+                #------------------------------>
+                if np.ma.isMaskedArray(p):
+                    p = np.ma.filled(p, np.nan)
+                #------------------------------>
+                dfR.loc[:,(colL,'P')] = p
+        else:
+            for k,v in enumerate(rDO.dfResCtrl[1:]):
+                colL = rDO.labelA[k]
+                #------------------------------>
+                p = stats.ttest_rel(                        # type: ignore
+                    dfS.iloc[:,ctrl],
+                    dfS.iloc[:,v[0]],
+                    axis        = 1,
+                    nan_policy  = 'omit',
+                    alternative = 'less',
+                ).pvalue
+                #------------------------------>
+                if np.ma.isMaskedArray(p):
+                    p = np.ma.filled(p, np.nan)
+                #------------------------------>
+                dfR.loc[:,(colL,'P')] = p
+        #endregion ----------------------------------------------------->
+
+        return (True,'',None)
     #endregion ---------------------------------------------> Helper Functions
+
+    #region -------------------------------------------------------> Variables
+    method = {
+        'slope' : _slope,
+        'ttest' : _ttest,
+    }
+    #endregion ----------------------------------------------------> Variables
 
     #region ------------------------------------------------> Data Preparation
     tOut = dataMethod.DataPreparation(df=df, rDO=rDO, resetIndex=resetIndex)
@@ -250,25 +364,15 @@ def TarProt(
     dfR, msgError, tException = cMethod.NCResNumbers(dfR, rDO, seqNat=True)
     if dfR.empty:
         return ({}, msgError, tException)
-    #------------------------------> P values
-    totalRowAncovaDF = 2*max([len(x[0]) for x in rDO.dfResCtrl])
-    nGroups = [2 for x in rDO.dfResCtrl]
-    nGroups = nGroups[1:]
-    idx = pd.IndexSlice
-    idx = idx[rDO.labelA, 'P']
-    #-------------->
+    #------------------------------> Average Int
     k = 0
     for row in dfS.itertuples(index=False):
-        try:
-            #------------------------------> Ancova df & Int
-            dfAncova = _prepareAncova(k, row, totalRowAncovaDF)
-            #------------------------------> P value
-            dfR.loc[k,idx] = cStatistic.Test_slope(dfAncova, nGroups)           # type: ignore
-        except Exception as e:
-            msg = (f'P value calculation failed for peptide {row[0]}.')
-            return ({}, msg, e)
-        #------------------------------>
+        _int_col(k, row)
         k = k + 1
+    #------------------------------> P values
+    a,b,c = method[rDO.method]()
+    if not a:
+        return ({}, b, c)
     #endregion -----------------------------------------------------> Analysis
 
     #region -------------------------------------------------> Check P < a
