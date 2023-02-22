@@ -73,6 +73,8 @@ class Configuration():
     lCbCorrectP:str     = 'P Correction'                                        # lCb: Label for wx.ComboBox
     lCbSample:str       = 'Samples'
     lmNatSeq:str        = 'Native Sequence'                                     # lm: Label for wx.MenuItem
+    lmPCorrected:str    = 'Corrected P Values'
+    lmTools:str         = 'Tools'
     lPdError:str        = 'Fatal Error'                                         # lPd: Label for Progress Dialog
     lStAlpha:str        = 'α level'                                             # lSt: Label for wx.StaticText
     lStColAnalysis:str  = 'Columns for Analysis'
@@ -118,6 +120,7 @@ class Configuration():
     kwAlt:str          = 'Alt'
     kwMain:str         = 'Main'
     kwSec:str          = 'Sec'
+    kwPCorrected:str   = 'corrP'
     #------------------------------> Sizes
     sLCtrlColI:list[int] = field(default_factory=lambda: [50, 150])             # Size for # Name columns in a wx.ListCtrl
     sTc:tuple[int,int]         = (50, 22)                                       # wx.TextCtrl
@@ -262,6 +265,8 @@ class Configuration():
                                "of the {} protein.")
     mUnexpectedError:str    = 'UMSAP encountered an unexpected error.'
     mValueBad:str           = "Value '{}' cannot be accepted in {}.\n"
+    mNoPCorr:str            = ('This analysis does not contain information '
+                               'about corrected P values.')
     #-->
     mOneRPlusNum:str    = f'{mValueBad}{mOneRPlusNumText}'
     mNZPlusNum:str      = f'{mValueBad}{mNZPlusNumText}'

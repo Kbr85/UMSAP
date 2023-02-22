@@ -260,7 +260,12 @@ class MenuBarTool(MenuBarMain):
         #region -----------------------------------------> Menu items & Append
         if cName in self.dTool:
             self.mTool = self.dTool[cName](menuData)
-            self.Insert(mConfig.core.toolMenuIdx, self.mTool, '&Tools')
+            #------------------------------>
+            self.Insert(
+                mConfig.core.toolMenuIdx,
+                self.mTool,
+                f'&{mConfig.core.lmTools}'
+            )
         #endregion --------------------------------------> Menu items & Append
     #---
     #endregion ------------------------------------------------ Instance Setup

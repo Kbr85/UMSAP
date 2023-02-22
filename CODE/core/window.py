@@ -1123,7 +1123,6 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         #region -----------------------------------------------> Initial Setup
         self.cSpot = getattr(self, 'cSpot', mConfig.core.cFragments)
         #------------------------------>
-        self.rIdxP = getattr(self, 'rIdxP', pd.IndexSlice[:,:,'Ptost'])
         self.rIdxSeqNC = getattr(
             self, 'rIdxSeqNC', pd.IndexSlice[mConfig.core.dfcolSeqNC,:,:])
         self.rAlpha       = getattr(self, 'rAlpha', 0.05)
