@@ -406,6 +406,7 @@ class LimProt(cPane.BaseConfPanelMod2):
             #------------------------------> Values
             self.wTargetProt.wTc.SetValue(dataI.targetProt)
             self.wScoreVal.wTc.SetValue(str(dataI.scoreVal))
+            self.wCorrectP.wCb.SetValue(dataI.correctedP)
             self.wAlpha.wTc.SetValue(str(dataI.alpha))
             self.wSample.wCb.SetValue(mConfig.core.oSamplesP[dataI.indSample])
             self.wBeta.wTc.SetValue(str(dataI.beta))
@@ -513,8 +514,9 @@ class LimProt(cPane.BaseConfPanelMod2):
             'width'        : self.cLWidth,
             'targetProt'   : self.cLTargetProt,
             'scoreVal'     : self.cLScoreVal,
-            'alpha'        : self.cLAlpha,
             'indSample'    : self.cLSample,
+            'correctedP'   : self.cLCorrectP,
+            'alpha'        : self.cLAlpha,
             'beta'         : self.cLBeta,
             'gamma'        : self.cLGamma,
             'theta'        : self.cLTheta,
@@ -550,6 +552,7 @@ class LimProt(cPane.BaseConfPanelMod2):
             targetProt    = self.wTargetProt.wTc.GetValue(),
             scoreVal      = float(self.wScore.wTc.GetValue()),
             indSample     = self.cOSample[self.wSample.wCb.GetValue()],
+            correctedP    = self.wCorrectP.wCb.GetValue(),
             alpha         = float(self.wAlpha.wTc.GetValue()),
             beta          = float(self.wBeta.wTc.GetValue()),
             gamma         = float(self.wGamma.wTc.GetValue()),
