@@ -482,15 +482,15 @@ class BaseConfPanel(
 
         #region -------------------------------------------------> Check Input
         self.rCheckUserInput = {
-            self.cLuFile      : [self.wUFile.wTc,            mConfig.core.mFileBad  ,    False],
-            self.cLiFile      : [self.wIFile.wTc,            mConfig.core.mFileBad  ,    False],
-            self.cLId         : [self.wId.wTc,               mConfig.core.mValueBad ,    False],
-            self.cLCeroTreat  : [self.wCeroB.wCb,            mConfig.core.mOptionBad,    False],
-            self.cLTransMethod: [self.wTransMethod.wCb,      mConfig.core.mOptionBad,    False],
-            self.cLNormMethod : [self.wNormMethod.wCb,       mConfig.core.mOptionBad,    False],
-            self.cLImputation : [self.wImputationMethod.wCb, mConfig.core.mOptionBad,    False],
-            self.cLShift      : [self.wShift.wTc,            mConfig.core.mOneRPlusNum , False],
-            self.cLWidth      : [self.wWidth.wTc,            mConfig.core.mOneRPlusNum , False],
+            self.cLuFile       : [self.wUFile.wTc,            mConfig.core.mFileBad  ,    False],
+            self.cLiFile       : [self.wIFile.wTc,            mConfig.core.mFileBad  ,    False],
+            self.cLId          : [self.wId.wTc,               mConfig.core.mValueBad ,    False],
+            self.cLCeroTreat   : [self.wCeroB.wCb,            mConfig.core.mOptionBad,    False],
+            self.cLTransMethod : [self.wTransMethod.wCb,      mConfig.core.mOptionBad,    False],
+            self.cLNormMethod  : [self.wNormMethod.wCb,       mConfig.core.mOptionBad,    False],
+            self.cLImputation  : [self.wImputationMethod.wCb, mConfig.core.mOptionBad,    False],
+            self.cLShift       : [self.wShift.wTc,            mConfig.core.mOneRPlusNum , False],
+            self.cLWidth       : [self.wWidth.wTc,            mConfig.core.mOneRPlusNum , False],
         }
         #endregion ----------------------------------------------> Check Input
     #---
@@ -1179,9 +1179,11 @@ class BaseConfPanelMod(BaseConfPanel, cWidget.ResControl):
         self.cLDetectedProt = getattr(self, 'cLDetectedProt', mConfig.core.lStProtein)
         self.cLScoreVal     = getattr(self, 'cLScoreVal',     mConfig.core.lStScoreVal)
         self.cLScoreCol     = getattr(self, 'cLScoreCol',     mConfig.core.lStScoreCol)
-        self.cLSample       = getattr(self, 'Samples',        mConfig.core.lStSample)
+        self.cLSample       = getattr(self, 'cLSamples',      mConfig.core.lStSample)
+        self.cLCorrectP     = getattr(self, 'cLCorrectP',     mConfig.core.lCbCorrectP)
         #------------------------------> Choices
-        self.cOSample = getattr(self, 'cOSample', mConfig.core.oSamples)
+        self.cOSample   = getattr(self, 'cOSample',   mConfig.core.oSamples)
+        self.cOCorrectP = getattr(self, 'cOCorrectP', mConfig.core.oCorrectP)
         #------------------------------> Tooltips
         self.cTTScore    = getattr(self, 'cTTScore',    mConfig.core.ttStScoreCol)
         self.cTTScoreVal = getattr(self, 'cTTScoreVal', mConfig.core.ttStScoreVal)
@@ -1191,7 +1193,8 @@ class BaseConfPanelMod(BaseConfPanel, cWidget.ResControl):
         self.cTTDetectedProt = getattr(
             self, 'cTTDetectedProtL', ('Set the column number containing the '
                                        'detected proteins.\ne.g. 7'))
-        self.cTTSample = getattr(self, 'cTTSample', mConfig.core.ttStSample)
+        self.cTTSample   = getattr(self, 'cTTSample', mConfig.core.ttStSample)
+        self.cTTCorrectP = getattr(self, 'cTTCorrectP', mConfig.core.ttStCorrectP)
         #------------------------------> Parent class init
         BaseConfPanel.__init__(self, parent, rightDelete=rightDelete)
 
@@ -1201,6 +1204,7 @@ class BaseConfPanelMod(BaseConfPanel, cWidget.ResControl):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
+        #------------------------------> Values
         self.wAlpha = cWidget.StaticTextCtrl(
             self.wSbValue,
             stLabel   = self.cLAlpha,
@@ -1210,6 +1214,20 @@ class BaseConfPanelMod(BaseConfPanel, cWidget.ResControl):
             validator = cValidator.NumberList(
                 numType='float', nN=1, vMin=0, vMax=1),
         )
+        self.wSample = cWidget.StaticTextComboBox(
+            self.wSbValue,
+            label     = self.cLSample,
+            choices   = list(self.cOSample.keys()),
+            tooltip   = self.cTTSample,
+            validator = cValidator.IsNotEmpty(),
+        )
+        self.wCorrectP = cWidget.StaticTextComboBox(
+            self.wSbValue,
+            label     = self.cLCorrectP,
+            choices   = list(self.cOCorrectP.keys()),
+            tooltip   = self.cTTCorrectP,
+            validator = cValidator.IsNotEmpty(),
+        )
         self.wScoreVal = cWidget.StaticTextCtrl(
             self.wSbValue,
             stLabel   = self.cLScoreVal,
@@ -1218,6 +1236,7 @@ class BaseConfPanelMod(BaseConfPanel, cWidget.ResControl):
             tcHint    = 'e.g. 320',
             validator = cValidator.NumberList(numType='float', nN=1),
         )
+        #------------------------------> Columns
         self.wDetectedProt = cWidget.StaticTextCtrl(
             self.wSbColumn,
             stLabel   = self.cLDetectedProt,
@@ -1233,13 +1252,6 @@ class BaseConfPanelMod(BaseConfPanel, cWidget.ResControl):
             tcSize    = self.cSTc,
             tcHint    = 'e.g. 39',
             validator = cValidator.NumberList(numType='int', nN=1, vMin=0),
-        )
-        self.wSample = cWidget.StaticTextComboBox(
-            self.wSbValue,
-            label     = self.cLSample,
-            choices   = list(self.cOSample.keys()),
-            tooltip   = self.cTTSample,
-            validator = cValidator.IsNotEmpty(),
         )
         #endregion --------------------------------------------------> Widgets
     #---
@@ -1398,18 +1410,16 @@ class BaseConfPanelMod2(BaseConfPanelMod):
 
         #region -------------------------------------------------> Check Input
         self.rCheckUserInput = {                                                # New order is needed.
-            self.cLuFile       :[self.wUFile.wTc,           mConfig.core.mFileBad       , False],
-            self.cLiFile       :[self.wIFile.wTc,           mConfig.core.mFileBad       , False],
-            f'{self.cLSeqFile}':[self.wSeqFile.wTc,         mConfig.core.mFileBad       , False],
-            self.cLId          :[self.wId.wTc,              mConfig.core.mValueBad      , False],
-            self.cLCeroTreat   :[self.wCeroB.wCb,           mConfig.core.mOptionBad     , False],
-            self.cLTransMethod :[self.wTransMethod.wCb,     mConfig.core.mOptionBad     , False],
-            self.cLNormMethod  :[self.wNormMethod.wCb,      mConfig.core.mOptionBad     , False],
-            self.cLImputation  :[self.wImputationMethod.wCb,mConfig.core.mOptionBad     , False],
-            self.cLShift       :[self.wShift.wTc,           mConfig.core.mOneRPlusNum   , False],
-            self.cLWidth       :[self.wWidth.wTc,           mConfig.core.mOneRPlusNum   , False],
-            self.cLTargetProt  :[self.wTargetProt.wTc,      mConfig.core.mValueBad      , False],
-            self.cLScoreVal    :[self.wScoreVal.wTc,        mConfig.core.mOneRealNum    , False],
+            self.cLuFile        : [self.wUFile.wTc,           mConfig.core.mFileBad       , False],
+            self.cLiFile        : [self.wIFile.wTc,           mConfig.core.mFileBad       , False],
+            f'{self.cLSeqFile}' : [self.wSeqFile.wTc,         mConfig.core.mFileBad       , False],
+            self.cLId           : [self.wId.wTc,              mConfig.core.mValueBad      , False],
+            self.cLCeroTreat    : [self.wCeroB.wCb,           mConfig.core.mOptionBad     , False],
+            self.cLTransMethod  : [self.wTransMethod.wCb,     mConfig.core.mOptionBad     , False],
+            self.cLNormMethod   : [self.wNormMethod.wCb,      mConfig.core.mOptionBad     , False],
+            self.cLImputation   : [self.wImputationMethod.wCb,mConfig.core.mOptionBad     , False],
+            self.cLShift        : [self.wShift.wTc,           mConfig.core.mOneRPlusNum   , False],
+            self.cLWidth        : [self.wWidth.wTc,           mConfig.core.mOneRPlusNum   , False],
         }
         #------------------------------>
         self.rCheckUnique = [self.wSeqCol.wTc, self.wDetectedProt.wTc,

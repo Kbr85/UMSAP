@@ -104,7 +104,6 @@ class ProtProf(cPane.BaseConfPanelMod):
     #region -----------------------------------------------------> Class setup
     cName = mConfig.prot.nPane
     #------------------------------> Label
-    cLCorrectP     = mConfig.core.lCbCorrectP
     cLGene         = mConfig.core.lStGeneName
     cLExcludeProt  = mConfig.core.lStExcludeProt
     cLDetectedProt = 'Detected Proteins'
@@ -113,10 +112,7 @@ class ProtProf(cPane.BaseConfPanelMod):
     cLCtrlType     = mConfig.core.lStCtrlType
     cLCtrlName     = mConfig.core.lStCtrlName
     cLPdRunText    = 'Performing Proteome Profiling'
-    #------------------------------> Choices
-    cOCorrectP  = mConfig.core.oCorrectP
     #------------------------------> Tooltip
-    cTTCorrectP    = mConfig.core.ttStCorrectP
     cTTGene        = mConfig.core.ttStGenName
     cTTExcludeProt = f'{mConfig.core.ttStExcludeProt}{mConfig.core.mOptField}'
     #------------------------------> Control Type
@@ -148,14 +144,6 @@ class ProtProf(cPane.BaseConfPanelMod):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        #------------------------------> Values
-        self.wCorrectP = cWidget.StaticTextComboBox(
-            self.wSbValue,
-            label     = self.cLCorrectP,
-            choices   = list(self.cOCorrectP.keys()),
-            tooltip   = self.cTTCorrectP,
-            validator = cValidator.IsNotEmpty(),
-        )
         #------------------------------> Columns
         self.wGeneName = cWidget.StaticTextCtrl(
             self.wSbColumn,
@@ -310,15 +298,15 @@ class ProtProf(cPane.BaseConfPanelMod):
 
         #region ----------------------------------------------> checkUserInput
         rCheckUserInput = {
-            self.cLScoreVal    : [self.wScoreVal.wTc,     mConfig.core.mOneRealNum    , False],
-            self.cLSample      : [self.wSample.wCb,       mConfig.core.mOptionBad     , False],
-            self.cLAlpha       : [self.wAlpha.wTc,        mConfig.core.mOne01Num      , False],
-            self.cLCorrectP    : [self.wCorrectP.wCb,     mConfig.core.mOptionBad     , False],
-            self.cLDetectedProt: [self.wDetectedProt.wTc, mConfig.core.mOneZPlusNumCol, True ],
-            self.cLGene        : [self.wGeneName.wTc,     mConfig.core.mOneZPlusNumCol, True ],
-            self.cLScoreCol    : [self.wScore.wTc,        mConfig.core.mOneZPlusNumCol, True ],
-            self.cLExcludeProt : [self.wExcludeProt.wTc,  mConfig.core.mNZPlusNumCol  , True ],
-            self.cLResControl  : [self.wTcResults,        mConfig.core.mResCtrl       , False]
+            self.cLScoreVal     : [self.wScoreVal.wTc,     mConfig.core.mOneRealNum    , False],
+            self.cLSample       : [self.wSample.wCb,       mConfig.core.mOptionBad     , False],
+            self.cLAlpha        : [self.wAlpha.wTc,        mConfig.core.mOne01Num      , False],
+            self.cLCorrectP     : [self.wCorrectP.wCb,     mConfig.core.mOptionBad     , False],
+            self.cLDetectedProt : [self.wDetectedProt.wTc, mConfig.core.mOneZPlusNumCol, True ],
+            self.cLGene         : [self.wGeneName.wTc,     mConfig.core.mOneZPlusNumCol, True ],
+            self.cLScoreCol     : [self.wScore.wTc,        mConfig.core.mOneZPlusNumCol, True ],
+            self.cLExcludeProt  : [self.wExcludeProt.wTc,  mConfig.core.mNZPlusNumCol  , True ],
+            self.cLResControl   : [self.wTcResults,        mConfig.core.mResCtrl       , False]
         }
         self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #------------------------------>

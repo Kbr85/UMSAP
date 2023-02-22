@@ -225,37 +225,49 @@ class TarProt(cPane.BaseConfPanelMod2):
         )
         self.sSbValueWid.Add(
             self.wSample.wSt,
-            pos = (0,3),
+            pos    = (0,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sSbValueWid.Add(
             self.wSample.wCb,
-            pos = (0,4),
+            pos    = (0,4),
             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wAAPos.wSt,
+            self.wCorrectP.wSt,
             pos    = (1,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wAAPos.wTc,
+            self.wCorrectP.wCb,
             pos    = (1,4),
-            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wHist.wSt,
+            self.wAAPos.wSt,
             pos    = (2,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wHist.wTc,
+            self.wAAPos.wTc,
             pos    = (2,4),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wHist.wSt,
+            pos    = (3,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wHist.wTc,
+            pos    = (3,4),
             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
             border = 5,
         )
@@ -287,15 +299,17 @@ class TarProt(cPane.BaseConfPanelMod2):
         #region ----------------------------------------------> checkUserInput
         label = f'{self.cLSeqCol} column'
         rCheckUserInput = {
-            self.cLMethod      : [self.wMethod.wCb,       mConfig.core.mOptionBad,      False],
-            self.cLSample      : [self.wSample.wCb,       mConfig.core.mOptionBad,      False],
-            self.cLAlpha       : [self.wAlpha.wTc,        mConfig.core.mOne01Num,       False],
-            self.cLAAPos       : [self.wAAPos.wTc,        mConfig.core.mOneZPlusNum,    False],
-            self.cLHist        : [self.wHist.wTc,         mConfig.core.mValueBad,       False],
-            label              : [self.wSeqCol.wTc,       mConfig.core.mOneZPlusNumCol, True ],
-            self.cLDetectedProt: [self.wDetectedProt.wTc, mConfig.core.mOneZPlusNumCol, True ],
-            self.cLScoreCol    : [self.wScore.wTc,        mConfig.core.mOneZPlusNumCol, True ],
-            self.cLResControl  : [self.wTcResults,        mConfig.core.mResCtrl,        False]
+            self.cLMethod       : [self.wMethod.wCb,       mConfig.core.mOptionBad,      False],
+            self.cLTargetProt   : [self.wTargetProt.wTc,   mConfig.core.mValueBad,       False],
+            self.cLScoreVal     : [self.wScoreVal.wTc,     mConfig.core.mOneRealNum,     False],
+            self.cLAlpha        : [self.wAlpha.wTc,        mConfig.core.mOne01Num,       False],
+            self.cLSample       : [self.wSample.wCb,       mConfig.core.mOptionBad,      False],
+            self.cLAAPos        : [self.wAAPos.wTc,        mConfig.core.mOneZPlusNum,    False],
+            self.cLHist         : [self.wHist.wTc,         mConfig.core.mValueBad,       False],
+            label               : [self.wSeqCol.wTc,       mConfig.core.mOneZPlusNumCol, True ],
+            self.cLDetectedProt : [self.wDetectedProt.wTc, mConfig.core.mOneZPlusNumCol, True ],
+            self.cLScoreCol     : [self.wScore.wTc,        mConfig.core.mOneZPlusNumCol, True ],
+            self.cLResControl   : [self.wTcResults,        mConfig.core.mResCtrl,        False]
         }
         self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #endregion -------------------------------------------> checkUserInput
@@ -324,6 +338,7 @@ class TarProt(cPane.BaseConfPanelMod2):
             self.wMethod.wCb.SetValue('t-Test')
             self.wTargetProt.wTc.SetValue('efeB')
             self.wScoreVal.wTc.SetValue('200')
+            self.wCorrectP.wCb.SetValue('None')
             self.wAAPos.wTc.SetValue('5')
             self.wHist.wTc.SetValue('25')
             self.wAlpha.wTc.SetValue('0.05')

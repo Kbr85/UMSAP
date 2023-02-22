@@ -222,62 +222,74 @@ class LimProt(cPane.BaseConfPanelMod2):
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wAlpha.wSt,
+            self.wCorrectP.wSt,
             pos    = (3,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wAlpha.wTc,
+            self.wCorrectP.wCb,
             pos    = (3,2),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wBeta.wSt,
+            self.wAlpha.wSt,
             pos    = (0,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wBeta.wTc,
+            self.wAlpha.wTc,
             pos    = (0,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wGamma.wSt,
+            self.wBeta.wSt,
             pos    = (1,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wGamma.wTc,
+            self.wBeta.wTc,
             pos    = (1,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wTheta.wSt,
+            self.wGamma.wSt,
             pos    = (2,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wTheta.wTc,
+            self.wGamma.wTc,
             pos    = (2,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wThetaMax.wSt,
+            self.wTheta.wSt,
             pos    = (3,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wThetaMax.wTc,
+            self.wTheta.wTc,
             pos    = (3,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wThetaMax.wSt,
+            pos    = (4,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wThetaMax.wTc,
+            pos    = (4,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
@@ -301,15 +313,17 @@ class LimProt(cPane.BaseConfPanelMod2):
         #region ----------------------------------------------> checkUserInput
         label = f'{self.cLSeqCol} column'
         rCheckUserInput = {
-            self.cLSample       : [ self.wSample.wCb,       mConfig.core.mOptionBad,      False],
-            self.cLAlpha        : [ self.wAlpha.wTc,        mConfig.core.mOne01Num,       False],
-            self.cLBeta         : [ self.wBeta.wTc,         mConfig.core.mOne01Num,       False],
-            self.cLGamma        : [ self.wGamma.wTc,        mConfig.core.mOne01Num,       False],
-            self.cLTheta        : [ self.wTheta.wTc,        mConfig.core.mOneZPlusNumCol, False],
-            label               : [ self.wSeqCol.wTc,       mConfig.core.mOneZPlusNumCol, True ],
-            self.cLDetectedProt : [ self.wDetectedProt.wTc, mConfig.core.mOneZPlusNumCol, True ],
-            self.cLScoreCol     : [ self.wScore.wTc,        mConfig.core.mOneZPlusNumCol, True ],
-            self.cLResControl   : [ self.wTcResults,        mConfig.core.mResCtrl       , False],
+            self.cLTargetProt   : [self.wTargetProt.wTc,   mConfig.core.mValueBad      , False],
+            self.cLScoreVal     : [self.wScoreVal.wTc,     mConfig.core.mOneRealNum    , False],
+            self.cLSample       : [self.wSample.wCb,       mConfig.core.mOptionBad,      False],
+            self.cLAlpha        : [self.wAlpha.wTc,        mConfig.core.mOne01Num,       False],
+            self.cLBeta         : [self.wBeta.wTc,         mConfig.core.mOne01Num,       False],
+            self.cLGamma        : [self.wGamma.wTc,        mConfig.core.mOne01Num,       False],
+            self.cLTheta        : [self.wTheta.wTc,        mConfig.core.mOneZPlusNumCol, False],
+            label               : [self.wSeqCol.wTc,       mConfig.core.mOneZPlusNumCol, True ],
+            self.cLDetectedProt : [self.wDetectedProt.wTc, mConfig.core.mOneZPlusNumCol, True ],
+            self.cLScoreCol     : [self.wScore.wTc,        mConfig.core.mOneZPlusNumCol, True ],
+            self.cLResControl   : [self.wTcResults,        mConfig.core.mResCtrl       , False],
         }
         self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #endregion -------------------------------------------> checkUserInput
@@ -336,6 +350,7 @@ class LimProt(cPane.BaseConfPanelMod2):
             self.wImputationMethod.wCb.SetValue('Normal Distribution')
             self.wTargetProt.wTc.SetValue('Mis18alpha')
             self.wScoreVal.wTc.SetValue('10')
+            self.wCorrectP.wCb.SetValue('Bonferroni')
             self.wAlpha.wTc.SetValue('0.05')
             self.wBeta.wTc.SetValue('0.05')
             self.wGamma.wTc.SetValue('0.8')
