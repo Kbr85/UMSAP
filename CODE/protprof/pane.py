@@ -105,7 +105,6 @@ class ProtProf(cPane.BaseConfPanelMod):
     cName = mConfig.prot.nPane
     #------------------------------> Label
     cLCorrectP     = mConfig.core.lCbCorrectP
-    cLSample       = mConfig.core.lCbSample
     cLGene         = mConfig.core.lStGeneName
     cLExcludeProt  = mConfig.core.lStExcludeProt
     cLDetectedProt = 'Detected Proteins'
@@ -116,10 +115,8 @@ class ProtProf(cPane.BaseConfPanelMod):
     cLPdRunText    = 'Performing Proteome Profiling'
     #------------------------------> Choices
     cOCorrectP  = mConfig.core.oCorrectP
-    cOSample    = mConfig.core.oSamples
     #------------------------------> Tooltip
     cTTCorrectP    = mConfig.core.ttStCorrectP
-    cTTSample      = mConfig.core.ttStSample
     cTTGene        = mConfig.core.ttStGenName
     cTTExcludeProt = f'{mConfig.core.ttStExcludeProt}{mConfig.core.mOptField}'
     #------------------------------> Control Type
@@ -157,13 +154,6 @@ class ProtProf(cPane.BaseConfPanelMod):
             label     = self.cLCorrectP,
             choices   = list(self.cOCorrectP.keys()),
             tooltip   = self.cTTCorrectP,
-            validator = cValidator.IsNotEmpty(),
-        )
-        self.wSample = cWidget.StaticTextComboBox(
-            self.wSbValue,
-            label     = self.cLSample,
-            choices   = list(self.cOSample.keys()),
-            tooltip   = self.cTTSample,
             validator = cValidator.IsNotEmpty(),
         )
         #------------------------------> Columns

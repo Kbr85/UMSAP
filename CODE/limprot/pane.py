@@ -98,22 +98,18 @@ class LimProt(cPane.BaseConfPanelMod2):
     cLGamma        = "γ level"
     cLTheta        = "Θ value"
     cLThetaMax     = "Θmax value"
-    cLSample       = 'Samples'
     cLLane         = mConfig.limp.lStLane
     cLBand         = mConfig.limp.lStBand
     cLCtrlName     = mConfig.core.lStCtrlName
     cLDFFirstThree = mConfig.limp.dfcolFirstPart
     cLDFThirdLevel = mConfig.limp.dfcolCLevel
     cLPdRunText    = 'Performing Limited Proteolysis analysis'
-    #------------------------------> Choices
-    cOSample = mConfig.core.oSamples
     #------------------------------> Hints
     cHBeta     = 'e.g. 0.05'
     cHGamma    = 'e.g. 0.8'
     cHTheta    = 'e.g. 4.5'
     cHThetaMax = 'e.g. 8'
     #------------------------------> Tooltips
-    cTTSample = mConfig.core.ttStSample
     cTTBeta = ('Beta level for the analysis.\ne.g. 0.05')
     cTTGamma = ('Confidence limit level for estimating the measuring '
                 'precision.\ne.g. 0.80')
@@ -177,13 +173,6 @@ class LimProt(cPane.BaseConfPanelMod2):
             tcHint    = self.cHThetaMax,
             validator = cValidator.NumberList(
                 numType='float', nN=1, vMin=0.01),
-        )
-        self.wSample = cWidget.StaticTextComboBox(
-            self.wSbValue,
-            label     = self.cLSample,
-            choices   = list(self.cOSample.keys()),
-            tooltip   = self.cTTSample,
-            validator = cValidator.IsNotEmpty(),
         )
         #endregion --------------------------------------------------> Widgets
 

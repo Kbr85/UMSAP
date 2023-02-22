@@ -97,7 +97,6 @@ class TarProt(cPane.BaseConfPanelMod2):
     cName = mConfig.tarp.nPane
     #------------------------------> Label
     cLMethod    = 'Method'
-    cLSample    = mConfig.core.lCbSample
     cLAAPos     = 'AA Positions'
     cLHist      = 'Histogram Windows'
     cLExp       = mConfig.tarp.lStExp
@@ -110,14 +109,12 @@ class TarProt(cPane.BaseConfPanelMod2):
     cHHist  = 'e.g. 50 or 50 100 200'
     #------------------------------> Tooltip
     cTTMethod = 'Select the Analysis Method.'
-    cTTSample = mConfig.core.ttStSample
     cTTAAPos = (f'Number of positions around the cleavage sites to consider '
         f'for the AA distribution analysis.\ne.g. 5{mConfig.core.mOptField}')
     cTTHist = (f'Size of the histogram windows. One number will result in '
         f'equally spaced windows. Multiple numbers allow defining custom sized '
         f'windows.\ne.g. 50 or 0 50 100 150 500{mConfig.core.mOptField}')
     #------------------------------> Options
-    cOSample    = mConfig.core.oSamples
     cOMethod    = mConfig.tarp.oMethod
     cOSampleReq = mConfig.tarp.lOSampleReq
     #------------------------------> Default Values
@@ -165,13 +162,6 @@ class TarProt(cPane.BaseConfPanelMod2):
             label     = self.cLMethod,
             choices   = list(self.cOMethod.keys()), # type: ignore
             tooltip   = self.cTTMethod,
-            validator = cValidator.IsNotEmpty(),
-        )
-        self.wSample = cWidget.StaticTextComboBox(
-            self.wSbValue,
-            label     = self.cLSample,
-            choices   = list(self.cOSample.keys()),
-            tooltip   = self.cTTSample,
             validator = cValidator.IsNotEmpty(),
         )
         #endregion --------------------------------------------------> Widgets

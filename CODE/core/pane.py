@@ -1179,6 +1179,9 @@ class BaseConfPanelMod(BaseConfPanel, cWidget.ResControl):
         self.cLDetectedProt = getattr(self, 'cLDetectedProt', mConfig.core.lStProtein)
         self.cLScoreVal     = getattr(self, 'cLScoreVal',     mConfig.core.lStScoreVal)
         self.cLScoreCol     = getattr(self, 'cLScoreCol',     mConfig.core.lStScoreCol)
+        self.cLSample       = getattr(self, 'Samples',        mConfig.core.lStSample)
+        #------------------------------> Choices
+        self.cOSample = getattr(self, 'cOSample', mConfig.core.oSamples)
         #------------------------------> Tooltips
         self.cTTScore    = getattr(self, 'cTTScore',    mConfig.core.ttStScoreCol)
         self.cTTScoreVal = getattr(self, 'cTTScoreVal', mConfig.core.ttStScoreVal)
@@ -1188,6 +1191,7 @@ class BaseConfPanelMod(BaseConfPanel, cWidget.ResControl):
         self.cTTDetectedProt = getattr(
             self, 'cTTDetectedProtL', ('Set the column number containing the '
                                        'detected proteins.\ne.g. 7'))
+        self.cTTSample = getattr(self, 'cTTSample', mConfig.core.ttStSample)
         #------------------------------> Parent class init
         BaseConfPanel.__init__(self, parent, rightDelete=rightDelete)
 
@@ -1229,6 +1233,13 @@ class BaseConfPanelMod(BaseConfPanel, cWidget.ResControl):
             tcSize    = self.cSTc,
             tcHint    = 'e.g. 39',
             validator = cValidator.NumberList(numType='int', nN=1, vMin=0),
+        )
+        self.wSample = cWidget.StaticTextComboBox(
+            self.wSbValue,
+            label     = self.cLSample,
+            choices   = list(self.cOSample.keys()),
+            tooltip   = self.cTTSample,
+            validator = cValidator.IsNotEmpty(),
         )
         #endregion --------------------------------------------------> Widgets
     #---

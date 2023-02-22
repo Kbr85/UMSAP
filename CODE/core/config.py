@@ -85,6 +85,7 @@ class Configuration():
     lStResCtrlS:str     = 'Results - Control'
     lStScoreCol:str     = 'Score'
     lStScoreVal:str     = 'Score Value'
+    lStSample:str       = 'Sample'
     #------------------------------> wx.ListCtrl Column names
     lLCtrlColNameI:list[str] = field(default_factory=lambda: ['#', 'Name'])
     #------------------------------> Tooltips
