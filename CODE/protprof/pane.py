@@ -298,15 +298,15 @@ class ProtProf(cPane.BaseConfPanelMod):
 
         #region ----------------------------------------------> checkUserInput
         rCheckUserInput = {
-            self.cLScoreVal     : [self.wScoreVal.wTc,     mConfig.core.mOneRealNum    , False],
-            self.cLSample       : [self.wSample.wCb,       mConfig.core.mOptionBad     , False],
-            self.cLAlpha        : [self.wAlpha.wTc,        mConfig.core.mOne01Num      , False],
-            self.cLCorrectP     : [self.wCorrectP.wCb,     mConfig.core.mOptionBad     , False],
+            self.cLScoreVal     : [self.wScoreVal.wTc,     mConfig.core.mOneRealNum,     False],
+            self.cLSample       : [self.wSample.wCb,       mConfig.core.mOptionBad,      False],
+            self.cLAlpha        : [self.wAlpha.wTc,        mConfig.core.mOne01Num,       False],
+            self.cLCorrectP     : [self.wCorrectP.wCb,     mConfig.core.mOptionBad,      False],
             self.cLDetectedProt : [self.wDetectedProt.wTc, mConfig.core.mOneZPlusNumCol, True ],
             self.cLGene         : [self.wGeneName.wTc,     mConfig.core.mOneZPlusNumCol, True ],
             self.cLScoreCol     : [self.wScore.wTc,        mConfig.core.mOneZPlusNumCol, True ],
-            self.cLExcludeProt  : [self.wExcludeProt.wTc,  mConfig.core.mNZPlusNumCol  , True ],
-            self.cLResControl   : [self.wTcResults,        mConfig.core.mResCtrl       , False]
+            self.cLExcludeProt  : [self.wExcludeProt.wTc,  mConfig.core.mNZPlusNumCol,   True ],
+            self.cLResControl   : [self.wTcResults,        mConfig.core.mResCtrl,        False]
         }
         self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #------------------------------>

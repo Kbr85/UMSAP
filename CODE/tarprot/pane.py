@@ -304,6 +304,7 @@ class TarProt(cPane.BaseConfPanelMod2):
             self.cLScoreVal     : [self.wScoreVal.wTc,     mConfig.core.mOneRealNum,     False],
             self.cLAlpha        : [self.wAlpha.wTc,        mConfig.core.mOne01Num,       False],
             self.cLSample       : [self.wSample.wCb,       mConfig.core.mOptionBad,      False],
+            self.cLCorrectP     : [self.wCorrectP.wCb,     mConfig.core.mOptionBad,      False],
             self.cLAAPos        : [self.wAAPos.wTc,        mConfig.core.mOneZPlusNum,    False],
             self.cLHist         : [self.wHist.wTc,         mConfig.core.mValueBad,       False],
             label               : [self.wSeqCol.wTc,       mConfig.core.mOneZPlusNumCol, True ],

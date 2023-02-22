@@ -313,9 +313,10 @@ class LimProt(cPane.BaseConfPanelMod2):
         #region ----------------------------------------------> checkUserInput
         label = f'{self.cLSeqCol} column'
         rCheckUserInput = {
-            self.cLTargetProt   : [self.wTargetProt.wTc,   mConfig.core.mValueBad      , False],
-            self.cLScoreVal     : [self.wScoreVal.wTc,     mConfig.core.mOneRealNum    , False],
+            self.cLTargetProt   : [self.wTargetProt.wTc,   mConfig.core.mValueBad,       False],
+            self.cLScoreVal     : [self.wScoreVal.wTc,     mConfig.core.mOneRealNum,     False],
             self.cLSample       : [self.wSample.wCb,       mConfig.core.mOptionBad,      False],
+            self.cLCorrectP     : [self.wCorrectP.wCb,     mConfig.core.mOptionBad,      False],
             self.cLAlpha        : [self.wAlpha.wTc,        mConfig.core.mOne01Num,       False],
             self.cLBeta         : [self.wBeta.wTc,         mConfig.core.mOne01Num,       False],
             self.cLGamma        : [self.wGamma.wTc,        mConfig.core.mOne01Num,       False],
@@ -323,7 +324,7 @@ class LimProt(cPane.BaseConfPanelMod2):
             label               : [self.wSeqCol.wTc,       mConfig.core.mOneZPlusNumCol, True ],
             self.cLDetectedProt : [self.wDetectedProt.wTc, mConfig.core.mOneZPlusNumCol, True ],
             self.cLScoreCol     : [self.wScore.wTc,        mConfig.core.mOneZPlusNumCol, True ],
-            self.cLResControl   : [self.wTcResults,        mConfig.core.mResCtrl       , False],
+            self.cLResControl   : [self.wTcResults,        mConfig.core.mResCtrl,        False],
         }
         self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #endregion -------------------------------------------> checkUserInput
