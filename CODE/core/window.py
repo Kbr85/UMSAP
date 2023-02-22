@@ -695,7 +695,7 @@ class BaseWindowResultListText(BaseWindowResult):
         #region --------------------------------------------------->
         idx = self.wLC.wLCS.wLC.GetFirstSelected()
         #------------------------------>
-        if idx < 0 and self.rLCIdx is not None:
+        if idx < 0 and self.rLCIdx > -1:
             self.wLC.wLCS.wLC.Select(self.rLCIdx, on=1)
         #endregion ------------------------------------------------>
 
