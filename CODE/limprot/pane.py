@@ -87,9 +87,9 @@ class LimProt(cPane.BaseConfPanelMod2):
 
         The result data frame has the following structure:
 
-        Sequence Score Nterm Cterm NtermF CtermF Delta Band1 ... BandN
-        Sequence Score Nterm Cterm NtermF CtermF Delta Lane1 ... LaneN
-        Sequence Score Nterm Cterm NtermF CtermF Delta P     ... P
+        Sequence Score Nterm Cterm NtermF CtermF Delta Band1, Band1, ... BandN, BandN
+        Sequence Score Nterm Cterm NtermF CtermF Delta Lane1, Lane1, ... LaneN, LaneN
+        Sequence Score Nterm Cterm NtermF CtermF Delta Ptost,    Pc, ... Ptost,    Pc
     """
     #region -----------------------------------------------------> Class setup
     cName = mConfig.limp.nPane

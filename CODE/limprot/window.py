@@ -62,7 +62,9 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         rBlSelC: list[int, int]
             Coordinates for the Band/Lane selected from 1 to N
         rBlSelRect: mpatch
-            Rectangle used to highlight the selected Band/Lane
+            Rectangle used to highlight the selected Band/Lane.
+        rCorrP: bool
+            Show P corrected values (True) or regular values (False).
         rData: dict
             Data for the Limited Proteolysis section of the UMSAP File.
         rDate: list[str]
@@ -98,6 +100,8 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
             Location of the Native Sequence in the Recombinant Sequence.
         rProtTarget: str
             Name of the Recombinant protein used in the analysis.
+        rPStr: str
+            Name of the P column in the dataframe.
         rRecSeq: dict
             Keys are date and values the sequence of the recombinant protein.
         rRecSeqC: str
@@ -431,7 +435,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
                     parent     = self,
                 )
             #------------------------------> Reset attributes
-            self.rCorrP = False,
+            self.rCorrP = False
             self.rPStr  = 'Ptost'
             self.rIdxP  = pd.IndexSlice[:,:,'Ptost']
             #------------------------------> Reset Menu

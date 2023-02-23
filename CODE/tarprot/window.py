@@ -53,7 +53,10 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         ----------
         rAlpha: float
             Significance level of the Analysis.
-        rCtrl:
+        rCorrP: bool
+            Show P corrected values (True) or regular values (False).
+        rCtrl: list[str]
+            Control name
         rData: cMethod.BaseAnalysis
             For each Targeted Proteolysis analysis a new attribute 'Date-ID' is
             added with value tarpMethod.TarpAnalysis.
@@ -85,6 +88,8 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             Length of hte Recombinant Protein used in the analysis.
         rProtLoc: list[int, int]
             Location of the Native Sequence in the Recombinant Sequence.
+        rPStr: str
+            Name of the P column in the dataframe.
         rRecSeq: dict
             Keys are date and values a list with the sequence of the recombinant
             and native protein.
@@ -281,7 +286,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
                     parent     = self,
                 )
             #------------------------------> Reset attributes
-            self.rCorrP = False,
+            self.rCorrP = False
             self.rPStr  = 'P'
             self.rIdxP  = pd.IndexSlice[self.rExp,'P']
             #------------------------------> Reset Menu
