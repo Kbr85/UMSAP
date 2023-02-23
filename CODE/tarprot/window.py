@@ -51,12 +51,8 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
 
         Attributes
         ----------
-        rAlpha: float
-            Significance level of the Analysis.
         rCorrP: bool
             Show P corrected values (True) or regular values (False).
-        rCtrl: list[str]
-            Control name
         rData: cMethod.BaseAnalysis
             For each Targeted Proteolysis analysis a new attribute 'Date-ID' is
             added with value tarpMethod.TarpAnalysis.
@@ -66,8 +62,6 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             Current Date.
         rDf: pd.DataFrame
             Copy of the data used to plot
-        rExp: list[str]
-            Experiments in the analysis.
         rFragments: cMethod.Fragment
             Class with the info for the fragments. See cMethod.Fragment.
         rFragSelC: list[band, lane, fragment]
@@ -84,10 +78,6 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             Reference to the UMSAP file in the parent UMSAPCtrl window.
         rPeptide: str
             Sequence of the selected peptide in the wx.ListCtrl.
-        rProtLength: int
-            Length of hte Recombinant Protein used in the analysis.
-        rProtLoc: list[int, int]
-            Location of the Native Sequence in the Recombinant Sequence.
         rPStr: str
             Name of the P column in the dataframe.
         rRecSeq: dict
@@ -243,16 +233,11 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         self.rDateC       = tDate if tDate else self.rDateC
         self.rDataC       = getattr(self.rData, self.rDateC)
         self.rDf          = self.rDataC.df.copy()
-        self.rAlpha       = self.rDataC.alpha
-        self.rProtLoc     = self.rDataC.protLoc
-        self.rProtLength  = self.rDataC.protLength[0]
         self.rFragSelLine = None
         self.rFragSelC    = [None, None, None]
-        self.rExp         = self.rDataC.labelA
-        self.rCtrl        = [self.rDataC.ctrlName]
         self.rCorrP       = corrP if corrP is not None else self.rCorrP
         self.rPStr        = 'Pc' if self.rCorrP else 'P'
-        self.rIdxP        = pd.IndexSlice[self.rExp,'Pc'] if self.rCorrP else pd.IndexSlice[self.rExp,'P']
+        self.rIdxP        = pd.IndexSlice[self.rDataC.labelA,'Pc'] if self.rCorrP else pd.IndexSlice[self.rDataC.labelA,'P']
         self.rPeptide     = None
         self.rRecSeqC, self.rNatSeqC = (
             self.rRecSeq.get(self.rDateC)
@@ -288,7 +273,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             #------------------------------> Reset attributes
             self.rCorrP = False
             self.rPStr  = 'P'
-            self.rIdxP  = pd.IndexSlice[self.rExp,'P']
+            self.rIdxP  = pd.IndexSlice[self.rDataC.labelA,'P']
             #------------------------------> Reset Menu
             menu = self.mBar.GetMenu(self.mBar.FindMenu(mConfig.core.lmTools))
             item = menu.FindChildItem(menu.FindItem(mConfig.core.lmPCorrected))[0]
@@ -298,10 +283,10 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         #------------------------------>
         self.rFragments = cMethod.Fragments(
             df,
-            self.rAlpha,
+            self.rDataC.alpha,
             'le',
-            self.rProtLength,
-            self.rProtLoc,
+            self.rDataC.protLength[0],
+            self.rDataC.protLoc,
         )
         #------------------------------>
         self.DrawFragments()
@@ -336,7 +321,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         #endregion ------------------------------------------------> Variables
 
         #region --------------------------------------------------------> Keys
-        for k,v in enumerate(self.rExp):
+        for k,v in enumerate(self.rDataC.labelA):
             tKeyLabel[f'{v}-{self.rPStr}'] = f'{k}'
         #endregion -----------------------------------------------------> Keys
 
@@ -360,22 +345,22 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
 
         #region --------------------------------------------------->
         #------------------------------>
-        if self.rProtLoc[0] > -1:
-            xtick = [1] + list(self.rProtLoc) + [self.rProtLength]
+        if self.rDataC.protLoc[0] > -1:
+            xtick = [1] + list(self.rDataC.protLoc) + [self.rDataC.protLength[0]]
         else:
-            xtick = [1] + [self.rProtLength]
+            xtick = [1] + [self.rDataC.protLength[0]]
         self.wPlot['Main'].rAxes.set_xticks(xtick)
         self.wPlot['Main'].rAxes.set_xticklabels(xtick)
         #------------------------------>
-        self.wPlot['Main'].rAxes.set_yticks(range(1, len(self.rExp)+2))
-        self.wPlot['Main'].rAxes.set_yticklabels(self.rExp+['Protein'])
-        self.wPlot['Main'].rAxes.set_ylim(0.5, len(self.rExp)+1.5)
+        self.wPlot['Main'].rAxes.set_yticks(range(1, len(self.rDataC.labelA)+2))
+        self.wPlot['Main'].rAxes.set_yticklabels(self.rDataC.labelA+['Protein'])
+        self.wPlot['Main'].rAxes.set_ylim(0.5, len(self.rDataC.labelA)+1.5)
         #------------------------------>
-        ymax = len(self.rExp)+0.8
+        ymax = len(self.rDataC.labelA)+0.8
         #------------------------------>
         self.wPlot['Main'].rAxes.tick_params(length=0)
         #------------------------------>
-        self.wPlot['Main'].rAxes.set_xlim(0, self.rProtLength+1)
+        self.wPlot['Main'].rAxes.set_xlim(0, self.rDataC.protLength[0]+1)
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
@@ -405,7 +390,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         for k in self.rRectsFrag:
             k.set_linewidth(self.cGelLineWidth)
         #------------------------------> Get Keys
-        fKeys = [f'{x}-{self.rPStr}' for x in self.rExp]
+        fKeys = [f'{x}-{self.rPStr}' for x in self.rDataC.labelA]
         #------------------------------> Highlight
         j = 0
         for k in fKeys:
@@ -433,7 +418,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         #------------------------------> Values
         x = []
         y = []
-        for k,c in enumerate(self.rCtrl+self.rExp, start=1):
+        for k,c in enumerate(self.rDataC.ctrlName+self.rDataC.labelA, start=1):
             #------------------------------> Variables
             intL, P = row[c].values.tolist()[0]
             intL = list(map(float, intL[1:-1].split(',')))
@@ -447,7 +432,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             else:
                 color = self.cFragment[(k-2)%nc]                                # type: ignore
             #------------------------------> Ave
-            if P <= self.rAlpha:
+            if P <= self.rDataC.alpha:
                 x.append(k)
                 y.append(sum(intL)/intN)
             else:
@@ -482,13 +467,13 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             bool
         """
         #region ---------------------------------------------------> Variables
-        nExp = len(self.rExp)
+        nExp = len(self.rDataC.labelA)
         #endregion ------------------------------------------------> Variables
 
         #region ------------------------------------------------------> Values
         self.wPlot['Sec'].rAxes.clear()
         self.wPlot['Sec'].rAxes.set_xticks(range(1,nExp+2))
-        self.wPlot['Sec'].rAxes.set_xticklabels(self.rCtrl+self.rExp)
+        self.wPlot['Sec'].rAxes.set_xticklabels(self.rDataC.ctrlName+self.rDataC.labelA)
         #------------------------------>
         self.wPlot['Sec'].rAxes.set_xlim(0.5, nExp+1.5)
         #------------------------------>
@@ -527,7 +512,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         clSite = (f'{fragData.nc[fragC[1]]}({fragData.ncNat[fragC[1]]})')
         #------------------------------> Labels
         expL, fragL = cMethod.StrEqualLength(                                   # pylint: disable=unbalanced-tuple-unpacking
-            [self.rExp[fragC[0]], f'Fragment {fragC[1]+1}'])
+            [self.rDataC.labelA[fragC[0]], f'Fragment {fragC[1]+1}'])
         emptySpace = (2+ len(expL))*' '
         #endregion ------------------------------------------------> Info
 
@@ -537,7 +522,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
 
         #region --------------------------------------------------->
         self.wText.AppendText(
-            f'Details for {self.rExp[fragC[0]]} - Fragment {fragC[1]+1}\n\n')
+            f'Details for {self.rDataC.labelA[fragC[0]]} - Fragment {fragC[1]+1}\n\n')
         self.wText.AppendText(f'{expL}: Fragments {frag}, Cleavage sites {clSiteExp}\n')
         self.wText.AppendText(f'{emptySpace}Peptides {seqExp}\n\n')
         self.wText.AppendText(f'{fragL}: Nterm {n}({nf}), Cterm {c}({cf})\n')
@@ -583,7 +568,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         try:
             tarpMethod.R2SeqAlignment(
                 self.rDf,
-                self.rAlpha,
+                self.rDataC.alpha,
                 self.rRecSeqC,
                 fileP,
                 length,
@@ -720,9 +705,9 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         #region ---------------------------------------------------> Run
         dfI = self.rDataC.df
         idx = pd.IndexSlice
-        dfI = dfI.loc[:,idx[['Sequence']+self.rExp,['Sequence', 'P']]]          # type: ignore
+        dfI = dfI.loc[:,idx[['Sequence']+self.rDataC.labelA,['Sequence', 'P']]]          # type: ignore
         dfO = tarpMethod.R2AA(
-            dfI, self.rRecSeqC, self.rAlpha, self.rProtLength, pos=pos)
+            dfI, self.rRecSeqC, self.rDataC.alpha, self.rDataC.protLength[0], pos=pos)
         #endregion ------------------------------------------------> Run
 
         #region -----------------------------------------------> Save & Update
@@ -822,11 +807,11 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         #region ---------------------------------------------------> Run
         dfI = self.rDataC.df
         idx = pd.IndexSlice
-        a   = mConfig.tarp.dfcolFirstPart[2:]+self.rExp
-        b   = mConfig.tarp.dfcolFirstPart[2:]+len(self.rExp)*['P']
+        a   = mConfig.tarp.dfcolFirstPart[2:]+self.rDataC.labelA
+        b   = mConfig.tarp.dfcolFirstPart[2:]+len(self.rDataC.labelA)*['P']
         dfI = dfI.loc[:,idx[a,b]]                                               # type: ignore
         dfO = tarpMethod.R2Hist(
-            dfI, self.rAlpha, win, self.rDataC.protLength)
+            dfI, self.rDataC.alpha, win, self.rDataC.protLength)
         #endregion ------------------------------------------------> Run
 
         #region -----------------------------------------------> Save & Update
@@ -958,8 +943,8 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         align = pairwise2.align.globalds(                                       # type: ignore
             pdbSeq, self.rRecSeqC, blosum62, -10, -0.5)
         #------------------------------>
-        Helper(pdbObj, self.rExp, align, cut, (self.rDateC, 'CpR'))
-        Helper(pdbObj, self.rExp, align, cEvol, (self.rDateC, 'CEvol'))
+        Helper(pdbObj, self.rDataC.labelA, align, cut, (self.rDateC, 'CpR'))
+        Helper(pdbObj, self.rDataC.labelA, align, cEvol, (self.rDateC, 'CEvol'))
         #endregion --------------------------------------------> Run
 
         dlg.Destroy()
@@ -1004,7 +989,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         x = round(x)
         y = round(y)
         #------------------------------>
-        tKey = f'{self.rExp[fragC[0]]}-{self.rPStr}'
+        tKey = f'{self.rDataC.labelA[fragC[0]]}-{self.rPStr}'
         #------------------------------>
         x1, x2 = getattr(self.rFragments, tKey).coord[fragC[1]]
         #endregion ------------------------------------------------> Variables
@@ -1050,7 +1035,7 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
             Width of the bands.
         rData: pd.DataFrame
             Data with the results.
-        rExp: bool
+        rDataC.labelA: bool
             Show experiments (True) or Positions (False).
         rLabel: list[str]
             Experiment names.
@@ -1100,7 +1085,7 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
         menuData     = self.SetMenuDate()
         self.rPos    = menuData['Pos']
         self.rLabel  = menuData['Label']
-        self.rExp    = True
+        self.rDataC.labelA    = True
         self.rLabelC = ''
         #------------------------------>
         super().__init__(parent)
@@ -1179,7 +1164,7 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
             bool
         """
         #region -------------------------------------------------------->
-        self.rExp    = True
+        self.rDataC.labelA    = True
         self.rLabelC = label
         #endregion ----------------------------------------------------->
 
@@ -1286,7 +1271,7 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
             bool
         """
         #region -------------------------------------------------------->
-        self.rExp    = False
+        self.rDataC.labelA    = False
         self.rLabelC = label
         #endregion ----------------------------------------------------->
 
@@ -1481,7 +1466,7 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
             #------------------------------>
             x, y = event.xdata, event.ydata
             #------------------------------>
-            if self.rExp:
+            if self.rDataC.labelA:
                 return self.UpdateStatusBarExp(x,y)
             #------------------------------> Position
             return self.UpdateStatusBarPos(x,y)
@@ -1524,7 +1509,7 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
             Plot recombinant or native sequence.
         rObj: UMSAPFile
             Reference to the UMSAP file in the parent UMSAPCtrl window.
-        rProtLength: list[int]
+        rDataC.protLength[0]: list[int]
             Length of the recombinant and native protein.
         rUMSAP: UMSAPCtrl
             Pointer to the UMSAPCtrl window.
@@ -1570,7 +1555,7 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
             parent.cSection, self.cDateC, fileN, [0,1,2])
         self.rLabel      = self.rData.columns.unique(level=2).tolist()[1:]
         data = getattr(parent.rData, self.cDateC)
-        self.rProtLength = data.protLength
+        self.rDataC.protLength[0] = data.protLength
         menuData         = self.SetMenuDate()
         self.rNat = 'Rec'
         self.rAllC = 'All'
@@ -1609,7 +1594,7 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
         #region --------------------------------------------------->
         menuData['Label'] = [k for k in self.rLabel]
         #------------------------------>
-        if self.rProtLength[1]:
+        if self.rDataC.protLength[0][1]:
             menuData['Nat'] = True
         else:
             menuData['Nat'] = False
@@ -1824,9 +1809,9 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
             Plot results for the native or recombinant protein.
         rObj: UMSAPFile
             Reference to the UMSAP file in the parent UMSAPCtrl window.
-        rProtLength: list[int]
+        rDataC.protLength[0]: list[int]
             Length of the recombinant and native protein.
-        rProtLoc: list[int]
+        rDataC.protLoc: list[int]
             Location of the native protein in the sequence of the recombinant
             protein.
         rUMSAP: UMSAPCtrl
@@ -1858,8 +1843,8 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
             parent.cSection, self.cDateC, fileN, [0,1])
         self.rLabel = self.rData.columns.unique(level=1).tolist()
         data = getattr(parent.rData, self.cDateC)
-        self.rProtLength = data.protLength
-        self.rProtLoc    = data.protLoc
+        self.rDataC.protLength[0] = data.protLength
+        self.rDataC.protLoc    = data.protLoc
         menuData         = self.SetMenuDate()
         #------------------------------>
         super().__init__(parent)
@@ -1896,7 +1881,7 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
         #region --------------------------------------------------->
         menuData['Label'] = [k for k in self.rLabel]
         #------------------------------>
-        if self.rProtLength[1]:
+        if self.rDataC.protLength[0][1]:
             menuData['Nat'] = True
         else:
             menuData['Nat'] = False
@@ -1934,9 +1919,9 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
         idx = pd.IndexSlice
         #------------------------------>
         if nat:
-            tXIdx = range(0, self.rProtLength[1])
+            tXIdx = range(0, self.rDataC.protLength[0][1])
         else:
-            tXIdx = range(0, self.rProtLength[0])
+            tXIdx = range(0, self.rDataC.protLength[0][0])
         x = [x+1 for x in tXIdx]
         #------------------------------>
         color = []
@@ -1959,11 +1944,11 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
             self.wPlot[0].rAxes.plot(x,y, color=tColor)
         #------------------------------>
         if self.rNat == self.cNat[False] and protLoc:
-            if self.rProtLoc[0] > -1:
+            if self.rDataC.protLoc[0] > -1:
                 self.wPlot[0].rAxes.vlines(
-                    self.rProtLoc[0],0,yMax,linestyles='dashed',color='black',zorder=1)
+                    self.rDataC.protLoc[0],0,yMax,linestyles='dashed',color='black',zorder=1)
                 self.wPlot[0].rAxes.vlines(
-                    self.rProtLoc[1],0,yMax,linestyles='dashed',color='black',zorder=1)
+                    self.rDataC.protLoc[1],0,yMax,linestyles='dashed',color='black',zorder=1)
         #endregion ------------------------------------------------> Plot
 
         #region ----------------------------------------------------> Legend
@@ -2095,7 +2080,7 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
             Plot monotonic results (True) or all results (False)
         rObj: UMSAPFile
             Reference to the UMSAP file in the parent UMSAPCtrl window.
-        rProtLength: list[int]
+        rDataC.protLength[0]: list[int]
             Length of the recombinant and native protein.
         rRec: bool
             Plot data for recombinant or native sequence.
@@ -2135,7 +2120,7 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
         self.rLabel = self.rData.columns.unique(level=1).tolist()
         self.rIdx   = {}
         data = getattr(parent.rData, self.cDateC)
-        self.rProtLength = data.protLength
+        self.rDataC.protLength[0] = data.protLength
         menuData = self.SetMenuDate()
         #------------------------------>
         super().__init__(parent)
@@ -2178,7 +2163,7 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
         #region --------------------------------------------------->
         menuData['Label'] = [k for k in self.rLabel]
         #------------------------------>
-        if self.rProtLength[1]:
+        if self.rDataC.protLength[0][1]:
             menuData['Nat'] = True
         else:
             menuData['Nat'] = False

@@ -449,7 +449,7 @@ class UMSAPFile():
             setattr(data, k, tarpMethod.TarpAnalysis(
                 df         = df,
                 labelA     = exp,
-                ctrlName   = ctrl,
+                ctrlName   = [ctrl],
                 alpha      = alpha,
                 protLength = protLength,
                 protLoc    = protLoc,

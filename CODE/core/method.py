@@ -1191,7 +1191,7 @@ def Fragments(
     val:float,
     comp:LIT_Comp,
     protL:int,
-    protLoc:list[int],
+    protLoc:tuple[int,int],
     ) -> Fragment:
     """Creates the dict holding the fragments identified in the analysis.
 
@@ -1207,7 +1207,7 @@ def Fragments(
             One of 'lt', 'le', 'e', 'ge', 'gt'
         protL: int
             Length of recombinant protein.
-        protLoc: list[int]
+        protLoc: tuple[int, int]
             Location of the native protein in the recombinant sequence
 
         Returns
@@ -1369,7 +1369,7 @@ def Fragments(
 def Rec2NatCoord(
     coord:list[tuple[int,int]],
     protLoc:tuple[int,int],
-    delta:int,
+    delta:Optional[int],
     ) -> Union[list[tuple[int,int]], list[str]]:
     """Translate residue numbers from the recombinant sequence to the native
         sequence.
@@ -1380,7 +1380,7 @@ def Rec2NatCoord(
             Residue numbers in the recombinant sequence.
         protLoc: tuple(int, int)
             Location of the native protein in the recombinant sequence.
-        delta: int
+        delta: int or None
             Difference in residue numbers.
 
         Returns

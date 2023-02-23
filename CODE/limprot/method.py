@@ -63,8 +63,8 @@ class LimpAnalysis():
     labelA:list[str]                                                            # Lane's labels
     labelB:list[str]                                                            # Band's labels
     alpha:float                                                                 # Significance level
-    protLength:list[int]                                                        # Length of Rec and Nat proteins
-    protLoc:list[int]                                                           # Location of Nat Seq in Rec Seq
+    protLength:tuple[int, int]                                                  # Length of Rec and Nat proteins
+    protLoc:tuple[int, int]                                                     # Location of Nat Seq in Rec Seq
     protDelta:Optional[int]                                                     # Used to convert Rec Res Num to Nat Res Num
     targetProt:str                                                              # Name of Target Prot
     #endregion -----------------------------------------------------> Options

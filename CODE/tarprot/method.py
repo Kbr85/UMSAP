@@ -71,10 +71,10 @@ class TarpAnalysis():
     #region --------------------------------------------------------> Options
     df:pd.DataFrame                                                             # Results as dataframe
     labelA:list[str]                                                            # Exp's labels
-    ctrlName:str                                                                # Control Name
+    ctrlName:list[str]                                                          # Control Name
     alpha:float                                                                 # Significance level
-    protLength:list[int]                                                        # Length of Rec and Nat Prot
-    protLoc:list[int]                                                           # Location of Nat Prot in Rec Prot
+    protLength:tuple[int,int]                                                   # Length of Rec and Nat Prot
+    protLoc:tuple[int,int]                                                      # Location of Nat Prot in Rec Prot
     protDelta:Optional[int]                                                     # To convert Rec Res Num to Nat Res Num
     targetProt:str                                                              # Name of Target Protein
     CpR:str                                                                     # Name of CpR File
@@ -551,7 +551,7 @@ def R2Hist(
     df:pd.DataFrame,
     alpha:float,
     win:list[int],
-    maxL:list[int]
+    maxL:tuple[int,int],
     ) -> pd.DataFrame:
     """Create the cleavage histograms.
 
@@ -564,8 +564,8 @@ def R2Hist(
             Alpha level.
         win: list[int]
             Window definition
-        maxL: list[int]
-            Protein lengths, Recombinant and Native or None
+        maxL: tuple[int,int]
+            Protein lengths, Recombinant and Native.
 
         Returns
         -------
@@ -585,7 +585,7 @@ def R2Hist(
     tBin = []
     if len(win) == 1:
         tBin.append(list(range(0, maxL[0]+win[0], win[0])))
-        if maxL[1] is not None:
+        if maxL[1] > 0:
             tBin.append(list(range(0, maxL[1]+win[0], win[0])))
         else:
             tBin.append([None])
