@@ -21,7 +21,8 @@ from typing      import Optional, Literal, Union, TYPE_CHECKING
 
 import numpy  as np
 import pandas as pd
-from scipy import stats
+from scipy                       import stats
+from statsmodels.stats.multitest import multipletests
 
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus      import SimpleDocTemplate, Paragraph, Spacer
@@ -54,9 +55,9 @@ class UserData(cMethod.BaseUserData):
     dO:list = field(default_factory=lambda:                                     # Attr printed to UMSAP file
         ['iFileN', 'seqFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift',
          'width', 'method', 'indSample', 'targetProt', 'scoreVal', 'alpha',
-         'posAA', 'winHist', 'ocSeq', 'ocTargetProt', 'ocScore', 'ocColumn',
-         'resCtrl', 'labelA', 'ctrlName', 'dfSeq', 'dfTargetProt', 'dfScore',
-         'dfResCtrl', 'protLength', 'protLoc', 'protDelta',
+         'correctedP', 'posAA', 'winHist', 'ocSeq', 'ocTargetProt', 'ocScore',
+         'ocColumn', 'resCtrl', 'labelA', 'ctrlName', 'dfSeq', 'dfTargetProt',
+         'dfScore', 'dfResCtrl', 'protLength', 'protLoc', 'protDelta',
         ])
     longestKey:int = 17                                                         # Length of the longest Key in dI
     #endregion ------------------------------------------------------> Options
@@ -173,7 +174,7 @@ def TarProt(
         return df
     #---
 
-    def _prepareAncova(row:namedtuple, rowN:int) -> pd.DataFrame:
+    def _prepareAncova(row:namedtuple, rowN:int) -> pd.DataFrame:               # type: ignore
         """Prepare the dataframe used to perform the ANCOVA test.
 
             Parameters
@@ -374,6 +375,16 @@ def TarProt(
     if not a:
         return ({}, b, c)
     #endregion -----------------------------------------------------> Analysis
+
+    #region --------------------------------------------------------------> Pc
+    if rDO.correctedP != 'None':
+        for l in rDO.labelA:
+            dfR.loc[:,(l, 'Pc')] = multipletests(                               # type: ignore
+                dfR.loc[:,(l,'P')],                                             # type: ignore
+                rDO.alpha,
+                mConfig.core.oCorrectP[rDO.correctedP]
+            )[1]
+    #endregion -----------------------------------------------------------> Pc
 
     #region -------------------------------------------------> Check P < a
     idx = pd.IndexSlice

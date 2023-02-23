@@ -488,13 +488,17 @@ class ToolTarProt(cMenu.BaseMenuMainResult):
             }
     """
     #region -----------------------------------------------------> Class Setup
+    cLCorrP     = mConfig.core.lmPCorrected
     cLFrag      = 'Fragments'
     cLIntensity = 'Intensities'
     cLFurtherA  = 'Further Analysis'
     cLClearSel  = 'Clear Selection'
     cLExportSeq = 'Export Sequences'
     #------------------------------>
+    cVPCorr     = mConfig.core.kwWinUpdate
+    #------------------------------>
     cVExportSeq = mConfig.core.kwExpSeq
+    cVPCorrKey  = mConfig.core.kwPCorrected
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
@@ -505,6 +509,8 @@ class ToolTarProt(cMenu.BaseMenuMainResult):
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
+        self.miPCorr = self.Append(-1, self.cLCorrP, kind=wx.ITEM_CHECK)
+        self.AppendSeparator()
         self.mFragmentMenu = cMenu.BaseMenuMainResultSubMenu('Shift')
         self.AppendSubMenu(self.mFragmentMenu, self.cLFrag)
         self.AppendSeparator()
@@ -531,12 +537,19 @@ class ToolTarProt(cMenu.BaseMenuMainResult):
         #region ---------------------------------------------------> rKeyID
         rIDMap = {
             self.miSaveSeq.GetId() : self.cVExportSeq,
+            self.miPCorr.GetId()   : self.cVPCorr,
         }
         self.rIDMap = self.rIDMap | rIDMap
+        #------------------------------>
+        rKeyMap = {
+            self.miPCorr.GetId() : self.cVPCorrKey,
+        }
+        self.rKeyMap = self.rKeyMap | rKeyMap
         #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnMethod, source=self.miSaveSeq)
+        self.Bind(wx.EVT_MENU, self.OnMethodKeyBool, source=self.miPCorr)
+        self.Bind(wx.EVT_MENU, self.OnMethod,        source=self.miSaveSeq)
         #endregion -----------------------------------------------------> Bind
     #---
     #endregion -----------------------------------------------> Instance setup

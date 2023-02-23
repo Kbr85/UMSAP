@@ -59,7 +59,7 @@ class Configuration():
     #------------------------------> DF Columns
     dfcolFirstPart:list[str] = field(default_factory=lambda:
         ['Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF','CtermF'])
-    dfcolBLevel:list[str]    = field(default_factory=lambda: ['Int', 'P'])
+    dfcolBLevel:list[str]    = field(default_factory=lambda: ['Int', 'P', 'Pc'])
     #------------------------------> Options
     oMethod:dict = field(default_factory=lambda: {                              # Analysis Method
         ''      : '',

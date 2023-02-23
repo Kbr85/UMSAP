@@ -56,7 +56,7 @@ class Configuration():
     #------------------------------> DataFrame Columns
     dfcolFirstPart:list[str] = field(default_factory=lambda:
         ['Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF','CtermF', 'Delta'])
-    dfcolCLevel:list[str] = field(default_factory=lambda: ['Ptost'])
+    dfcolCLevel:list[str] = field(default_factory=lambda: ['Ptost', 'Pc'])
     #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration

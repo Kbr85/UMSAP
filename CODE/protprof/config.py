@@ -70,7 +70,6 @@ class Configuration():
     lmVolExpImg:str          = 'Export Image'
     lmVolLabelAdd:str        = 'Add Label'
     lmVolLabelPick:str       = 'Pick Label'
-    lmVolPCorrected:str      = 'Corrected P Values'
     lmVolZoomReset:str       = 'Reset Zoom'
     #------------------------------> Keyword for wx.MenuItem
     kwClearSelAll:str        = 'Clear Selection All'
@@ -97,7 +96,6 @@ class Configuration():
     kwScaleNo:str            = 'Lock Scale No'
     kwScaleProject:str       = 'Lock Scale Project'
     kwVolMenuCond:str        = 'cond'
-    kwVolMenuPCorrected:str  = 'corrP'
     kwVolMenuRP:str          = 'rp'
     kwVolMenuVol:str         = 'Vol'
     kwVolPlot:str            = 'Vol Plot CRP'
@@ -116,7 +114,7 @@ class Configuration():
     dfcolFirstPart:list[str] = field(default_factory=lambda:
         ['Gene', 'Protein', 'Score'])
     dfcolCLevel:list[str] = field(default_factory=lambda:
-        ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz'])
+        ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz', 'P', 'Pc'])
     #------------------------------> Options
     oControlType:dict = field(default_factory=lambda: {                         # Control Type for the Res - Ctrl wx.Dialog
         'Empty': '',

@@ -374,7 +374,7 @@ class ToolProtProfVolcanoPlot(cMenu.BaseMenu):
     cLAddLabel    = mConfig.prot.lmVolLabelAdd
     cLPickLabel   = mConfig.prot.lmVolLabelPick
     cLColorScheme = mConfig.prot.lmVolColor
-    cLCorrP       = mConfig.prot.lmVolPCorrected
+    cLCorrP       = mConfig.core.lmPCorrected
     cLExpImg      = mConfig.prot.lmVolExpImg
     cLZoomReset   = mConfig.prot.lmVolZoomReset
     #------------------------------>
@@ -385,7 +385,7 @@ class ToolProtProfVolcanoPlot(cMenu.BaseMenu):
     cVExpImg    = mConfig.core.kwExpImg
     cVZoomReset = mConfig.core.kwZoomReset
     #------------------------------>
-    cVPCorrKey = mConfig.prot.kwVolMenuPCorrected
+    cVPCorrKey = mConfig.core.kwPCorrected
     cVMenuKey  = mConfig.prot.kwVolMenuVol
     cVCond     = mConfig.prot.kwVolMenuCond
     cVRP       = mConfig.prot.kwVolMenuRP
@@ -423,9 +423,9 @@ class ToolProtProfVolcanoPlot(cMenu.BaseMenu):
         rIDMap = {
             self.miLabelPick.GetId(): self.cVLabelPick,
             self.miLabelProt.GetId(): self.cVLabelProt,
-            self.miPCorr.GetId    (): self.cVPCorr,
-            self.miSaveI.GetId    (): self.cVExpImg,
-            self.miZoomR.GetId    (): self.cVZoomReset,
+            self.miPCorr.GetId()    : self.cVPCorr,
+            self.miSaveI.GetId()    : self.cVExpImg,
+            self.miZoomR.GetId()    : self.cVZoomReset,
         }
         self.rIDMap = self.rIDMap | rIDMap
         #------------------------------>
