@@ -1085,7 +1085,7 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
         menuData     = self.SetMenuDate()
         self.rPos    = menuData['Pos']
         self.rLabel  = menuData['Label']
-        self.rDataC.labelA    = True
+        self.rExp    = True
         self.rLabelC = ''
         #------------------------------>
         super().__init__(parent)
@@ -1164,7 +1164,7 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
             bool
         """
         #region -------------------------------------------------------->
-        self.rDataC.labelA    = True
+        self.rExp    = True
         self.rLabelC = label
         #endregion ----------------------------------------------------->
 
@@ -1271,7 +1271,7 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
             bool
         """
         #region -------------------------------------------------------->
-        self.rDataC.labelA    = False
+        self.rExp    = False
         self.rLabelC = label
         #endregion ----------------------------------------------------->
 
@@ -1466,7 +1466,7 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
             #------------------------------>
             x, y = event.xdata, event.ydata
             #------------------------------>
-            if self.rDataC.labelA:
+            if self.rExp:
                 return self.UpdateStatusBarExp(x,y)
             #------------------------------> Position
             return self.UpdateStatusBarPos(x,y)
@@ -1555,7 +1555,7 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
             parent.cSection, self.cDateC, fileN, [0,1,2])
         self.rLabel      = self.rData.columns.unique(level=2).tolist()[1:]
         data = getattr(parent.rData, self.cDateC)
-        self.rDataC.protLength[0] = data.protLength
+        self.rProtLength = data.protLength
         menuData         = self.SetMenuDate()
         self.rNat = 'Rec'
         self.rAllC = 'All'
@@ -1594,7 +1594,7 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
         #region --------------------------------------------------->
         menuData['Label'] = [k for k in self.rLabel]
         #------------------------------>
-        if self.rDataC.protLength[0][1]:
+        if self.rProtLength[1]:
             menuData['Nat'] = True
         else:
             menuData['Nat'] = False
@@ -1843,8 +1843,8 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
             parent.cSection, self.cDateC, fileN, [0,1])
         self.rLabel = self.rData.columns.unique(level=1).tolist()
         data = getattr(parent.rData, self.cDateC)
-        self.rDataC.protLength[0] = data.protLength
-        self.rDataC.protLoc    = data.protLoc
+        self.rProtLength = data.protLength
+        self.rProtLoc    = data.protLoc
         menuData         = self.SetMenuDate()
         #------------------------------>
         super().__init__(parent)
@@ -1881,7 +1881,7 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
         #region --------------------------------------------------->
         menuData['Label'] = [k for k in self.rLabel]
         #------------------------------>
-        if self.rDataC.protLength[0][1]:
+        if self.rProtLength[1]:
             menuData['Nat'] = True
         else:
             menuData['Nat'] = False
@@ -1919,9 +1919,9 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
         idx = pd.IndexSlice
         #------------------------------>
         if nat:
-            tXIdx = range(0, self.rDataC.protLength[0][1])
+            tXIdx = range(0, self.rProtLength[1])
         else:
-            tXIdx = range(0, self.rDataC.protLength[0][0])
+            tXIdx = range(0, self.rProtLength[0])
         x = [x+1 for x in tXIdx]
         #------------------------------>
         color = []
@@ -1944,11 +1944,11 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
             self.wPlot[0].rAxes.plot(x,y, color=tColor)
         #------------------------------>
         if self.rNat == self.cNat[False] and protLoc:
-            if self.rDataC.protLoc[0] > -1:
+            if self.rProtLoc[0] > -1:
                 self.wPlot[0].rAxes.vlines(
-                    self.rDataC.protLoc[0],0,yMax,linestyles='dashed',color='black',zorder=1)
+                    self.rProtLoc[0],0,yMax,linestyles='dashed',color='black',zorder=1)
                 self.wPlot[0].rAxes.vlines(
-                    self.rDataC.protLoc[1],0,yMax,linestyles='dashed',color='black',zorder=1)
+                    self.rProtLoc[1],0,yMax,linestyles='dashed',color='black',zorder=1)
         #endregion ------------------------------------------------> Plot
 
         #region ----------------------------------------------------> Legend
@@ -2120,7 +2120,7 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
         self.rLabel = self.rData.columns.unique(level=1).tolist()
         self.rIdx   = {}
         data = getattr(parent.rData, self.cDateC)
-        self.rDataC.protLength[0] = data.protLength
+        self.rProtLength = data.protLength
         menuData = self.SetMenuDate()
         #------------------------------>
         super().__init__(parent)
@@ -2163,7 +2163,7 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
         #region --------------------------------------------------->
         menuData['Label'] = [k for k in self.rLabel]
         #------------------------------>
-        if self.rDataC.protLength[0][1]:
+        if self.rProtLength[1]:
             menuData['Nat'] = True
         else:
             menuData['Nat'] = False
