@@ -339,7 +339,7 @@ class TarProt(cPane.BaseConfPanelMod2):
             self.wMethod.wCb.SetValue('t-Test')
             self.wTargetProt.wTc.SetValue('efeB')
             self.wScoreVal.wTc.SetValue('200')
-            self.wCorrectP.wCb.SetValue('None')
+            self.wCorrectP.wCb.SetValue('Holm - Sidak')
             self.wAAPos.wTc.SetValue('5')
             self.wHist.wTc.SetValue('25')
             self.wAlpha.wTc.SetValue('0.05')
@@ -451,6 +451,7 @@ class TarProt(cPane.BaseConfPanelMod2):
             self.wAlpha.wTc.SetValue(str(dataI.alpha))
             self.wAAPos.wTc.SetValue(posAA)
             self.wHist.wTc.SetValue(winHist)
+            self.wCorrectP.wCb.SetValue(dataI.correctedP)
             #------------------------------> Columns
             self.wSeqCol.wTc.SetValue(str(dataI.ocSeq))
             self.wDetectedProt.wTc.SetValue(str(dataI.ocTargetProt))
@@ -547,6 +548,7 @@ class TarProt(cPane.BaseConfPanelMod2):
             'width'       : self.cLWidth,
             'method'      : self.cLMethod,
             'indSample'   : self.cLSample,
+            'correctedP'  : self.cLCorrectP,
             'targetProt'  : self.cLTargetProt,
             'scoreVal'    : self.cLScoreVal,
             'alpha'       : self.cLAlpha,
@@ -585,6 +587,7 @@ class TarProt(cPane.BaseConfPanelMod2):
             indSample     = mConfig.core.oSamples[self.wSample.wCb.GetValue()],
             targetProt    = self.wTargetProt.wTc.GetValue(),
             scoreVal      = float(self.wScoreVal.wTc.GetValue()),
+            correctedP    = self.wCorrectP.wCb.GetValue(),
             alpha         = float(self.wAlpha.wTc.GetValue()),
             posAA         = aaPos,
             winHist       = hist,

@@ -116,6 +116,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         self.rObj   = parent.rObj
         self.rData:cMethod.BaseAnalysis = self.rObj.dConfigure[self.cSection]()
         self.rDate, menuData = self.SetDateMenuDate()
+        self.rCorrP = False
         #------------------------------>
         self.ReportPlotDataError()
         #------------------------------>
@@ -214,13 +215,20 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         return (date, menuData)
     #---
 
-    def UpdateResultWindow(self, tDate:str='') -> bool:
+    def UpdateResultWindow(
+        self,
+        tDate:str            ='',
+        corrP:Optional[bool] = None,
+        ) -> bool:
         """Update the GUI and attributes when a new date is selected.
 
             Parameters
             ----------
             date: str
                 Selected date.
+            corrP: bool or None
+                Sow corrected P values (True) or regular P values (False, None).
+                Default is None.
 
             Returns
             -------
@@ -237,7 +245,9 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         self.rFragSelC    = [None, None, None]
         self.rExp         = self.rDataC.labelA
         self.rCtrl        = [self.rDataC.ctrlName]
-        self.rIdxP        = pd.IndexSlice[self.rExp,'P']
+        self.rCorrP       = corrP if corrP is not None else self.rCorrP
+        self.rPStr        = 'Pc' if self.rCorrP else 'P'
+        self.rIdxP        = pd.IndexSlice[self.rExp,'Pc'] if self.rCorrP else pd.IndexSlice[self.rExp,'P']
         self.rPeptide     = None
         self.rRecSeqC, self.rNatSeqC = (
             self.rRecSeq.get(self.rDateC)
@@ -251,13 +261,38 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         self.wText.Clear()
         #endregion ------------------------------------------------>
 
-        #region -------------------------------------------------> wx.ListCtrl
-        self.FillListCtrl()
-        #endregion ----------------------------------------------> wx.ListCtrl
-
         #region ---------------------------------------------------> Fragments
+        try:
+            df = self.GetDF4FragmentSearch()
+        except KeyError as e:
+            #------------------------------> Notification
+            if 'Pc' in str(e):
+                cWindow.Notification(
+                    'warning',
+                    msg        = mConfig.core.mNoPCorr,
+                    tException = e,
+                    parent     = self,
+                )
+            else:
+                cWindow.Notification(
+                    'errorU',
+                    msg        = mConfig.core.mUnexpectedError,
+                    tException = e,
+                    parent     = self,
+                )
+            #------------------------------> Reset attributes
+            self.rCorrP = False,
+            self.rPStr  = 'P'
+            self.rIdxP  = pd.IndexSlice[self.rExp,'P']
+            #------------------------------> Reset Menu
+            menu = self.mBar.GetMenu(self.mBar.FindMenu(mConfig.core.lmTools))
+            item = menu.FindChildItem(menu.FindItem(mConfig.core.lmPCorrected))[0]
+            item.Check(check=False)
+            #------------------------------> df
+            df = self.GetDF4FragmentSearch()
+        #------------------------------>
         self.rFragments = cMethod.Fragments(
-            self.GetDF4FragmentSearch(),
+            df,
             self.rAlpha,
             'le',
             self.rProtLength,
@@ -266,6 +301,10 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         #------------------------------>
         self.DrawFragments()
         #endregion ------------------------------------------------> Fragments
+
+        #region -------------------------------------------------> wx.ListCtrl
+        self.FillListCtrl()
+        #endregion ----------------------------------------------> wx.ListCtrl
 
         #region -----------------------------------------------------> Peptide
         self.SetAxisInt()
@@ -293,7 +332,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
 
         #region --------------------------------------------------------> Keys
         for k,v in enumerate(self.rExp):
-            tKeyLabel[f'{v}-P'] = f'{k}'
+            tKeyLabel[f'{v}-{self.rPStr}'] = f'{k}'
         #endregion -----------------------------------------------------> Keys
 
         #region -------------------------------------------------------> Super
@@ -361,7 +400,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         for k in self.rRectsFrag:
             k.set_linewidth(self.cGelLineWidth)
         #------------------------------> Get Keys
-        fKeys = [f'{x}-P' for x in self.rExp]
+        fKeys = [f'{x}-{self.rPStr}' for x in self.rExp]
         #------------------------------> Highlight
         j = 0
         for k in fKeys:
@@ -960,7 +999,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         x = round(x)
         y = round(y)
         #------------------------------>
-        tKey = f'{self.rExp[fragC[0]]}-P'
+        tKey = f'{self.rExp[fragC[0]]}-{self.rPStr}'
         #------------------------------>
         x1, x2 = getattr(self.rFragments, tKey).coord[fragC[1]]
         #endregion ------------------------------------------------> Variables
