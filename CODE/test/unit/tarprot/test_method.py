@@ -54,6 +54,7 @@ class Test_TarProt(unittest.TestCase):
             method        = 'slope',
             targetProt    = 'efeB',
             scoreVal      = 100.0,
+            correctedP    = 'Bonferroni',
             alpha         = 0.05,
             labelA        = ['Exp1', 'Exp2'],
             ctrlName      = 'Ctrl',
@@ -83,6 +84,7 @@ class Test_TarProt(unittest.TestCase):
             targetProt    = 'efeB',
             scoreVal      = 0,
             alpha         = 0.05,
+            correctedP    = 'None',
             labelA        = ['Exp1', 'Exp2', 'Exp3'],
             ctrlName      = 'Ctrl',
             ocSeq         = 0,
@@ -255,8 +257,8 @@ class Test_R2Hist(unittest.TestCase):
         """Test for expected output"""
         #------------------------------>
         tInput = [
-            (self.a, 0.05, [50], [441, 441], self.b),
-            (self.a, 0.05, [200, 250, 300], [441, 441], self.c),
+            (self.a, 0.05, [50], (441, 441), self.b),
+            (self.a, 0.05, [200, 250, 300], (441, 441), self.c),
         ]
         #------------------------------>
         for a,b,c,d,e in tInput:
