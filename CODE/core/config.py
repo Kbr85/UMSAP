@@ -76,6 +76,7 @@ class Configuration():
     lmPCorrected:str    = 'Corrected P Values'
     lmTools:str         = 'Tools'
     lPdError:str        = 'Fatal Error'                                         # lPd: Label for Progress Dialog
+    lPdDone:str         = 'All Done'
     lStAlpha:str        = 'α level'                                             # lSt: Label for wx.StaticText
     lStColAnalysis:str  = 'Columns for Analysis'
     lStCtrlName:str     = 'Name'

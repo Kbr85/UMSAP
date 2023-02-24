@@ -148,7 +148,7 @@ class BaseConfPanel(
         self.cLPdWrite    = getattr(self, 'cLPdWrite',    'Writing output: ')
         self.cLPdLoad     = getattr(self, 'cLPdLoad',     'Loading output file')
         self.cLPdError    = getattr(self, 'cLPdError',    mConfig.core.lPdError)
-        self.cLPdDone     = getattr(self, 'cLPdDone',     'All Done')
+        self.cLPdDone     = getattr(self, 'cLPdDone',     mConfig.core.lPdDone)
         self.cLPdElapsed  = getattr(self, 'cLPdElapsed',  'Elapsed time: ')
         self.cLPdReadFile = getattr(self, 'cLPdReadFile', 'Reading input files: ')
         #------------------------------> Size

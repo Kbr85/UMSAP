@@ -15,6 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
+import _thread
 from pathlib import Path
 from typing  import Optional, Union, TYPE_CHECKING
 
@@ -866,7 +867,42 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             -------
             bool
         """
-        def Helper(pdbObj, tExp, tAlign, tDF, name):
+        #region ------------------------------------------------------> Helper
+        def _steps(*args) -> bool:                                              # pylint: disable=unused-argument
+            """Perform the pdb mapping in a different thread."""
+            #region -----------------------------------------------> Variables
+            msgStep = 'Preparing PDB mapping'
+            wx.CallAfter(dlp.UpdateStG, msgStep)
+            #------------------------------>
+            pdbObj   = cFile.PDBFile(pdbI)
+            pdbSeq   = pdbObj.GetSequence(pdbObj.rChain[0])
+            cut      = self.rObj.GetCleavagePerResidue(self.cSection, self.rDateC)
+            cEvol    = self.rObj.GetCleavageEvolution(self.cSection, self.rDateC)
+            blosum62 = substitution_matrices.load("BLOSUM62")
+            #endregion --------------------------------------------> Variables
+
+            #region -----------------------------------------------------> Run
+            msgStep = 'Performing sequence alignments'
+            wx.CallAfter(dlp.UpdateStG, msgStep)
+            #------------------------------>
+            align = pairwise2.align.globalds(                                       # type: ignore
+                pdbSeq, self.rRecSeqC, blosum62, -10, -0.5)
+            #------------------------------>
+            msgStep = 'Creating PDB files'
+            wx.CallAfter(dlp.UpdateStG, msgStep)
+            #------------------------------>
+            _helper(pdbObj, self.rDataC.labelA, align, cut, (self.rDateC, 'CpR'))
+            _helper(pdbObj, self.rDataC.labelA, align, cEvol, (self.rDateC, 'CEvol'))
+            #------------------------------>
+            msgStep = mConfig.core.lPdDone
+            wx.CallAfter(dlp.UpdateG)
+            wx.CallAfter(dlp.SuccessMessage, msgStep)
+            #endregion -------------------------------------------------> Run
+
+            return True
+        #---
+
+        def _helper(pdbObj, tExp, tAlign, tDF, name):
             """Writes to file
 
                 Parameters
@@ -887,7 +923,8 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
                 bool
             """
             #region -------------------------------------------------------->
-            idx = pd.IndexSlice
+            pdbRes = pdbObj.GetResNum(pdbObj.rChain[0])
+            idx    = pd.IndexSlice
             #------------------------------>
             for e in tExp:
                 #------------------------------>
@@ -911,7 +948,9 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
 
             return True
         #---
-        #region ---------------------------------------------------> dlg
+        #endregion ---------------------------------------------------> Helper
+
+        #region ---------------------------------------------------------> dlg
         dlg = cWindow.FA2Btn(
             ['PDB', 'Output'],
             ['Path to the PDB file', 'Path to the output folder'],
@@ -919,7 +958,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             [cValidator.InputFF('file'), cValidator.OutputFF('folder')],
             parent = self
         )
-        #endregion ------------------------------------------------> dlg
+        #endregion ------------------------------------------------------> dlg
 
         #region ---------------------------------------------------> Get Path
         if dlg.ShowModal():
@@ -930,24 +969,18 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             return False
         #endregion ------------------------------------------------> Get Path
 
-        #region ---------------------------------------------------> Variables
-        pdbObj   = cFile.PDBFile(pdbI)
-        pdbSeq   = pdbObj.GetSequence(pdbObj.rChain[0])
-        pdbRes   = pdbObj.GetResNum(pdbObj.rChain[0])
-        cut      = self.rObj.GetCleavagePerResidue(self.cSection, self.rDateC)
-        cEvol    = self.rObj.GetCleavageEvolution(self.cSection, self.rDateC)
-        blosum62 = substitution_matrices.load("BLOSUM62")
-        #endregion ------------------------------------------------> Variables
+        #region -------------------------------------------------------->
+        dlp = cWindow.Progress(self, 'Creating PDB files', 4)
+        #endregion ----------------------------------------------------->
 
-        #region -----------------------------------------------> Run
-        align = pairwise2.align.globalds(                                       # type: ignore
-            pdbSeq, self.rRecSeqC, blosum62, -10, -0.5)
+        #region -------------------------------------------------------->
+        _thread.start_new_thread(_steps, ('test',))
         #------------------------------>
-        Helper(pdbObj, self.rDataC.labelA, align, cut, (self.rDateC, 'CpR'))
-        Helper(pdbObj, self.rDataC.labelA, align, cEvol, (self.rDateC, 'CEvol'))
-        #endregion --------------------------------------------> Run
+        dlp.ShowModal()
+        #endregion ----------------------------------------------------->
 
         dlg.Destroy()
+        dlp.Destroy()
         return True
     #---
 

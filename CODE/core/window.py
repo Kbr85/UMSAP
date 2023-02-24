@@ -2643,6 +2643,11 @@ class FA2Btn(BaseDialogOkCancel):
         self.SetSizer(self.sSizer)
         self.Fit()
         #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Show
+        if parent is not None:
+            self.CenterOnParent()
+        #endregion -----------------------------------------------------> Show
     #---
     #endregion -----------------------------------------------> Instance setup
 
