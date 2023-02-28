@@ -53,8 +53,6 @@ class Configuration():
         'None'               : 'None',
         'Normal Distribution': 'ND',
     })
-    #------------------------------> Converter for user options
-    converter:dict = field(default_factory=lambda: {})
     #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration

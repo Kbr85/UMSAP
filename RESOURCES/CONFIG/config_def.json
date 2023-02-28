@@ -2,6 +2,43 @@
     "core": {
         "checkUpdate": true,
         "DPI": 100,
-        "MatPlotMargin": 0.025
+        "imgFormat": "png",
+        "cZebra": "#ffe6e6",
+        "cRecProt": "#808080",
+        "cNatProt": "#c94c4c",
+        "cFragment": [
+            "#ffef96",
+            "#92a8d1",
+            "#b1cbbb",
+            "#eea29a",
+            "#b0aac0",
+            "#f4a688",
+            "#d9ecd0",
+            "#b7d7e8",
+            "#fbefcc",
+            "#a2836e"
+        ],
+        "cBarColor": {
+            "K": "#0099ff",
+            "R": "#0099ff",
+            "C": "#70db70",
+            "H": "#70db70",
+            "Q": "#70db70",
+            "N": "#70db70",
+            "S": "#70db70",
+            "T": "#70db70",
+            "G": "#fffc00",
+            "P": "#fffc00",
+            "D": "#ff4d4d",
+            "E": "#ff4d4d",
+            "A": "#bebebe",
+            "I": "#bebebe",
+            "L": "#bebebe",
+            "V": "#bebebe",
+            "M": "#bebebe",
+            "F": "#ff51fd",
+            "W": "#ff51fd",
+            "Y": "#ff51fd"
+        }
     }
 }

@@ -18,7 +18,8 @@
 import _thread
 import os
 import webbrowser
-from typing import Literal, Optional
+from dataclasses import dataclass
+from typing      import Literal, Optional
 
 import requests
 from pubsub import pub
@@ -33,6 +34,30 @@ from help import window as hWindow
 
 
 LIT_Origin = Literal['menu', 'main']
+
+
+#region -------------------------------------------------------------> Classes
+@dataclass
+class Core():
+    """User defined options for core"""
+    #region ---------------------------------------------------------> Options
+    checkUpdate:bool
+    DPI:int
+    imgFormat:str
+    cZebra: str
+    cRecProt:str
+    cNatProt:str
+    cFragment:list[str]
+    cBarColor:dict
+    #endregion ------------------------------------------------------> Options
+#---
+
+@dataclass
+class UserConfig():
+    """User defined configuration options"""
+    core:Core
+#---
+#endregion ----------------------------------------------------------> Classes
 
 
 #region -------------------------------------------------------------> Methods
@@ -165,6 +190,7 @@ def Manual() -> bool:
     return True
 #---
 
+
 def Tutorial() -> bool:
     """Show the tutorial.
 
@@ -184,6 +210,7 @@ def Tutorial() -> bool:
     return True
 #---
 
+
 def CheckUpdate() -> bool:
     """Check for updates.
 
@@ -199,6 +226,7 @@ def CheckUpdate() -> bool:
     _thread.start_new_thread(UpdateCheck, ('menu',))
     return True
 #---
+
 
 def Preference() -> bool:
     """Set UMSAP preferences.
@@ -217,6 +245,21 @@ def Preference() -> bool:
     #endregion ----------------------------------------------------->
 
     return True
+#---
+
+
+def RGB2Hex(rgb:wx.Colour) -> str:
+    """Convert wx.Colour to hex.
+
+        Parameters
+        ----------
+        rgb: wx.Colour
+
+        Returns
+        -------
+        str
+    """
+    return '#{:02x}{:02x}{:02x}'.format(rgb.Red(), rgb.Green() , rgb.Blue())
 #---
 #endregion ----------------------------------------------------------> Methods
 

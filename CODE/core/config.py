@@ -159,12 +159,12 @@ class Configuration():
         ['A', 'I', 'L', 'V', 'M', 'F', 'W', 'Y', 'R', 'K', 'D', 'E', 'C', 'Q',
         'H', 'S', 'T', 'N', 'G', 'P'])
     lAAGroups:list[list[str]] = field(default_factory=lambda:                   # AA groups
-        [['A', 'I', 'L', 'V', 'M'],
-        ['F', 'W', 'Y'],
-        ['R', 'K'],
-        ['D', 'E'],
-        ['C', 'Q', 'H', 'S', 'T', 'N'],
-        ['G', 'P']])
+        [['K', 'R'],
+         ['C', 'H', 'Q', 'N', 'S', 'T'],
+         ['G', 'P'],
+         ['D', 'E'],
+         ['A', 'I', 'L', 'V', 'M'],
+         ['F', 'W', 'Y']])
     #------------------------------> Options
     oYesNo:dict    = field(default_factory=lambda: {                            # Cast to bool
         ''   : False,
@@ -286,6 +286,13 @@ class Configuration():
     fTreeItem:Union[wx.Font, str]              = ''
     fTreeItemDataFile:Union[wx.Font, str]      = ''
     fTreeItemDataFileFalse:Union[wx.Font, str] = ''
+    #------------------------------> Other
+    MatPlotMargin:float = 0.025                                                 # Margin for the axes range
+    cChi:dict = field(default_factory=lambda: {                                 # Chi results in AA
+        1 : 'Green',
+        0 : 'Red',
+        -1: 'Black',
+    })
     #------------------------------> To Load user configuration options
     confUserFile:bool = True                                                    # User configuration file is Ok
     confUserFileException:Optional[Exception] = None                            # Exception thrown when reading conf file
@@ -294,21 +301,21 @@ class Configuration():
     #------------------------------> User Configurable Options
     checkUpdate:bool    = True                                                  # True Check, False No check
     DPI:int             = 100                                                   # DPI for plot images
-    MatPlotMargin:float = 0.025                                                 # Margin for the axes range
+    imgFormat:str       = 'png'                                                 # Default format when saving multiple images
     #--------------> Colors
-    cZebra: str          = '#ffe6e6'                                            # Zebra style in wx.ListCrl
-    cRecProt:str         = 'gray'                                               # Color in Fragment representation
-    cNatProt:str         = '#c94c4c'                                            # Color in Fragment representation
-    cFragments:list[str] = field(default_factory=lambda: [                      # Color for Exp/Cond in Fragments
+    cZebra: str         = '#ffe6e6'                                             # Zebra style in wx.ListCrl
+    cRecProt:str        = 'gray'                                                # Color in Fragment representation
+    cNatProt:str        = '#c94c4c'                                             # Color in Fragment representation
+    cFragment:list[str] = field(default_factory=lambda: [                       # Color for Exp/Cond in Fragments
         '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
         '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e',
     ])
-    #------------------------------> Converter for user options
-    converter:dict = field(default_factory=lambda: {
-        'checkUpdate'  : bool,
-        'DPI'          : int,
-        'MatPlotMargin': float,
-        'cZebra'       : str,
+    cBarColor:dict = field(default_factory=lambda: {
+        'R': '#0099ff', 'K': '#0099ff', 'D': '#ff4d4d', 'W': '#FF51FD',
+        'E': '#ff4d4d', 'S': '#70db70', 'T': '#70db70', 'H': '#70db70',
+        'N': '#70db70', 'Q': '#70db70', 'C': '#70db70', 'G': '#FFFC00',
+        'P': '#FFFC00', 'A': '#BEBEBE', 'V': '#BEBEBE', 'I': '#BEBEBE',
+        'L': '#BEBEBE', 'M': '#BEBEBE', 'F': '#FF51FD', 'Y': '#FF51FD',
     })
     #endregion ------------------------------------------------------> Options
 

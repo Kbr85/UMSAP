@@ -139,8 +139,6 @@ class Configuration():
     cVolSel:str = '#6ac653'
     cFCAll:str  = '#d3d3d3'
     cCV:str     = 'gray'
-    #------------------------------> Converter for user options
-    converter:dict = field(default_factory=lambda: {})
     #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration

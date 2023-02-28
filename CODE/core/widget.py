@@ -301,6 +301,80 @@ class StaticTextCtrl():
 #---
 
 
+class StaticTextColor():
+    """Creates a wx.StaticText and a wx.ColourPickerCtrl.
+
+        Parameters
+        ----------
+        parent: wx.Window or None
+            Parent of the widgets.
+        setSizer: boolean
+            Set (True) or not (False) a sizer for the widgets.
+        stLabel: str
+            Label for the wx.StaticText. Default is 'Text'.
+        stTooltip: str or None
+            Tooltip for the wx.StaticText. Default is None.
+        cSize: wx.Size
+            Size of the wx.ColourPickerCtrl. Default is (30, 30).
+        cStyle: wxPython style
+            Style of the wx.ColourPickerCtrl.
+        cColor: wx.Colour
+            Initial color of the wx.ColourPickerCtrl.
+
+        Attributes
+        ----------
+        wSt: wx.StaticText
+            The wx.StaticText.
+        wC: wx.ColourPickerCtrl
+            The wx.ColourPickerCtrl.
+        Sizer: wx.BoxSizer or None
+
+        Notes
+        -----
+        The wx.ColourPickerCtrl is placed to the right of the wx.StaticText if
+        a sizer is created.
+    """
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self,
+        parent:wx.Window,
+        setSizer:bool                          = False,
+        stLabel:str                            = 'Text',
+        stTooltip:str                          = '',
+        cSize:Union[wx.Size, tuple[int, int]]  = (30, 30),
+        cStyle:int                             = 0,
+        cColor:Union[wx.Colour,str]            = 'white',
+        ) -> None:
+        """"""
+        #region -----------------------------------------------------> Widgets
+        self.wSt = wx.StaticText(parent=parent, label=stLabel)
+        #-------------->
+        self.wC = wx.ColourPickerCtrl(
+            parent    = parent,
+            size      = cSize,
+            style     = cStyle,
+            colour    = cColor,
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ---------------------------------------------------> Tooltips
+        if stTooltip:
+            self.wSt.SetToolTip(stTooltip)
+        #endregion ------------------------------------------------> Tooltips
+
+        #region ------------------------------------------------------> Sizers
+        if setSizer:
+            self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
+            self.Sizer.Add(self.wSt, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+            self.Sizer.Add(self.wC,  0, wx.ALIGN_CENTER|wx.ALL, 5)
+        else:
+            self.Sizer = None
+        #endregion ---------------------------------------------------> Sizers
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
+
+
 class StaticTextComboBox():
     """Creates a wx.StaticText and wx.ComboBox.
 

@@ -100,7 +100,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         mConfig.core.kwSec : '{}-Intensity-Representation.tiff',
     }
     #------------------------------>
-    cFragment = mConfig.tarp.cFragment
+    cFragment = mConfig.core.cFragment
     cCtrl     = mConfig.tarp.cCtrl
     #endregion --------------------------------------------------> Class setup
 
@@ -1086,11 +1086,11 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
     #region -----------------------------------------------------> Class setup
     cName     = mConfig.tarp.nwAAPlot
     cSection  = mConfig.tarp.nuAA
-    cFragment = mConfig.tarp.cFragment
+    cFragment = mConfig.core.cFragment
     cCtrl     = mConfig.tarp.cCtrl
-    cBarColor = mConfig.tarp.cBarColor
+    cBarColor = mConfig.core.cBarColor
     cXaa      = mConfig.tarp.cXaa
-    cChi      = mConfig.tarp.cChi
+    cChi      = mConfig.core.cChi
     #------------------------------>
     rBandWidth = 0.8
     rBandStart = 0.4
@@ -1550,7 +1550,7 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
     #region -----------------------------------------------------> Class setup
     cName     = mConfig.tarp.nwHistPlot
     cSection  = mConfig.tarp.nuHist
-    cFragment = mConfig.tarp.cFragment
+    cFragment = mConfig.core.cFragment
     cRec = {
         True : 'Nat',
         False: 'Rec',
@@ -1853,7 +1853,7 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
     #region -----------------------------------------------------> Class setup
     cName     = mConfig.tarp.nwCpRPlot
     cSection  = mConfig.tarp.nuCpR
-    cFragment = mConfig.tarp.cFragment
+    cFragment = mConfig.core.cFragment
     #------------------------------>
     cNat = {
         True : 'Nat',

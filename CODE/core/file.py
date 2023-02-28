@@ -430,13 +430,13 @@ class FastaFile():
         #endregion ------------------------------------------------> Get delta
     #---
 
-    def GetNatProtLoc(self) -> list[int]:
+    def GetNatProtLoc(self) -> tuple[int,int]:
         """Get the location of the Native sequence inside the Recombinant
             sequence.
 
             Returns
             -------
-            list
+            tuple
                 First and last residue.
 
             Notes
@@ -471,7 +471,7 @@ class FastaFile():
         lr = self.rSeqLengthRec if lr is None else lr
         #endregion ---------------------------------------> Get Right Position
 
-        return [ll, lr]
+        return (ll, lr)
     #---
     #endregion ------------------------------------------------> Class methods
 #---

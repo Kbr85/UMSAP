@@ -15,7 +15,8 @@
 
 
 #region -------------------------------------------------------------> Imports
-from typing import Optional, Union
+import dataclasses
+from typing import Optional, Union, TYPE_CHECKING
 
 import wx
 import wx.lib.agw.hyperlink as hl
@@ -24,8 +25,12 @@ from wx import adv
 from config.config import config as mConfig
 from core import file   as cFile
 from core import window as cWindow
+from help import method as hMethod
 from help import pane   as hPane
 from main import menu   as mMenu
+
+if TYPE_CHECKING:
+    import config.config as config
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -126,12 +131,12 @@ class WindowAbout(cWindow.BaseWindow):
 class Preference(wx.Dialog):
     """Set the UMSAP preferences."""
     #region -----------------------------------------------------> Class setup
-    cName = mConfig.help.ndPreferences
+    cName  = mConfig.help.ndPreferences
     cTitle = mConfig.help.tdPrefUpdate
     #------------------------------>
     cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
     #------------------------------>
-    cSize = (340,200)
+    cSize = (540,400)
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -150,15 +155,17 @@ class Preference(wx.Dialog):
         #region -----------------------------------------------------> Widgets
         self.wNoteBook = wx.Notebook(self, style=wx.NB_TOP)
         #------------------------------>
-        self.wUpdate = hPane.PrefUpdate(self.wNoteBook)
-        self.wNoteBook.AddPage(self.wUpdate, self.wUpdate.cLTab)
+        self.wCore = hPane.PrefGeneral(self.wNoteBook)
+        self.wNoteBook.AddPage(self.wCore, self.wCore.cLTab)
+        self.wCorrA = wx.Panel(self.wNoteBook)
+        self.wNoteBook.AddPage(self.wCorrA, 'CorrA')
         #------------------------------>
         self.sBtn = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.NO)
         self.FindWindowById(wx.ID_OK).SetLabel('Save')
         self.FindWindowById(wx.ID_CANCEL).SetLabel('Cancel')
         self.FindWindowById(wx.ID_NO).SetLabel('Load Defaults')
         #------------------------------>
-        self.OnDefault('fEvent')
+        self.SetConfValues(mConfig)
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
@@ -184,7 +191,7 @@ class Preference(wx.Dialog):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
+    #region ---------------------------------------------------> Event Methods
     def OnSave(self, event:wx.CommandEvent) -> bool:                            # pylint: disable=unused-argument
         """Save the preferences.
 
@@ -197,35 +204,15 @@ class Preference(wx.Dialog):
             -------
             bool
         """
-        #region ---------------------------------------------------> Set
-        #------------------------------> Update
-        mConfig.core.checkUpdate = not bool(
-            self.wUpdate.wRBox.GetSelection())
-        #endregion ------------------------------------------------>
-
-        #region ---------------------------------------------------> Save
-        data = {}
-        #------------------------------>
-        for secStr in mConfig.core.confList:
-            #------------------------------>
-            sec = getattr(mConfig, secStr, None)
-            #------------------------------>
-            if sec is None:
-                continue
-            #------------------------------>
-            secDict = {}
-            for k in sec.converter:
-                secDict[k] = getattr(sec, k)
-            #------------------------------>
-            data[secStr] = secDict
-        #------------------------------>
+        #region -------------------------------------------------------->
         try:
-            cFile.WriteJSON(mConfig.core.fConfig, data)
+            self.Save()
         except Exception as e:
-            msg = 'Configuration options could not be saved.'
-            cWindow.Notification('errorF', msg=msg, tException=e)
+            msg = ('It was not possible to save the values of the '
+                   'configuration options.')
+            cWindow.Notification('errorU', msg=msg, tException=e)
             return False
-        #endregion ------------------------------------------------>
+        #endregion ----------------------------------------------------->
 
         self.EndModal(1)
         return True
@@ -247,7 +234,7 @@ class Preference(wx.Dialog):
         return True
     #---
 
-    def OnDefault(self, event:Union[wx.CommandEvent, str]) -> bool:
+    def OnDefault(self, event:wx.CommandEvent) -> bool:                         # pylint: disable=unused-argument
         """Set default options.
 
             Parameters
@@ -259,103 +246,123 @@ class Preference(wx.Dialog):
             -------
             bool
         """
-        #region --------------------------------------------------->
-        if isinstance(event, str):
-            data = self.GetConfConf()
-        else:
-            data = self.GetConfFile()
-        #endregion ------------------------------------------------>
-
-        #region --------------------------------------------------->
-        if data:
-            return self.SetConfValues(data)
-        #endregion ------------------------------------------------>
-
-        return False
-    #---
-
-    def GetConfFile(self) -> dict:
-        """Get default data from file.
-
-            Parameters
-            ----------
-             event : wx.CommandEvent
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------->
+        #region -------------------------------------------------------->
         try:
-            data = cFile.ReadJSON(mConfig.core.fConfigDef)
+            self.SetDefault()
         except Exception as e:
-            msg = 'It was not possible to read the default configuration file.'
-            cWindow.Notification('errorF', msg=msg, tException=e)
-            return {}
-        #endregion ------------------------------------------------>
+            self.SetConfValues(mConfig)
+            #------------------------------>
+            msg = ('It was not possible to load the default values for '
+                   'the configuration options.\nThe options displayed are the '
+                   'ones currently in use.')
+            cWindow.Notification('errorU', msg=msg, tException=e)
+        #endregion ----------------------------------------------------->
 
-        return data
+        return True
     #---
+    #endregion ------------------------------------------------> Event Methods
 
-    def GetConfConf(self) -> dict:
-        """Get default options from current options.
+    #region ---------------------------------------------------> Class Methods
+    def SetConfValues(
+        self,
+        data:Union['config.Configuration', 'hMethod.UserConfig'],
+        ) -> bool:
+        """Set the option values.
 
             Parameters
             ----------
-             event : wx.CommandEvent
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------->
-        data = {}
-        #------------------------------>
-        for secStr in mConfig.core.confList:
-            #------------------------------>
-            sec = getattr(mConfig, secStr, None)
-            #------------------------------>
-            if sec is None:
-                continue
-            #------------------------------>
-            secDict = {}
-            for k in sec.converter:
-                secDict[k] = getattr(sec,k)
-            #------------------------------>
-            data[secStr] = secDict
-        #endregion ------------------------------------------------>
-
-        return data
-    #---
-
-    def SetConfValues(self, data:dict) -> bool:
-        """Set the default values.
-
-            Parameters
-            ----------
-            data: dict
+            data: config.Configuration or hMethod.UserConfig
                 Data to be set.
 
             Returns
             -------
             bool
         """
-        #region --------------------------------------------------->
-        try:
-            #------------------------------> Update
-            val = 0 if data['core']['checkUpdate'] else 1
-            self.wUpdate.wRBox.SetSelection(val)
-        except Exception as e:
-            msg = 'Something went wrong when loading the configuration options.'
-            cWindow.Notification('errorU', msg=msg, tException=e)
-            return False
-        #endregion ------------------------------------------------>
+        #region --------------------------------------------------------> Core
+        #------------------------------> Updates
+        val = 1 if data.core.checkUpdate else 0
+        #------------------------------> Colors
+        self.wCore.wUpdate.SetSelection(val)
+        self.wCore.wZebra.wC.SetColour(data.core.cZebra)
+        self.wCore.wProtRec.wC.SetColour(data.core.cRecProt)
+        self.wCore.wProtNat.wC.SetColour(data.core.cNatProt)
+        for k,v in enumerate(data.core.cFragment):
+            self.wCore.wFrag[k].wC.SetColour(v)
+        for k in mConfig.core.lAAGroups:
+            self.wCore.wAA[k[0]].wC.SetColour(data.core.cBarColor[k[0]])
+        #------------------------------>
+        self.wCore.wDPI.wCb.SetValue(str(data.core.DPI))
+        self.wCore.wFormat.wCb.SetValue(data.core.imgFormat)
+        #endregion -----------------------------------------------------> Core
 
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+
+    def Save(self) -> bool:
+        """Save configuration options.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------------> Data
+        #------------------------------> Core
+        frag = [hMethod.RGB2Hex(x.wC.GetColour()) for x in self.wCore.wFrag]
+        aa   = {}
+        for k in mConfig.core.lAAGroups:
+            for a in k:
+                aa[a] = hMethod.RGB2Hex(self.wCore.wAA[k[0]].wC.GetColour())
+        #-------------->
+        core = hMethod.Core(
+            checkUpdate = bool(self.wCore.wUpdate.GetSelection()),
+            DPI         = int(self.wCore.wDPI.wCb.GetValue()),
+            imgFormat   = self.wCore.wFormat.wCb.GetValue(),
+            cZebra      = hMethod.RGB2Hex(self.wCore.wZebra.wC.GetColour()),
+            cRecProt    = hMethod.RGB2Hex(self.wCore.wProtRec.wC.GetColour()),
+            cNatProt    = hMethod.RGB2Hex(self.wCore.wProtNat.wC.GetColour()),
+            cFragment   = frag,
+            cBarColor   = aa,
+        )
+        #------------------------------> Full Options
+        userOpt = dataclasses.asdict(hMethod.UserConfig(core))
+        #endregion -----------------------------------------------------> Data
+
+        #region -------------------------------------------------> Save 2 File
+        cFile.WriteJSON(mConfig.core.fConfig, userOpt)
+        #endregion ----------------------------------------------> Save 2 File
+
+        #region --------------------------------------------------> Set Values
+        for k,v in userOpt.items():
+            sec = getattr(mConfig, k)
+            for j,w in v.items():
+                setattr(sec, j, w)
+        #endregion -----------------------------------------------> Set Values
+
+        return True
+    #---
+
+    def SetDefault(self) -> bool:
+        """Load default values.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        data = cFile.ReadJSON(mConfig.core.fConfigDef)
+        #------------------------------>
+        core = hMethod.Core(**data['core'])
+        #------------------------------>
+        userOpt = hMethod.UserConfig(core)
+        #endregion ----------------------------------------------------->
+
+        #region -------------------------------------------------------->
+        self.SetConfValues(userOpt)
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class Methods
 #---
 
 

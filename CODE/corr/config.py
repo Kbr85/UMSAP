@@ -48,8 +48,6 @@ class Configuration():
         'c3': (0, 0, 255),
         'NA': '#90EE90',
     })
-    #------------------------------> Converter for user options
-    converter:dict = field(default_factory=lambda: {})
     #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration

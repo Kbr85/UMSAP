@@ -15,7 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -27,8 +27,8 @@ class Configuration():
     nwAbout:str                = 'Window About UMSAP'
     ndCheckUpdateResDialog:str = 'Dialog Check for Updates'
     ndPreferences:str          = 'Dialog Preferences'
-    ntPrefUpdate:str           = 'Updates'
-    npPrefUpdate:str           = 'Pane Preference Update'
+    ntPrefGeneral:str          = 'General'
+    npPrefGeneral:str          = 'Pane Preference Update'
     twAbout: str               = 'About UMSAP'
     tdPrefUpdate:str           = 'Preferences'
     tdCheckUpdate:str          = 'Check for Updates'
@@ -38,7 +38,5 @@ class Configuration():
     kwManual:str     = 'help.Manual'
     kwCheckUp:str    = 'help.CheckUp'
     kwPreference:str = 'help.Preference'
-    #------------------------------> Converter for user options
-    converter:dict = field(default_factory=lambda: {})
 #---
 #endregion ----------------------------------------------------> Configuration

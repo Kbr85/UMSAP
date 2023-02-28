@@ -117,10 +117,10 @@ class BaseUserData():
     dfNC:list[int]          = field(default_factory=lambda: [2,3])              # Location of N, C residue numbers in Recombinant Protein
     dfNCF:list[int]         = field(default_factory=lambda: [4,5])              # Location of N, C residue numbers in Native Protein
     #------------------------------>
-    protLoc:list[int]       = field(default_factory=lambda: [-1, -1])           # Location of the Native Sequence in the Recombinant Sequence
-    protLength:list[int]    = field(default_factory=lambda: [1, 0])             # Length of Recombinant and Natural Protein
-    protDelta:Optional[int] = None                                              # To calculate Native residue number from Recombinant residue number
-    converterRead:dict      = field(default_factory=lambda:{                    # Set proper type when reading from file
+    protLoc:tuple[int, int]    = (-1, -1)                                       # Location of the Native Sequence in the Recombinant Sequence
+    protLength:tuple[int, int] = (1, 0)                                         # Length of Recombinant and Natural Protein
+    protDelta:Optional[int]    = None                                           # To calculate Native residue number from Recombinant residue number
+    converterRead:dict         = field(default_factory=lambda:{                 # Set proper type when reading from file
         'uFile'  : Path,
         'iFile'  : Path,
         'seqFile': Path,
