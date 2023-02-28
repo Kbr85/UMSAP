@@ -1068,7 +1068,7 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
             #------------------------------> Export
             try:
                 for k, v in self.wPlot.items():
-                    fPath = p / self.cImgName[k].format(self.rDateC)
+                    fPath = p / self.cImgName[k].format(self.rDateC, mConfig.core.imgFormat)
                     #------------------------------> Do not overwrite
                     if fPath.exists():
                         fPath = fPath.with_stem(f"{fPath.stem} - {date}")

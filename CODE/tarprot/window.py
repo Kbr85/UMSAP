@@ -96,8 +96,8 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
     cSWindow = (1100, 800)
     #------------------------------>
     cImgName   = {
-        mConfig.core.kwMain: '{}-Protein-Fragments.tiff',
-        mConfig.core.kwSec : '{}-Intensity-Representation.tiff',
+        mConfig.core.kwMain: '{}-Protein-Fragments.{}',
+        mConfig.core.kwSec : '{}-Intensity-Representation.{}',
     }
     #------------------------------>
     cFragment = mConfig.core.cFragment

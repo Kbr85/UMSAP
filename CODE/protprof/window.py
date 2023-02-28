@@ -182,8 +182,8 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
     #------------------------------> Other
     cNPlotCol = 2
     cImgName   = {
-        mConfig.prot.kwVol: '{}-Vol-{}.tiff',
-        mConfig.prot.kwFC : '{}-Evol-{}.tiff',
+        mConfig.prot.kwVol: '{}-Vol-{}.{}',
+        mConfig.prot.kwFC : '{}-Evol-{}.{}',
     }
     #------------------------------> Color
     cCV      = mConfig.prot.cCV
@@ -1754,7 +1754,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
                     else:
                         nameP = f'{self.rLCIdx}'
                     #------------------------------> file path
-                    fPath = p / self.cImgName[k].format(self.rDateC, nameP)
+                    fPath = p / self.cImgName[k].format(self.rDateC, nameP, mConfig.core.imgFormat)
                     #------------------------------> Do not overwrite
                     if fPath.exists():
                         fPath = fPath.with_stem(f"{fPath.stem} - {date}")

@@ -770,7 +770,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             try:
                 for k, v in self.wPlot.dPlot.items():
                     #------------------------------> file path
-                    fPath = p / self.cImgName[k].format(self.rDateC, col, 'tiff')
+                    fPath = p / self.cImgName[k].format(self.rDateC, col, mConfig.core.imgFormat)
                     #------------------------------> Do not overwrite
                     if fPath.exists():
                         fPath = fPath.with_stem(f"{fPath.stem} - {date}")
