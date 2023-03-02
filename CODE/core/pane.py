@@ -565,6 +565,16 @@ class BaseConfPanel(
     #endregion ------------------------------------------------> Event Methods
 
     #region ---------------------------------------------------> Class Methods
+    def SetConfOptions(self) -> bool:
+        """Set Field values to the configuration values.
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
     def LCtrlEmpty(self) -> bool:
         """Clear wx.ListCtrl and NCol.
 

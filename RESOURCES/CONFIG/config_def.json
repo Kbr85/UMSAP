@@ -40,5 +40,17 @@
             "W": "#ff51fd",
             "Y": "#ff51fd"
         }
+    },
+    "corr": {
+        "CMAP": {
+            "N": 128,
+            "c1": "#ff0000",
+            "c2": "#ffffff",
+            "c3": "#0000ff",
+            "NA": "#90ee90"
+        },
+        "corrMethod": "",
+        "axisLabel": "Names",
+        "showBar": false
     }
 }

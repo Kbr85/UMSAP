@@ -136,7 +136,7 @@ class Preference(wx.Dialog):
     #------------------------------>
     cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
     #------------------------------>
-    cSize = (540,400)
+    cSize = (470,730)
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -155,10 +155,10 @@ class Preference(wx.Dialog):
         #region -----------------------------------------------------> Widgets
         self.wNoteBook = wx.Notebook(self, style=wx.NB_TOP)
         #------------------------------>
-        self.wCore = hPane.PrefGeneral(self.wNoteBook)
+        self.wCore = hPane.General(self.wNoteBook)
         self.wNoteBook.AddPage(self.wCore, self.wCore.cLTab)
-        self.wCorrA = wx.Panel(self.wNoteBook)
-        self.wNoteBook.AddPage(self.wCorrA, 'CorrA')
+        self.wCorrA = hPane.CorrA(self.wNoteBook)
+        self.wNoteBook.AddPage(self.wCorrA, self.wCorrA.cLTab)
         #------------------------------>
         self.sBtn = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.NO)
         self.FindWindowById(wx.ID_OK).SetLabel('Save')
@@ -290,10 +290,21 @@ class Preference(wx.Dialog):
             self.wCore.wFrag[k].wC.SetColour(v)
         for k in mConfig.core.lAAGroups:
             self.wCore.wAA[k[0]].wC.SetColour(data.core.cBarColor[k[0]])
-        #------------------------------>
+        #------------------------------> Images
         self.wCore.wDPI.wCb.SetValue(str(data.core.DPI))
         self.wCore.wFormat.wCb.SetValue(data.core.imgFormat)
         #endregion -----------------------------------------------------> Core
+
+        #region -------------------------------------------------------> CorrA
+        self.wCorrA.wMethod.wCb.SetValue(data.corr.corrMethod)
+        self.wCorrA.wBar.wCb.SetValue('True' if data.corr.showBar else 'False')
+        self.wCorrA.wCol.wCb.SetValue(data.corr.axisLabel)
+        #------------------------------> Colors
+        self.wCorrA.wC[0].wC.SetColour(data.corr.CMAP['c1'])
+        self.wCorrA.wC[1].wC.SetColour(data.corr.CMAP['c2'])
+        self.wCorrA.wC[2].wC.SetColour(data.corr.CMAP['c3'])
+        self.wCorrA.wC[3].wC.SetColour(data.corr.CMAP['NA'])
+        #endregion ----------------------------------------------------> CorrA
 
         return True
     #---
@@ -312,7 +323,7 @@ class Preference(wx.Dialog):
         for k in mConfig.core.lAAGroups:
             for a in k:
                 aa[a] = hMethod.RGB2Hex(self.wCore.wAA[k[0]].wC.GetColour())
-        #-------------->
+        #-->
         core = hMethod.Core(
             checkUpdate = bool(self.wCore.wUpdate.GetSelection()),
             DPI         = int(self.wCore.wDPI.wCb.GetValue()),
@@ -323,8 +334,22 @@ class Preference(wx.Dialog):
             cFragment   = frag,
             cBarColor   = aa,
         )
+        #------------------------------> CorrA
+        corrA = hMethod.CorrA(
+            CMAP= {
+                'N' : 128,
+                'c1': hMethod.RGB(self.wCorrA.wC[0].wC.GetColour()),
+                'c2': hMethod.RGB(self.wCorrA.wC[1].wC.GetColour()),
+                'c3': hMethod.RGB(self.wCorrA.wC[2].wC.GetColour()),
+                'NA': hMethod.RGB(self.wCorrA.wC[3].wC.GetColour()),
+            },
+            corrMethod = self.wCorrA.wMethod.wCb.GetValue(),
+            axisLabel  = self.wCorrA.wCol.wCb.GetValue(),
+            showBar    = True if self.wCorrA.wBar.wCb.GetValue() == 'True' else False,
+        )
         #------------------------------> Full Options
-        userOpt = dataclasses.asdict(hMethod.UserConfig(core))
+        userOpt = dataclasses.asdict(hMethod.UserConfig(
+            core, corrA))
         #endregion -----------------------------------------------------> Data
 
         #region -------------------------------------------------> Save 2 File
@@ -351,9 +376,10 @@ class Preference(wx.Dialog):
         #region -------------------------------------------------------->
         data = cFile.ReadJSON(mConfig.core.fConfigDef)
         #------------------------------>
-        core = hMethod.Core(**data['core'])
+        core  = hMethod.Core(**data['core'])
+        corrA = hMethod.CorrA(**data['corr'])
         #------------------------------>
-        userOpt = hMethod.UserConfig(core)
+        userOpt = hMethod.UserConfig(core, corrA)
         #endregion ----------------------------------------------------->
 
         #region -------------------------------------------------------->

@@ -24,7 +24,7 @@ from core import widget as cWidget
 
 
 #region -------------------------------------------------------------> Classes
-class PrefGeneral(scrolled.ScrolledPanel):
+class General(scrolled.ScrolledPanel):
     """Panel for the Preferences window.
 
         Parameters
@@ -33,9 +33,9 @@ class PrefGeneral(scrolled.ScrolledPanel):
             Parent of the pane.
     """
     #region -----------------------------------------------------> Class setup
-    cName = mConfig.help.npPrefGeneral
+    cName = mConfig.help.npGeneral
     #------------------------------>
-    cLTab = mConfig.help.ntPrefGeneral
+    cLTab = mConfig.help.ntGeneral
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -142,7 +142,7 @@ class PrefGeneral(scrolled.ScrolledPanel):
         for k in self.wAA.values():
             self.sSbAAW.Add(k.Sizer, 0, wx.ALIGN_RIGHT|wx.ALL, 2)
         self.sSbAA = wx.StaticBoxSizer(self.wSbAA, wx.VERTICAL)
-        self.sSbAA.Add(self.sSbAAW, 0, wx.VERTICAL|wx.ALL, 0)
+        self.sSbAA.Add(self.sSbAAW, 0, wx.ALIGN_CENTER|wx.ALL, 0)
         #--> Protein representation
         self.sSbProtW = wx.BoxSizer(wx.HORIZONTAL)
         self.sSbProtW.Add(self.wProtRec.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
@@ -163,6 +163,109 @@ class PrefGeneral(scrolled.ScrolledPanel):
         self.sSizer.Add(self.wUpdate,  0, wx.EXPAND|wx.ALL, 5)
         self.sSizer.Add(self.sSbColor, 0, wx.EXPAND|wx.ALL, 5)
         self.sSizer.Add(self.sSbImg,   0, wx.EXPAND|wx.ALL, 5)
+        #-->
+        self.SetSizer(self.sSizer)
+        self.sSizer.Fit(self)
+        self.SetupScrolling()
+        #endregion ---------------------------------------------------> Sizers
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
+
+
+class CorrA(scrolled.ScrolledPanel):
+    """Panel for the CorrA Preferences window.
+
+        Parameters
+        ----------
+        parent: wx.Window
+            Parent of the pane.
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = mConfig.help.npCorrA
+    #------------------------------>
+    cLTab = mConfig.help.ntCorrA
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent, name=self.cName)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wSbMethod = wx.StaticBox(self, label='Correlation Analysis')
+        self.wMethod = cWidget.StaticTextComboBox(
+            self,
+            label    = 'Method',
+            tooltip  = 'Select the Correlation Method to use as default.',
+            choices  = mConfig.corr.oCorrMethod,
+            setSizer = True,
+        )
+        #------------------------------> Plot
+        self.wSbRes = wx.StaticBox(self, label='Result Plot')
+        self.wCol = cWidget.StaticTextComboBox(
+            self.wSbRes,
+            label   = 'Axis Label',
+            choices = ['Names', 'Numbers'],
+            tooltip = ('Use Column Names or Column Numbers for the labels '
+                       'in the axis.'),
+            setSizer = True,
+        )
+        self.wBar = cWidget.StaticTextComboBox(
+            self.wSbRes,
+            label    = 'Show Color Bar',
+            choices  = ['False', 'True'],
+            tooltip  = 'Show the color bar by default or hide it.',
+            setSizer = True,
+        )
+        #------------------------------> Color
+        self.wSbColor    = wx.StaticBox(self, label='Colors')
+        self.wSbGradient = wx.StaticBox(self.wSbColor, label='Gradient')
+        self.wC = []
+        for x in ['-1', '0', '1']:
+            self.wC.append(
+                cWidget.StaticTextColor(
+                    parent   = self.wSbGradient,
+                    setSizer = True,
+                    stLabel  = x,
+            ))
+        self.wC.append(
+            cWidget.StaticTextColor(
+                    parent   = self.wSbGradient,
+                    setSizer = True,
+                    stLabel  = 'NA',
+        ))
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sSbMethodW = wx.BoxSizer(wx.HORIZONTAL)
+        self.sSbMethodW.Add(self.wMethod.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        #-->
+        self.sSbMethod = wx.StaticBoxSizer(self.wSbMethod, wx.VERTICAL)
+        self.sSbMethod.Add(self.sSbMethodW, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        #------------------------------>
+        self.sSbGradientW = wx.BoxSizer(wx.HORIZONTAL)
+        for k in self.wC:
+            self.sSbGradientW.Add(k.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbGradient = wx.StaticBoxSizer(self.wSbGradient, wx.VERTICAL)
+        self.sSbGradient.Add(self.sSbGradientW, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        #-->
+        self.sSbColor = wx.StaticBoxSizer(self.wSbColor, wx.VERTICAL)
+        self.sSbColor.Add(self.sSbGradient, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        #------------------------------>
+        self.sSbResW = wx.BoxSizer(wx.HORIZONTAL)
+        self.sSbResW.Add(self.wCol.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbResW.Add(self.wBar.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        #-->
+        self.sSbRes = wx.StaticBoxSizer(self.wSbRes, wx.VERTICAL)
+        self.sSbRes.Add(self.sSbResW, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        #------------------------------>
+        self.sSizer = wx.BoxSizer(orient=wx.VERTICAL)
+        self.sSizer.Add(self.sSbMethod, 0, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sSbColor,  0, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sSbRes,    0, wx.EXPAND|wx.ALL, 5)
         #-->
         self.SetSizer(self.sSizer)
         self.sSizer.Fit(self)

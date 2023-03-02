@@ -52,10 +52,24 @@ class Core():
     #endregion ------------------------------------------------------> Options
 #---
 
+
+@dataclass
+class CorrA():
+    """User defined options for correlation analysis"""
+    #region ---------------------------------------------------------> Options
+    CMAP:dict
+    corrMethod:str
+    axisLabel:str
+    showBar:bool
+    #endregion ------------------------------------------------------> Options
+#---
+
+
 @dataclass
 class UserConfig():
     """User defined configuration options"""
     core:Core
+    corr:CorrA
 #---
 #endregion ----------------------------------------------------------> Classes
 
@@ -260,6 +274,22 @@ def RGB2Hex(rgb:wx.Colour) -> str:
         str
     """
     return '#{:02x}{:02x}{:02x}'.format(rgb.Red(), rgb.Green() , rgb.Blue())
+#---
+
+
+def RGB(rgb:wx.Colour) -> list[int]:
+    """Get RGB as a list.
+
+        Parameters
+        ----------
+        rgb: wx.Colour
+
+        Returns
+        -------
+        list[int]
+            [255,255,255]
+    """
+    return [rgb.Red(), rgb.Green(), rgb.Blue()]
 #---
 #endregion ----------------------------------------------------------> Methods
 

@@ -292,7 +292,7 @@ class StaticTextCtrl():
         if setSizer:
             self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
             self.Sizer.Add(self.wSt, 0, wx.ALIGN_CENTER|wx.ALL, 5)
-            self.Sizer.Add(self.wTc, 1, wx.EXPAND|wx.ALL, 5)
+            self.Sizer.Add(self.wTc, 0, wx.ALIGN_CENTER|wx.ALL, 5)
         else:
             self.Sizer = None
         #endregion ---------------------------------------------------> Sizers
@@ -439,7 +439,7 @@ class StaticTextComboBox():
         if setSizer:
             self.Sizer = wx.BoxSizer(wx.HORIZONTAL)
             self.Sizer.Add(self.wSt, 0, wx.ALIGN_CENTER|wx.ALL, 5)
-            self.Sizer.Add(self.wCb, 1, wx.EXPAND|wx.ALL, 5)
+            self.Sizer.Add(self.wCb, 0, wx.ALIGN_CENTER|wx.ALL, 5)
         else:
             self.Sizer = None
         #endregion ---------------------------------------------------> Sizers
