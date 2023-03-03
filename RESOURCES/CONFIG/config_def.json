@@ -44,13 +44,40 @@
     "corr": {
         "CMAP": {
             "N": 128,
-            "c1": "#ff0000",
-            "c2": "#ffffff",
-            "c3": "#0000ff",
-            "NA": "#90ee90"
+            "c1": [
+                255,
+                0,
+                0
+            ],
+            "c2": [
+                255,
+                255,
+                255
+            ],
+            "c3": [
+                0,
+                0,
+                255
+            ],
+            "NA": [
+                144,
+                238,
+                144
+            ]
         },
         "corrMethod": "",
         "axisLabel": "Names",
         "showBar": false
+    },
+    "data": {
+        "ceroT": "",
+        "tranMethod": "",
+        "normMethod": "",
+        "impMethod": "",
+        "shift": "1.8",
+        "width": "0.3",
+        "cBar": "#3b75af",
+        "cBarI": "#519e3e",
+        "cPDF": "#ef8838"
     }
 }

@@ -72,8 +72,8 @@ class BaseUserData():
     tran:LIT_Tran  = ''                                                         # Transformation method
     norm:LIT_Norm  = ''                                                         # Normalization method
     imp:LIT_Imp    = ''                                                         # Imputation Method
-    shift:float    = float(mConfig.data.Shift)                                  # Center shift
-    width:float    = float(mConfig.data.Width)                                  # Stdev value
+    shift:float    = float(mConfig.data.shift)                                  # Center shift
+    width:float    = float(mConfig.data.width)                                  # Stdev value
     targetProt:str = ''                                                         # Target Protein
     scoreVal:float = 0                                                          # Minimum Score value
     #------------------------------> Statistic options

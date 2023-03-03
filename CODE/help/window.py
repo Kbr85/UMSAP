@@ -136,13 +136,16 @@ class Preference(wx.Dialog):
     #------------------------------>
     cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
     #------------------------------>
-    cSize = (470,730)
+    cSize = (740,740)
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
     def __init__(self):
         """ """
         #region -----------------------------------------------> Initial Setup
+        self.rErrorMsg  = ''
+        self.rException = ''
+        #------------------------------>
         super().__init__(
             None,
             title = self.cTitle,
@@ -159,6 +162,8 @@ class Preference(wx.Dialog):
         self.wNoteBook.AddPage(self.wCore, self.wCore.cLTab)
         self.wCorrA = hPane.CorrA(self.wNoteBook)
         self.wNoteBook.AddPage(self.wCorrA, self.wCorrA.cLTab)
+        self.wData = hPane.Data(self.wNoteBook)
+        self.wNoteBook.AddPage(self.wData, self.wData.cLTab)
         #------------------------------>
         self.sBtn = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.NO)
         self.FindWindowById(wx.ID_OK).SetLabel('Save')
@@ -183,6 +188,13 @@ class Preference(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.OnDefault, id=wx.ID_NO)
         #endregion -----------------------------------------------------> Bind
 
+        #region -------------------------------------------------> Check Input
+        self.rCheckUserInput = {
+            f'{self.wData.cLTab} - {self.wData.cLShift}' : [self.wData.wShift.wTc, mConfig.core.mOneRPlusNum],
+            f'{self.wData.cLTab} - {self.wData.cLWidth}' : [self.wData.wWidth.wTc, mConfig.core.mOneRPlusNum],
+        }
+        #endregion ----------------------------------------------> Check Input
+
         #region ---------------------------------------------> Window position
         self.Center()
         self.ShowModal()
@@ -206,11 +218,18 @@ class Preference(wx.Dialog):
         """
         #region -------------------------------------------------------->
         try:
-            self.Save()
+            if not self.Save():
+                cWindow.Notification(
+                    'errorF',
+                    msg        = self.rErrorMsg,
+                    tException = self.rException,
+                    parent     = self,
+                )
+                return False
         except Exception as e:
             msg = ('It was not possible to save the values of the '
                    'configuration options.')
-            cWindow.Notification('errorU', msg=msg, tException=e)
+            cWindow.Notification('errorU', msg=msg, tException=e, parent=self)
             return False
         #endregion ----------------------------------------------------->
 
@@ -306,6 +325,19 @@ class Preference(wx.Dialog):
         self.wCorrA.wC[3].wC.SetColour(data.corr.CMAP['NA'])
         #endregion ----------------------------------------------------> CorrA
 
+        #region ----------------------------------------------------> DataPrep
+        self.wData.wCeroB.wCb.SetValue(data.data.ceroT)
+        self.wData.wTransMethod.wCb.SetValue(data.data.tranMethod)
+        self.wData.wNormMethod.wCb.SetValue(data.data.normMethod)
+        self.wData.wImpMethod.wCb.SetValue(data.data.impMethod)
+        self.wData.wShift.wTc.SetValue(data.data.shift)
+        self.wData.wWidth.wTc.SetValue(data.data.width)
+        #------------------------------>
+        self.wData.wBar.wC.SetColour(data.data.cBar)
+        self.wData.wBarI.wC.SetColour(data.data.cBarI)
+        self.wData.wPDF.wC.SetColour(data.data.cPDF)
+        #endregion -------------------------------------------------> DataPrep
+
         return True
     #---
 
@@ -316,6 +348,11 @@ class Preference(wx.Dialog):
             -------
             bool
         """
+        #region -------------------------------------------------------> Check
+        if not self.CheckInput():
+            return False
+        #endregion ----------------------------------------------------> Check
+
         #region --------------------------------------------------------> Data
         #------------------------------> Core
         frag = [hMethod.RGB2Hex(x.wC.GetColour()) for x in self.wCore.wFrag]
@@ -347,9 +384,21 @@ class Preference(wx.Dialog):
             axisLabel  = self.wCorrA.wCol.wCb.GetValue(),
             showBar    = True if self.wCorrA.wBar.wCb.GetValue() == 'True' else False,
         )
+        #------------------------------> Data
+        data = hMethod.Data(
+            ceroT      = self.wData.wCeroB.wCb.GetValue(),
+            tranMethod = self.wData.wTransMethod.wCb.GetValue(),
+            normMethod = self.wData.wNormMethod.wCb.GetValue(),
+            impMethod  = self.wData.wImpMethod.wCb.GetValue(),
+            shift      = self.wData.wShift.wTc.GetValue(),
+            width      = self.wData.wWidth.wTc.GetValue(),
+            cBar       = hMethod.RGB2Hex(self.wData.wBar.wC.GetColour()),
+            cBarI      = hMethod.RGB2Hex(self.wData.wBarI.wC.GetColour()),
+            cPDF       = hMethod.RGB2Hex(self.wData.wPDF.wC.GetColour()),
+        )
         #------------------------------> Full Options
         userOpt = dataclasses.asdict(hMethod.UserConfig(
-            core, corrA))
+            core, corrA, data))
         #endregion -----------------------------------------------------> Data
 
         #region -------------------------------------------------> Save 2 File
@@ -361,7 +410,44 @@ class Preference(wx.Dialog):
             sec = getattr(mConfig, k)
             for j,w in v.items():
                 setattr(sec, j, w)
+        #------------------------------>
+        self.rErrorMsg  = ''
+        self.rException = ''
         #endregion -----------------------------------------------> Set Values
+
+        return True
+    #---
+
+    def CheckInput(self) -> bool:
+        """Check individual fields in the user input.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            BaseErrorMessage must be a string with two placeholder for the
+            error value and Field label in that order. For example:
+            'File: {bad_path_placeholder}\n cannot be used as
+                                                    {Field_label_placeholder}'
+
+            The child class must define a rCheckUserInput dict with the correct
+            order for the checking process.
+
+            rCheckUserInput = {'Field label':[Widget, BaseErrorMessage, Bool],}
+
+            The child class must define a rCheckUnique list with the wx.TextCtrl
+            that must hold unique column numbers.
+        """
+        #region -------------------------------------------------------> Check
+        for k,v in self.rCheckUserInput.items():
+            a, b = v[0].GetValidator().Validate()
+            #------------------------------>
+            if not a:
+                self.rErrorMsg  = v[1].format(b[1], k)
+                return False
+        #endregion ----------------------------------------------------> Check
 
         return True
     #---
@@ -378,8 +464,9 @@ class Preference(wx.Dialog):
         #------------------------------>
         core  = hMethod.Core(**data['core'])
         corrA = hMethod.CorrA(**data['corr'])
+        data  = hMethod.Data(**data['data'])
         #------------------------------>
-        userOpt = hMethod.UserConfig(core, corrA)
+        userOpt = hMethod.UserConfig(core, corrA, data)
         #endregion ----------------------------------------------------->
 
         #region -------------------------------------------------------->

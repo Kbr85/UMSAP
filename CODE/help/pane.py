@@ -19,7 +19,8 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 
 from config.config import config as mConfig
-from core import widget as cWidget
+from core import validator as cValidator
+from core import widget    as cWidget
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -198,7 +199,7 @@ class CorrA(scrolled.ScrolledPanel):
         self.wSbMethod = wx.StaticBox(self, label='Correlation Analysis')
         self.wMethod = cWidget.StaticTextComboBox(
             self,
-            label    = 'Method',
+            label    = 'Default Method',
             tooltip  = 'Select the Correlation Method to use as default.',
             choices  = mConfig.corr.oCorrMethod,
             setSizer = True,
@@ -266,6 +267,143 @@ class CorrA(scrolled.ScrolledPanel):
         self.sSizer.Add(self.sSbMethod, 0, wx.EXPAND|wx.ALL, 5)
         self.sSizer.Add(self.sSbColor,  0, wx.EXPAND|wx.ALL, 5)
         self.sSizer.Add(self.sSbRes,    0, wx.EXPAND|wx.ALL, 5)
+        #-->
+        self.SetSizer(self.sSizer)
+        self.sSizer.Fit(self)
+        self.SetupScrolling()
+        #endregion ---------------------------------------------------> Sizers
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
+
+
+class Data(scrolled.ScrolledPanel):
+    """Panel for the Data Preferences window.
+
+        Parameters
+        ----------
+        parent: wx.Window
+            Parent of the pane.
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = mConfig.help.npData
+    #------------------------------>
+    cLTab = mConfig.help.ntData
+    cLCeroTreat   = 'Treat 0s as Missing Values'
+    cLNormMethod  = 'Normalization'
+    cLTransMethod = 'Transformation'
+    cLImputation  = 'Imputation'
+    cLShift       = 'Shift'
+    cLWidth       = 'Width'
+    #------------------------------>
+    cOCero       = list(mConfig.core.oYesNo.keys())
+    cONorm       = list(mConfig.data.oNormMethod.keys())
+    cOTrans      = list(mConfig.data.oTransMethod.keys())
+    cOImputation = list(mConfig.data.oImputation.keys())
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent, name=self.cName)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wSbData = wx.StaticBox(
+            self, label='Data Preparation Default Methods')
+        self.wCeroB = cWidget.StaticTextComboBox(
+            self.wSbData,
+            label    = self.cLCeroTreat,
+            choices  = self.cOCero,
+            setSizer = True,
+        )
+        self.wNormMethod = cWidget.StaticTextComboBox(
+            self.wSbData,
+            label    = self.cLNormMethod,
+            choices  = self.cONorm,
+            setSizer = True,
+        )
+        self.wTransMethod = cWidget.StaticTextComboBox(
+            self.wSbData,
+            label    = self.cLTransMethod,
+            choices  = self.cOTrans,
+            setSizer = True,
+        )
+        self.wImpMethod = cWidget.StaticTextComboBox(
+            self.wSbData,
+            label    = self.cLImputation,
+            choices  = self.cOImputation,
+            setSizer = True,
+        )
+        #-->
+        self.wSbImpOpt = wx.StaticBox(self.wSbData, label='Imputation Options')
+        self.wShift = cWidget.StaticTextCtrl(
+            self.wSbImpOpt,
+            stLabel   = self.cLShift,
+            tcSize    = (60,22),
+            tcHint    = 'e.g. 1.8',
+            validator = cValidator.NumberList('float', nN=1, vMin=0),
+            setSizer  = True,
+        )
+        self.wWidth = cWidget.StaticTextCtrl(
+            self.wSbImpOpt,
+            stLabel   = self.cLWidth,
+            tcSize    = (60,22),
+            validator = cValidator.NumberList('float', nN=1, vMin=0),
+            tcHint    = 'e.g. 0.3',
+            setSizer  = True,
+        )
+        #------------------------------> Color
+        self.wSbColor    = wx.StaticBox(self, label='Colors')
+        self.wPDF = cWidget.StaticTextColor(
+            parent   = self.wSbColor,
+            stLabel  = 'PDF',
+            setSizer = True,
+        )
+        self.wBar = cWidget.StaticTextColor(
+            parent   = self.wSbColor,
+            stLabel  = 'Bars',
+            setSizer = True,
+        )
+        self.wBarI = cWidget.StaticTextColor(
+            parent   = self.wSbColor,
+            stLabel  = 'Imputed Bars',
+            setSizer = True,
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sSbMethodW = wx.BoxSizer(wx.HORIZONTAL)
+        self.sSbMethodW.Add(self.wTransMethod.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbMethodW.Add(self.wNormMethod.Sizer,  0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbMethodW.Add(self.wImpMethod.Sizer,   0, wx.ALIGN_CENTER|wx.ALL, 0)
+        #-->
+        self.sSbImpOptW = wx.BoxSizer(wx.HORIZONTAL)
+        self.sSbImpOptW.Add(self.wShift.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbImpOptW.Add(self.wWidth.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbImpOpt = wx.StaticBoxSizer(self.wSbImpOpt, wx.VERTICAL)
+        self.sSbImpOpt.Add(self.sSbImpOptW, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        #-->
+        self.sSbDataW = wx.BoxSizer(wx.VERTICAL)
+        self.sSbDataW.Add(self.wCeroB.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbDataW.Add(self.sSbMethodW,   0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbDataW.Add(self.sSbImpOpt,    0, wx.ALIGN_CENTER|wx.TOP, 10)
+        #-->
+        self.sSbData = wx.StaticBoxSizer(self.wSbData, wx.VERTICAL)
+        self.sSbData.Add(self.sSbDataW, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        #------------------------------>
+        self.sSbColorW = wx.BoxSizer(wx.HORIZONTAL)
+        self.sSbColorW.Add(self.wBar.Sizer,  0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbColorW.Add(self.wBarI.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbColorW.Add(self.wPDF.Sizer,  0, wx.ALIGN_CENTER|wx.ALL, 0)
+        #-->
+        self.sSbColor = wx.StaticBoxSizer(self.wSbColor, wx.VERTICAL)
+        self.sSbColor.Add(self.sSbColorW, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        #------------------------------>
+        self.sSizer = wx.BoxSizer(orient=wx.VERTICAL)
+        self.sSizer.Add(self.sSbData,   0, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sSbColor,  0, wx.EXPAND|wx.ALL, 5)
         #-->
         self.SetSizer(self.sSizer)
         self.sSizer.Fit(self)

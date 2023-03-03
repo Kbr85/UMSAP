@@ -34,9 +34,6 @@ class Configuration():
     lONormDist: str = 'Normal Distribution'
     #------------------------------> PubSub Message
     psResDataPrep: str = 'data.ResDataPrep'
-    #------------------------------> Normal distribution parameters
-    Shift:str = '1.8'                                                           # Shifted center
-    Width:str = '0.3'                                                           # Stdev
     #------------------------------> Options
     oTransMethod:dict = field(default_factory=lambda: {                         # Transformation Methods
         ''    : '',
@@ -53,6 +50,16 @@ class Configuration():
         'None'               : 'None',
         'Normal Distribution': 'ND',
     })
+    #------------------------------> User defined options
+    ceroT:str      = ''
+    tranMethod:str = ''                                                         # Default Method
+    normMethod:str = ''                                                         # Default Method
+    impMethod:str  = ''                                                         # Default Method
+    shift:str      = '1.8'                                                      # Shifted center
+    width:str      = '0.3'                                                      # Stdev
+    cBar:str       = '#3b75af'
+    cBarI:str      = '#519e3E'
+    cPDF:str       = '#ef8838'
     #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration

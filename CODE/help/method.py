@@ -66,10 +66,28 @@ class CorrA():
 
 
 @dataclass
+class Data():
+    """User defined options for data preparation"""
+    #region ---------------------------------------------------------> Options
+    ceroT:str
+    tranMethod:str
+    normMethod:str
+    impMethod:str
+    shift:str
+    width:str
+    cBar:str
+    cBarI:str
+    cPDF:str
+    #endregion ------------------------------------------------------> Options
+#---
+
+
+@dataclass
 class UserConfig():
     """User defined configuration options"""
     core:Core
     corr:CorrA
+    data:Data
 #---
 #endregion ----------------------------------------------------------> Classes
 
