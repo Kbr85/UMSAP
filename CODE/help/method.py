@@ -83,11 +83,36 @@ class Data():
 
 
 @dataclass
+class ProtProf():
+    """User defined options for proteome profiling"""
+    #region ---------------------------------------------------------> Options
+    alpha:str
+    correctP:str
+    scoreVal:str
+    lock:str
+    filterA:str
+    showAll:str
+    pickP:str
+    t0:str
+    s0:str
+    p:str
+    fc:str
+    z:str
+    zShow:str
+    cVol:list[str]
+    cVolSel:str
+    cCV:str
+    #endregion ------------------------------------------------------> Options
+#---
+
+
+@dataclass
 class UserConfig():
     """User defined configuration options"""
     core:Core
     corr:CorrA
     data:Data
+    prot:ProtProf
 #---
 #endregion ----------------------------------------------------------> Classes
 

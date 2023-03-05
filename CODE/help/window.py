@@ -164,6 +164,8 @@ class Preference(wx.Dialog):
         self.wNoteBook.AddPage(self.wCorrA, self.wCorrA.cLTab)
         self.wData = hPane.Data(self.wNoteBook)
         self.wNoteBook.AddPage(self.wData, self.wData.cLTab)
+        self.wProtProf = hPane.ProtProf(self.wNoteBook)
+        self.wNoteBook.AddPage(self.wProtProf, self.wProtProf.cLTab)
         #------------------------------>
         self.sBtn = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.NO)
         self.FindWindowById(wx.ID_OK).SetLabel('Save')
@@ -190,8 +192,15 @@ class Preference(wx.Dialog):
 
         #region -------------------------------------------------> Check Input
         self.rCheckUserInput = {
-            f'{self.wData.cLTab} - {self.wData.cLShift}' : [self.wData.wShift.wTc, mConfig.core.mOneRPlusNum],
-            f'{self.wData.cLTab} - {self.wData.cLWidth}' : [self.wData.wWidth.wTc, mConfig.core.mOneRPlusNum],
+            f'{self.wData.cLTab} - {self.wData.cLShift}'            : [self.wData.wShift.wTc,        mConfig.core.mOneRPlusNum],
+            f'{self.wData.cLTab} - {self.wData.cLWidth}'            : [self.wData.wWidth.wTc,        mConfig.core.mOneRPlusNum],
+            f'{self.wProtProf.cLTab} - {self.wProtProf.cLAlpha}'    : [self.wProtProf.wAlpha.wTc,    mConfig.core.mOne01Num],
+            f'{self.wProtProf.cLTab} - {self.wProtProf.cLScoreVal}' : [self.wProtProf.wScoreVal.wTc, mConfig.core.mOneRealNum],
+            f'{self.wProtProf.cLTab} - {self.wProtProf.cLT0}'       : [self.wProtProf.wT0.wTc,       mConfig.core.mOneRPlusNum],
+            f'{self.wProtProf.cLTab} - {self.wProtProf.cLS0}'       : [self.wProtProf.wS0.wTc,       mConfig.core.mOneRPlusNum],
+            f'{self.wProtProf.cLTab} - {self.wProtProf.cLP}'        : [self.wProtProf.wP.wTc ,       mConfig.core.mOne01Num],
+            f'{self.wProtProf.cLTab} - {self.wProtProf.cLLog2FC}'   : [self.wProtProf.wFC.wTc,       mConfig.core.mOneRPlusNum],
+            f'{self.wProtProf.cLTab} - {self.wProtProf.cLZ}'        : [self.wProtProf.wZ.wTc ,       mConfig.core.mOne0100Num],
         }
         #endregion ----------------------------------------------> Check Input
 
@@ -338,6 +347,29 @@ class Preference(wx.Dialog):
         self.wData.wPDF.wC.SetColour(data.data.cPDF)
         #endregion -------------------------------------------------> DataPrep
 
+        #region ----------------------------------------------------> ProtProf
+        self.wProtProf.wAlpha.wTc.SetValue(data.prot.alpha)
+        self.wProtProf.wCorrectP.wCb.SetValue(data.prot.correctP)
+        self.wProtProf.wScoreVal.wTc.SetValue(data.prot.scoreVal)
+        self.wProtProf.wLock.wCb.SetValue(data.prot.lock)
+        self.wProtProf.wFilterA.wCb.SetValue(data.prot.filterA)
+        self.wProtProf.wShowAll.wCb.SetValue(data.prot.showAll)
+        self.wProtProf.wPick.wCb.SetValue(data.prot.pickP)
+        self.wProtProf.wT0.wTc.SetValue(data.prot.t0)
+        self.wProtProf.wS0.wTc.SetValue(data.prot.s0)
+        self.wProtProf.wP.wTc.SetValue(data.prot.p)
+        self.wProtProf.wFC.wTc.SetValue(data.prot.fc)
+        self.wProtProf.wZ.wTc.SetValue(data.prot.z)
+        self.FindWindowByName(data.prot.zShow, self.wProtProf).SetValue(True)
+        #------------------------------>
+        self.wProtProf.wVolD.wC.SetColour(data.prot.cVol[0])
+        self.wProtProf.wVolN.wC.SetColour(data.prot.cVol[1])
+        self.wProtProf.wVolU.wC.SetColour(data.prot.cVol[2])
+        self.wProtProf.wVolS.wC.SetColour(data.prot.cVolSel)
+        self.wProtProf.wVolS.wC.SetColour(data.prot.cVolSel)
+        self.wProtProf.wVolT.wC.SetColour(data.prot.cCV)
+        #endregion -------------------------------------------------> ProtProf
+
         return True
     #---
 
@@ -396,9 +428,32 @@ class Preference(wx.Dialog):
             cBarI      = hMethod.RGB2Hex(self.wData.wBarI.wC.GetColour()),
             cPDF       = hMethod.RGB2Hex(self.wData.wPDF.wC.GetColour()),
         )
+        #------------------------------> ProtProf
+        prot = hMethod.ProtProf(
+            alpha    = self.wProtProf.wAlpha.wTc.GetValue(),
+            correctP = self.wProtProf.wCorrectP.wCb.GetValue(),
+            scoreVal = self.wProtProf.wScoreVal.wTc.GetValue(),
+            lock     = self.wProtProf.wScoreVal.wTc.GetValue(),
+            filterA  = self.wProtProf.wFilterA.wCb.GetValue(),
+            showAll  = self.wProtProf.wShowAll.wCb.GetValue(),
+            pickP    = self.wProtProf.wPick.wCb.GetValue(),
+            t0       = self.wProtProf.wT0.wTc.GetValue(),
+            s0       = self.wProtProf.wS0.wTc.GetValue(),
+            p        = self.wProtProf.wP.wTc.GetValue(),
+            fc       = self.wProtProf.wFC.wTc.GetValue(),
+            z        = self.wProtProf.wZ.wTc.GetValue(),
+            zShow    = self.wProtProf.rCheck,
+            cCV      = hMethod.RGB2Hex(self.wProtProf.wVolT.wC.GetColour()),
+            cVolSel  = hMethod.RGB2Hex(self.wProtProf.wVolS.wC.GetColour()),
+            cVol     = [
+                hMethod.RGB2Hex(self.wProtProf.wVolD.wC.GetColour()),
+                hMethod.RGB2Hex(self.wProtProf.wVolN.wC.GetColour()),
+                hMethod.RGB2Hex(self.wProtProf.wVolU.wC.GetColour()),
+            ]
+        )
         #------------------------------> Full Options
         userOpt = dataclasses.asdict(hMethod.UserConfig(
-            core, corrA, data))
+            core, corrA, data, prot))
         #endregion -----------------------------------------------------> Data
 
         #region -------------------------------------------------> Save 2 File
@@ -460,13 +515,14 @@ class Preference(wx.Dialog):
             bool
         """
         #region -------------------------------------------------------->
-        data = cFile.ReadJSON(mConfig.core.fConfigDef)
+        dataF = cFile.ReadJSON(mConfig.core.fConfigDef)
         #------------------------------>
-        core  = hMethod.Core(**data['core'])
-        corrA = hMethod.CorrA(**data['corr'])
-        data  = hMethod.Data(**data['data'])
+        core  = hMethod.Core(**dataF['core'])
+        corrA = hMethod.CorrA(**dataF['corr'])
+        data  = hMethod.Data(**dataF['data'])
+        prot  = hMethod.ProtProf(**dataF['prot'])
         #------------------------------>
-        userOpt = hMethod.UserConfig(core, corrA, data)
+        userOpt = hMethod.UserConfig(core, corrA, data, prot)
         #endregion ----------------------------------------------------->
 
         #region -------------------------------------------------------->

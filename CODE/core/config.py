@@ -89,6 +89,11 @@ class Configuration():
     lStScoreCol:str     = 'Score'
     lStScoreVal:str     = 'Score Value'
     lStSample:str       = 'Sample'
+    lStT0:str           = 't0'
+    lStS0:str           = 's0'
+    lStP:str            = 'P'
+    lStLog2FC:str       = 'Log2FC'
+    lStZScore:str       = 'Z Score'
     #------------------------------> wx.ListCtrl Column names
     lLCtrlColNameI:list[str] = field(default_factory=lambda: ['#', 'Name'])
     #------------------------------> Tooltips
@@ -125,6 +130,7 @@ class Configuration():
     #------------------------------> Sizes
     sLCtrlColI:list[int] = field(default_factory=lambda: [50, 150])             # Size for # Name columns in a wx.ListCtrl
     sTc:tuple[int,int]         = (50, 22)                                       # wx.TextCtrl
+    sTcS:tuple[int,int]        = (70,22)
     sWinFull:tuple[int,int]    = (990, 775)                                     # Full window size
     sWinModPlot:tuple[int,int] = (1100, 625)                                    # Result Window for a Module
     sWinPlot:tuple[int,int]    = (560, 560)                                     # Result window size
@@ -241,6 +247,8 @@ class Configuration():
                                'can be accepted here.')
     mOne01NumText:str       = ('Only one number between 0 and 1 can be '
                                'accepted here.')
+    mOne0100NumText:str     = ('Only one number between 0 and 100 can be '
+                               'accepted here.')
     mOneRNumText:str        = 'Only one real number can be accepted here.'
     mOneRPlusNumText:str    = ('Only one number equal or greater than zero can '
                                'be accepted here.')
@@ -274,6 +282,7 @@ class Configuration():
     mNZPlusNumCol:str   = f'{mNZPlusNum} {mColNumbers}'
     mOneRealNum:str     = f'{mValueBad}{mOneRNumText}'
     mOne01Num:str       = f'{mValueBad}{mOne01NumText}'
+    mOne0100Num:str     = f'{mValueBad}{mOne0100NumText}'
     mOneZPlusNum:str    = f'{mValueBad}{mOneZPlusNumText}'
     mOneZPlusNumCol:str = f'{mOneZPlusNum} {mColNumber}'
     mResCtrl:str        = (f'{mValueBad} Please use the '

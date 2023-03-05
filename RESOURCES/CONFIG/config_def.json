@@ -79,5 +79,27 @@
         "cBar": "#3b75af",
         "cBarI": "#519e3e",
         "cPDF": "#ef8838"
+    },
+    "prot": {
+        "alpha": "0.05",
+        "correctP": "",
+        "scoreVal": "0",
+        "lock": "0",
+        "filterA": "No",
+        "showAll": "Yes",
+        "pickP": "Select",
+        "t0": "1.0",
+        "s0": "0.1",
+        "p": "0.05",
+        "fc": "0.1",
+        "z": "10.0",
+        "zShow": "Z Score Line",
+        "cVol": [
+            "#ff3333",
+            "#d3d3d3",
+            "#3333ff"
+        ],
+        "cVolSel": "#6ac653",
+        "cCV": "#808080"
     }
 }

@@ -119,7 +119,7 @@ class General(scrolled.ScrolledPanel):
 
         #region ----------------------------------------------------> Tooltips
         self.wSbFragment.SetToolTip('These are the color used to color code '
-            'fragments, gel spots and bars in the result windows.')
+            'fragments, gel spots, bars and lines in the result windows.')
         self.wSbAA.SetToolTip('Color code to group amino acids by type.')
         #endregion -------------------------------------------------> Tooltips
 
@@ -411,5 +411,285 @@ class Data(scrolled.ScrolledPanel):
         #endregion ---------------------------------------------------> Sizers
     #---
     #endregion -----------------------------------------------> Instance setup
+#---
+
+
+class ProtProf(scrolled.ScrolledPanel):
+    """Panel for the Proteome Profile window.
+
+        Parameters
+        ----------
+        parent: wx.Window
+            Parent of the pane.
+    """
+    #region -----------------------------------------------------> Class setup
+    cName      = mConfig.help.npProtProf
+    cNLineNone = f'{mConfig.prot.lmFilterZScore} Line'
+    cNLineHyp  = f'{mConfig.prot.lmFilterHypCurve} Line'
+    cNLinePLog = f'{mConfig.prot.lmColorSchemePLog2} Line'
+    #------------------------------>
+    cLTab      = mConfig.help.ntProtProf
+    cLAlpha    = mConfig.core.lStAlpha
+    cLScoreVal = mConfig.core.lStScoreVal
+    cLCorrectP = mConfig.core.lCbCorrectP
+    cLT0       = mConfig.core.lStT0
+    cLS0       = mConfig.core.lStS0
+    cLP        = mConfig.core.lStP
+    cLLog2FC   = mConfig.core.lStLog2FC
+    cLZ        = mConfig.core.lStZScore
+    #------------------------------>
+    cTTScoreVal = mConfig.core.ttStScoreVal
+    cTTAlpha    = 'Significance level for the statistical analysis.\ne.g. 0.05'
+    cTTCorrectP = mConfig.core.ttStCorrectP
+    #------------------------------>
+    cSTc = mConfig.core.sTcS
+    #------------------------------>
+    cOCorrectP = mConfig.core.oCorrectP
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.rCheck = mConfig.prot.zShow
+        #------------------------------>
+        super().__init__(parent, name=self.cName)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wSbData = wx.StaticBox(
+            self, label='Proteome Profiling Analysis')
+        self.wAlpha = cWidget.StaticTextCtrl(
+            self.wSbData,
+            stLabel   = self.cLAlpha,
+            stTooltip = self.cTTAlpha,
+            tcSize    = self.cSTc,
+            tcHint    = 'e.g. 0.05',
+            setSizer  = True,
+            validator = cValidator.NumberList(
+                numType='float', nN=1, vMin=0, vMax=1),
+        )
+        self.wCorrectP = cWidget.StaticTextComboBox(
+            self.wSbData,
+            label    = self.cLCorrectP,
+            choices  = list(self.cOCorrectP.keys()),
+            tooltip  = self.cTTCorrectP,
+            setSizer = True,
+        )
+        self.wScoreVal = cWidget.StaticTextCtrl(
+            self.wSbData,
+            stLabel   = self.cLScoreVal,
+            stTooltip = self.cTTScoreVal,
+            tcSize    = self.cSTc,
+            tcHint    = 'e.g. 320',
+            setSizer  = True,
+            validator = cValidator.NumberList(numType='float', nN=1),
+        )
+        #------------------------------> Color
+        self.wSbColor = wx.StaticBox(self,          label='Colors')
+        self.wSbVol   = wx.StaticBox(self.wSbColor, label='Volcano Plot Data')
+        self.wVolD = cWidget.StaticTextColor(
+            self.wSbVol,
+            stLabel  = 'Downregulated',
+            setSizer = True,
+        )
+        self.wVolU = cWidget.StaticTextColor(
+            self.wSbVol,
+            stLabel  = 'Upregulated',
+            setSizer = True,
+        )
+        self.wVolN = cWidget.StaticTextColor(
+            self.wSbVol,
+            stLabel  = 'Non Relevant',
+            setSizer = True,
+        )
+        self.wVolS = cWidget.StaticTextColor(
+            self.wSbVol,
+            stLabel  = 'Selected',
+            setSizer = True,
+        )
+        self.wVolT = cWidget.StaticTextColor(
+            self.wSbVol,
+            stLabel  = 'Thresholds',
+            setSizer = True,
+        )
+        #------------------------------> Result Plot
+        self.wSbRes = wx.StaticBox(self, label='Result Plots')
+        self.wLock = cWidget.StaticTextComboBox(
+            self.wSbRes,
+            label    = 'Lock Plot Scale',
+            choices  = [mConfig.prot.lmScaleNo,
+                        mConfig.prot.lmScaleAnalysis,
+                        mConfig.prot.lmScaleProject],
+            setSizer = True,
+        )
+        self.wFilterA = cWidget.StaticTextComboBox(
+            self.wSbRes,
+            label    = 'Auto Apply Filters',
+            choices  = list(mConfig.core.oYesNo.keys())[1:],
+            setSizer = True,
+        )
+        self.wShowAll = cWidget.StaticTextComboBox(
+            self.wSbRes,
+            label    = 'Show Value Range',
+            choices  = list(mConfig.core.oYesNo.keys())[1:],
+            setSizer = True,
+        )
+        self.wPick = cWidget.StaticTextComboBox(
+            self.wSbRes,
+            label    = 'Left Click Action',
+            choices  = ['Label', 'Select'],
+            setSizer = True,
+        )
+        #-->
+        self.wSbThreshold = wx.StaticBox(self.wSbRes, label='Threshold Parameters')
+        self.wsbHC = wx.StaticBox(self.wSbThreshold, label='Hyperbolic Curve')
+        self.wT0 = cWidget.StaticTextCtrl(
+            self.wsbHC,
+            stLabel   = self.cLT0,
+            tcHint    = 'e.g. 1.0',
+            tcSize    = self.cSTc,
+            validator = cValidator.NumberList('float', vMin=0, nN=1),
+            setSizer  = True,
+        )
+        self.wS0 = cWidget.StaticTextCtrl(
+            self.wsbHC,
+            stLabel   = self.cLS0,
+            tcHint    = 'e.g. 0.1',
+            tcSize    = self.cSTc,
+            validator = cValidator.NumberList('float', vMin=0, nN=1),
+            setSizer  = True,
+        )
+        self.wSbPFC = wx.StaticBox(self.wSbThreshold, label='P - Log2[FC]')
+        self.wP = cWidget.StaticTextCtrl(
+            self.wSbPFC,
+            stLabel   = self.cLP,
+            tcHint    = 'e.g. 0.05',
+            tcSize    = self.cSTc,
+            validator = cValidator.NumberList('float', vMin=0, nN=1),
+            setSizer  = True,
+        )
+        self.wFC = cWidget.StaticTextCtrl(
+            self.wSbPFC,
+            stLabel   = self.cLLog2FC,
+            tcHint    = 'e.g. 0.1',
+            tcSize    = self.cSTc,
+            validator = cValidator.NumberList('float', vMin=0, nN=1),
+            setSizer  = True,
+        )
+        self.wSbZ = wx.StaticBox(self.wSbThreshold, label='Z Score')
+        self.wZ = cWidget.StaticTextCtrl(
+            self.wSbZ,
+            stLabel   = self.cLZ,
+            tcHint    = 'e.g. 10.0',
+            tcSize    = self.cSTc,
+            validator = cValidator.NumberList(
+                    numType='float', vMin=0, vMax=100, nN=1),
+        )
+        self.wStShow = wx.StaticText(self.wSbZ, label='Show')
+        self.wCbNone = wx.RadioButton(
+            self.wSbZ, label='None', name=self.cNLineNone)
+        self.wCbHyp  = wx.RadioButton(
+            self.wSbZ, label='Hyperbolic Curve', name=self.cNLineHyp)
+        self.wCbPLog = wx.RadioButton(
+            self.wSbZ, label='P - Log2[FC] Lines', name=self.cNLinePLog)
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sSbDataW = wx.BoxSizer(wx.HORIZONTAL)
+        self.sSbDataW.Add(self.wScoreVal.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbDataW.Add(self.wAlpha.Sizer,    0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbDataW.Add(self.wCorrectP.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        #-->
+        self.sSbData = wx.StaticBoxSizer(self.wSbData, wx.VERTICAL)
+        self.sSbData.Add(self.sSbDataW, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        #------------------------------>
+        self.sSbVolW = wx.BoxSizer(wx.HORIZONTAL)
+        self.sSbVolW.Add(self.wVolD.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbVolW.Add(self.wVolN.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbVolW.Add(self.wVolU.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbVolW.Add(self.wVolS.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbVolW.Add(self.wVolT.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbVol = wx.StaticBoxSizer(self.wSbVol, wx.VERTICAL)
+        self.sSbVol.Add(self.sSbVolW, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        #-->
+        self.sSbColor = wx.StaticBoxSizer(self.wSbColor, wx.VERTICAL)
+        self.sSbColor.Add(self.sSbVol, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        #------------------------------>
+        self.sGen = wx.FlexGridSizer(2,1,1)
+        self.sGen.Add(self.wLock.Sizer,    0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sGen.Add(self.wShowAll.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sGen.Add(self.wPick.Sizer,    0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sGen.Add(self.wFilterA.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        #-------------->
+        self.sHC = wx.BoxSizer(wx.VERTICAL)
+        self.sHC.Add(self.wT0.Sizer, 0, wx.ALIGN_RIGHT|wx.ALL, 0)
+        self.sHC.Add(self.wS0.Sizer, 0, wx.ALIGN_RIGHT|wx.ALL, 0)
+        self.sSbHC = wx.StaticBoxSizer(self.wsbHC, wx.VERTICAL)
+        self.sSbHC.Add(self.sHC, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        #-------------->
+        self.sPFC = wx.BoxSizer(wx.VERTICAL)
+        self.sPFC.Add(self.wP.Sizer,  0, wx.ALIGN_RIGHT|wx.ALL, 0)
+        self.sPFC.Add(self.wFC.Sizer, 0, wx.ALIGN_RIGHT|wx.ALL, 0)
+        self.sSbPFC = wx.StaticBoxSizer(self.wSbPFC, wx.VERTICAL)
+        self.sSbPFC.Add(self.sPFC, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        #-------------->
+        self.sZ = wx.FlexGridSizer(4,2,1,1)
+        self.sZ.Add(self.wZ.wSt,  0, wx.ALIGN_LEFT|wx.ALIGN_CENTER_HORIZONTAL|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sZ.Add(self.wZ.wTc,  0, wx.EXPAND|wx.BOTTOM|wx.LEFT|wx.RIGHT, 5)
+        self.sZ.Add(self.wStShow, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sZ.Add(self.wCbNone, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sZ.AddSpacer(0)
+        self.sZ.Add(self.wCbHyp, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sZ.AddSpacer(0)
+        self.sZ.Add(self.wCbPLog, 0, wx.ALIGN_LEFT|wx.TOP|wx.LEFT|wx.RIGHT, 5)
+        self.sSbZ = wx.StaticBoxSizer(self.wSbZ, wx.VERTICAL)
+        self.sSbZ.Add(self.sZ, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        #-------------->
+        self.sThreshold = wx.BoxSizer(wx.HORIZONTAL)
+        self.sThreshold.Add(self.sSbHC,  0, wx.ALIGN_TOP|wx.RIGHT, 10)
+        self.sThreshold.Add(self.sSbPFC, 0, wx.ALIGN_TOP|wx.RIGHT, 10)
+        self.sThreshold.Add(self.sSbZ,   0, wx.ALIGN_TOP|wx.RIGHT, 0)
+        self.sSbThreshold = wx.StaticBoxSizer(self.wSbThreshold, wx.VERTICAL)
+        self.sSbThreshold.Add(self.sThreshold, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        #-------------->
+        self.sSbRes = wx.StaticBoxSizer(self.wSbRes, wx.VERTICAL)
+        self.sSbRes.Add(self.sGen,         0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbRes.Add(self.sSbThreshold, 0, wx.ALIGN_CENTER|wx.ALL, 10)
+        #------------------------------>
+        self.sSizer = wx.BoxSizer(orient=wx.VERTICAL)
+        self.sSizer.Add(self.sSbData,  0, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sSbColor, 0, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sSbRes,   0, wx.EXPAND|wx.ALL, 5)
+        #-->
+        self.SetSizer(self.sSizer)
+        self.sSizer.Fit(self)
+        self.SetupScrolling()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Bind
+        self.Bind(wx.EVT_RADIOBUTTON, self.OnCheckChange)
+        #endregion -----------------------------------------------------> Bind
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Event Methods
+    def OnCheckChange(self, event:wx.CommandEvent) -> bool:
+        """Update Selected Radio Button
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        self.rCheck = event.GetEventObject().GetName()
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
 #---
 #endregion ----------------------------------------------------------> Classes

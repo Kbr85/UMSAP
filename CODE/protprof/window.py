@@ -188,7 +188,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
     #------------------------------> Color
     cCV      = mConfig.prot.cCV
     cFCAll   = mConfig.prot.cFCAll
-    cFCLines = mConfig.prot.cFCLines
+    cFCLines = mConfig.core.cFragment
     cVol     = mConfig.prot.cVol
     cVolSel  = mConfig.prot.cVolSel
     #------------------------------> Columns in DF
@@ -2626,6 +2626,12 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
     cNLineNone = f'{mConfig.prot.lmFilterZScore} Line'
     cNLineHyp  = f'{mConfig.prot.lmFilterHypCurve} Line'
     cNLinePLog = f'{mConfig.prot.lmColorSchemePLog2} Line'
+    #------------------------------>
+    cLT0     = mConfig.core.lStT0
+    cLS0     = mConfig.core.lStS0
+    cLP      = mConfig.core.lStP
+    cLLog2FC = mConfig.core.lStLog2FC
+    cLZ      = mConfig.core.lStZScore
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
@@ -2657,7 +2663,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         self.wsbHC = wx.StaticBox(self, label='Hyperbolic Curve')
         self.wT0 = cWidget.StaticTextCtrl(
             self.wsbHC,
-            stLabel   = 't0',
+            stLabel   = self.cLT0,
             tcHint    = 'e.g. 1.0',
             tcSize    = (100,22),
             validator = cValidator.NumberList('float', vMin=0, nN=1)
@@ -2666,7 +2672,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
 
         self.wS0 = cWidget.StaticTextCtrl(
             self.wsbHC,
-            stLabel   = 's0',
+            stLabel   = self.cLS0,
             tcHint    = 'e.g. 0.1',
             tcSize    = (100,22),
             validator = cValidator.NumberList('float', vMin=0, nN=1)
@@ -2676,7 +2682,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         self.wsbPFC = wx.StaticBox(self, label='P - Log2[FC]')
         self.wP = cWidget.StaticTextCtrl(
             self.wsbPFC,
-            stLabel   = 'P',
+            stLabel   = self.cLP,
             tcHint    = 'e.g. 0.05',
             tcSize    = (100,22),
             validator = cValidator.NumberList('float', vMin=0, nN=1)
@@ -2685,7 +2691,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
 
         self.wFC = cWidget.StaticTextCtrl(
             self.wsbPFC,
-            stLabel   = 'log2FC',
+            stLabel   = self.cLLog2FC,
             tcHint    = 'e.g. 0.1',
             tcSize    = (100,22),
             validator = cValidator.NumberList('float', vMin=0, nN=1)
@@ -2695,7 +2701,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         self.wsbZ = wx.StaticBox(self, label='Z Score')
         self.wZ = cWidget.StaticTextCtrl(
             self.wsbZ,
-            stLabel   = 'Z Score',
+            stLabel   = self.cLZ,
             tcHint    = 'e.g. 10.0',
             tcSize    = (100,22),
             validator = cValidator.NumberList(
@@ -2711,7 +2717,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
             self.wsbZ, label='P - Log2[FC] Lines', name=self.cNLinePLog)
         self.FindWindowByName(self.rCheck, self).SetValue(True)
         #------------------------------>
-        self.rWList = {
+        self.rWDict = {
             'T0': self.wT0.wTc,
             'S0': self.wS0.wTc,
             'P' : self.wP.wTc,
@@ -2813,7 +2819,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         #region ----------------------------------------------------> Validate
         res = []
         #------------------------------>
-        for k,w in self.rWList.items():
+        for k,w in self.rWDict.items():
             if w.GetValidator().Validate()[0]:
                 res.append(True)
             else:

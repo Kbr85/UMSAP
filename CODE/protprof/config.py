@@ -25,52 +25,52 @@ class Configuration():
     """Configuration for the protprof module"""
     #region ---------------------------------------------------------> Options
     #------------------------------> Names & Titles
-    nMod:str                 = 'Proteome Profiling'                             # Name of the Module
-    nwRes:str                = 'Window Result ProtProf Plot'                    # Name of the Result window
-    ndFilterRemoveAny:str    = 'Remove Filters'
-    nTab:str                 = 'Tab Proteome Profiling'                         # Name of Conf Tab
-    nPane:str                = 'Pane ProtProf'                                  # Name of Conf Pane
-    npResControlExp:str      = 'ResControlExpPaneProtProf'
-    tTab:str                 = 'ProtProf'                                       # Title of Conf Tab
+    nMod:str              = 'Proteome Profiling'                                # Name of the Module
+    nwRes:str             = 'Window Result ProtProf Plot'                       # Name of the Result window
+    ndFilterRemoveAny:str = 'Remove Filters'
+    nTab:str              = 'Tab Proteome Profiling'                            # Name of Conf Tab
+    nPane:str             = 'Pane ProtProf'                                     # Name of Conf Pane
+    npResControlExp:str   = 'ResControlExpPaneProtProf'
+    tTab:str              = 'ProtProf'                                          # Title of Conf Tab
     #------------------------------> Labels
-    lStCond:str              = 'Conditions'                                     # lSt: Label for wx.StaticText
-    lStRP:str                = 'Relevant Points'
-    lmClearSelAll:str        = 'All'
-    lmClearSelLabel:str      = 'Labels'
-    lmClearSelSel:str        = 'Selection'
-    lmColorSchemeConf:str    = 'Configure'
-    lmColorSchemePLog2:str   = 'P - Log2FC'
-    lmFCEvolExpImg:str       = 'Export Image'
-    lmFCEvolShowAll:str      = 'Show All'                                       # lm: Label for wx.MenuItem
-    lmFCEvolZoomReset:str    = 'Reset Zoom'
-    lmFilterApplyAll:str     = 'Apply All'
-    lmFilterApplyAuto:str    = 'Auto Apply'
-    lmFilterCopy:str         = 'Copy'
-    lmFilterFcEvol:str       = 'FC Evolution'
-    lmFilterHypCurve:str     = 'Hyperbolic Curve'
-    lmFilterLoad:str         = 'Load'
-    lmFilterLog2FC:str       = 'Log2(FC)'
-    lmFilterPaste:str        = 'Paste'
-    lmFilterPVal:str         = 'P Value'
-    lmFilterRemove:str       = 'Remove'
-    lmFilterRemoveAll:str    = 'Remove All'
-    lmFilterRemoveLast:str   = 'Remove Last'
-    lmFilterSave:str         = 'Save'
-    lmFilterZScore:str       = 'Z Score'
-    lmScaleAnalysis:str      = 'Analysis'
-    lmScaleNo:str            = 'No'
-    lmScaleProject:str       = 'Project'
-    lmToolClearSel:str       = 'Clear Selection'
-    lmToolExpFilterData:str  = 'Export Filtered Data'
-    lmToolFCEvol:str         = 'FC Evolution'
-    lmToolFilter:str         = 'Filters'
-    lmToolLockScale:str      = 'Lock Plot Scale'
-    lmToolVolPlot:str        = 'Volcano Plot'
-    lmVolColor:str           = 'Color Scheme'
-    lmVolExpImg:str          = 'Export Image'
-    lmVolLabelAdd:str        = 'Add Label'
-    lmVolLabelPick:str       = 'Pick Label'
-    lmVolZoomReset:str       = 'Reset Zoom'
+    lStCond:str             = 'Conditions'                                      # lSt: Label for wx.StaticText
+    lStRP:str               = 'Relevant Points'
+    lmClearSelAll:str       = 'All'
+    lmClearSelLabel:str     = 'Labels'
+    lmClearSelSel:str       = 'Selection'
+    lmColorSchemeConf:str   = 'Configure'
+    lmColorSchemePLog2:str  = 'P - Log2FC'
+    lmFCEvolExpImg:str      = 'Export Image'
+    lmFCEvolShowAll:str     = 'Show All'                                        # lm: Label for wx.MenuItem
+    lmFCEvolZoomReset:str   = 'Reset Zoom'
+    lmFilterApplyAll:str    = 'Apply All'
+    lmFilterApplyAuto:str   = 'Auto Apply'
+    lmFilterCopy:str        = 'Copy'
+    lmFilterFcEvol:str      = 'FC Evolution'
+    lmFilterHypCurve:str    = 'Hyperbolic Curve'
+    lmFilterLoad:str        = 'Load'
+    lmFilterLog2FC:str      = 'Log2(FC)'
+    lmFilterPaste:str       = 'Paste'
+    lmFilterPVal:str        = 'P Value'
+    lmFilterRemove:str      = 'Remove'
+    lmFilterRemoveAll:str   = 'Remove All'
+    lmFilterRemoveLast:str  = 'Remove Last'
+    lmFilterSave:str        = 'Save'
+    lmFilterZScore:str      = 'Z Score'
+    lmScaleAnalysis:str     = 'Analysis'
+    lmScaleNo:str           = 'No'
+    lmScaleProject:str      = 'Project'
+    lmToolClearSel:str      = 'Clear Selection'
+    lmToolExpFilterData:str = 'Export Filtered Data'
+    lmToolFCEvol:str        = 'FC Evolution'
+    lmToolFilter:str        = 'Filters'
+    lmToolLockScale:str     = 'Lock Plot Scale'
+    lmToolVolPlot:str       = 'Volcano Plot'
+    lmVolColor:str          = 'Color Scheme'
+    lmVolExpImg:str         = 'Export Image'
+    lmVolLabelAdd:str       = 'Add Label'
+    lmVolLabelPick:str      = 'Pick Label'
+    lmVolZoomReset:str      = 'Reset Zoom'
     #------------------------------> Keyword for wx.MenuItem
     kwClearSelAll:str        = 'Clear Selection All'
     kwClearSelLabel:str      = 'Clear Selection Labels'
@@ -132,13 +132,27 @@ class Configuration():
                    'the corresponding control.\n{}'
     )
     #------------------------------> Colors
+    cFCAll:str  = '#d3d3d3'
+    #------------------------------> User defined options
+    alpha:str      = '0.05'
+    correctP:str   = ''
+    scoreVal:str   = '0'
+    lock:str       = 'Analysis'
+    filterA:str    = 'No'
+    showAll:str    = ''
+    pickP:str      = 'Select'
+    t0:str         = '1.0'
+    s0:str         = '0.1'
+    p:str          = '0.05'
+    fc:str         = '0.1'
+    z:str          = '10.0'
+    zShow:str      = 'Z Score Line'
+    #-->
+    cCV:str        = 'gray'
+    cVolSel:str    = '#6ac653'
     cVol:list[str] = field(default_factory=lambda:
         ['#ff3333', '#d3d3d3', '#3333ff'])
-    cFCLines:list[str] = field(default_factory=lambda:
-        ['#ff5ce9', '#5047ff', '#ffa859', '#85ff8c', '#78dbff'])
-    cVolSel:str = '#6ac653'
-    cFCAll:str  = '#d3d3d3'
-    cCV:str     = 'gray'
+
     #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration
