@@ -80,11 +80,20 @@
         "cBarI": "#519e3e",
         "cPDF": "#ef8838"
     },
+    "limp": {
+        "alpha": "",
+        "beta": "",
+        "gamma": "",
+        "theta": "",
+        "thetaMax": "",
+        "scoreVal": "",
+        "correctP": ""
+    },
     "prot": {
-        "alpha": "0.05",
+        "alpha": "",
         "correctP": "",
-        "scoreVal": "0",
-        "lock": "0",
+        "scoreVal": "",
+        "lock": "",
         "filterA": "No",
         "showAll": "Yes",
         "pickP": "Select",
@@ -93,7 +102,7 @@
         "p": "0.05",
         "fc": "0.1",
         "z": "10.0",
-        "zShow": "Z Score Line",
+        "zShow": "P - Log2FC Line",
         "cVol": [
             "#ff3333",
             "#d3d3d3",

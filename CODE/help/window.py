@@ -164,6 +164,8 @@ class Preference(wx.Dialog):
         self.wNoteBook.AddPage(self.wCorrA, self.wCorrA.cLTab)
         self.wData = hPane.Data(self.wNoteBook)
         self.wNoteBook.AddPage(self.wData, self.wData.cLTab)
+        self.wLimProt = hPane.LimProt(self.wNoteBook)
+        self.wNoteBook.AddPage(self.wLimProt, self.wLimProt.cLTab)
         self.wProtProf = hPane.ProtProf(self.wNoteBook)
         self.wNoteBook.AddPage(self.wProtProf, self.wProtProf.cLTab)
         #------------------------------>
@@ -347,6 +349,16 @@ class Preference(wx.Dialog):
         self.wData.wPDF.wC.SetColour(data.data.cPDF)
         #endregion -------------------------------------------------> DataPrep
 
+        #region -----------------------------------------------------> LimProt
+        self.wLimProt.wScoreVal.wTc.SetValue(data.limp.scoreVal)
+        self.wLimProt.wCorrectP.wCb.SetValue(data.limp.correctP)
+        self.wLimProt.wAlpha.wTc.SetValue(data.limp.alpha)
+        self.wLimProt.wBeta.wTc.SetValue(data.limp.beta)
+        self.wLimProt.wBeta.wTc.SetValue(data.limp.beta)
+        self.wLimProt.wTheta.wTc.SetValue(data.limp.theta)
+        self.wLimProt.wThetaMax.wTc.SetValue(data.limp.thetaMax)
+        #endregion --------------------------------------------------> LimProt
+
         #region ----------------------------------------------------> ProtProf
         self.wProtProf.wAlpha.wTc.SetValue(data.prot.alpha)
         self.wProtProf.wCorrectP.wCb.SetValue(data.prot.correctP)
@@ -428,6 +440,16 @@ class Preference(wx.Dialog):
             cBarI      = hMethod.RGB2Hex(self.wData.wBarI.wC.GetColour()),
             cPDF       = hMethod.RGB2Hex(self.wData.wPDF.wC.GetColour()),
         )
+        #------------------------------> LimProt
+        limp = hMethod.LimProt(
+            alpha    = self.wLimProt.wAlpha.wTc.GetValue(),
+            beta     = self.wLimProt.wBeta.wTc.GetValue(),
+            gamma    = self.wLimProt.wGamma.wTc.GetValue(),
+            theta    = self.wLimProt.wTheta.wTc.GetValue(),
+            thetaMax = self.wLimProt.wThetaMax.wTc.GetValue(),
+            scoreVal = self.wLimProt.wScoreVal.wTc.GetValue(),
+            correctP = self.wLimProt.wCorrectP.wCb.GetValue(),
+        )
         #------------------------------> ProtProf
         prot = hMethod.ProtProf(
             alpha    = self.wProtProf.wAlpha.wTc.GetValue(),
@@ -453,7 +475,7 @@ class Preference(wx.Dialog):
         )
         #------------------------------> Full Options
         userOpt = dataclasses.asdict(hMethod.UserConfig(
-            core, corrA, data, prot))
+            core, corrA, data, limp, prot))
         #endregion -----------------------------------------------------> Data
 
         #region -------------------------------------------------> Save 2 File
@@ -520,9 +542,10 @@ class Preference(wx.Dialog):
         core  = hMethod.Core(**dataF['core'])
         corrA = hMethod.CorrA(**dataF['corr'])
         data  = hMethod.Data(**dataF['data'])
+        limp  = hMethod.LimProt(**dataF['limp'])
         prot  = hMethod.ProtProf(**dataF['prot'])
         #------------------------------>
-        userOpt = hMethod.UserConfig(core, corrA, data, prot)
+        userOpt = hMethod.UserConfig(core, corrA, data, limp, prot)
         #endregion ----------------------------------------------------->
 
         #region -------------------------------------------------------->

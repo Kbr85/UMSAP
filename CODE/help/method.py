@@ -107,11 +107,27 @@ class ProtProf():
 
 
 @dataclass
+class LimProt():
+    """User defined options for limited proteolysis"""
+    #region --------------------------------------------------------> Options
+    alpha:str
+    beta:str
+    gamma:str
+    theta:str
+    thetaMax:str
+    scoreVal:str
+    correctP:str
+    #endregion -----------------------------------------------------> Options
+#---
+
+
+@dataclass
 class UserConfig():
     """User defined configuration options"""
     core:Core
     corr:CorrA
     data:Data
+    limp:LimProt
     prot:ProtProf
 #---
 #endregion ----------------------------------------------------------> Classes

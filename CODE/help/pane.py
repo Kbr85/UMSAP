@@ -337,7 +337,8 @@ class Data(scrolled.ScrolledPanel):
             setSizer = True,
         )
         #-->
-        self.wSbImpOpt = wx.StaticBox(self.wSbData, label='Imputation Options')
+        self.wSbImpOpt = wx.StaticBox(
+            self.wSbData, label='Normal Distribution Imputation Options')
         self.wShift = cWidget.StaticTextCtrl(
             self.wSbImpOpt,
             stLabel   = self.cLShift,
@@ -414,6 +415,183 @@ class Data(scrolled.ScrolledPanel):
 #---
 
 
+class LimProt(scrolled.ScrolledPanel):
+    """Panel for the Limited Proteolysis window.
+
+        Parameters
+        ----------
+        parent: wx.Window
+            Parent of the pane.
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = mConfig.help.npLimProt
+    #------------------------------> Labels
+    cLTab      = mConfig.help.ntLimProt
+    cLAlpha    = mConfig.core.lStAlpha
+    cLBeta     = mConfig.core.lStBeta
+    cLGamma    = mConfig.core.lStGamma
+    cLTheta    = mConfig.core.lStTheta
+    cLThetaMax = mConfig.core.lStThetaMax
+    cLScoreVal = mConfig.core.lStScoreVal
+    cLCorrectP = mConfig.core.lCbCorrectP
+    #------------------------------> Hint
+    cHBeta     = mConfig.limp.hBeta
+    cHGamma    = mConfig.limp.hGamma
+    cHTheta    = mConfig.limp.hTheta
+    cHThetaMax = mConfig.limp.hThetaMax
+    #------------------------------> Tooltips
+    cTTScoreVal = mConfig.core.ttStScoreVal
+    cTTAlpha    = 'Significance level for the statistical analysis.\ne.g. 0.05'
+    cTTCorrectP = mConfig.core.ttStCorrectP
+    cTTBeta     = mConfig.limp.ttBeta
+    cTTGamma    = mConfig.limp.ttGamma
+    cTTTheta    = mConfig.limp.ttTheta
+    cTTThetaMax = mConfig.limp.ttThetaMax
+    #------------------------------>
+    cSTc = mConfig.core.sTcS
+    #------------------------------>
+    cOCorrectP = mConfig.core.oCorrectP
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent, name=self.cName)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wSbData = wx.StaticBox(
+            self, label='Limited Proteolysis Analysis')
+        self.wScoreVal = cWidget.StaticTextCtrl(
+            self.wSbData,
+            stLabel   = self.cLScoreVal,
+            stTooltip = self.cTTScoreVal,
+            tcSize    = self.cSTc,
+            tcHint    = 'e.g. 320',
+            setSizer  = True,
+            validator = cValidator.NumberList(opt=True, numType='float', nN=1),
+        )
+        self.wCorrectP = cWidget.StaticTextComboBox(
+            self.wSbData,
+            label    = self.cLCorrectP,
+            choices  = list(self.cOCorrectP.keys()),
+            tooltip  = self.cTTCorrectP,
+            setSizer = True,
+        )
+        self.wAlpha = cWidget.StaticTextCtrl(
+            self.wSbData,
+            stLabel   = self.cLAlpha,
+            stTooltip = self.cTTAlpha,
+            tcSize    = self.cSTc,
+            tcHint    = 'e.g. 0.05',
+            setSizer  = True,
+            validator = cValidator.NumberList(
+                opt=True, numType='float', nN=1, vMin=0, vMax=1),
+        )
+        self.wBeta = cWidget.StaticTextCtrl(
+            self.wSbData,
+            stLabel   = self.cLBeta,
+            stTooltip = self.cTTBeta,
+            tcSize    = self.cSTc,
+            tcHint    = self.cHBeta,
+            setSizer  = True,
+            validator = cValidator.NumberList(
+                opt=True, numType='float', nN=1, vMin=0, vMax=1),
+        )
+        self.wGamma = cWidget.StaticTextCtrl(
+            self.wSbData,
+            stLabel   = self.cLGamma,
+            stTooltip = self.cTTGamma,
+            tcSize    = self.cSTc,
+            tcHint    = self.cHGamma,
+            setSizer  = True,
+            validator = cValidator.NumberList(
+                opt=True, numType='float', nN=1, vMin=0, vMax=1),
+        )
+        self.wTheta = cWidget.StaticTextCtrl(
+            self.wSbData,
+            stLabel   = self.cLTheta,
+            stTooltip = self.cTTTheta,
+            tcSize    = self.cSTc,
+            tcHint    = self.cHTheta,
+            setSizer  = True,
+            validator = cValidator.NumberList(
+                opt=True, numType='float', nN=1, vMin=0, vMax=1),
+        )
+        self.wThetaMax = cWidget.StaticTextCtrl(
+            self.wSbData,
+            stLabel   = self.cLThetaMax,
+            stTooltip = self.cTTThetaMax,
+            tcSize    = self.cSTc,
+            tcHint    = self.cHThetaMax,
+            setSizer  = True,
+            validator = cValidator.NumberList(
+                opt=True, numType='float', nN=1, vMin=0, vMax=1),
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sSbDataW = wx.GridBagSizer(1,1)
+        self.sSbDataW.Add(
+            self.wScoreVal.Sizer,
+            pos    = (0,0),
+            flag   = wx.ALIGN_RIGHT|wx.ALL,
+            border = 0,
+        )
+        self.sSbDataW.Add(
+            self.wCorrectP.Sizer,
+            pos    = (0,1),
+            flag   = wx.ALIGN_CENTER|wx.ALL,
+            border = 0,
+            span   = (0, 2),
+        )
+        self.sSbDataW.Add(
+            self.wAlpha.Sizer,
+            pos    = (1,0),
+            flag   = wx.ALIGN_RIGHT|wx.ALL,
+            border = 0,
+        )
+        self.sSbDataW.Add(
+            self.wBeta.Sizer,
+            pos    = (1,1),
+            flag   = wx.ALIGN_RIGHT|wx.ALL,
+            border = 0,
+        )
+        self.sSbDataW.Add(
+            self.wGamma.Sizer,
+            pos    = (1,2),
+            flag   = wx.ALIGN_RIGHT|wx.ALL,
+            border = 0,
+        )
+        self.sSbDataW.Add(
+            self.wTheta.Sizer,
+            pos    = (2,0),
+            flag   = wx.ALIGN_RIGHT|wx.ALL,
+            border = 0,
+        )
+        self.sSbDataW.Add(
+            self.wThetaMax.Sizer,
+            pos    = (2,1),
+            flag   = wx.ALIGN_RIGHT|wx.ALL,
+            border = 0,
+        )
+        #-->
+        self.sSbData = wx.StaticBoxSizer(self.wSbData, wx.VERTICAL)
+        self.sSbData.Add(self.sSbDataW, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        #------------------------------>
+        self.sSizer = wx.BoxSizer(orient=wx.VERTICAL)
+        self.sSizer.Add(self.sSbData,  0, wx.EXPAND|wx.ALL, 5)
+        #-->
+        self.SetSizer(self.sSizer)
+        self.sSizer.Fit(self)
+        self.SetupScrolling()
+        #endregion ---------------------------------------------------> Sizers
+    #---
+    #endregion -----------------------------------------------> Instance setup
+#---
+
+
 class ProtProf(scrolled.ScrolledPanel):
     """Panel for the Proteome Profile window.
 
@@ -467,7 +645,7 @@ class ProtProf(scrolled.ScrolledPanel):
             tcHint    = 'e.g. 0.05',
             setSizer  = True,
             validator = cValidator.NumberList(
-                numType='float', nN=1, vMin=0, vMax=1),
+                opt=True, numType='float', nN=1, vMin=0, vMax=1),
         )
         self.wCorrectP = cWidget.StaticTextComboBox(
             self.wSbData,
@@ -483,7 +661,7 @@ class ProtProf(scrolled.ScrolledPanel):
             tcSize    = self.cSTc,
             tcHint    = 'e.g. 320',
             setSizer  = True,
-            validator = cValidator.NumberList(numType='float', nN=1),
+            validator = cValidator.NumberList(opt=True, numType='float', nN=1),
         )
         #------------------------------> Color
         self.wSbColor = wx.StaticBox(self,          label='Colors')
@@ -690,6 +868,5 @@ class ProtProf(scrolled.ScrolledPanel):
         return True
     #---
     #endregion ------------------------------------------------> Event Methods
-
 #---
 #endregion ----------------------------------------------------------> Classes

@@ -94,10 +94,10 @@ class LimProt(cPane.BaseConfPanelMod2):
     #region -----------------------------------------------------> Class setup
     cName = mConfig.limp.nPane
     #------------------------------> Label
-    cLBeta         = "β level"
-    cLGamma        = "γ level"
-    cLTheta        = "Θ value"
-    cLThetaMax     = "Θmax value"
+    cLBeta         = mConfig.core.lStBeta
+    cLGamma        = mConfig.core.lStGamma
+    cLTheta        = mConfig.core.lStTheta
+    cLThetaMax     = mConfig.core.lStThetaMax
     cLLane         = mConfig.limp.lStLane
     cLBand         = mConfig.limp.lStBand
     cLCtrlName     = mConfig.core.lStCtrlName
@@ -105,19 +105,15 @@ class LimProt(cPane.BaseConfPanelMod2):
     cLDFThirdLevel = mConfig.limp.dfcolCLevel
     cLPdRunText    = 'Performing Limited Proteolysis analysis'
     #------------------------------> Hints
-    cHBeta     = 'e.g. 0.05'
-    cHGamma    = 'e.g. 0.8'
-    cHTheta    = 'e.g. 4.5'
-    cHThetaMax = 'e.g. 8'
+    cHBeta     = mConfig.limp.hBeta
+    cHGamma    = mConfig.limp.hGamma
+    cHTheta    = mConfig.limp.hTheta
+    cHThetaMax = mConfig.limp.hThetaMax
     #------------------------------> Tooltips
-    cTTBeta = ('Beta level for the analysis.\ne.g. 0.05')
-    cTTGamma = ('Confidence limit level for estimating the measuring '
-                'precision.\ne.g. 0.80')
-    cTTTheta = ('Confidence interval used in the analysis. The value depends '
-        'on the Data Preparation selected. An empty values means that the '
-        'confidence interval will be calculated for each peptide.\ne.g. 3')
-    cTTThetaMax = (f'Maximum value for the calculated Confidence interval. It '
-        f'is only used if {cLTheta} is left empty.\ne.g. 8')
+    cTTBeta     = mConfig.limp.ttBeta
+    cTTGamma    = mConfig.limp.ttGamma
+    cTTTheta    = mConfig.limp.ttTheta
+    cTTThetaMax = mConfig.limp.ttThetaMax
     #------------------------------> Needed by BaseConfPanel
     cURL            = f"{mConfig.core.urlTutorial}/limited-proteolysis"
     cSection        = mConfig.limp.nMod

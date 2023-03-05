@@ -134,7 +134,7 @@ class Configuration():
     #------------------------------> Colors
     cFCAll:str  = '#d3d3d3'
     #------------------------------> User defined options
-    alpha:str      = '0.05'
+    alpha:str      = ''
     correctP:str   = ''
     scoreVal:str   = '0'
     lock:str       = 'Analysis'

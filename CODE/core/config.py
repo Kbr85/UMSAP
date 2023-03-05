@@ -77,7 +77,11 @@ class Configuration():
     lmTools:str         = 'Tools'
     lPdError:str        = 'Fatal Error'                                         # lPd: Label for Progress Dialog
     lPdDone:str         = 'All Done'
-    lStAlpha:str        = 'α level'                                             # lSt: Label for wx.StaticText
+    lStAlpha:str        = 'α Level'                                             # lSt: Label for wx.StaticText
+    lStBeta:str         = 'β Level'
+    lStGamma:str        = 'γ Level'
+    lStTheta:str        = 'θ Value'
+    lStThetaMax:str     = 'θ Max Value'
     lStColAnalysis:str  = 'Columns for Analysis'
     lStCtrlName:str     = 'Name'
     lStCtrlType:str     = 'Type'
