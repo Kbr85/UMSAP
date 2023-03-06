@@ -122,6 +122,21 @@ class LimProt():
 
 
 @dataclass
+class TarProt():
+    """User defined options for targeted proteolysis"""
+    #region --------------------------------------------------------> Options
+    alpha:str
+    scoreVal:str
+    correctP:str
+    aaPos:str
+    histWind:str
+    cCtrl:str
+    cAve:str
+    #endregion -----------------------------------------------------> Options
+#---
+
+
+@dataclass
 class UserConfig():
     """User defined configuration options"""
     core:Core
@@ -129,6 +144,7 @@ class UserConfig():
     data:Data
     limp:LimProt
     prot:ProtProf
+    tarp:TarProt
 #---
 #endregion ----------------------------------------------------------> Classes
 

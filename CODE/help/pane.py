@@ -547,13 +547,6 @@ class LimProt(scrolled.ScrolledPanel):
             border = 0,
         )
         self.sSbDataW.Add(
-            self.wCorrectP.Sizer,
-            pos    = (0,1),
-            flag   = wx.ALIGN_CENTER|wx.ALL,
-            border = 0,
-            span   = (0, 2),
-        )
-        self.sSbDataW.Add(
             self.wAlpha.Sizer,
             pos    = (1,0),
             flag   = wx.ALIGN_RIGHT|wx.ALL,
@@ -561,27 +554,34 @@ class LimProt(scrolled.ScrolledPanel):
         )
         self.sSbDataW.Add(
             self.wBeta.Sizer,
-            pos    = (1,1),
+            pos    = (0,1),
             flag   = wx.ALIGN_RIGHT|wx.ALL,
             border = 0,
         )
         self.sSbDataW.Add(
             self.wGamma.Sizer,
-            pos    = (1,2),
+            pos    = (1,1),
             flag   = wx.ALIGN_RIGHT|wx.ALL,
             border = 0,
         )
         self.sSbDataW.Add(
             self.wTheta.Sizer,
-            pos    = (2,0),
+            pos    = (0,2),
             flag   = wx.ALIGN_RIGHT|wx.ALL,
             border = 0,
         )
         self.sSbDataW.Add(
             self.wThetaMax.Sizer,
-            pos    = (2,1),
+            pos    = (1,2),
             flag   = wx.ALIGN_RIGHT|wx.ALL,
             border = 0,
+        )
+        self.sSbDataW.Add(
+            self.wCorrectP.Sizer,
+            pos    = (2,0),
+            flag   = wx.ALIGN_CENTER|wx.ALL,
+            border = 0,
+            span   = (0, 3),
         )
         #-->
         self.sSbData = wx.StaticBoxSizer(self.wSbData, wx.VERTICAL)
@@ -900,5 +900,170 @@ class ProtProf(scrolled.ScrolledPanel):
         return True
     #---
     #endregion ------------------------------------------------> Event Methods
+#---
+
+
+class TarProt(scrolled.ScrolledPanel):
+    """Panel for the Targeted Proteolysis Preferences window.
+
+        Parameters
+        ----------
+        parent: wx.Window
+            Parent of the pane.
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = mConfig.help.npTarProt
+    #------------------------------>
+    cLTab      = mConfig.help.ntTarProt
+    cLAlpha    = mConfig.core.lStAlpha
+    cLScoreVal = mConfig.core.lStScoreVal
+    cLAA       = mConfig.core.lStAAPos
+    cLHist     = mConfig.core.lStHistWind
+    cLCorrectP = mConfig.core.lCbCorrectP
+    #------------------------------>
+    cTTScoreVal = mConfig.core.ttStScoreVal
+    cTTAlpha    = 'Significance level for the statistical analysis.\ne.g. 0.05'
+    cTTCorrectP = mConfig.core.ttStCorrectP
+    cTTAA       = mConfig.core.ttAAPos
+    cTTHist     = mConfig.core.ttHist
+    #------------------------------>
+    cSTc = mConfig.core.sTcS
+    #------------------------------>
+    cOCorrectP = mConfig.core.oCorrectP
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        super().__init__(parent, name=self.cName)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wSbData = wx.StaticBox(
+            self, label='Targeted Proteolysis Analysis')
+        self.wScoreVal = cWidget.StaticTextCtrl(
+            self.wSbData,
+            stLabel   = self.cLScoreVal,
+            stTooltip = self.cTTScoreVal,
+            tcSize    = self.cSTc,
+            tcHint    = 'e.g. 320',
+            setSizer  = True,
+            validator = cValidator.NumberList(opt=True, numType='float', nN=1),
+        )
+        self.wCorrectP = cWidget.StaticTextComboBox(
+            self.wSbData,
+            label    = self.cLCorrectP,
+            choices  = list(self.cOCorrectP.keys()),
+            tooltip  = self.cTTCorrectP,
+            setSizer = True,
+        )
+        self.wAlpha = cWidget.StaticTextCtrl(
+            self.wSbData,
+            stLabel   = self.cLAlpha,
+            stTooltip = self.cTTAlpha,
+            tcSize    = self.cSTc,
+            tcHint    = 'e.g. 0.05',
+            setSizer  = True,
+            validator = cValidator.NumberList(
+                opt=True, numType='float', nN=1, vMin=0, vMax=1),
+        )
+        self.wAA = cWidget.StaticTextCtrl(
+            self.wSbData,
+            stLabel   = self.cLAA,
+            stTooltip = self.cTTAA,
+            tcSize    = self.cSTc,
+            tcHint    = 'e.g. 5',
+            setSizer  = True,
+            validator = cValidator.NumberList(
+                numType='int', nN=1, vMin=0, opt=True),
+        )
+        self.wHist = cWidget.StaticTextCtrl(
+            self.wSbData,
+            stLabel   = self.cLHist,
+            stTooltip = self.cTTHist,
+            tcSize    = self.cSTc,
+            tcHint    = 'e.g. 50',
+            setSizer  = True,
+            validator = cValidator.NumberList(
+                numType='int', vMin=0, sep=' ', opt=True),
+        )
+        #------------------------------> Color
+        self.wSbColor = wx.StaticBox(self, label='Colors')
+        self.wCtrl = cWidget.StaticTextColor(
+            self.wSbColor,
+            stLabel  = 'Control Points',
+            setSizer = True,
+        )
+        self.wAve = cWidget.StaticTextColor(
+            self.wSbColor,
+            stLabel  = 'Average Intensity',
+            setSizer = True,
+        )
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sSbDataW = wx.GridBagSizer(1,1)
+        self.sSbDataW.Add(
+            self.wScoreVal.Sizer,
+            pos    = (0,0),
+            flag   = wx.ALIGN_RIGHT|wx.ALL,
+            border = 0,
+        )
+        self.sSbDataW.Add(
+            self.wAlpha.Sizer,
+            pos    = (1,0),
+            flag   = wx.ALIGN_RIGHT|wx.ALL,
+            border = 0,
+        )
+        self.sSbDataW.Add(
+            self.wAA.Sizer,
+            pos    = (0,1),
+            flag   = wx.ALIGN_RIGHT|wx.ALL,
+            border = 0,
+        )
+        self.sSbDataW.Add(
+            self.wHist.Sizer,
+            pos    = (1,1),
+            flag   = wx.ALIGN_RIGHT|wx.ALL,
+            border = 0,
+        )
+        self.sSbDataW.Add(
+            self.wCorrectP.Sizer,
+            pos    = (2,0),
+            flag   = wx.ALIGN_CENTER|wx.ALL,
+            border = 0,
+            span   = (0, 2),
+        )
+        #-->
+        self.sSbData = wx.StaticBoxSizer(self.wSbData, wx.VERTICAL)
+        self.sSbData.Add(self.sSbDataW, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        #------------------------------>
+        self.sSbColorW = wx.BoxSizer(wx.HORIZONTAL)
+        self.sSbColorW.Add(self.wCtrl.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbColorW.Add(self.wAve.Sizer,  0, wx.ALIGN_CENTER|wx.ALL, 0)
+        #-->
+        self.sSbColor = wx.StaticBoxSizer(self.wSbColor, wx.VERTICAL)
+        self.sSbColor.Add(self.sSbColorW, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        #------------------------------>
+        self.sSizer = wx.BoxSizer(orient=wx.VERTICAL)
+        self.sSizer.Add(self.sSbData,   0, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sSbColor,  0, wx.EXPAND|wx.ALL, 5)
+        #-->
+        self.SetSizer(self.sSizer)
+        self.sSizer.Fit(self)
+        self.SetupScrolling()
+        #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------> Check Input Data
+        self.rCheckUserInput = {
+            f'{self.cLTab} - {self.cLScoreVal}': [self.wScoreVal.wTc, mConfig.core.mOneRealNum],
+            f'{self.cLTab} - {self.cLAlpha}'   : [self.wAlpha.wTc,    mConfig.core.mOne01Num],
+            f'{self.cLTab} - {self.cLAA}'      : [self.wAA.wTc,       mConfig.core.mOneZPlusNum],
+            f'{self.cLTab} - {self.cLHist}'    : [self.wHist.wTc,     mConfig.core.mValueBad],
+        }
+        #endregion -----------------------------------------> Check Input Data
+    #---
+    #endregion -----------------------------------------------> Instance setup
 #---
 #endregion ----------------------------------------------------------> Classes

@@ -110,5 +110,14 @@
         ],
         "cVolSel": "#6ac653",
         "cCV": "#808080"
+    },
+    "tarp": {
+        "alpha": "",
+        "scoreVal": "",
+        "correctP": "",
+        "aaPos": "",
+        "histWind": "",
+        "cCtrl": "#000000",
+        "cAve": "#00ffff"
     }
 }

@@ -77,44 +77,31 @@ class Configuration():
     lmTools:str         = 'Tools'
     lPdError:str        = 'Fatal Error'                                         # lPd: Label for Progress Dialog
     lPdDone:str         = 'All Done'
-    lStAlpha:str        = 'α Level'                                             # lSt: Label for wx.StaticText
+    lStAAPos:str        = 'AA Positions'                                        # lSt: Label for wx.StaticText
+    lStAlpha:str        = 'α Level'
     lStBeta:str         = 'β Level'
-    lStGamma:str        = 'γ Level'
-    lStTheta:str        = 'θ Value'
-    lStThetaMax:str     = 'θ Max Value'
     lStColAnalysis:str  = 'Columns for Analysis'
     lStCtrlName:str     = 'Name'
     lStCtrlType:str     = 'Type'
     lStExcludeProt:str  = 'Exclude Proteins'
+    lStGamma:str        = 'γ Level'
     lStGeneName:str     = 'Gene Names'
+    lStHistWind:str     = 'Histogram Windows'
+    lStLog2FC:str       = 'Log2FC'
+    lStP:str            = 'P'
     lStProtein:str      = 'Proteins'
     lStResCtrl:str      = 'Results - Control experiments'
     lStResCtrlS:str     = 'Results - Control'
+    lStS0:str           = 's0'
+    lStSample:str       = 'Sample'
     lStScoreCol:str     = 'Score'
     lStScoreVal:str     = 'Score Value'
-    lStSample:str       = 'Sample'
     lStT0:str           = 't0'
-    lStS0:str           = 's0'
-    lStP:str            = 'P'
-    lStLog2FC:str       = 'Log2FC'
+    lStTheta:str        = 'θ Value'
+    lStThetaMax:str     = 'θ Max Value'
     lStZScore:str       = 'Z Score'
     #------------------------------> wx.ListCtrl Column names
     lLCtrlColNameI:list[str] = field(default_factory=lambda: ['#', 'Name'])
-    #------------------------------> Tooltips
-    ttBtnHelp:str           = 'Read tutorial at {}.'
-    ttSectionRightClick:str = ('The content of the Section can be deleted with '
-                               'a right click.')
-    ttStCorrectP:str        = 'Select the p correction method.'
-    ttStExcludeProt:str     = ('Set the column number containing the data used '
-                               'to exclude proteins.\ne.g. 8 10-12')
-    ttStGenName:str         = (f'Set the column number containing the '
-                               f'{lStGeneName}.\ne.g. 3')
-    ttStSample:str          = ('Specify if samples are independent or paired.\n'
-        'For example, samples are paired when the same Petri dish is used '
-        'for the control and experiment.')
-    ttStScoreCol:str        = (f'Set the column number containing the '
-                               f'{lStScoreVal}.\ne.g. 4')
-    ttStScoreVal:str        = 'Set the minimum acceptable Score value.\ne.g. -4'
     #------------------------------> Keywords for Menu
     kwCheckDP:str      = 'General Tool Check DP'
     kwDupWin:str       = 'General Tool Duplicate Window'
@@ -294,6 +281,26 @@ class Configuration():
                           f'correct input.')
     mResCtrlWin:str     = ("Value '{}' cannot be accepted as input.\n"
                           f"{mNZPlusNumText}")
+    #------------------------------> Tooltips
+    ttBtnHelp:str           = 'Read tutorial at {}.'
+    ttSectionRightClick:str = ('The content of the Section can be deleted with '
+                               'a right click.')
+    ttStCorrectP:str        = 'Select the p correction method.'
+    ttStExcludeProt:str     = ('Set the column number containing the data used '
+                               'to exclude proteins.\ne.g. 8 10-12')
+    ttStGenName:str         = (f'Set the column number containing the '
+                               f'{lStGeneName}.\ne.g. 3')
+    ttStSample:str          = ('Specify if samples are independent or paired.\n'
+        'For example, samples are paired when the same Petri dish is used '
+        'for the control and experiment.')
+    ttStScoreCol:str        = (f'Set the column number containing the '
+                               f'{lStScoreVal}.\ne.g. 4')
+    ttStScoreVal:str        = 'Set the minimum acceptable Score value.\ne.g. -4'
+    ttAAPos = (f'Number of positions around the cleavage sites to consider '
+        f'for the AA distribution analysis.\ne.g. 5{mOptField}')
+    ttHist = (f'Size of the histogram windows. One number will result in '
+        f'equally spaced windows. Multiple numbers allow defining custom sized '
+        f'windows.\ne.g. 50 or 0 50 100 150 500{mOptField}')
     #------------------------------> Fonts
     fSeqAlign:Union[wx.Font, str]              = ''
     fTreeItem:Union[wx.Font, str]              = ''

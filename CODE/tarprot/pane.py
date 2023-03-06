@@ -97,8 +97,8 @@ class TarProt(cPane.BaseConfPanelMod2):
     cName = mConfig.tarp.nPane
     #------------------------------> Label
     cLMethod    = 'Method'
-    cLAAPos     = 'AA Positions'
-    cLHist      = 'Histogram Windows'
+    cLAAPos     = mConfig.core.lStAAPos
+    cLHist      = mConfig.core.lStHistWind
     cLExp       = mConfig.tarp.lStExp
     cLCtrlName  = mConfig.core.lStCtrlName
     cLDFFirst   = mConfig.tarp.dfcolFirstPart
@@ -109,11 +109,8 @@ class TarProt(cPane.BaseConfPanelMod2):
     cHHist  = 'e.g. 50 or 50 100 200'
     #------------------------------> Tooltip
     cTTMethod = 'Select the Analysis Method.'
-    cTTAAPos = (f'Number of positions around the cleavage sites to consider '
-        f'for the AA distribution analysis.\ne.g. 5{mConfig.core.mOptField}')
-    cTTHist = (f'Size of the histogram windows. One number will result in '
-        f'equally spaced windows. Multiple numbers allow defining custom sized '
-        f'windows.\ne.g. 50 or 0 50 100 150 500{mConfig.core.mOptField}')
+    cTTAAPos  = mConfig.core.ttAAPos
+    cTTHist   = mConfig.core.ttHist
     #------------------------------> Options
     cOMethod    = mConfig.tarp.oMethod
     cOSampleReq = mConfig.tarp.lOSampleReq

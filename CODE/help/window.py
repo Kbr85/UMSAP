@@ -168,6 +168,8 @@ class Preference(wx.Dialog):
         self.wNoteBook.AddPage(self.wLimProt, self.wLimProt.cLTab)
         self.wProtProf = hPane.ProtProf(self.wNoteBook)
         self.wNoteBook.AddPage(self.wProtProf, self.wProtProf.cLTab)
+        self.wTarProt = hPane.TarProt(self.wNoteBook)
+        self.wNoteBook.AddPage(self.wTarProt, self.wTarProt.cLTab)
         #------------------------------>
         self.sBtn = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.NO)
         self.FindWindowById(wx.ID_OK).SetLabel('Save')
@@ -197,6 +199,7 @@ class Preference(wx.Dialog):
             **self.wData.rCheckUserInput,
             **self.wLimProt.rCheckUserInput,
             **self.wProtProf.rCheckUserInput,
+            **self.wTarProt.rCheckUserInput,
         }
         #endregion ----------------------------------------------> Check Input
 
@@ -376,6 +379,16 @@ class Preference(wx.Dialog):
         self.wProtProf.wVolT.wC.SetColour(data.prot.cCV)
         #endregion -------------------------------------------------> ProtProf
 
+        #region -----------------------------------------------------> TarProt
+        self.wTarProt.wScoreVal.wTc.SetValue(data.tarp.scoreVal)
+        self.wTarProt.wAlpha.wTc.SetValue(data.tarp.alpha)
+        self.wTarProt.wCorrectP.wCb.SetValue(data.tarp.correctP)
+        self.wTarProt.wAA.wTc.SetValue(data.tarp.aaPos)
+        self.wTarProt.wHist.wTc.SetValue(data.tarp.histWind)
+        self.wTarProt.wCtrl.wC.SetColour(data.tarp.cCtrl)
+        self.wTarProt.wAve.wC.SetColour(data.tarp.cAve)
+        #endregion --------------------------------------------------> TarProt
+
         return True
     #---
 
@@ -467,9 +480,19 @@ class Preference(wx.Dialog):
                 hMethod.RGB2Hex(self.wProtProf.wVolU.wC.GetColour()),
             ]
         )
+        #------------------------------> TarProt
+        tarp = hMethod.TarProt(
+            alpha    = self.wTarProt.wAlpha.wTc.GetValue(),
+            scoreVal = self.wTarProt.wScoreVal.wTc.GetValue(),
+            correctP = self.wTarProt.wCorrectP.wCb.GetValue(),
+            aaPos    = self.wTarProt.wAA.wTc.GetValue(),
+            histWind = self.wTarProt.wHist.wTc.GetValue(),
+            cCtrl    = hMethod.RGB2Hex(self.wTarProt.wCtrl.wC.GetColour()),
+            cAve     = hMethod.RGB2Hex(self.wTarProt.wAve.wC.GetColour()),
+        )
         #------------------------------> Full Options
         userOpt = dataclasses.asdict(hMethod.UserConfig(
-            core, corrA, data, limp, prot))
+            core, corrA, data, limp, prot, tarp))
         #endregion -----------------------------------------------------> Data
 
         #region -------------------------------------------------> Save 2 File
@@ -538,8 +561,9 @@ class Preference(wx.Dialog):
         data  = hMethod.Data(**dataF['data'])
         limp  = hMethod.LimProt(**dataF['limp'])
         prot  = hMethod.ProtProf(**dataF['prot'])
+        tarp  = hMethod.TarProt(**dataF['tarp'])
         #------------------------------>
-        userOpt = hMethod.UserConfig(core, corrA, data, limp, prot)
+        userOpt = hMethod.UserConfig(core, corrA, data, limp, prot, tarp)
         #endregion ----------------------------------------------------->
 
         #region -------------------------------------------------------->
