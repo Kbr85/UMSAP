@@ -132,6 +132,7 @@ class TarProt():
     histWind:str
     cCtrl:str
     cAve:str
+    cAveL:str
     #endregion -----------------------------------------------------> Options
 #---
 

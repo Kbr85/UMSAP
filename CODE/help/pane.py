@@ -524,7 +524,7 @@ class LimProt(scrolled.ScrolledPanel):
             tcHint    = self.cHTheta,
             setSizer  = True,
             validator = cValidator.NumberList(
-                opt=True, numType='float', nN=1, vMin=0, vMax=1),
+                opt=True, numType='float', nN=1, vMin=0),
         )
         self.wThetaMax = cWidget.StaticTextCtrl(
             self.wSbData,
@@ -534,7 +534,7 @@ class LimProt(scrolled.ScrolledPanel):
             tcHint    = self.cHThetaMax,
             setSizer  = True,
             validator = cValidator.NumberList(
-                opt=True, numType='float', nN=1, vMin=0, vMax=1),
+                opt=True, numType='float', nN=1, vMin=0),
         )
         #endregion --------------------------------------------------> Widgets
 
@@ -1000,6 +1000,11 @@ class TarProt(scrolled.ScrolledPanel):
             stLabel  = 'Average Intensity',
             setSizer = True,
         )
+        self.wAveL = cWidget.StaticTextColor(
+            self.wSbColor,
+            stLabel  = 'Average Line',
+            setSizer = True,
+        )
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
@@ -1040,8 +1045,9 @@ class TarProt(scrolled.ScrolledPanel):
         self.sSbData.Add(self.sSbDataW, 0, wx.ALIGN_CENTER|wx.ALL, 5)
         #------------------------------>
         self.sSbColorW = wx.BoxSizer(wx.HORIZONTAL)
-        self.sSbColorW.Add(self.wCtrl.Sizer, 0, wx.ALIGN_CENTER|wx.ALL, 0)
-        self.sSbColorW.Add(self.wAve.Sizer,  0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbColorW.Add(self.wCtrl.Sizer,  0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbColorW.Add(self.wAve.Sizer,   0, wx.ALIGN_CENTER|wx.ALL, 0)
+        self.sSbColorW.Add(self.wAveL.Sizer,  0, wx.ALIGN_CENTER|wx.ALL, 0)
         #-->
         self.sSbColor = wx.StaticBoxSizer(self.wSbColor, wx.VERTICAL)
         self.sSbColor.Add(self.sSbColorW, 0, wx.ALIGN_CENTER|wx.ALL, 5)

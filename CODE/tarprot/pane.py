@@ -313,46 +313,46 @@ class TarProt(cPane.BaseConfPanelMod2):
         #endregion -------------------------------------------> checkUserInput
 
         #region --------------------------------------------------------> Test
-        if mConfig.core.development:
-            # pylint: disable=line-too-long
-            import getpass                                                      # pylint: disable=import-outside-toplevel
-            user = getpass.getuser()
-            if mConfig.core.os == "Darwin":
-                self.wUFile.wTc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
-                self.wIFile.wTc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
-                self.wSeqFile.wTc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-seq-both.txt")
-                # self.wSeqFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-seq-rec.txt")
-            elif mConfig.core.os == 'Windows':
-                self.wUFile.wTc.SetValue("C:/Users/" + str(user) + "/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap")
-                self.wIFile.wTc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
-                self.wSeqFile.wTc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-seq-both.txt")
-            else:
-                pass
-            self.wId.wTc.SetValue('Beta Test Dev')
-            self.wCeroB.wCb.SetValue('Yes')
-            self.wTransMethod.wCb.SetValue('Log2')
-            self.wNormMethod.wCb.SetValue('Median')
-            self.wImputationMethod.wCb.SetValue('Normal Distribution')
-            self.wMethod.wCb.SetValue('t-Test')
-            self.wTargetProt.wTc.SetValue('efeB')
-            self.wScoreVal.wTc.SetValue('200')
-            self.wCorrectP.wCb.SetValue('Holm - Sidak')
-            self.wAAPos.wTc.SetValue('5')
-            self.wHist.wTc.SetValue('25')
-            self.wAlpha.wTc.SetValue('0.05')
-            self.wSeqCol.wTc.SetValue('0')
-            self.wDetectedProt.wTc.SetValue('38')
-            self.wScore.wTc.SetValue('44')
-            self.wTcResults.SetValue('98-105; 109-111; 112 113 114; 115-117 120')
-            self.rLbDict = {
-                0        : ['Exp1', 'Exp2', 'Exp3'],
-                'Control': ['Ctrl'],
-            }
-            self.OnImpMethod('fEvent')
-            self.wShift.wTc.SetValue('1.8')
-            self.wWidth.wTc.SetValue('0.3')
-            self.OnMethod('fEvent')
-            self.wSample.wCb.SetValue('Independent Samples')
+        # if mConfig.core.development:
+        #     # pylint: disable=line-too-long
+        #     import getpass                                                      # pylint: disable=import-outside-toplevel
+        #     user = getpass.getuser()
+        #     if mConfig.core.os == "Darwin":
+        #         self.wUFile.wTc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
+        #         self.wIFile.wTc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
+        #         self.wSeqFile.wTc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-seq-both.txt")
+        #         # self.wSeqFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-seq-rec.txt")
+        #     elif mConfig.core.os == 'Windows':
+        #         self.wUFile.wTc.SetValue("C:/Users/" + str(user) + "/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap")
+        #         self.wIFile.wTc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
+        #         self.wSeqFile.wTc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-seq-both.txt")
+        #     else:
+        #         pass
+        #     self.wId.wTc.SetValue('Beta Test Dev')
+        #     self.wCeroB.wCb.SetValue('Yes')
+        #     self.wTransMethod.wCb.SetValue('Log2')
+        #     self.wNormMethod.wCb.SetValue('Median')
+        #     self.wImputationMethod.wCb.SetValue('Normal Distribution')
+        #     self.wMethod.wCb.SetValue('t-Test')
+        #     self.wTargetProt.wTc.SetValue('efeB')
+        #     self.wScoreVal.wTc.SetValue('200')
+        #     self.wCorrectP.wCb.SetValue('Holm - Sidak')
+        #     self.wAAPos.wTc.SetValue('5')
+        #     self.wHist.wTc.SetValue('25')
+        #     self.wAlpha.wTc.SetValue('0.05')
+        #     self.wSeqCol.wTc.SetValue('0')
+        #     self.wDetectedProt.wTc.SetValue('38')
+        #     self.wScore.wTc.SetValue('44')
+        #     self.wTcResults.SetValue('98-105; 109-111; 112 113 114; 115-117 120')
+        #     self.rLbDict = {
+        #         0        : ['Exp1', 'Exp2', 'Exp3'],
+        #         'Control': ['Ctrl'],
+        #     }
+        #     self.OnImpMethod('fEvent')
+        #     self.wShift.wTc.SetValue('1.8')
+        #     self.wWidth.wTc.SetValue('0.3')
+        #     self.OnMethod('fEvent')
+        #     self.wSample.wCb.SetValue('Independent Samples')
         #endregion -----------------------------------------------------> Test
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -461,6 +461,14 @@ class TarProt(cPane.BaseConfPanelMod2):
             self.OnImpMethod('fEvent')
             self.OnMethod('fEvent')
             self.wSample.wCb.SetValue(mConfig.core.oSamplesP[dataI.indSample])
+        else:
+            super().SetConfOptions()
+            #------------------------------>
+            self.wScoreVal.wTc.SetValue(mConfig.tarp.scoreVal)
+            self.wAlpha.wTc.SetValue(mConfig.tarp.alpha)
+            self.wCorrectP.wCb.SetValue(mConfig.tarp.correctP)
+            self.wAAPos.wTc.SetValue(mConfig.tarp.aaPos)
+            self.wHist.wTc.SetValue(mConfig.tarp.histWind)
         #endregion ----------------------------------------------------->
 
         return True

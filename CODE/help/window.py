@@ -387,6 +387,7 @@ class Preference(wx.Dialog):
         self.wTarProt.wHist.wTc.SetValue(data.tarp.histWind)
         self.wTarProt.wCtrl.wC.SetColour(data.tarp.cCtrl)
         self.wTarProt.wAve.wC.SetColour(data.tarp.cAve)
+        self.wTarProt.wAveL.wC.SetColour(data.tarp.cAveL)
         #endregion --------------------------------------------------> TarProt
 
         return True
@@ -489,6 +490,7 @@ class Preference(wx.Dialog):
             histWind = self.wTarProt.wHist.wTc.GetValue(),
             cCtrl    = hMethod.RGB2Hex(self.wTarProt.wCtrl.wC.GetColour()),
             cAve     = hMethod.RGB2Hex(self.wTarProt.wAve.wC.GetColour()),
+            cAveL    =hMethod.RGB2Hex(self.wTarProt.wAveL.wC.GetColour()),
         )
         #------------------------------> Full Options
         userOpt = dataclasses.asdict(hMethod.UserConfig(

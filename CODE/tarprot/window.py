@@ -113,6 +113,9 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         self.rData:cMethod.BaseAnalysis = self.rObj.dConfigure[self.cSection]()
         self.rDate, menuData = self.SetDateMenuDate()
         self.rCorrP = False
+        self.rCCtrl = mConfig.tarp.cCtrl
+        self.rCAve  = mConfig.tarp.cAve
+        self.rCAveL = mConfig.tarp.cAveL
         #------------------------------>
         self.ReportPlotDataError()
         #------------------------------>
@@ -427,7 +430,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             intN = len(intL)
             #------------------------------> Color, x & y
             if k == 1:
-                color = self.cCtrl                                              # type: ignore
+                color = self.rCCtrl                                             # type: ignore
                 x = [1]
                 y = [sum(intL)/intN]
             else:
@@ -447,11 +450,11 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             y,
             edgecolor = 'black',
             marker    = 'D',
-            color     = 'cyan',
+            color     = self.rCAve,
             s         = 120,
             zorder    = 2,
         )
-        self.wPlot['Sec'].rAxes.plot(x,y, zorder=1)
+        self.wPlot['Sec'].rAxes.plot(x,y, zorder=1, color=self.rCAveL)
         #------------------------------> Show
         self.wPlot['Sec'].ZoomResetSetValues()
         self.wPlot['Sec'].rCanvas.draw()

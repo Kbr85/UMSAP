@@ -81,7 +81,6 @@ class Configuration():
     )
     #------------------------------> Colors
     cXaa:str  = 'GREY'
-
     #------------------------------> User defined options
     alpha:str    = ''
     scoreVal:str = ''
@@ -90,6 +89,7 @@ class Configuration():
     histWind:str = ''
     cCtrl:str    = 'black'
     cAve:str     = 'cyan'
+    cAveL:str    = '#417ab1'
     #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration
