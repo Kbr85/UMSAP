@@ -425,6 +425,10 @@ class ProtProf(cPane.BaseConfPanelMod):
             self.OnImpMethod('fEvent')
         else:
             super().SetConfOptions()
+            #------------------------------>
+            self.wAlpha.wTc.SetValue(mConfig.prot.alpha)
+            self.wScoreVal.wTc.SetValue(mConfig.prot.scoreVal)
+            self.wCorrectP.wCb.SetValue(mConfig.prot.correctP)
         #endregion ----------------------------------------------> Fill Fields
 
         return True

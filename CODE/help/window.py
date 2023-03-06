@@ -463,7 +463,7 @@ class Preference(wx.Dialog):
             alpha    = self.wProtProf.wAlpha.wTc.GetValue(),
             correctP = self.wProtProf.wCorrectP.wCb.GetValue(),
             scoreVal = self.wProtProf.wScoreVal.wTc.GetValue(),
-            lock     = self.wProtProf.wScoreVal.wTc.GetValue(),
+            lock     = self.wProtProf.wLock.wCb.GetValue(),
             filterA  = self.wProtProf.wFilterA.wCb.GetValue(),
             showAll  = self.wProtProf.wShowAll.wCb.GetValue(),
             pickP    = self.wProtProf.wPick.wCb.GetValue(),
