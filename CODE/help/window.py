@@ -194,15 +194,9 @@ class Preference(wx.Dialog):
 
         #region -------------------------------------------------> Check Input
         self.rCheckUserInput = {
-            f'{self.wData.cLTab} - {self.wData.cLShift}'            : [self.wData.wShift.wTc,        mConfig.core.mOneRPlusNum],
-            f'{self.wData.cLTab} - {self.wData.cLWidth}'            : [self.wData.wWidth.wTc,        mConfig.core.mOneRPlusNum],
-            f'{self.wProtProf.cLTab} - {self.wProtProf.cLAlpha}'    : [self.wProtProf.wAlpha.wTc,    mConfig.core.mOne01Num],
-            f'{self.wProtProf.cLTab} - {self.wProtProf.cLScoreVal}' : [self.wProtProf.wScoreVal.wTc, mConfig.core.mOneRealNum],
-            f'{self.wProtProf.cLTab} - {self.wProtProf.cLT0}'       : [self.wProtProf.wT0.wTc,       mConfig.core.mOneRPlusNum],
-            f'{self.wProtProf.cLTab} - {self.wProtProf.cLS0}'       : [self.wProtProf.wS0.wTc,       mConfig.core.mOneRPlusNum],
-            f'{self.wProtProf.cLTab} - {self.wProtProf.cLP}'        : [self.wProtProf.wP.wTc ,       mConfig.core.mOne01Num],
-            f'{self.wProtProf.cLTab} - {self.wProtProf.cLLog2FC}'   : [self.wProtProf.wFC.wTc,       mConfig.core.mOneRPlusNum],
-            f'{self.wProtProf.cLTab} - {self.wProtProf.cLZ}'        : [self.wProtProf.wZ.wTc ,       mConfig.core.mOne0100Num],
+            **self.wData.rCheckUserInput,
+            **self.wLimProt.rCheckUserInput,
+            **self.wProtProf.rCheckUserInput,
         }
         #endregion ----------------------------------------------> Check Input
 

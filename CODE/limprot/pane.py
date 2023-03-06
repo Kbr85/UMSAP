@@ -316,8 +316,8 @@ class LimProt(cPane.BaseConfPanelMod2):
             self.cLAlpha        : [self.wAlpha.wTc,        mConfig.core.mOne01Num,       False],
             self.cLBeta         : [self.wBeta.wTc,         mConfig.core.mOne01Num,       False],
             self.cLGamma        : [self.wGamma.wTc,        mConfig.core.mOne01Num,       False],
-            self.cLTheta        : [self.wTheta.wTc,        mConfig.core.mOneZPlusNumCol, False],
-            label               : [self.wSeqCol.wTc,       mConfig.core.mOneZPlusNumCol, True ],
+            self.cLTheta        : [self.wTheta.wTc,        mConfig.core.mOneRPlusNum,    False],
+            label               : [self.wSeqCol.wTc,       mConfig.core.mOneRPlusNum,    True ],
             self.cLDetectedProt : [self.wDetectedProt.wTc, mConfig.core.mOneZPlusNumCol, True ],
             self.cLScoreCol     : [self.wScore.wTc,        mConfig.core.mOneZPlusNumCol, True ],
             self.cLResControl   : [self.wTcResults,        mConfig.core.mResCtrl,        False],
@@ -422,6 +422,8 @@ class LimProt(cPane.BaseConfPanelMod2):
             #------------------------------>
             self.IFileEnter(dataI.iFile)
             self.OnImpMethod('fEvent')
+        else:
+            super().SetConfOptions()
         #endregion ----------------------------------------------> Fill Fields
 
         return True

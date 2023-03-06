@@ -410,6 +410,13 @@ class Data(scrolled.ScrolledPanel):
         self.sSizer.Fit(self)
         self.SetupScrolling()
         #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------> Check Input Data
+        self.rCheckUserInput = {
+            f'{self.cLTab} - {self.cLShift}' : [self.wShift.wTc, mConfig.core.mOneRPlusNum],
+            f'{self.cLTab} - {self.cLWidth}' : [self.wWidth.wTc, mConfig.core.mOneRPlusNum],
+        }
+        #endregion -----------------------------------------> Check Input Data
     #---
     #endregion -----------------------------------------------> Instance setup
 #---
@@ -587,6 +594,18 @@ class LimProt(scrolled.ScrolledPanel):
         self.sSizer.Fit(self)
         self.SetupScrolling()
         #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------> Check User Input
+        self.rCheckUserInput = {
+            f'{self.cLTab} - {self.cLScoreVal}': [self.wScoreVal.wTc, mConfig.core.mOneRealNum],
+            f'{self.cLTab} - {self.cLAlpha}'   : [self.wAlpha.wTc,    mConfig.core.mOne01Num],
+            f'{self.cLTab} - {self.cLBeta}'    : [self.wBeta.wTc,     mConfig.core.mOne01Num],
+            f'{self.cLTab} - {self.cLGamma}'   : [self.wGamma.wTc,    mConfig.core.mOne01Num],
+            f'{self.cLTab} - {self.cLTheta}'   : [self.wTheta.wTc,    mConfig.core.mOneRPlusNum],
+            f'{self.cLTab} - {self.cLThetaMax}': [self.wThetaMax.wTc, mConfig.core.mOneRPlusNum],
+        }
+        #endregion -----------------------------------------> Check User Input
+
     #---
     #endregion -----------------------------------------------> Instance setup
 #---
@@ -848,6 +867,19 @@ class ProtProf(scrolled.ScrolledPanel):
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_RADIOBUTTON, self.OnCheckChange)
         #endregion -----------------------------------------------------> Bind
+
+        #region --------------------------------------------> Check User Input
+        self.rCheckUserInput = {
+            f'{self.cLTab} - {self.cLAlpha}'    : [self.wAlpha.wTc,    mConfig.core.mOne01Num],
+            f'{self.cLTab} - {self.cLScoreVal}' : [self.wScoreVal.wTc, mConfig.core.mOneRealNum],
+            f'{self.cLTab} - {self.cLT0}'       : [self.wT0.wTc,       mConfig.core.mOneRPlusNum],
+            f'{self.cLTab} - {self.cLS0}'       : [self.wS0.wTc,       mConfig.core.mOneRPlusNum],
+            f'{self.cLTab} - {self.cLP}'        : [self.wP.wTc ,       mConfig.core.mOne01Num],
+            f'{self.cLTab} - {self.cLLog2FC}'   : [self.wFC.wTc,       mConfig.core.mOneRPlusNum],
+            f'{self.cLTab} - {self.cLZ}'        : [self.wZ.wTc ,       mConfig.core.mOne0100Num],
+        }
+        #endregion -----------------------------------------> Check User Input
+
     #---
     #endregion -----------------------------------------------> Instance setup
 
