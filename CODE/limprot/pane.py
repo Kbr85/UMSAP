@@ -94,10 +94,10 @@ class LimProt(cPane.BaseConfPanelMod2):
     #region -----------------------------------------------------> Class setup
     cName = mConfig.limp.nPane
     #------------------------------> Label
-    cLBeta         = "β level"
-    cLGamma        = "γ level"
-    cLTheta        = "Θ value"
-    cLThetaMax     = "Θmax value"
+    cLBeta         = mConfig.core.lStBeta
+    cLGamma        = mConfig.core.lStGamma
+    cLTheta        = mConfig.core.lStTheta
+    cLThetaMax     = mConfig.core.lStThetaMax
     cLLane         = mConfig.limp.lStLane
     cLBand         = mConfig.limp.lStBand
     cLCtrlName     = mConfig.core.lStCtrlName
@@ -105,19 +105,15 @@ class LimProt(cPane.BaseConfPanelMod2):
     cLDFThirdLevel = mConfig.limp.dfcolCLevel
     cLPdRunText    = 'Performing Limited Proteolysis analysis'
     #------------------------------> Hints
-    cHBeta     = 'e.g. 0.05'
-    cHGamma    = 'e.g. 0.8'
-    cHTheta    = 'e.g. 4.5'
-    cHThetaMax = 'e.g. 8'
+    cHBeta     = mConfig.limp.hBeta
+    cHGamma    = mConfig.limp.hGamma
+    cHTheta    = mConfig.limp.hTheta
+    cHThetaMax = mConfig.limp.hThetaMax
     #------------------------------> Tooltips
-    cTTBeta = ('Beta level for the analysis.\ne.g. 0.05')
-    cTTGamma = ('Confidence limit level for estimating the measuring '
-                'precision.\ne.g. 0.80')
-    cTTTheta = ('Confidence interval used in the analysis. The value depends '
-        'on the Data Preparation selected. An empty values means that the '
-        'confidence interval will be calculated for each peptide.\ne.g. 3')
-    cTTThetaMax = (f'Maximum value for the calculated Confidence interval. It '
-        f'is only used if {cLTheta} is left empty.\ne.g. 8')
+    cTTBeta     = mConfig.limp.ttBeta
+    cTTGamma    = mConfig.limp.ttGamma
+    cTTTheta    = mConfig.limp.ttTheta
+    cTTThetaMax = mConfig.limp.ttThetaMax
     #------------------------------> Needed by BaseConfPanel
     cURL            = f"{mConfig.core.urlTutorial}/limited-proteolysis"
     cSection        = mConfig.limp.nMod
@@ -320,8 +316,8 @@ class LimProt(cPane.BaseConfPanelMod2):
             self.cLAlpha        : [self.wAlpha.wTc,        mConfig.core.mOne01Num,       False],
             self.cLBeta         : [self.wBeta.wTc,         mConfig.core.mOne01Num,       False],
             self.cLGamma        : [self.wGamma.wTc,        mConfig.core.mOne01Num,       False],
-            self.cLTheta        : [self.wTheta.wTc,        mConfig.core.mOneZPlusNumCol, False],
-            label               : [self.wSeqCol.wTc,       mConfig.core.mOneZPlusNumCol, True ],
+            self.cLTheta        : [self.wTheta.wTc,        mConfig.core.mOneRPlusNum,    False],
+            label               : [self.wSeqCol.wTc,       mConfig.core.mOneRPlusNum,    True ],
             self.cLDetectedProt : [self.wDetectedProt.wTc, mConfig.core.mOneZPlusNumCol, True ],
             self.cLScoreCol     : [self.wScore.wTc,        mConfig.core.mOneZPlusNumCol, True ],
             self.cLResControl   : [self.wTcResults,        mConfig.core.mResCtrl,        False],
@@ -330,48 +326,46 @@ class LimProt(cPane.BaseConfPanelMod2):
         #endregion -------------------------------------------> checkUserInput
 
         #region --------------------------------------------------------> Test
-        if mConfig.core.development:
-            # pylint: disable=line-too-long
-            import getpass                                                      # pylint: disable=import-outside-toplevel
-            user = getpass.getuser()
-            if mConfig.core.os == "Darwin":
-                self.wUFile.wTc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
-                self.wIFile.wTc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-data-file.txt")
-                self.wSeqFile.wTc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-both.txt")
-            elif mConfig.core.os == 'Windows':
-                self.wUFile.wTc.SetValue("C:/Users/" + str(user) + "/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap")
-                self.wIFile.wTc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-data-file.txt")
-                self.wSeqFile.wTc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-both.txt")
-            else:
-                pass
-            self.wId.wTc.SetValue('Beta Test Dev')
-            self.wCeroB.wCb.SetValue('Yes')
-            self.wTransMethod.wCb.SetValue('Log2')
-            self.wNormMethod.wCb.SetValue('Median')
-            self.wImputationMethod.wCb.SetValue('Normal Distribution')
-            self.wTargetProt.wTc.SetValue('Mis18alpha')
-            self.wScoreVal.wTc.SetValue('10')
-            self.wCorrectP.wCb.SetValue('Bonferroni')
-            self.wAlpha.wTc.SetValue('0.05')
-            self.wBeta.wTc.SetValue('0.05')
-            self.wGamma.wTc.SetValue('0.8')
-            self.wTheta.wTc.SetValue('')
-            self.wThetaMax.wTc.SetValue('8')
-            self.wSample.wCb.SetValue('Independent Samples')
-            self.wSeqCol.wTc.SetValue('0')
-            self.wDetectedProt.wTc.SetValue('34')
-            self.wScore.wTc.SetValue('42')
-            self.wTcResults.SetValue('69-71; 81-83, 78-80, 75-77, 72-74, ; , , , 66-68, ; 63-65, 105-107, 102-104, 99-101, ; 93-95, 90-92, 87-89, 84-86, 60-62')
-            self.rLbDict = {
-                0        : ['Lane1', 'Lane2', 'Lane3', 'Lane4', 'Lane5'],
-                1        : ['Band1', 'Band2', 'Band3', 'Band4'],
-                'Control': ['Ctrl'],
-            }
-            self.OnImpMethod('fEvent')
-            self.wShift.wTc.SetValue('1.8')
-            self.wWidth.wTc.SetValue('0.3')
-        else:
-            pass
+        # if mConfig.core.development:
+        #     # pylint: disable=line-too-long
+        #     import getpass                                                      # pylint: disable=import-outside-toplevel
+        #     user = getpass.getuser()
+        #     if mConfig.core.os == "Darwin":
+        #         self.wUFile.wTc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
+        #         self.wIFile.wTc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-data-file.txt")
+        #         self.wSeqFile.wTc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-both.txt")
+        #     elif mConfig.core.os == 'Windows':
+        #         self.wUFile.wTc.SetValue("C:/Users/" + str(user) + "/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap")
+        #         self.wIFile.wTc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-data-file.txt")
+        #         self.wSeqFile.wTc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/LIMPROT/limprot-seq-both.txt")
+        #     else:
+        #         pass
+        #     self.wId.wTc.SetValue('Beta Test Dev')
+        #     self.wCeroB.wCb.SetValue('Yes')
+        #     self.wTransMethod.wCb.SetValue('Log2')
+        #     self.wNormMethod.wCb.SetValue('Median')
+        #     self.wImputationMethod.wCb.SetValue('Normal Distribution')
+        #     self.wTargetProt.wTc.SetValue('Mis18alpha')
+        #     self.wScoreVal.wTc.SetValue('10')
+        #     self.wCorrectP.wCb.SetValue('Bonferroni')
+        #     self.wAlpha.wTc.SetValue('0.05')
+        #     self.wBeta.wTc.SetValue('0.05')
+        #     self.wGamma.wTc.SetValue('0.8')
+        #     self.wTheta.wTc.SetValue('')
+        #     self.wThetaMax.wTc.SetValue('8')
+        #     self.wSample.wCb.SetValue('Independent Samples')
+        #     self.wSeqCol.wTc.SetValue('0')
+        #     self.wDetectedProt.wTc.SetValue('34')
+        #     self.wScore.wTc.SetValue('42')
+        #     self.wTcResults.SetValue('69-71; 81-83, 78-80, 75-77, 72-74, ; , , , 66-68, ; 63-65, 105-107, 102-104, 99-101, ; 93-95, 90-92, 87-89, 84-86, 60-62')
+        #     self.rLbDict = {
+        #         0        : ['Lane1', 'Lane2', 'Lane3', 'Lane4', 'Lane5'],
+        #         1        : ['Band1', 'Band2', 'Band3', 'Band4'],
+        #         'Control': ['Ctrl'],
+        #     }
+        #     self.OnImpMethod('fEvent')
+        #     self.wShift.wTc.SetValue('1.8')
+        #     self.wWidth.wTc.SetValue('0.3')
         #endregion -----------------------------------------------------> Test
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -426,6 +420,16 @@ class LimProt(cPane.BaseConfPanelMod2):
             #------------------------------>
             self.IFileEnter(dataI.iFile)
             self.OnImpMethod('fEvent')
+        else:
+            super().SetConfOptions()
+            #------------------------------>
+            self.wScoreVal.wTc.SetValue(mConfig.limp.scoreVal)
+            self.wAlpha.wTc.SetValue(mConfig.limp.alpha)
+            self.wBeta.wTc.SetValue(mConfig.limp.beta)
+            self.wGamma.wTc.SetValue(mConfig.limp.gamma)
+            self.wTheta.wTc.SetValue(mConfig.limp.theta)
+            self.wThetaMax.wTc.SetValue(mConfig.limp.thetaMax)
+            self.wCorrectP.wCb.SetValue(mConfig.limp.correctP)
         #endregion ----------------------------------------------> Fill Fields
 
         return True

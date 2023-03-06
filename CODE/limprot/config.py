@@ -57,6 +57,28 @@ class Configuration():
     dfcolFirstPart:list[str] = field(default_factory=lambda:
         ['Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF','CtermF', 'Delta'])
     dfcolCLevel:list[str] = field(default_factory=lambda: ['Ptost', 'Pc'])
+    #------------------------------> Hints
+    hBeta:str     = 'e.g. 0.05'
+    hGamma:str    = 'e.g. 0.8'
+    hTheta:str    = 'e.g. 4.5'
+    hThetaMax:str = 'e.g. 8'
+    #------------------------------> Tooltips
+    ttBeta = ('Beta level for the analysis.\ne.g. 0.05')
+    ttGamma = ('Confidence limit level for estimating the measuring '
+                'precision.\ne.g. 0.80')
+    ttTheta = ('Equivalence interval used in the analysis. The value depends '
+        'on the Data Preparation selected. An empty values means that the '
+        'equivalence interval will be calculated for each peptide.\ne.g. 3')
+    ttThetaMax = ('Maximum value for the calculated Equivalence interval.'
+                   '\ne.g. 8')
+    #------------------------------> User defined options
+    alpha:str    = ''
+    beta:str     = ''
+    gamma:str    = ''
+    theta:str    = ''
+    thetaMax:str = ''
+    scoreVal:str = ''
+    correctP:str = ''
     #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration

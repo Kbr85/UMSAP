@@ -204,8 +204,8 @@ class BaseConfPanel(
         self.cVuFile = getattr(self, 'cVuFile', cValidator.OutputFF(fof='file'))
         self.cViFile = getattr(self, 'cViFile', cValidator.InputFF(fof='file'))
         #------------------------------> Values
-        self.cValShift = mConfig.data.Shift
-        self.cValWidth = mConfig.data.Width
+        self.cValShift = mConfig.data.shift
+        self.cValWidth = mConfig.data.width
         #------------------------------> This is needed to handle Data File
         # content load to the wx.ListCtrl in Tabs with multiple panels
         #--------------> Default wx.ListCtrl to load data file content
@@ -565,6 +565,27 @@ class BaseConfPanel(
     #endregion ------------------------------------------------> Event Methods
 
     #region ---------------------------------------------------> Class Methods
+    def SetConfOptions(self) -> bool:
+        """Set Field values to the configuration values.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        self.wCeroB.wCb.SetValue(mConfig.data.ceroT)
+        self.wTransMethod.wCb.SetValue(mConfig.data.tranMethod)
+        self.wNormMethod.wCb.SetValue(mConfig.data.normMethod)
+        self.wImputationMethod.wCb.SetValue(mConfig.data.impMethod)
+        self.wShift.wTc.SetValue(mConfig.data.shift)
+        self.wWidth.wTc.SetValue(mConfig.data.width)
+        #------------------------------>
+        self.OnImpMethod('fEvent')
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
     def LCtrlEmpty(self) -> bool:
         """Clear wx.ListCtrl and NCol.
 
@@ -1040,10 +1061,10 @@ class BaseConfPanel(
             try:
                 self.rDO.protLoc = self.rSeqFileObj.GetNatProtLoc()
             except Exception:
-                self.rDO.protLoc = [-1, -1]
+                self.rDO.protLoc = (-1, -1)
             #------------------------------>
-            self.rDO.protLength = [
-                self.rSeqFileObj.rSeqLengthRec, self.rSeqFileObj.rSeqLengthNat]
+            self.rDO.protLength = (
+                self.rSeqFileObj.rSeqLengthRec, self.rSeqFileObj.rSeqLengthNat)
             #------------------------------>
             try:
                 self.rDO.protDelta = self.rSeqFileObj.GetSelfDelta()

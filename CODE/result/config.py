@@ -37,8 +37,6 @@ class Configuration():
     #------------------------------> Key words for Menu
     kwToolAddDelExp:str = 'ToolUMSAPCtrl Add Del Export Analysis'
     kwToolReload:str    = 'ToolUMSAPCtrl Reload File'
-    #------------------------------> Converter for user options
-    converter:dict = field(default_factory=lambda: {})
     #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration

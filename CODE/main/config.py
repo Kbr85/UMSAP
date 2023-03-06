@@ -15,7 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -34,7 +34,5 @@ class Configuration():
     ttStart:str = 'Start'
     #------------------------------> Reference to main window
     mainWin:Optional['mWindow.WindowMain'] = None
-    #------------------------------> Converter for user options
-    converter:dict = field(default_factory=lambda: {})
 #---
 #endregion ----------------------------------------------------> Configuration

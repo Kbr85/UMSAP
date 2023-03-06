@@ -182,15 +182,9 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
     #------------------------------> Other
     cNPlotCol = 2
     cImgName   = {
-        mConfig.prot.kwVol: '{}-Vol-{}.tiff',
-        mConfig.prot.kwFC : '{}-Evol-{}.tiff',
+        mConfig.prot.kwVol: '{}-Vol-{}.{}',
+        mConfig.prot.kwFC : '{}-Evol-{}.{}',
     }
-    #------------------------------> Color
-    cCV      = mConfig.prot.cCV
-    cFCAll   = mConfig.prot.cFCAll
-    cFCLines = mConfig.prot.cFCLines
-    cVol     = mConfig.prot.cVol
-    cVolSel  = mConfig.prot.cVolSel
     #------------------------------> Columns in DF
     cColGene = mConfig.prot.dfColGene
     cColProt = mConfig.prot.dfColProt
@@ -214,15 +208,15 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         self.rRpC         = menuData['crp'][self.rDate[0]]['RP'][0]
         self.rGreenP      = None
         self.rCorrP       = False
-        self.rShowAll     = True
-        self.rAutoFilter  = False
-        self.rT0          = 0.1
-        self.rS0          = 1.0
-        self.rZ           = 10.0
-        self.rP           = getattr(self.rData, self.rDateC).alpha
-        self.rLog2FC      = 0.1
+        self.rShowAll     = mConfig.core.oYesNo[mConfig.prot.showAll]
+        self.rAutoFilter  = mConfig.core.oYesNo[mConfig.prot.filterA]
+        self.rT0          = float(mConfig.prot.t0)
+        self.rS0          = float(mConfig.prot.s0)
+        self.rZ           = float(mConfig.prot.z)
+        self.rP           = float(mConfig.prot.p)
+        self.rLog2FC      = float(mConfig.prot.fc)
         self.rColor       = 'Hyperbolic Curve Color'
-        self.rLockScale   = 'Analysis'
+        self.rLockScale   = mConfig.prot.lock
         self.rVXRange     = []
         self.rVYRange     = []
         self.rFcXRange    = []
@@ -232,9 +226,14 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         self.rFilterList  = []
         self.rLabelProt   = []
         self.rLabelProtD  = {}
-        self.rPickLabel   = False
+        self.rPickLabel   = False if mConfig.prot.pickP == 'Select' else True
         self.rVolLines    = ['Hyperbolic Curve Line']
-        self.rVolLinesZ   = f'{mConfig.prot.lmFilterZScore} Line'
+        self.rVolLinesZ   = mConfig.prot.zShow
+        self.rCCV         = mConfig.prot.cCV
+        self.rCFCAll      = mConfig.prot.cFCAll
+        self.rCFCLines    = mConfig.core.cFragment
+        self.rCVol        = mConfig.prot.cVol
+        self.rCVolSel     = mConfig.prot.cVolSel
         #------------------------------>
         super().__init__(parent)
         #------------------------------> Methods
@@ -298,6 +297,27 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #region --------------------------------------------------------> Menu
         self.mBar = mMenu.MenuBarTool(self.cName, menuData=menuData)
         self.SetMenuBar(self.mBar)
+        #------------------------------>
+        menu = self.mBar.GetMenu(self.mBar.FindMenu('Tools'))
+        #------------------------------>
+        lockM = menu.FindItemById(menu.FindItem('Lock Plot Scale')).GetSubMenu()
+        lockI = lockM.FindItemById(lockM.FindItem(self.rLockScale))
+        lockI.Check(check=True)
+        #-->
+        if self.rPickLabel:
+            volM = menu.FindItemById(menu.FindItem('Volcano Plot')).GetSubMenu()
+            pickI = volM.FindItemById(volM.FindItem('Pick Label'))
+            pickI.Check(check=True)
+        #-->
+        if not self.rShowAll:
+            fcM = menu.FindItemById(menu.FindItem('FC Evolution')).GetSubMenu()
+            showI = fcM.FindItemById(fcM.FindItem('Show All'))
+            showI.Check(check=False)
+        #-->
+        if self.rAutoFilter:
+            filterM = menu.FindItemById(menu.FindItem('Filters')).GetSubMenu()
+            filterI = filterM.FindItemById(filterM.FindItem('Auto Apply'))
+            filterI.Check(check=True)
         #endregion -----------------------------------------------------> Menu
 
         #region --------------------------------------------------------> Bind
@@ -591,9 +611,9 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         self.rGreenP = self.wPlot.dPlot['Vol'].rAxes.scatter(
             x, y,
             alpha     = 1,
-            edgecolor = 'black',
+            edgecolor = self.rCVolSel,
             linewidth = 1,
-            color     = self.cVolSel,
+            color     = self.rCVolSel,
         )
         #------------------------------> Draw
         self.wPlot.dPlot['Vol'].rCanvas.draw()
@@ -683,7 +703,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #------------------------------>
         if self.rShowAll:
             #------------------------------>
-            color = self.cFCAll
+            color = self.rCFCAll
             x = list(range(0,len(self.rFcYMin)))
             #------------------------------>
             self.wPlot.dPlot['FC'].rAxes.plot(self.rFcYMax, color=color)
@@ -772,7 +792,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #region -----------------------------------------------------> FC Plot
         #------------------------------> Variables
         idx = pd.IndexSlice
-        colorN = len(self.cFCLines)
+        colorN = len(self.rCFCLines)
         x = list(range(0, len(self.rDataC.labelB)+1))
         #------------------------------>
         for k,c in enumerate(self.rDataC.labelA):
@@ -783,7 +803,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             yError = self.rDf.loc[self.rDf.index[[idxL]],idx[c,:,'CI']]         # type: ignore
             yError = [0] + yError.values.tolist()[0]                            # type: ignore
             #------------------------------> Colors
-            color = self.cFCLines[k%colorN]
+            color = self.rCFCLines[k%colorN]
             #------------------------------> Plot line
             self.rProtLine.append(
                 self.wPlot.dPlot['FC'].rAxes.errorbar(
@@ -1347,9 +1367,9 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         xCP = np.arange(lim+0.001, 20, 0.001)
         yCP = abs((abs(xCP)*self.rT0)/(abs(xCP)-lim))
         self.wPlot.dPlot['Vol'].rAxes.plot(
-            xCP,  yCP, color=self.cCV)
+            xCP,  yCP, color=self.rCCV)
         self.wPlot.dPlot['Vol'].rAxes.plot(
-            -xCP, yCP, color=self.cCV)
+            -xCP, yCP, color=self.rCCV)
         return True
     #---
 
@@ -1366,11 +1386,11 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
 
         #region --------------------------------------------------->
         self.wPlot.dPlot['Vol'].rAxes.hlines(
-            p, -100, 100, color=self.cCV)
+            p, -100, 100, color=self.rCCV)
         self.wPlot.dPlot['Vol'].rAxes.vlines(
-            self.rLog2FC, -100, 100, color=self.cCV)
+            self.rLog2FC, -100, 100, color=self.rCCV)
         self.wPlot.dPlot['Vol'].rAxes.vlines(
-            -self.rLog2FC, -100, 100, color=self.cCV)
+            -self.rLog2FC, -100, 100, color=self.rCCV)
         #endregion ------------------------------------------------>
 
         return True
@@ -1407,16 +1427,16 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         for k,v in enumerate(x.values):
             if v < -lim:
                 if abs((abs(v)*self.rT0)/(abs(v)-lim)) < y.values[k]:
-                    color.append(self.cVol[0])
+                    color.append(self.rCVol[0])
                 else:
-                    color.append(self.cVol[1])
+                    color.append(self.rCVol[1])
             elif v > lim:
                 if abs((abs(v)*self.rT0)/(abs(v)-lim)) < y.values[k]:
-                    color.append(self.cVol[2])
+                    color.append(self.rCVol[2])
                 else:
-                    color.append(self.cVol[1])
+                    color.append(self.rCVol[1])
             else:
-                color.append(self.cVol[1])
+                color.append(self.rCVol[1])
         #endregion ----------------------------------------------------> Color
 
         #region --------------------------------------------------->
@@ -1442,14 +1462,14 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         val = self.rDf.loc[:,col]                                               # type: ignore
         #------------------------------>
         cond   = [val < -zVal, val > zVal]
-        choice = [self.cVol[0], self.cVol[2]]
+        choice = [self.rCVol[0], self.rCVol[2]]
         #endregion ------------------------------------------------> Variables
 
         #region --------------------------------------------------->
         self.rVolLines = ['Z Score Line']
         #endregion ------------------------------------------------>
 
-        return np.select(cond, choice, default=self.cVol[1])           # type: ignore
+        return np.select(cond, choice, default=self.rCVol[1])           # type: ignore
     #---
 
     def GetColorPLog2FC(self, *args) -> list:                                   # pylint: disable=unused-argument
@@ -1468,14 +1488,14 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         valF = self.rDf.loc[:,colF]                                             # type: ignore
         cond = [(valP < self.rP) & (valF < -self.rLog2FC),
                 (valP < self.rP) & (valF > self.rLog2FC),]
-        choice = [self.cVol[0], self.cVol[2]]
+        choice = [self.rCVol[0], self.rCVol[2]]
         #endregion ----------------------------------------------------->
 
         #region --------------------------------------------------->
         self.rVolLines = ['P - Log2FC Line']
         #endregion ------------------------------------------------>
 
-        return np.select(cond, choice, default=self.cVol[1])           # type: ignore
+        return np.select(cond, choice, default=self.rCVol[1])           # type: ignore
     #---
 
     def PickLabel(self, ind:list[int]) -> bool:
@@ -1754,7 +1774,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
                     else:
                         nameP = f'{self.rLCIdx}'
                     #------------------------------> file path
-                    fPath = p / self.cImgName[k].format(self.rDateC, nameP)
+                    fPath = p / self.cImgName[k].format(self.rDateC, nameP, mConfig.core.imgFormat)
                     #------------------------------> Do not overwrite
                     if fPath.exists():
                         fPath = fPath.with_stem(f"{fPath.stem} - {date}")
@@ -2626,6 +2646,12 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
     cNLineNone = f'{mConfig.prot.lmFilterZScore} Line'
     cNLineHyp  = f'{mConfig.prot.lmFilterHypCurve} Line'
     cNLinePLog = f'{mConfig.prot.lmColorSchemePLog2} Line'
+    #------------------------------>
+    cLT0     = mConfig.core.lStT0
+    cLS0     = mConfig.core.lStS0
+    cLP      = mConfig.core.lStP
+    cLLog2FC = mConfig.core.lStLog2FC
+    cLZ      = mConfig.core.lStZScore
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
@@ -2657,7 +2683,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         self.wsbHC = wx.StaticBox(self, label='Hyperbolic Curve')
         self.wT0 = cWidget.StaticTextCtrl(
             self.wsbHC,
-            stLabel   = 't0',
+            stLabel   = self.cLT0,
             tcHint    = 'e.g. 1.0',
             tcSize    = (100,22),
             validator = cValidator.NumberList('float', vMin=0, nN=1)
@@ -2666,7 +2692,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
 
         self.wS0 = cWidget.StaticTextCtrl(
             self.wsbHC,
-            stLabel   = 's0',
+            stLabel   = self.cLS0,
             tcHint    = 'e.g. 0.1',
             tcSize    = (100,22),
             validator = cValidator.NumberList('float', vMin=0, nN=1)
@@ -2676,7 +2702,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         self.wsbPFC = wx.StaticBox(self, label='P - Log2[FC]')
         self.wP = cWidget.StaticTextCtrl(
             self.wsbPFC,
-            stLabel   = 'P',
+            stLabel   = self.cLP,
             tcHint    = 'e.g. 0.05',
             tcSize    = (100,22),
             validator = cValidator.NumberList('float', vMin=0, nN=1)
@@ -2685,7 +2711,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
 
         self.wFC = cWidget.StaticTextCtrl(
             self.wsbPFC,
-            stLabel   = 'log2FC',
+            stLabel   = self.cLLog2FC,
             tcHint    = 'e.g. 0.1',
             tcSize    = (100,22),
             validator = cValidator.NumberList('float', vMin=0, nN=1)
@@ -2695,7 +2721,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         self.wsbZ = wx.StaticBox(self, label='Z Score')
         self.wZ = cWidget.StaticTextCtrl(
             self.wsbZ,
-            stLabel   = 'Z Score',
+            stLabel   = self.cLZ,
             tcHint    = 'e.g. 10.0',
             tcSize    = (100,22),
             validator = cValidator.NumberList(
@@ -2711,7 +2737,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
             self.wsbZ, label='P - Log2[FC] Lines', name=self.cNLinePLog)
         self.FindWindowByName(self.rCheck, self).SetValue(True)
         #------------------------------>
-        self.rWList = {
+        self.rWDict = {
             'T0': self.wT0.wTc,
             'S0': self.wS0.wTc,
             'P' : self.wP.wTc,
@@ -2813,7 +2839,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         #region ----------------------------------------------------> Validate
         res = []
         #------------------------------>
-        for k,w in self.rWList.items():
+        for k,w in self.rWDict.items():
             if w.GetValidator().Validate()[0]:
                 res.append(True)
             else:

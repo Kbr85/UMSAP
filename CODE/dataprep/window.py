@@ -166,6 +166,9 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         self.tSection = tSection if tSection else self.cSection
         self.tDate    = tDate
         self.SetWindow(parent, tSection, tDate)
+        self.rCBar  = mConfig.data.cBar
+        self.rCBarI = mConfig.data.cBarI
+        self.rCPDF  = mConfig.data.cPDF
         #------------------------------>
         try:
             self.ReportPlotDataError()
@@ -434,7 +437,8 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         #------------------------------> title
         self.wPlot.dPlot['Init'].rAxes.set_title("Floated")
         #------------------------------>
-        a = self.wPlot.dPlot['Init'].rAxes.hist(x, bins=nBin, density=False)
+        a = self.wPlot.dPlot['Init'].rAxes.hist(
+            x, bins=nBin, density=False, color=self.rCBar)
         #------------------------------>
         self.wPlot.dPlot['Init'].rAxes.set_xlim(*cStatistic.DataRange(
             a[1], margin=mConfig.core.MatPlotMargin))
@@ -470,7 +474,8 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         #------------------------------> title
         self.wPlot.dPlot['Transf'].rAxes.set_title("Transformed")
         #------------------------------>
-        a = self.wPlot.dPlot['Transf'].rAxes.hist(x, bins=nBin, density=False)
+        a = self.wPlot.dPlot['Transf'].rAxes.hist(
+            x, bins=nBin, density=False, color=self.rCBar)
         #------------------------------>
         xRange = cStatistic.DataRange(
             a[1], margin=mConfig.core.MatPlotMargin)
@@ -483,7 +488,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         gausY = stats.gaussian_kde(x)
         self.wPlot.dPlot['Transf'].rAxes2.clear()
         self.wPlot.dPlot['Transf'].rAxes2.plot(
-            gausX, gausY.pdf(gausX), color='C1')
+            gausX, gausY.pdf(gausX), color=self.rCPDF)
         self.wPlot.dPlot['Transf'].rAxes2.set_yticks([])
         self.wPlot.dPlot['Transf'].rAxes2.set_yticklabels([])
         #------------------------------>
@@ -517,7 +522,8 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         #------------------------------> title
         self.wPlot.dPlot['Norm'].rAxes.set_title("Normalized")
         #------------------------------>
-        a = self.wPlot.dPlot['Norm'].rAxes.hist(x, bins=nBin, density=False)
+        a = self.wPlot.dPlot['Norm'].rAxes.hist(
+            x, bins=nBin, density=False, color=self.rCBar)
         #------------------------------>
         xRange = cStatistic.DataRange(
             a[1], margin=mConfig.core.MatPlotMargin)
@@ -530,7 +536,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         gausY = stats.gaussian_kde(x)
         self.wPlot.dPlot['Norm'].rAxes2.clear()
         self.wPlot.dPlot['Norm'].rAxes2.plot(
-            gausX, gausY.pdf(gausX), color='C1')
+            gausX, gausY.pdf(gausX), color=self.rCPDF)
         self.wPlot.dPlot['Norm'].rAxes2.set_yticks([])
         self.wPlot.dPlot['Norm'].rAxes2.set_yticklabels([])
         #------------------------------>
@@ -564,7 +570,8 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         #------------------------------> title
         self.wPlot.dPlot['Imp'].rAxes.set_title("Imputed")
         #------------------------------>
-        a = self.wPlot.dPlot['Imp'].rAxes.hist(x, bins=nBin, density=False)
+        a = self.wPlot.dPlot['Imp'].rAxes.hist(
+            x, bins=nBin, density=False, color=self.rCBar)
         #------------------------------>
         xRange = cStatistic.DataRange(
             a[1], margin=mConfig.core.MatPlotMargin)
@@ -578,12 +585,13 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             y = self.rDataPlot.dfIm.iloc[idx,col]
             if y.count() > 0:
                 self.wPlot.dPlot['Imp'].rAxes.hist(
-                    y, bins=nBin, density=False, color='C2')
+                    y, bins=nBin, density=False, color=self.rCBarI)
         #------------------------------>
         gausX = np.linspace(xRange[0], xRange[1], 300)
         gausY = stats.gaussian_kde(x)
         self.wPlot.dPlot['Imp'].rAxes2.clear()
-        self.wPlot.dPlot['Imp'].rAxes2.plot(gausX, gausY.pdf(gausX), color='C1')
+        self.wPlot.dPlot['Imp'].rAxes2.plot(
+            gausX, gausY.pdf(gausX), color=self.rCPDF)
         self.wPlot.dPlot['Imp'].rAxes2.set_yticks([])
         self.wPlot.dPlot['Imp'].rAxes2.set_yticklabels([])
         self.wPlot.dPlot['Imp'].rCanvas.draw()
@@ -770,7 +778,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             try:
                 for k, v in self.wPlot.dPlot.items():
                     #------------------------------> file path
-                    fPath = p / self.cImgName[k].format(self.rDateC, col, 'tiff')
+                    fPath = p / self.cImgName[k].format(self.rDateC, col, mConfig.core.imgFormat)
                     #------------------------------> Do not overwrite
                     if fPath.exists():
                         fPath = fPath.with_stem(f"{fPath.stem} - {date}")

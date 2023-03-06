@@ -1068,7 +1068,7 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
             #------------------------------> Export
             try:
                 for k, v in self.wPlot.items():
-                    fPath = p / self.cImgName[k].format(self.rDateC)
+                    fPath = p / self.cImgName[k].format(self.rDateC, mConfig.core.imgFormat)
                     #------------------------------> Do not overwrite
                     if fPath.exists():
                         fPath = fPath.with_stem(f"{fPath.stem} - {date}")
@@ -1116,16 +1116,13 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
             Data to build the Tool menu of the window. See structure in child
             class.
     """
-    #region -----------------------------------------------------> Class Setup
-    cCNatProt = mConfig.core.cNatProt
-    cCRecProt = mConfig.core.cRecProt
-    #endregion --------------------------------------------------> Class Setup
-
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent:Optional[wx.Window]=None) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.cSpot = getattr(self, 'cSpot', mConfig.core.cFragments)
+        self.cSpot     = getattr(self, 'cSpot', mConfig.core.cFragment)
+        self.cCNatProt = getattr(self, 'cCNatProt',mConfig.core.cNatProt)
+        self.cCRecProt = getattr(self, 'cCRecProt',mConfig.core.cRecProt)
         #------------------------------>
         self.rIdxSeqNC = getattr(
             self, 'rIdxSeqNC', pd.IndexSlice[mConfig.core.dfcolSeqNC,:,:])

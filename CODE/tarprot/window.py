@@ -96,11 +96,11 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
     cSWindow = (1100, 800)
     #------------------------------>
     cImgName   = {
-        mConfig.core.kwMain: '{}-Protein-Fragments.tiff',
-        mConfig.core.kwSec : '{}-Intensity-Representation.tiff',
+        mConfig.core.kwMain: '{}-Protein-Fragments.{}',
+        mConfig.core.kwSec : '{}-Intensity-Representation.{}',
     }
     #------------------------------>
-    cFragment = mConfig.tarp.cFragment
+    cFragment = mConfig.core.cFragment
     cCtrl     = mConfig.tarp.cCtrl
     #endregion --------------------------------------------------> Class setup
 
@@ -113,6 +113,9 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         self.rData:cMethod.BaseAnalysis = self.rObj.dConfigure[self.cSection]()
         self.rDate, menuData = self.SetDateMenuDate()
         self.rCorrP = False
+        self.rCCtrl = mConfig.tarp.cCtrl
+        self.rCAve  = mConfig.tarp.cAve
+        self.rCAveL = mConfig.tarp.cAveL
         #------------------------------>
         self.ReportPlotDataError()
         #------------------------------>
@@ -427,7 +430,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             intN = len(intL)
             #------------------------------> Color, x & y
             if k == 1:
-                color = self.cCtrl                                              # type: ignore
+                color = self.rCCtrl                                             # type: ignore
                 x = [1]
                 y = [sum(intL)/intN]
             else:
@@ -447,11 +450,11 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             y,
             edgecolor = 'black',
             marker    = 'D',
-            color     = 'cyan',
+            color     = self.rCAve,
             s         = 120,
             zorder    = 2,
         )
-        self.wPlot['Sec'].rAxes.plot(x,y, zorder=1)
+        self.wPlot['Sec'].rAxes.plot(x,y, zorder=1, color=self.rCAveL)
         #------------------------------> Show
         self.wPlot['Sec'].ZoomResetSetValues()
         self.wPlot['Sec'].rCanvas.draw()
@@ -1086,11 +1089,11 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
     #region -----------------------------------------------------> Class setup
     cName     = mConfig.tarp.nwAAPlot
     cSection  = mConfig.tarp.nuAA
-    cFragment = mConfig.tarp.cFragment
+    cFragment = mConfig.core.cFragment
     cCtrl     = mConfig.tarp.cCtrl
-    cBarColor = mConfig.tarp.cBarColor
+    cBarColor = mConfig.core.cBarColor
     cXaa      = mConfig.tarp.cXaa
-    cChi      = mConfig.tarp.cChi
+    cChi      = mConfig.core.cChi
     #------------------------------>
     rBandWidth = 0.8
     rBandStart = 0.4
@@ -1550,7 +1553,7 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
     #region -----------------------------------------------------> Class setup
     cName     = mConfig.tarp.nwHistPlot
     cSection  = mConfig.tarp.nuHist
-    cFragment = mConfig.tarp.cFragment
+    cFragment = mConfig.core.cFragment
     cRec = {
         True : 'Nat',
         False: 'Rec',
@@ -1853,7 +1856,7 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
     #region -----------------------------------------------------> Class setup
     cName     = mConfig.tarp.nwCpRPlot
     cSection  = mConfig.tarp.nuCpR
-    cFragment = mConfig.tarp.cFragment
+    cFragment = mConfig.core.cFragment
     #------------------------------>
     cNat = {
         True : 'Nat',

@@ -77,35 +77,31 @@ class Configuration():
     lmTools:str         = 'Tools'
     lPdError:str        = 'Fatal Error'                                         # lPd: Label for Progress Dialog
     lPdDone:str         = 'All Done'
-    lStAlpha:str        = 'α level'                                             # lSt: Label for wx.StaticText
+    lStAAPos:str        = 'AA Positions'                                        # lSt: Label for wx.StaticText
+    lStAlpha:str        = 'α Level'
+    lStBeta:str         = 'β Level'
     lStColAnalysis:str  = 'Columns for Analysis'
     lStCtrlName:str     = 'Name'
     lStCtrlType:str     = 'Type'
     lStExcludeProt:str  = 'Exclude Proteins'
+    lStGamma:str        = 'γ Level'
     lStGeneName:str     = 'Gene Names'
+    lStHistWind:str     = 'Histogram Windows'
+    lStLog2FC:str       = 'Log2FC'
+    lStP:str            = 'P'
     lStProtein:str      = 'Proteins'
     lStResCtrl:str      = 'Results - Control experiments'
     lStResCtrlS:str     = 'Results - Control'
+    lStS0:str           = 's0'
+    lStSample:str       = 'Sample'
     lStScoreCol:str     = 'Score'
     lStScoreVal:str     = 'Score Value'
-    lStSample:str       = 'Sample'
+    lStT0:str           = 't0'
+    lStTheta:str        = 'θ Value'
+    lStThetaMax:str     = 'θ Max Value'
+    lStZScore:str       = 'Z Score'
     #------------------------------> wx.ListCtrl Column names
     lLCtrlColNameI:list[str] = field(default_factory=lambda: ['#', 'Name'])
-    #------------------------------> Tooltips
-    ttBtnHelp:str           = 'Read tutorial at {}.'
-    ttSectionRightClick:str = ('The content of the Section can be deleted with '
-                               'a right click.')
-    ttStCorrectP:str        = 'Select the p correction method.'
-    ttStExcludeProt:str     = ('Set the column number containing the data used '
-                               'to exclude proteins.\ne.g. 8 10-12')
-    ttStGenName:str         = (f'Set the column number containing the '
-                               f'{lStGeneName}.\ne.g. 3')
-    ttStSample:str          = ('Specify if samples are independent or paired.\n'
-        'For example, samples are paired when the same Petri dish is used '
-        'for the control and experiment.')
-    ttStScoreCol:str        = (f'Set the column number containing the '
-                               f'{lStScoreVal}.\ne.g. 4')
-    ttStScoreVal:str        = 'Set the minimum acceptable Score value.\ne.g. -4'
     #------------------------------> Keywords for Menu
     kwCheckDP:str      = 'General Tool Check DP'
     kwDupWin:str       = 'General Tool Duplicate Window'
@@ -125,6 +121,7 @@ class Configuration():
     #------------------------------> Sizes
     sLCtrlColI:list[int] = field(default_factory=lambda: [50, 150])             # Size for # Name columns in a wx.ListCtrl
     sTc:tuple[int,int]         = (50, 22)                                       # wx.TextCtrl
+    sTcS:tuple[int,int]        = (70,22)
     sWinFull:tuple[int,int]    = (990, 775)                                     # Full window size
     sWinModPlot:tuple[int,int] = (1100, 625)                                    # Result Window for a Module
     sWinPlot:tuple[int,int]    = (560, 560)                                     # Result window size
@@ -159,12 +156,12 @@ class Configuration():
         ['A', 'I', 'L', 'V', 'M', 'F', 'W', 'Y', 'R', 'K', 'D', 'E', 'C', 'Q',
         'H', 'S', 'T', 'N', 'G', 'P'])
     lAAGroups:list[list[str]] = field(default_factory=lambda:                   # AA groups
-        [['A', 'I', 'L', 'V', 'M'],
-        ['F', 'W', 'Y'],
-        ['R', 'K'],
-        ['D', 'E'],
-        ['C', 'Q', 'H', 'S', 'T', 'N'],
-        ['G', 'P']])
+        [['K', 'R'],
+         ['C', 'H', 'Q', 'N', 'S', 'T'],
+         ['G', 'P'],
+         ['D', 'E'],
+         ['A', 'I', 'L', 'V', 'M'],
+         ['F', 'W', 'Y']])
     #------------------------------> Options
     oYesNo:dict    = field(default_factory=lambda: {                            # Cast to bool
         ''   : False,
@@ -241,6 +238,8 @@ class Configuration():
                                'can be accepted here.')
     mOne01NumText:str       = ('Only one number between 0 and 1 can be '
                                'accepted here.')
+    mOne0100NumText:str     = ('Only one number between 0 and 100 can be '
+                               'accepted here.')
     mOneRNumText:str        = 'Only one real number can be accepted here.'
     mOneRPlusNumText:str    = ('Only one number equal or greater than zero can '
                                'be accepted here.')
@@ -274,6 +273,7 @@ class Configuration():
     mNZPlusNumCol:str   = f'{mNZPlusNum} {mColNumbers}'
     mOneRealNum:str     = f'{mValueBad}{mOneRNumText}'
     mOne01Num:str       = f'{mValueBad}{mOne01NumText}'
+    mOne0100Num:str     = f'{mValueBad}{mOne0100NumText}'
     mOneZPlusNum:str    = f'{mValueBad}{mOneZPlusNumText}'
     mOneZPlusNumCol:str = f'{mOneZPlusNum} {mColNumber}'
     mResCtrl:str        = (f'{mValueBad} Please use the '
@@ -281,11 +281,38 @@ class Configuration():
                           f'correct input.')
     mResCtrlWin:str     = ("Value '{}' cannot be accepted as input.\n"
                           f"{mNZPlusNumText}")
+    #------------------------------> Tooltips
+    ttBtnHelp:str           = 'Read tutorial at {}.'
+    ttSectionRightClick:str = ('The content of the Section can be deleted with '
+                               'a right click.')
+    ttStCorrectP:str        = 'Select the p correction method.'
+    ttStExcludeProt:str     = ('Set the column number containing the data used '
+                               'to exclude proteins.\ne.g. 8 10-12')
+    ttStGenName:str         = (f'Set the column number containing the '
+                               f'{lStGeneName}.\ne.g. 3')
+    ttStSample:str          = ('Specify if samples are independent or paired.\n'
+        'For example, samples are paired when the same Petri dish is used '
+        'for the control and experiment.')
+    ttStScoreCol:str        = (f'Set the column number containing the '
+                               f'{lStScoreVal}.\ne.g. 4')
+    ttStScoreVal:str        = 'Set the minimum acceptable Score value.\ne.g. -4'
+    ttAAPos = (f'Number of positions around the cleavage sites to consider '
+        f'for the AA distribution analysis.\ne.g. 5{mOptField}')
+    ttHist = (f'Size of the histogram windows. One number will result in '
+        f'equally spaced windows. Multiple numbers allow defining custom sized '
+        f'windows.\ne.g. 50 or 0 50 100 150 500{mOptField}')
     #------------------------------> Fonts
     fSeqAlign:Union[wx.Font, str]              = ''
     fTreeItem:Union[wx.Font, str]              = ''
     fTreeItemDataFile:Union[wx.Font, str]      = ''
     fTreeItemDataFileFalse:Union[wx.Font, str] = ''
+    #------------------------------> Other
+    MatPlotMargin:float = 0.025                                                 # Margin for the axes range
+    cChi:dict = field(default_factory=lambda: {                                 # Chi results in AA
+        1 : 'Green',
+        0 : 'Red',
+        -1: 'Black',
+    })
     #------------------------------> To Load user configuration options
     confUserFile:bool = True                                                    # User configuration file is Ok
     confUserFileException:Optional[Exception] = None                            # Exception thrown when reading conf file
@@ -294,21 +321,21 @@ class Configuration():
     #------------------------------> User Configurable Options
     checkUpdate:bool    = True                                                  # True Check, False No check
     DPI:int             = 100                                                   # DPI for plot images
-    MatPlotMargin:float = 0.025                                                 # Margin for the axes range
+    imgFormat:str       = 'png'                                                 # Default format when saving multiple images
     #--------------> Colors
-    cZebra: str          = '#ffe6e6'                                            # Zebra style in wx.ListCrl
-    cRecProt:str         = 'gray'                                               # Color in Fragment representation
-    cNatProt:str         = '#c94c4c'                                            # Color in Fragment representation
-    cFragments:list[str] = field(default_factory=lambda: [                      # Color for Exp/Cond in Fragments
+    cZebra: str         = '#ffe6e6'                                             # Zebra style in wx.ListCrl
+    cRecProt:str        = 'gray'                                                # Color in Fragment representation
+    cNatProt:str        = '#c94c4c'                                             # Color in Fragment representation
+    cFragment:list[str] = field(default_factory=lambda: [                       # Color for Exp/Cond in Fragments
         '#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
         '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e',
     ])
-    #------------------------------> Converter for user options
-    converter:dict = field(default_factory=lambda: {
-        'checkUpdate'  : bool,
-        'DPI'          : int,
-        'MatPlotMargin': float,
-        'cZebra'       : str,
+    cBarColor:dict = field(default_factory=lambda: {
+        'R': '#0099ff', 'K': '#0099ff', 'D': '#ff4d4d', 'W': '#FF51FD',
+        'E': '#ff4d4d', 'S': '#70db70', 'T': '#70db70', 'H': '#70db70',
+        'N': '#70db70', 'Q': '#70db70', 'C': '#70db70', 'G': '#FFFC00',
+        'P': '#FFFC00', 'A': '#BEBEBE', 'V': '#BEBEBE', 'I': '#BEBEBE',
+        'L': '#BEBEBE', 'M': '#BEBEBE', 'F': '#FF51FD', 'Y': '#FF51FD',
     })
     #endregion ------------------------------------------------------> Options
 

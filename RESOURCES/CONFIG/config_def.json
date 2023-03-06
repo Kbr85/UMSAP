@@ -2,6 +2,122 @@
     "core": {
         "checkUpdate": true,
         "DPI": 100,
-        "MatPlotMargin": 0.025
+        "imgFormat": "png",
+        "cZebra": "#ffe6e6",
+        "cRecProt": "#808080",
+        "cNatProt": "#c94c4c",
+        "cFragment": [
+            "#ffef96",
+            "#92a8d1",
+            "#b1cbbb",
+            "#eea29a",
+            "#b0aac0",
+            "#f4a688",
+            "#d9ecd0",
+            "#b7d7e8",
+            "#fbefcc",
+            "#a2836e"
+        ],
+        "cBarColor": {
+            "K": "#0099ff",
+            "R": "#0099ff",
+            "C": "#70db70",
+            "H": "#70db70",
+            "Q": "#70db70",
+            "N": "#70db70",
+            "S": "#70db70",
+            "T": "#70db70",
+            "G": "#fffc00",
+            "P": "#fffc00",
+            "D": "#ff4d4d",
+            "E": "#ff4d4d",
+            "A": "#bebebe",
+            "I": "#bebebe",
+            "L": "#bebebe",
+            "V": "#bebebe",
+            "M": "#bebebe",
+            "F": "#ff51fd",
+            "W": "#ff51fd",
+            "Y": "#ff51fd"
+        }
+    },
+    "corr": {
+        "CMAP": {
+            "N": 128,
+            "c1": [
+                255,
+                0,
+                0
+            ],
+            "c2": [
+                255,
+                255,
+                255
+            ],
+            "c3": [
+                0,
+                0,
+                255
+            ],
+            "NA": [
+                144,
+                238,
+                144
+            ]
+        },
+        "corrMethod": "",
+        "axisLabel": "Names",
+        "showBar": false
+    },
+    "data": {
+        "ceroT": "",
+        "tranMethod": "",
+        "normMethod": "",
+        "impMethod": "",
+        "shift": "1.8",
+        "width": "0.3",
+        "cBar": "#3b75af",
+        "cBarI": "#519e3e",
+        "cPDF": "#ef8838"
+    },
+    "limp": {
+        "alpha": "",
+        "beta": "",
+        "gamma": "",
+        "theta": "",
+        "thetaMax": "",
+        "scoreVal": "",
+        "correctP": ""
+    },
+    "prot": {
+        "alpha": "",
+        "correctP": "",
+        "scoreVal": "",
+        "lock": "",
+        "filterA": "No",
+        "showAll": "Yes",
+        "pickP": "Select",
+        "t0": "1.0",
+        "s0": "0.1",
+        "p": "0.05",
+        "fc": "0.1",
+        "z": "10.0",
+        "zShow": "P - Log2FC Line",
+        "cVol": [
+            "#ff3333",
+            "#d3d3d3",
+            "#3333ff"
+        ],
+        "cVolSel": "#6ac653",
+        "cCV": "#808080"
+    },
+    "tarp": {
+        "alpha": "",
+        "scoreVal": "",
+        "correctP": "",
+        "aaPos": "",
+        "histWind": "",
+        "cCtrl": "#000000",
+        "cAve": "#00ffff"
     }
 }

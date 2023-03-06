@@ -643,7 +643,7 @@ def R2Hist(
 #---
 
 
-def R2CpR(df:pd.DataFrame, alpha:float, protL:list[int]) -> pd.DataFrame:
+def R2CpR(df:pd.DataFrame, alpha:float, protL:tuple[int,int]) -> pd.DataFrame:
     """Creates the Cleavage per Residue results.
 
         Parameters
@@ -653,7 +653,7 @@ def R2CpR(df:pd.DataFrame, alpha:float, protL:list[int]) -> pd.DataFrame:
             Nterm Cterm NtermF CtermF P    .... P
         alpha: float
             Alpha level
-        protL: list[int]
+        protL: tuple[int,int]
             Protein length, recombinant and native or None.
 
         Returns
@@ -710,7 +710,7 @@ def R2CpR(df:pd.DataFrame, alpha:float, protL:list[int]) -> pd.DataFrame:
 #---
 
 
-def R2CEvol(df:pd.DataFrame, alpha:float, protL:list[int]) -> pd.DataFrame:
+def R2CEvol(df:pd.DataFrame, alpha:float, protL:tuple[int,int]) -> pd.DataFrame:
     """Creates the cleavage evolution DataFrame.
 
         Parameters
@@ -720,7 +720,7 @@ def R2CEvol(df:pd.DataFrame, alpha:float, protL:list[int]) -> pd.DataFrame:
             Nterm Cterm NtermF CtermF Int P    .... Int P
         alpha: float
             Alpha level
-        protL: list[int]
+        protL: tuple[int,int]
             Protein length, recombinant and native or None.
 
         Returns
