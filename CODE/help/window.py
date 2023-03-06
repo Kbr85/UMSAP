@@ -429,7 +429,7 @@ class Preference(wx.Dialog):
                 'c1': hMethod.RGB(self.wCorrA.wC[0].wC.GetColour()),
                 'c2': hMethod.RGB(self.wCorrA.wC[1].wC.GetColour()),
                 'c3': hMethod.RGB(self.wCorrA.wC[2].wC.GetColour()),
-                'NA': hMethod.RGB(self.wCorrA.wC[3].wC.GetColour()),
+                'NA': hMethod.RGB2Hex(self.wCorrA.wC[3].wC.GetColour()),
             },
             corrMethod = self.wCorrA.wMethod.wCb.GetValue(),
             axisLabel  = self.wCorrA.wCol.wCb.GetValue(),
