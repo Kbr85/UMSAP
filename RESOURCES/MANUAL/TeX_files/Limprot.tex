@@ -125,14 +125,14 @@ to be applied to the data.
 \num{4}. The dropdown Imputation allows selecting the Imputation method used
 to replace missing values in the data.
 
-Section User-defined values contains seven text fields and one dropdown box. Here
-users configure the Limited Proteolysis analysis to be run.
+Section User-defined values contains seven text fields and two dropdown boxes.
+Here users configure the Limited Proteolysis analysis to be run.
 
 \phantomsection
 \num{1}. The text field Target Protein\label{par:limprotTargetProtein} allows
 specifying the protein of interest. Users may type here any unique protein identifier
 present in the Data file. The search for the Target Protein is case-sensitive, meaning
-that eFeB is not the same as efeb.
+that \textbf{\textit{eFeB}} is not the same as \textbf{\textit{efeb}}.
 
 \phantomsection
 \num{2}. The text field Score Value\label{par:limprotScoreValue} allows
@@ -147,10 +147,13 @@ be treated as relevant peptides.
 or paired. For example, samples are paired when the same Petri dish is used for the
 control and experiments.
 
-\numrange[range-phrase = --]{4}{8}. The text fields $\alpha$, $\beta$, $\gamma$,
+\num{4}. The dropdown P Correction allows selecting the correction method for
+the p values calculated during the analysis.
+
+\numrange[range-phrase = --]{5}{9}. The text fields $\alpha$, $\beta$, $\gamma$,
 $\Theta$ and $\Theta$max are used to configure the equivalence test \cite{Limentani2005a}
 performed to identify peptides in the selected gel spots with equivalent intensity
-values to the control spots (\autoref{sec:limprotEquivalenceTest}). $\alpha$, $\beta$ and 
+values to the control spots (\autoref{sec:limprotEquivalenceTest}). $\alpha$, $\beta$ and
 $\gamma$ must be between \num{0} and \num{1}. The value of $\Theta$ is optional. If
 left blank, then UMSAP will calculate a value for each peptide based on the intensity values
 found in the Data file. If given, then the given value will be used for each peptide.
@@ -167,7 +170,7 @@ the table of Region Data File Content after the Data file is selected.
 file containing the sequences of the peptides identified in the MS experiments.
 Only one integer number equal or greater than zero will be accepted here.
 
-\num{2}. The text field Detected Proteins allows defining the column in
+\num{2}. The text field Proteins allows defining the column in
 the Data file containing the unique protein identifier for the proteins detected
 in the MS experiments. It is in this column where the program will look for the
 Target Protein value given in Section User-defined values. It is important that
@@ -183,29 +186,29 @@ values.
 \num{4}. \label{par:limprotResultControl}The text field Results - Control experiments
 allows defining the columns in the Data file containing the results of the
 control and experiments. The button Type Values calls a helper window
-(\autoref{fig:limprotResControlWindow}) where users can type the information needed. 
+(\autoref{fig:limprotResControlWindow}) where users can type the information needed.
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.7\textwidth]{./IMAGES/MOD-LIMPROT/limprot-rescontrol.jpg}
     \caption[The Result - Control experiments helper window]{\textbf{The Result -
     Control experiments helper window.} This window allows typing the column
-    numbers in the Data file containing the MS results for the selected gel spots.} 
+    numbers in the Data file containing the MS results for the selected gel spots.}
     \label{fig:limprotResControlWindow}
-    \vspace{-5pt} 	
+    \vspace{-5pt}
 \end{figure}
 
-The helper window is divided in two Regions. Region Data File Content will show the 
+The helper window is divided in two Regions. Region Data File Content will show the
 number and name of the columns present in the selected Data file. Region
 Configuration Options has two sections. The upper section allows defining the number
 of bands and lanes of interest in the gel as well as the label for lanes, bands and
 control spot. The button Setup Fields creates the corresponding text fields in the
 bottom section to type the column numbers. Each text field should contain the column
 numbers with the MS results for the given gel spot. The values for the text fields
-should be positive integer numbers or a range of integers, e.g. 
+should be positive integer numbers or a range of integers, e.g.
 \numrange[range-phrase=--]{60}{62} or left blank for empty gel spots. Selected rows
-in the table can be copied (Cmd+C) and then pasted (Cmd+V) in the text fields. 
-Duplicate column numbers are not allowed. 
+in the table can be copied (Cmd+C) and then pasted (Cmd+V) in the text fields.
+Duplicate column numbers are not allowed.
 
 \section{The analysis}
 \label{sec:limprotEquivalenceTest}
@@ -263,14 +266,14 @@ then only the confidence interval for the mean difference is calculated, and the
 is directly compared to the given $\Theta$ value. The maximum possible $\Theta$ value
 must always be provided. The reason for this is that when only a few replicates of the
 experiments are performed the calculated $\Theta$ value may be too large and then
-the equivalence test is easily past by all relevant peptides.
+the equivalence test is easily passed by all relevant peptides.
 
 After the filtered peptide (FP) are identified the modules creates the output files.
 
 \section{The results window}
 
 The window showing the results from a Limited Proteolysis analysis is divided in
-four regions (\autoref{fig:limprotResWindow}).
+five regions (\autoref{fig:limprotResWindow}).
 
 \begin{figure}[h]
     \centering
@@ -344,7 +347,7 @@ can toggle the band/lane selection mode (Cmd+L) and select all gel spot in the a
 an image of the plots can be created (Shift+Alt+I).
 
 The submenu Clear Selection allows removing any selection done by the user. In
-particular, the entry All (Cmd+K) will remove all selections basically resetting
+particular, the entry All (Cmd+K) will remove all selections, basically resetting
 the state of the window.
 
 The menu Tools also allows duplicating the window (Cmd+D) for easier comparison of
