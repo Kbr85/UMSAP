@@ -8,20 +8,21 @@ are mixed together under various experimental conditions and the peptides genera
 during the proteolysis are identified by MS. It is expected that
 several control experiments and several replicates of the tested experimental
 conditions are performed. The main objective of the module is to identify the peptides
-with intensity values that are significantly different in the control experiments
-and the replicates of the various experimental condition tested at the chosen
-significance level.
+with intensity values that are significantly greater in the replicates of the various
+experimental conditions tested than in the replicates of the control experiments
+at the chosen significance level.
 
 \section{Definitions}
 
 Before explaining in detail the interface and how does the module work, let's make
-clear the meaning of the term Filtered peptide in the context of the Targeted 
+clear the meaning of the term Filtered peptide in the context of the Targeted
 proteolysis module:
 
 \phantomsection
 \begin{itemize}
-    \item \textit{Filtered peptide}: a relevant peptide with a significantly different
-    behavior in the control and a given experiment at the chosen significance level.
+    \item \textit{Filtered peptide}: a relevant peptide with intensity values in a
+    given experimental condition that are significantly higher than the intensity
+    values in the control at the chosen significance level.
     \label{par:tarprotPIP}
 \end{itemize}
 
@@ -52,7 +53,7 @@ The tab of the module Targeted Proteolysis is divided in two regions (\autoref{f
     during an enzymatic proteolysis experiment.}
     \label{fig:tarprotTab}
     \vspace{-5pt}
-\end{figure} 
+\end{figure}
 
 Region Data File Content holds a table to show the number and name of the columns in
 the selected Data File. The table will be automatically filled after selecting the
@@ -77,8 +78,8 @@ plain text file with tab separated columns and the name of the columns in the fi
 row of the file. Only .txt files can be selected here.
 
 \num{3}. The button Sequences allows selecting the
-FASTA file containing the sequence of the Recombinant protein and the Native protein.
-The FASTA file must contain at least one sequence.
+multi FASTA file containing the sequence of the Recombinant protein and the Native protein.
+The multi FASTA file must contain at least one sequence.
 
 \num{4}. The text field Analysis ID allows providing an ID for the analysis
 to be run. The date and time of the analysis will be automatically added to the
@@ -102,17 +103,23 @@ to be applied to the data.
 \num{4}. The dropdown Imputation allows selecting the Imputation method used
 to replace missing values in the data.
 
-Section User-defined values contains five text fields. Here users configure the 
-Targeted Proteolysis analysis to be run.
+Section User-defined values contains five text fields and three dropdowns. Here
+users configure the Targeted Proteolysis analysis to be run.
+
+\num{1}. The dropdown Method allows specifying the method used to analysis the
+intensity values in the Data file.
+
+\num{2}. Selecting t-Test in dropdown Method will show the Sample dropdown allowing to
+specify whether the samples used in the experiments are paired or independent.
 
 \phantomsection
-\num{1}. The text field Target Protein\label{par:tarportTargetProtein} allows
+\num{3}. The text field Target Protein\label{par:tarportTargetProtein} allows
 specifying the protein of interest. Users may type here any unique protein identifier
 present in the Data file. The search for the Target Protein is case-sensitive, meaning
-that eFeB is not the same as efeb.
+that \textbf{\textit{eFeB}} is not the same as \textbf{\textit{efeb}}.
 
 \phantomsection
-\num{2}. The text field Score Value\label{par:tarprotScoreValue} allows
+\num{4}. The text field Score Value\label{par:tarprotScoreValue} allows
 defining a threshold value above which the detected peptides will be considered as
 relevant. The Score Value is an indicator of how reliable was the detection of the peptide
 during the MS experiments. The value given to UMSAP depends on the program generating
@@ -120,18 +127,21 @@ the Data file. Only one real number equal or greater than zero will be accepted 
 A value of zero means all detected peptides belonging to the Target Protein will
 be treated as relevant peptides.
 
-\num{3}. The text field $\alpha$ level allows defining the significance level
+\num{5}. The text field $\alpha$ Level allows defining the significance level
 used for the analysis. Only a number between \num{0} and \num{1} will be accepted
 here.
 
+\num{6}. The dropdown P Correction allows selecting the correction method for
+the p values calculated during the analysis.
+
 \phantomsection
-\num{4}. The text field AA Positions\label{par:tarprotPos} allows defining
+\num{7}. The text field AA Positions\label{par:tarprotPos} allows defining
 the number of positions to be considered during the amino acid (AA) distribution
 calculation (\autoref{subsec:tarprotAA}). Only one integer number greater than zero
 will be accepted here. If left empty the calculation will not be performed.
 
 \phantomsection
-\num{5}. The text field Histogram Windows\label{par:tarprotHist} allows
+\num{8}. The text field Histogram Windows\label{par:tarprotHist} allows
 defining the size of the windows for the Histogram analysis (\autoref{subsec:tarprotHist}).
 Only integer numbers equal or greater than zero will be accepted here. In addition,
 the values must be organized from smaller to bigger values. Users may specify a fix
@@ -154,7 +164,7 @@ the table of Region Data File Content after the Data file is selected.
 file containing the sequences of the peptides identified in the MS experiments.
 Only one integer number equal or greater than zero will be accepted here.
 
-\num{2}. The text field Detected Proteins allows specifying the column in
+\num{2}. The text field Proteins allows specifying the column in
 the Data file containing the unique protein identifier for the proteins detected
 in the MS experiments. It is in this column where the program will look for the
 Target Protein value given in Section User-defined values. It is important that
@@ -167,10 +177,10 @@ the values to be compared against the Score threshold given in Section User-defi
 values.
 
 \phantomsection
-\num{4}. \label{par:limprotResultControl}The text field Results - Control experiments
+\num{4}. \label{par:tarprotResultControl}The text field Results - Control experiments
 allows specifying the columns in the Data file containing the results of the
 control and experiments. The button Type Values call a helper window
-(\autoref{fig:tarprotResControlWindow}) where users can type the information needed. 
+(\autoref{fig:tarprotResControlWindow}) where users can type the information needed.
 
 \begin{figure}[h]
     \centering
@@ -178,12 +188,12 @@ control and experiments. The button Type Values call a helper window
     \caption[The Result - Control experiments helper window]{\textbf{The Result -
     Control experiments helper window.} This window allows specifying the column
     numbers in the Data file containing the MS results for the selected experiments
-    and control.} 
+    and control.}
     \label{fig:tarprotResControlWindow}
-    \vspace{-5pt} 	
+    \vspace{-5pt}
 \end{figure}
 
-The helper window is divided in two Regions. Region Data File Content will show the 
+The helper window is divided in two Regions. Region Data File Content will show the
 number and name of the columns present in the selected Data file. Region
 Configuration Options has two sections. The upper section allows defining the number
 of experiments performed as well as the label for the control and experiments. The
@@ -208,9 +218,14 @@ are removed. Then, all rows containing peptides from the Target protein but with
 Scores values lower than the user-defined Score threshold are removed. These steps
 leave only relevant peptides, this means, peptides with a Score value higher than
 the user defined threshold that belong to the Target protein. For each one of these
-relevant peptides a test for Homogeneity of Regression \cite{ancova} is performed.
+relevant peptides the selected statistic method is performed.
+
+The t-test performed is a one-tailed test to check that intensity values in the
+various experimental conditions explored are greater than the intensity values in
+the control.
 
 \phantomsection
+The Slope test is a test for Homogeneity of Regression \cite{ancova}.
 The test, \label{par:tarprotAncovaTest} done to identify relevant peptides with
 different intensities in the control and a given experiment, is performed in three
 steps. First, the intensity values for the replicates in the control and in a given
@@ -227,12 +242,11 @@ sets are significantly different at the chosen significance level. The fact that
 the slopes are different implies that the peptide is found in an increased
 concentration in the given experiment than in the control experiment. Only positive
 slopes are considered. Peptides that past this test are not included in the list of
-FP for the given experiment. 
-\newpage
+FP for the given experiment.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.7\textwidth]{./IMAGES/MOD-TARPROT/tarprot-ancova.png}	    
+    \includegraphics[width=0.7\textwidth]{./IMAGES/MOD-TARPROT/tarprot-ancova.png}
     \caption[Data organization prior to the Homogeneity of Regression test]{\textbf{Data
     organization prior to the Homogeneity of Regression test.} Two data sets with
     two points each are created, one data set for the control (red) and one for a
@@ -241,10 +255,10 @@ FP for the given experiment.
     given experiment. The intensity data in the replicates of the given experiment
     is used for the second point of the data set for the given experiment (x). After
     this, the best fitting line for each data set is found and the slopes of the
-    lines are compared in a test for Homogeneity of Regression.} 
+    lines are compared in a test for Homogeneity of Regression.}
     \label{fig:tarprotAncova}
-    \vspace{-5pt} 	
-\end{figure} 
+    \vspace{-5pt}
+\end{figure}
 
 \section{The results window}
 
@@ -259,7 +273,7 @@ four regions (\autoref{fig:tarprotFra}).
     proteolysis experiments.}
     \label{fig:tarprotFra}
     \vspace{-5pt}
-\end{figure} 
+\end{figure}
 
 Region Peptide List contains a table with all FP detected during the analysis. Selecting
 a peptide in the table will highlight with a thick black border all fragments in
@@ -282,8 +296,8 @@ will display the data for a single peptide selected in the table of region Pepti
 List. The intensity values in the plot are the ones obtained after applying the Data
 Preparation workflow specified for the analysis. The values for replicates are shown
 as circles. The average for a given experiment is shown as bigger cyan diamonds.
-The blue lines only connect the control experiment and experiments showing intensity
-values significantly different at the chosen significance level.
+The blue lines only connect the control experiment to experiments showing intensity
+values significantly higher at the chosen significance level.
 
 Region Selection Details will display detailed information about a selected fragment
 in Region Protein Fragments. In this Region regular numbers refer to the Recombinant
@@ -356,7 +370,7 @@ the Targeted Proteolysis analysis. In order to be able to perform the $\chi^2$ t
 AAs are pooled together in the same groups as described below for the color code
 used in the results window.
 
-\textit{\textbf{\underline{The results window}}} 
+\textit{\textbf{\underline{The results window}}}
 
 The window showing the results from an AA Distribution analysis contains a single
 plot (\autoref{fig:tarprotAARes}).
@@ -448,7 +462,7 @@ share the same \(P1\) site at V231.
 \end{texshade}
 
 The intensity values for each peptide in the three experiments performed, after scaling,
-are given in \autoref{table:tarprotCutEvolAveInt}. 
+are given in \autoref{table:tarprotCutEvolAveInt}.
 
 \begin{table}[h!]
     \centering
@@ -542,7 +556,7 @@ when configuring the Targeted Proteolysis analysis.
 
 \textit{\textbf{\underline{The results window}}}
 
-The Histograms window will display a bar plot with the selected histogram 
+The Histograms window will display a bar plot with the selected histogram
 (\autoref{fig:tarprotHistRes}).
 
 \begin{figure}[h]
@@ -602,7 +616,7 @@ Placing the mouse pointer inside the plot will display the residue number and th
 number of cleavages in the status bar at the bottom of the window. When two or more
 data sets are plotted simultaneously, the number of cleavages are given in the same
 order shown by the legend in the window. The dash vertical lines enclose the native
-residues. 
+residues.
 
 \textit{\textbf{\underline{The Tools menu}}}
 
@@ -627,7 +641,7 @@ in the given PDB file.
 \textit{\textbf{\underline{The analysis}}}
 
 First, UMSAP will check the validity of the user-provided input. Then, a sequence
-alignment between the first chain in the selected PDB file and the recombinant 
+alignment between the first chain in the selected PDB file and the recombinant
 sequence of the Target protein is done. Finally, the number of cleavages found in
 the Cleavage per Residue and Cleavage Evolution analysis are mapped to the
 corresponding residues in the PDB file. The mapping is done to the beta field of

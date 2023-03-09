@@ -697,6 +697,7 @@ Matplotlib 3.5.1
 NumPy 1.23.5
 Pandas 1.2.3
 PyInstaller 5.7.0
+PyPubsub 4.0.3
 Python 3.9.15
 ReportLab 3.6.8
 Requests 2.27.0
