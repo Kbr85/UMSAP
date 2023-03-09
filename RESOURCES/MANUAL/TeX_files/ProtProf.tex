@@ -7,7 +7,7 @@ effect of two substance over protein expression using whole cell lysates.
 
 \section{Definitions}
 
-Before explaining in detail the interface of the module and how does the module work, 
+Before explaining in detail the interface of the module and how does the module work,
 let's make clear the meaning of some terms that will be used in the following paragraphs.
 
 \phantomsection
@@ -20,7 +20,7 @@ let's make clear the meaning of some terms that will be used in the following pa
 
 \section{The input files}
 
-The module requires only one input file. This Data file must follow
+The module requires only one input file. The Data file must follow
 the guidelines specified in \autoref{sec:dataFile}. In short, the Data file must
 have a tabular format with tab separated columns and the name of the columns are
 expected as first row.
@@ -82,7 +82,7 @@ to be applied to the data.
 \num{4}. The dropdown Imputation allows selecting the Imputation method used
 to replace missing values in the data.
 
-Section User-defined values contains two text fields and three dropdown boxes. Here
+Section User-defined values contains two text fields and two dropdown boxes. Here
 users configure the Proteome Profiling analysis to be run.
 
 \phantomsection
@@ -102,10 +102,7 @@ control and experiments.
 used for the analysis. Only a number between \num{0} and \num{1} will be accepted
 here.
 
-\num{4}. The dropdown Intensities allows specifying whether the intensity values
-in the Data file represent absolute or a ratio of intensities.
-
-\num{5}. The dropdown P Correction allows selecting the correction method for
+\num{4}. The dropdown P Correction allows selecting the correction method for
 the p values calculated during the analysis.
 
 Section Column numbers contains five text fields. Here, users provide the column
@@ -116,23 +113,21 @@ the table of region Data File Content after the Data file is selected.
 
 \num{1}. The text field Detected Proteins allows specifying the column in
 the Data file containing the protein identifiers found in the Data file. Only one
-integer number equal or greater than zero will be accepted here. 
+integer number equal or greater than zero will be accepted here.
 
 \num{2}. The text field Gene Names allows specifying the column in the Data
 file containing the gene names of the proteins found during the MS experiments.
-Only one integer number equal or greater than zero will be accepted here. 
+Only one integer number equal or greater than zero will be accepted here.
 
 \num{3}. The text field Score allows specifying the column in the Data file
 containing the Score values. It is in this column where the program will look for
 the values to be compared against the Score threshold given in section User-defined
-values. Only one integer number equal or greater than zero will be accepted here. 
+values. Only one integer number equal or greater than zero will be accepted here.
 
 \num{4}. The text field Exclude proteins allows specifying several columns
-in the Data file. Proteins found in these columns will be excluded from the analysis.
-The module assumes that these columns contains numeric values and values greater
-than zero indicate that the respective protein must be eliminated from the analysis.
-Only integer numbers equal or greater than zero will be accepted here. If left empty
-all proteins will be considered during the analysis. 
+in the Data file. Rows containing any value in these columns will be eliminated from
+the analysis. Only integer numbers equal or greater than zero will be accepted here.
+If left empty all proteins will be considered during the analysis.
 
 \num{5}. \label{par:protprofResultControl} The text field Results - Control experiments
 allows specifying the columns in the Data file containing the results of the
@@ -145,12 +140,12 @@ where users can type the information needed.
     \caption[The Result - Control experiments helper window]{\textbf{The Result -
     Control experiments helper window.} This window allows users to specify the column
     numbers in the Data file containing the MS results for the selected Conditions,
-    Relevant points and control experiments.} 
+    Relevant points and control experiments.}
     \label{fig:protprofResControlWindow}
     \vspace{-5pt}
 \end{figure}
 
-The helper window is divided in two Regions. Region Data File Content will show the 
+The helper window is divided in two Regions. Region Data File Content will show the
 number and name of the columns present in the selected Data file. Region
 Configuration Options has two sections. The upper section allows defining the number
 of conditions and relevant points analyzed, to define the kind of control experiment
@@ -158,10 +153,10 @@ used as well as the label for conditions, relevant points and control experiment
 The button Setup Fields allows creating the matrix of text fields in the bottom section
 where users type the column numbers. Each text field should contain the column
 numbers with the MS results for the given experiment. The values for the text fields
-should be positive integer numbers or a range of integers, e.g. 
+should be positive integer numbers or a range of integers, e.g.
 \numrange[range-phrase=--]{60}{62} or left blank. Selected rows in the table can
 be copied (Cmd+C) and then pasted (Cmd+V) in the text fields. Duplicate column numbers
-are not allowed. 
+are not allowed.
 
 \section{The analysis}
 \label{sec:protprofTTest}
@@ -176,7 +171,7 @@ Then, the following actions are performed.
 All proteins found in the Exclude proteins columns are discarded. Also, all proteins
 with a Score value lower than the defined threshold are removed. The resulting data
 is used for the proteome profiling analysis \cite{Aguilan2020}. This includes the
-calculation of the fold change (FC) (\autoref{eq:protprofFC}), the p values and the correction
+calculation of the fold change (FC), see \autoref{eq:protprofFC}, the p values and the correction
 of the p values. Currently, the p values are calculated using a t-test.
 
 \begin{equation}
@@ -194,9 +189,9 @@ regions (\autoref{fig:limprotResWindow}).
     \includegraphics[width=0.8\textwidth]{./IMAGES/MOD-PROTPROF/protprof-frag.jpg}
     \caption[The Proteome Profiling result window]{\textbf{The Proteome Profiling
     result window.} Users can perform here the analysis of the proteome profiling
-    results.} 
+    results.}
     \label{fig:protprofResultsWindow}
-    \vspace{-5pt} 	
+    \vspace{-5pt}
 \end{figure}
 
 Region Protein List contains a table with the protein IDs and Gene names that were not
@@ -210,8 +205,8 @@ Region Plots contains two plots. A volcano plot showing the results for the t-te
 comparing the condition (C), relevant point (RP) to the corresponding control. The
 points in the plot can be colored by Z-score allowing to quickly identified the top
 up (blue) or down (red) regulated proteins, according to the hyperbolic curve cut-off
-\cite{LI2012}, or using defined p, $log_2[FC]$ thresholds. Selecting a protein in 
-the plot will highlight the selected protein in region Protein List and display 
+\cite{LI2012}, or using defined p, $log_2[FC]$ thresholds. Selecting a protein in
+the plot will highlight the selected protein in region Protein List and display
 information about it in region Profiling Details, or it will add a label to the plot.
 
 The plot of $log_2[FC]$ vs Relevant points allows seeing the evolution of the FC
@@ -238,7 +233,7 @@ the points in the plot, toggle between using the left click of the mouse for sel
 proteins or adding labels (Shift+P), adjusting the Color Scheme of the plot, show
 corrected p values, create an image of the plot (Shift+I) or reset the zoom level of
 the plot (Shift+Z). The entry Color Scheme allows coloring points in the Volcano plot
-by Z-score, the hyperbolic curve cut-off, or defined p, $log_2[FC]$ thresholds. It 
+by Z-score, the hyperbolic curve cut-off, or defined p, $log_2[FC]$ thresholds. It
 also allows configuring the hyperbolic curve parameters and the thresholds for the
 Z-score, p and $log_2[FC]$.
 
@@ -264,7 +259,7 @@ and exporting the results of the analysis to a tab separated CSV file (Cmd+E).
 \subsection{Filters}
 
 The proteins displayed in the Volcano plot can be filtered in order to display only
-proteins with a particular behavior. The submenu Filters allows managing which 
+proteins with a particular behavior. The submenu Filters allows managing which
 proteins will be displayed. Filters are applied to the current Condition and Relevant
 point shown in the Volcano plot. If the Condition or the Relevant point shown is
 changed, the new plot will show the proteins obtained after the filter was applied.
@@ -308,37 +303,5 @@ Relevant point.
 This filter allows identifying proteins by the Z score value of the FC. This is a
 quick way to identify, for example, the top \SI{10}{\percent} up and down regulated
 proteins. It is only applied to the current Condition - Relevant point.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
