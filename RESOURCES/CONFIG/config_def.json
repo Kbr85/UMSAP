@@ -118,6 +118,7 @@
         "aaPos": "",
         "histWind": "",
         "cCtrl": "#000000",
-        "cAve": "#00ffff"
+        "cAve": "#00ffff",
+        "cAveL": "#417ab1"
     }
 }

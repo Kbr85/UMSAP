@@ -181,7 +181,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
     cHSearch = 'Protein List'
     #------------------------------> Other
     cNPlotCol = 2
-    cImgName   = {
+    cImgName  = {
         mConfig.prot.kwVol: '{}-Vol-{}.{}',
         mConfig.prot.kwFC : '{}-Evol-{}.{}',
     }

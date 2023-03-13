@@ -490,7 +490,7 @@ class Preference(wx.Dialog):
             histWind = self.wTarProt.wHist.wTc.GetValue(),
             cCtrl    = hMethod.RGB2Hex(self.wTarProt.wCtrl.wC.GetColour()),
             cAve     = hMethod.RGB2Hex(self.wTarProt.wAve.wC.GetColour()),
-            cAveL    =hMethod.RGB2Hex(self.wTarProt.wAveL.wC.GetColour()),
+            cAveL    = hMethod.RGB2Hex(self.wTarProt.wAveL.wC.GetColour()),
         )
         #------------------------------> Full Options
         userOpt = dataclasses.asdict(hMethod.UserConfig(

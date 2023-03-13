@@ -315,67 +315,67 @@ class ProtProf(cPane.BaseConfPanelMod):
         #endregion -------------------------------------------> checkUserInput
 
         #region --------------------------------------------------------> Test
-        # if mConfig.core.development:
-        #     # pylint: disable=line-too-long
-        #     import getpass                                                      # pylint: disable=import-outside-toplevel
-        #     user = getpass.getuser()
-        #     if mConfig.core.os == "Darwin":
-        #         self.wUFile.wTc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
-        #         self.wIFile.wTc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt")
-        #     elif mConfig.core.os == 'Windows':
-        #         self.wUFile.wTc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
-        #         self.wIFile.wTc.SetValue(str(Path('C:/Users/bravo/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt')))
-        #     else:
-        #         pass
-        #     self.wScoreVal.wTc.SetValue('320')
-        #     self.wId.wTc.SetValue('Beta Test Dev')
-        #     self.wCeroB.wCb.SetValue('Yes')
-        #     self.wTransMethod.wCb.SetValue('Log2')
-        #     self.wNormMethod.wCb.SetValue('Median')
-        #     self.wImputationMethod.wCb.SetValue('Normal Distribution')
-        #     self.wAlpha.wTc.SetValue('0.05')
-        #     self.wSample.wCb.SetValue('Independent Samples')
-        #     self.wCorrectP.wCb.SetValue('Benjamini - Hochberg')
-        #     self.wDetectedProt.wTc.SetValue('0')
-        #     self.wGeneName.wTc.SetValue('6')
-        #     self.wScore.wTc.SetValue('39')
-        #     self.wExcludeProt.wTc.SetValue('171 172 173')
-        #     #------------------------------>
-        #     #--> One Control per Column, 2 Cond and 2 TP
-        #     # self.wTcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
-        #     # self.rLbDict = {
-        #     #     0            : ['C1', 'C2'],
-        #     #     1            : ['RP1', 'RP2'],
-        #     #     'Control'    : ['TheControl'],
-        #     #     'ControlType': 'One Control per Column',
-        #     # }
-        #     #--> One Control per Row, 1 Cond and 2 TP
-        #     # self.wTcResults.SetValue('105 115 125, 106 116 126, 101 111 121')
-        #     # self.rLbDict = {
-        #     #     0            : ['DMSO'],
-        #     #     1            : ['30min', '60min'],
-        #     #     'Control'    : ['MyControl'],
-        #     #     'ControlType': 'One Control per Row',
-        #     # }
-        #     #--> One Control 2 Cond and 2 TP
-        #     self.wTcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
-        #     self.rLbDict = {
-        #         0            : ['C1', 'C2'],
-        #         1            : ['RP1', 'RP2'],
-        #         'Control'    : ['1Control'],
-        #         'ControlType': 'One Control',
-        #     }
-        #     #--> Ratio 2 Cond and 2 TP
-        #     # self.wTcResults.SetValue('106 116 126, 101 111 121; 108 118 128, 103 113 123')
-        #     # self.rLbDict = {
-        #     #     0            : ['C1', 'C2'],
-        #     #     1            : ['RP1', 'RP2'],
-        #     #     'Control'    : ['1Control'],
-        #     #     'ControlType': 'Ratio of Intensities',
-        #     # }
-        #     self.OnImpMethod('fEvent')
-        #     self.wShift.wTc.SetValue('1.8')
-        #     self.wWidth.wTc.SetValue('0.3')
+        if mConfig.core.development:
+            # pylint: disable=line-too-long
+            import getpass                                                      # pylint: disable=import-outside-toplevel
+            user = getpass.getuser()
+            if mConfig.core.os == "Darwin":
+                self.wUFile.wTc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
+                self.wIFile.wTc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt")
+            elif mConfig.core.os == 'Windows':
+                self.wUFile.wTc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
+                self.wIFile.wTc.SetValue(str(Path('C:/Users/bravo/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt')))
+            else:
+                pass
+            self.wScoreVal.wTc.SetValue('320')
+            self.wId.wTc.SetValue('Beta Test Dev')
+            self.wCeroB.wCb.SetValue('Yes')
+            self.wTransMethod.wCb.SetValue('Log2')
+            self.wNormMethod.wCb.SetValue('Median')
+            self.wImputationMethod.wCb.SetValue('Normal Distribution')
+            self.wAlpha.wTc.SetValue('0.05')
+            self.wSample.wCb.SetValue('Independent Samples')
+            self.wCorrectP.wCb.SetValue('Benjamini - Hochberg')
+            self.wDetectedProt.wTc.SetValue('0')
+            self.wGeneName.wTc.SetValue('6')
+            self.wScore.wTc.SetValue('39')
+            self.wExcludeProt.wTc.SetValue('171 172 173')
+            #------------------------------>
+            #--> One Control per Column, 2 Cond and 2 TP
+            # self.wTcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            # self.rLbDict = {
+            #     0            : ['C1', 'C2'],
+            #     1            : ['RP1', 'RP2'],
+            #     'Control'    : ['TheControl'],
+            #     'ControlType': 'One Control per Column',
+            # }
+            #--> One Control per Row, 1 Cond and 2 TP
+            # self.wTcResults.SetValue('105 115 125, 106 116 126, 101 111 121')
+            # self.rLbDict = {
+            #     0            : ['DMSO'],
+            #     1            : ['30min', '60min'],
+            #     'Control'    : ['MyControl'],
+            #     'ControlType': 'One Control per Row',
+            # }
+            #--> One Control 2 Cond and 2 TP
+            self.wTcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            self.rLbDict = {
+                0            : ['C1', 'C2'],
+                1            : ['RP1', 'RP2'],
+                'Control'    : ['1Control'],
+                'ControlType': 'One Control',
+            }
+            #--> Ratio 2 Cond and 2 TP
+            # self.wTcResults.SetValue('106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            # self.rLbDict = {
+            #     0            : ['C1', 'C2'],
+            #     1            : ['RP1', 'RP2'],
+            #     'Control'    : ['1Control'],
+            #     'ControlType': 'Ratio of Intensities',
+            # }
+            self.OnImpMethod('fEvent')
+            self.wShift.wTc.SetValue('1.8')
+            self.wWidth.wTc.SetValue('0.3')
         #endregion -----------------------------------------------------> Test
     #---
     #endregion -----------------------------------------------> Instance setup

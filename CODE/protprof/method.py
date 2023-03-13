@@ -41,6 +41,8 @@ class UserData(cMethod.BaseUserData):
         mConfig.prot.dfcolFirstPart)
     colThirdLevel:list[str] = field(default_factory=lambda:
         mConfig.prot.dfcolCLevel)
+    colRound:list[str] = field(default_factory=lambda:
+        mConfig.prot.dfcolRound)
     #------------------------------>
     dO:list = field(default_factory=lambda:                                     # Attr printed to UMSAP file
         ['iFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift', 'width',
@@ -390,8 +392,8 @@ def ProtProf(                                                                   
         #endregion -------------------------------------------------------> Pc
 
         #region ------------------------------------------------> Round to .XX
-        dfR.loc[:,(cN,tN,rDO.colThirdLevel)] = (                                # type: ignore
-            dfR.loc[:,(cN,tN,rDO.colThirdLevel)].round(2)                       # type: ignore
+        dfR.loc[:,(cN,tN,rDO.colRound)] = (                                     # type: ignore
+            dfR.loc[:,(cN,tN,rDO.colRound)].round(2)                            # type: ignore
         )
         #endregion ---------------------------------------------> Round to .XX
 

@@ -115,6 +115,8 @@ class Configuration():
         ['Gene', 'Protein', 'Score'])
     dfcolCLevel:list[str] = field(default_factory=lambda:
         ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz', 'P', 'Pc'])
+    dfcolRound:list[str] = field(default_factory=lambda:
+        ['aveC', 'stdC', 'ave', 'std', 'FC', 'CI', 'FCz'])
     #------------------------------> Options
     oControlType:dict = field(default_factory=lambda: {                         # Control Type for the Res - Ctrl wx.Dialog
         'Empty': '',
