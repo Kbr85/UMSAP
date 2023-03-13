@@ -44,6 +44,7 @@ class Configuration():
     lmClearPeptide:str  = 'Peptide'                                             # lm: Label for wx.MenuItem
     lmClearFragment:str = 'Fragment'
     lmClearAll:str      = 'All'
+    lOSampleReq:str     = 't-Test'                                              # Option label
     #------------------------------> Keywords for wx.MenuItems
     kwClearPeptide:str     = 'Tool Clear Peptide'
     kwClearFragment:str    = 'Tool Clear Fragment'
@@ -58,30 +59,37 @@ class Configuration():
     #------------------------------> DF Columns
     dfcolFirstPart:list[str] = field(default_factory=lambda:
         ['Sequence', 'Score', 'Nterm', 'Cterm', 'NtermF','CtermF'])
-    dfcolBLevel:list[str] = field(default_factory=lambda: ['Int', 'P'])
+    dfcolBLevel:list[str]    = field(default_factory=lambda: ['Int', 'P', 'Pc'])
+    #------------------------------> Options
+    oMethod:dict = field(default_factory=lambda: {                              # Analysis Method
+        ''      : '',
+        'Slope' : 'slope',
+        't-Test': 'ttest',
+    })
+    oMethodP:dict = field(default_factory=lambda: {                             # Pretty print method
+        'slope' : 'Slope',
+        'ttest' : 't-Test',
+    })
     #------------------------------> Further Analysis Key in UMSAP File
     faID:list[str] = field(default_factory=lambda: ['AA', 'Hist'])
+    #------------------------------> Messages
+    mRepNum:str = ('To perform a Targeted Proteolysis analysis using Paired '
+                   'Samples the number of replicates in experiments and the '
+                   'control must be the same.\nThe number of replicates in '
+                   'the following experiments does not match the number of '
+                   'replicates in the control.\n{}'
+    )
     #------------------------------> Colors
     cXaa:str  = 'GREY'
-    cCtrl:str = 'black'
-    cFragment:list[str] = field(default_factory=lambda:
-        ['#ffef96', '#92a8d1', '#b1cbbb', '#eea29a', '#b0aac0',
-         '#f4a688', '#d9ecd0', '#b7d7e8', '#fbefcc', '#a2836e',]
-    )
-    cBarColor:dict = field(default_factory=lambda: {
-        'R': '#0099ff', 'K': '#0099ff', 'D': '#ff4d4d', 'W': '#FF51FD',
-        'E': '#ff4d4d', 'S': '#70db70', 'T': '#70db70', 'H': '#70db70',
-        'N': '#70db70', 'Q': '#70db70', 'C': '#FFFC00', 'G': '#FFFC00',
-        'P': '#FFFC00', 'A': '#BEBEBE', 'V': '#BEBEBE', 'I': '#BEBEBE',
-        'L': '#BEBEBE', 'M': '#BEBEBE', 'F': '#FF51FD', 'Y': '#FF51FD',
-    })
-    cChi:dict = field(default_factory=lambda: {
-        1 : 'Green',
-        0 : 'Red',
-        -1: 'Black',
-    })
-    #------------------------------> Converter for user options
-    converter:dict = field(default_factory=lambda: {})
+    #------------------------------> User defined options
+    alpha:str    = ''
+    scoreVal:str = ''
+    correctP:str = ''
+    aaPos:str    = ''
+    histWind:str = ''
+    cCtrl:str    = 'black'
+    cAve:str     = 'cyan'
+    cAveL:str    = '#417ab1'
     #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration

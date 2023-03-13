@@ -18,7 +18,8 @@
 from dataclasses import dataclass, field
 from typing      import Optional
 
-from scipy import stats
+from scipy                       import stats
+from statsmodels.stats.multitest import multipletests
 
 import numpy  as np
 import pandas as pd
@@ -42,11 +43,11 @@ class UserData(cMethod.BaseUserData):
     #------------------------------>
     dO:list = field(default_factory=lambda:                                     # Attr printed to UMSAP file
         ['iFileN', 'seqFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift',
-         'width', 'targetProt', 'scoreVal', 'alpha', 'beta', 'gamma', 'theta',
-         'thetaM', 'indSample', 'ocSeq', 'ocTargetProt', 'ocScore',
-         'ocColumn', 'resCtrl', 'labelA', 'labelB', 'ctrlName', 'dfSeq',
-         'dfTargetProt', 'dfScore', 'dfResCtrl', 'protLength', 'protLoc',
-         'protDelta',
+         'width', 'targetProt', 'scoreVal', 'correctedP', 'alpha', 'beta',
+         'gamma', 'theta', 'thetaM', 'indSample', 'ocSeq', 'ocTargetProt',
+         'ocScore', 'ocColumn', 'resCtrl', 'labelA', 'labelB', 'ctrlName',
+         'dfSeq', 'dfTargetProt', 'dfScore', 'dfResCtrl', 'protLength',
+         'protLoc', 'protDelta',
         ])
     longestKey:int = 17                                                         # Length of the longest Key in dI
     #endregion ------------------------------------------------------> Options
@@ -62,8 +63,8 @@ class LimpAnalysis():
     labelA:list[str]                                                            # Lane's labels
     labelB:list[str]                                                            # Band's labels
     alpha:float                                                                 # Significance level
-    protLength:list[int]                                                        # Length of Rec and Nat proteins
-    protLoc:list[int]                                                           # Location of Nat Seq in Rec Seq
+    protLength:tuple[int, int]                                                  # Length of Rec and Nat proteins
+    protLoc:tuple[int, int]                                                     # Location of Nat Seq in Rec Seq
     protDelta:Optional[int]                                                     # Used to convert Rec Res Num to Nat Res Num
     targetProt:str                                                              # Name of Target Prot
     #endregion -----------------------------------------------------> Options
@@ -228,6 +229,15 @@ def LimProt(                                                                    
         pR = np.where(pG >= pL, pG, pL)
         dfR[(bN, lN, 'Ptost')] = pR
         #endregion -------------------------------------------> Delta and TOST
+
+        #region ----------------------------------------------------------> Pc
+        if rDO.correctedP != 'None':
+            dfR.loc[:,(bN,lN,'Pc')] = multipletests(                            # type: ignore
+                dfR.loc[:,(bN,lN,'Ptost')],                                     # type: ignore
+                rDO.alpha,
+                mConfig.core.oCorrectP[rDO.correctedP]
+            )[1]
+        #endregion -------------------------------------------------------> Pc
 
         return True
     #---

@@ -40,7 +40,7 @@ class Configuration():
     #------------------------------> Options
     oCorrMethod:list = field(default_factory=lambda:                            # Correlation Methods
         ['', 'Pearson', 'Kendall', 'Spearman'])
-    #------------------------------> Colors
+    #------------------------------> User Configurable Options
     CMAP:dict = field(default_factory=lambda : {                                # CMAP Colors
         'N' : 128,
         'c1': (255, 0, 0),
@@ -48,8 +48,9 @@ class Configuration():
         'c3': (0, 0, 255),
         'NA': '#90EE90',
     })
-    #------------------------------> Converter for user options
-    converter:dict = field(default_factory=lambda: {})
+    corrMethod:str = ''                                                         # Default correlation method
+    axisLabel:str  = 'Names'                                                    # In Res Plot show column names by default
+    showBar:bool   = False                                                      # Do not show color bar by default
     #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration

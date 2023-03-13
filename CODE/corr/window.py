@@ -122,10 +122,23 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
 
-        #region --------------------------------------------------->
+        #region --------------------------------> Menu & Configuration Options
         self.mBar = mMenu.MenuBarTool(self.cName, menuData=menuData)
         self.SetMenuBar(self.mBar)
-        #endregion ------------------------------------------------>
+        #------------------------------> Configuration
+        if mConfig.corr.axisLabel == 'Numbers':
+            menu = self.mBar.GetMenu(self.mBar.FindMenu('Tools'))
+            col  = menu.FindItemById(menu.FindItem('Column Names'))
+            col.Check(check=False)
+            #------------------------------>
+            self.rCol = False
+        if mConfig.corr.showBar:
+            menu = self.mBar.GetMenu(self.mBar.FindMenu('Tools'))
+            barM  = menu.FindItemById(menu.FindItem('Show ColorBar'))
+            barM.Check(check=True)
+            #------------------------------>
+            self.rBar = True
+        #endregion -----------------------------> Menu & Configuration Options
 
         #region ----------------------------------------------------> Position
         self.SetColDetails()

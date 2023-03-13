@@ -72,8 +72,8 @@ class BaseUserData():
     tran:LIT_Tran  = ''                                                         # Transformation method
     norm:LIT_Norm  = ''                                                         # Normalization method
     imp:LIT_Imp    = ''                                                         # Imputation Method
-    shift:float    = float(mConfig.data.Shift)                                  # Center shift
-    width:float    = float(mConfig.data.Width)                                  # Stdev value
+    shift:float    = float(mConfig.data.shift)                                  # Center shift
+    width:float    = float(mConfig.data.width)                                  # Stdev value
     targetProt:str = ''                                                         # Target Protein
     scoreVal:float = 0                                                          # Minimum Score value
     #------------------------------> Statistic options
@@ -117,10 +117,10 @@ class BaseUserData():
     dfNC:list[int]          = field(default_factory=lambda: [2,3])              # Location of N, C residue numbers in Recombinant Protein
     dfNCF:list[int]         = field(default_factory=lambda: [4,5])              # Location of N, C residue numbers in Native Protein
     #------------------------------>
-    protLoc:list[int]       = field(default_factory=lambda: [-1, -1])           # Location of the Native Sequence in the Recombinant Sequence
-    protLength:list[int]    = field(default_factory=lambda: [1, 0])             # Length of Recombinant and Natural Protein
-    protDelta:Optional[int] = None                                              # To calculate Native residue number from Recombinant residue number
-    converterRead:dict      = field(default_factory=lambda:{                    # Set proper type when reading from file
+    protLoc:tuple[int, int]    = (-1, -1)                                       # Location of the Native Sequence in the Recombinant Sequence
+    protLength:tuple[int, int] = (1, 0)                                         # Length of Recombinant and Natural Protein
+    protDelta:Optional[int]    = None                                           # To calculate Native residue number from Recombinant residue number
+    converterRead:dict         = field(default_factory=lambda:{                 # Set proper type when reading from file
         'uFile'  : Path,
         'iFile'  : Path,
         'seqFile': Path,
@@ -156,6 +156,9 @@ class BaseUserData():
             #------------------------------>
             if k == 'indSample':
                 val = PrintIndSample(val)
+            #------------------------------>
+            if k == 'method':
+                val = PrintMethod(val)
             #------------------------------>
             dictO[label] = str(val)
         #endregion ------------------------------------------------>
@@ -1006,6 +1009,30 @@ def PrintIndSample(val:LIT_IndSample) -> str:
 #---
 
 
+def PrintMethod(val) -> str:
+    """Pretty Print Method choice to UMSAP File.
+
+        Parameters
+        ----------
+        val: str
+            One of the 'slope' or 'ttest'.
+
+        Returns
+        -------
+        str
+            Value to print in the UMSAP File
+    """
+    #region -------------------------------------------------------->
+    try:
+        valO = mConfig.tarp.oMethodP[val]
+    except KeyError:
+        valO = ''
+    #endregion ----------------------------------------------------->
+
+    return valO
+#---
+
+
 def NCResNumbers(
     dfR:pd.DataFrame,
     rDO:BaseUserData,
@@ -1164,7 +1191,7 @@ def Fragments(
     val:float,
     comp:LIT_Comp,
     protL:int,
-    protLoc:list[int],
+    protLoc:tuple[int,int],
     ) -> Fragment:
     """Creates the dict holding the fragments identified in the analysis.
 
@@ -1180,7 +1207,7 @@ def Fragments(
             One of 'lt', 'le', 'e', 'ge', 'gt'
         protL: int
             Length of recombinant protein.
-        protLoc: list[int]
+        protLoc: tuple[int, int]
             Location of the native protein in the recombinant sequence
 
         Returns
@@ -1342,7 +1369,7 @@ def Fragments(
 def Rec2NatCoord(
     coord:list[tuple[int,int]],
     protLoc:tuple[int,int],
-    delta:int,
+    delta:Optional[int],
     ) -> Union[list[tuple[int,int]], list[str]]:
     """Translate residue numbers from the recombinant sequence to the native
         sequence.
@@ -1353,7 +1380,7 @@ def Rec2NatCoord(
             Residue numbers in the recombinant sequence.
         protLoc: tuple(int, int)
             Location of the native protein in the recombinant sequence.
-        delta: int
+        delta: int or None
             Difference in residue numbers.
 
         Returns

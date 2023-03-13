@@ -22,7 +22,6 @@ import pandas as pd
 from numpy import nan
 from pandas import NA
 
-from config.config import config as mConfig
 from core    import file   as cFile
 from tarprot import method as tarpMethod
 #endregion ----------------------------------------------------------> Imports
@@ -33,6 +32,7 @@ folder = Path(__file__).parent / 'file'
 fileA  = folder / 'tarprot-data-file-1.txt'
 fileB  = folder / 'tarprot-seq-both-1.txt'
 fileC  = folder / 'res-tarprot-1.txt'
+fileD  = folder / 'res-tarprot-2.txt'
 #endregion ----------------------------------------------------> File Location
 
 
@@ -51,8 +51,10 @@ class Test_TarProt(unittest.TestCase):
             imp           = 'None',
             shift         = 1.8,
             width         = 0.3,
+            method        = 'slope',
             targetProt    = 'efeB',
             scoreVal      = 100.0,
+            correctedP    = 'Bonferroni',
             alpha         = 0.05,
             labelA        = ['Exp1', 'Exp2'],
             ctrlName      = 'Ctrl',
@@ -69,6 +71,35 @@ class Test_TarProt(unittest.TestCase):
             dfColumnR     = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
             dfColumnF     = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         )
+        self.dict2 = tarpMethod.UserData(
+            seqFileObj    = cFile.FastaFile(fileB),
+            cero          = True,
+            tran          = 'Log2',
+            norm          = 'Median',
+            imp           = 'None',
+            shift         = 1.8,
+            width         = 0.3,
+            method        = 'ttest',
+            indSample     = 'i',
+            targetProt    = 'efeB',
+            scoreVal      = 0,
+            alpha         = 0.05,
+            correctedP    = 'None',
+            labelA        = ['Exp1', 'Exp2', 'Exp3'],
+            ctrlName      = 'Ctrl',
+            ocSeq         = 0,
+            ocTargetProt  = 38,
+            ocScore       = 44,
+            ocResCtrl     = [[[98, 99, 100, 101, 102, 103, 104, 105]], [[109, 110, 111]], [[112, 113, 114]], [[115, 116, 117, 120]]],
+            ocColumn      = [0, 38, 44, 98, 99, 100, 101, 102, 103, 104, 105, 109, 110, 111, 112, 113, 114, 115, 116, 117, 120],
+            dfSeq         = 0,
+            dfTargetProt  = 1,
+            dfScore       = 2,
+            dfResCtrl     = [[[3, 4, 5, 6, 7, 8, 9, 10]], [[11, 12, 13]], [[14, 15, 16]], [[17, 18, 19, 20]]],
+            dfResCtrlFlat = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+            dfColumnR     = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+            dfColumnF     = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+        )
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -78,6 +109,7 @@ class Test_TarProt(unittest.TestCase):
         #------------------------------>
         tInput = [
             (self.df, self.dict1, True, fileC, 'Test - 1'),
+            (self.df, self.dict2, True, fileD, 'Test - 2'),
         ]
         #------------------------------>
         for a,b,c,d,e in tInput:
@@ -225,8 +257,8 @@ class Test_R2Hist(unittest.TestCase):
         """Test for expected output"""
         #------------------------------>
         tInput = [
-            (self.a, 0.05, [50], [441, 441], self.b),
-            (self.a, 0.05, [200, 250, 300], [441, 441], self.c),
+            (self.a, 0.05, [50], (441, 441), self.b),
+            (self.a, 0.05, [200, 250, 300], (441, 441), self.c),
         ]
         #------------------------------>
         for a,b,c,d,e in tInput:

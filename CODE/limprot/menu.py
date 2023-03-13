@@ -89,6 +89,7 @@ class ToolLimProt(cMenu.BaseMenuMainResult):
     """
     #region ------------------------------------------------------> Class Setup
     cLLaneSel   = mConfig.limp.lmToolLaneSel
+    cLCorrP     = mConfig.core.lmPCorrected
     cLShowAll   = mConfig.limp.lmToolShowAll
     cLFrag      = mConfig.limp.lmToolFrag
     cLGel       = mConfig.limp.lmToolGel
@@ -98,6 +99,9 @@ class ToolLimProt(cMenu.BaseMenuMainResult):
     cVBandLane  = mConfig.limp.kwBandLane
     cVShowAll   = mConfig.limp.kwShowAll
     cVExportSeq = mConfig.core.kwExpSeq
+    cVPCorr     = mConfig.core.kwWinUpdate
+    #------------------------------>
+    cVPCorrKey = mConfig.core.kwPCorrected
     #endregion ---------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
@@ -110,6 +114,8 @@ class ToolLimProt(cMenu.BaseMenuMainResult):
         #region --------------------------------------------------> Menu Items
         self.miBandLane = self.Append(
             -1, f'{self.cLLaneSel}\tCtrl+L', kind=wx.ITEM_CHECK)
+        self.miPCorr = self.Append(
+            -1, self.cLCorrP, kind=wx.ITEM_CHECK)
         self.AppendSeparator()
         #------------------------------>
         self.miShowAll = self.Append(-1, f'{self.cLShowAll}\tCtrl+A')
@@ -136,14 +142,21 @@ class ToolLimProt(cMenu.BaseMenuMainResult):
         #region ---------------------------------------------------> rKeyID
         rIDMap = {
             self.miBandLane.GetId(): self.cVBandLane ,
+            self.miPCorr.GetId()   : self.cVPCorr,
             self.miShowAll.GetId() : self.cVShowAll  ,
             self.miSaveSeq.GetId() : self.cVExportSeq,
         }
         self.rIDMap = self.rIDMap | rIDMap
+        #------------------------------>
+        rKeyMap = {
+            self.miPCorr.GetId() : self.cVPCorrKey,
+        }
+        self.rKeyMap = self.rKeyMap | rKeyMap
         #endregion ------------------------------------------------> rKeyID
 
         #region --------------------------------------------------------> Bind
         self.Bind(wx.EVT_MENU, self.OnMethodLabelBool, source=self.miBandLane)
+        self.Bind(wx.EVT_MENU, self.OnMethodKeyBool,   source=self.miPCorr)
         self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miShowAll)
         self.Bind(wx.EVT_MENU, self.OnMethod,          source=self.miSaveSeq)
         #endregion -----------------------------------------------------> Bind

@@ -184,6 +184,8 @@ class DataPrep(cPane.BaseConfPanel):
             #------------------------------>
             self.IFileEnter(dataI.iFile)
             self.OnImpMethod('fEvent')
+        else:
+            super().SetConfOptions()
         #endregion ----------------------------------------------> Fill Fields
 
         return True

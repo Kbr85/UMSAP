@@ -15,7 +15,8 @@
 
 
 #region -------------------------------------------------------------> Imports
-from typing import Optional, Union
+import dataclasses
+from typing import Optional, Union, TYPE_CHECKING
 
 import wx
 import wx.lib.agw.hyperlink as hl
@@ -24,8 +25,12 @@ from wx import adv
 from config.config import config as mConfig
 from core import file   as cFile
 from core import window as cWindow
+from help import method as hMethod
 from help import pane   as hPane
 from main import menu   as mMenu
+
+if TYPE_CHECKING:
+    import config.config as config
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -126,18 +131,21 @@ class WindowAbout(cWindow.BaseWindow):
 class Preference(wx.Dialog):
     """Set the UMSAP preferences."""
     #region -----------------------------------------------------> Class setup
-    cName = mConfig.help.ndPreferences
+    cName  = mConfig.help.ndPreferences
     cTitle = mConfig.help.tdPrefUpdate
     #------------------------------>
     cStyle = wx.CAPTION|wx.CLOSE_BOX|wx.RESIZE_BORDER
     #------------------------------>
-    cSize = (340,200)
+    cSize = (740,740)
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
     def __init__(self):
         """ """
         #region -----------------------------------------------> Initial Setup
+        self.rErrorMsg  = ''
+        self.rException = ''
+        #------------------------------>
         super().__init__(
             None,
             title = self.cTitle,
@@ -150,15 +158,25 @@ class Preference(wx.Dialog):
         #region -----------------------------------------------------> Widgets
         self.wNoteBook = wx.Notebook(self, style=wx.NB_TOP)
         #------------------------------>
-        self.wUpdate = hPane.PrefUpdate(self.wNoteBook)
-        self.wNoteBook.AddPage(self.wUpdate, self.wUpdate.cLTab)
+        self.wCore = hPane.General(self.wNoteBook)
+        self.wNoteBook.AddPage(self.wCore, self.wCore.cLTab)
+        self.wCorrA = hPane.CorrA(self.wNoteBook)
+        self.wNoteBook.AddPage(self.wCorrA, self.wCorrA.cLTab)
+        self.wData = hPane.Data(self.wNoteBook)
+        self.wNoteBook.AddPage(self.wData, self.wData.cLTab)
+        self.wLimProt = hPane.LimProt(self.wNoteBook)
+        self.wNoteBook.AddPage(self.wLimProt, self.wLimProt.cLTab)
+        self.wProtProf = hPane.ProtProf(self.wNoteBook)
+        self.wNoteBook.AddPage(self.wProtProf, self.wProtProf.cLTab)
+        self.wTarProt = hPane.TarProt(self.wNoteBook)
+        self.wNoteBook.AddPage(self.wTarProt, self.wTarProt.cLTab)
         #------------------------------>
         self.sBtn = self.CreateButtonSizer(wx.OK|wx.CANCEL|wx.NO)
         self.FindWindowById(wx.ID_OK).SetLabel('Save')
         self.FindWindowById(wx.ID_CANCEL).SetLabel('Cancel')
         self.FindWindowById(wx.ID_NO).SetLabel('Load Defaults')
         #------------------------------>
-        self.OnDefault('fEvent')
+        self.SetConfValues(mConfig)
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
@@ -176,6 +194,15 @@ class Preference(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.OnDefault, id=wx.ID_NO)
         #endregion -----------------------------------------------------> Bind
 
+        #region -------------------------------------------------> Check Input
+        self.rCheckUserInput = {
+            **self.wData.rCheckUserInput,
+            **self.wLimProt.rCheckUserInput,
+            **self.wProtProf.rCheckUserInput,
+            **self.wTarProt.rCheckUserInput,
+        }
+        #endregion ----------------------------------------------> Check Input
+
         #region ---------------------------------------------> Window position
         self.Center()
         self.ShowModal()
@@ -184,7 +211,7 @@ class Preference(wx.Dialog):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
+    #region ---------------------------------------------------> Event Methods
     def OnSave(self, event:wx.CommandEvent) -> bool:                            # pylint: disable=unused-argument
         """Save the preferences.
 
@@ -197,35 +224,22 @@ class Preference(wx.Dialog):
             -------
             bool
         """
-        #region ---------------------------------------------------> Set
-        #------------------------------> Update
-        mConfig.core.checkUpdate = not bool(
-            self.wUpdate.wRBox.GetSelection())
-        #endregion ------------------------------------------------>
-
-        #region ---------------------------------------------------> Save
-        data = {}
-        #------------------------------>
-        for secStr in mConfig.core.confList:
-            #------------------------------>
-            sec = getattr(mConfig, secStr, None)
-            #------------------------------>
-            if sec is None:
-                continue
-            #------------------------------>
-            secDict = {}
-            for k in sec.converter:
-                secDict[k] = getattr(sec, k)
-            #------------------------------>
-            data[secStr] = secDict
-        #------------------------------>
+        #region -------------------------------------------------------->
         try:
-            cFile.WriteJSON(mConfig.core.fConfig, data)
+            if not self.Save():
+                cWindow.Notification(
+                    'errorF',
+                    msg        = self.rErrorMsg,
+                    tException = self.rException,
+                    parent     = self,
+                )
+                return False
         except Exception as e:
-            msg = 'Configuration options could not be saved.'
-            cWindow.Notification('errorF', msg=msg, tException=e)
+            msg = ('It was not possible to save the values of the '
+                   'configuration options.')
+            cWindow.Notification('errorU', msg=msg, tException=e, parent=self)
             return False
-        #endregion ------------------------------------------------>
+        #endregion ----------------------------------------------------->
 
         self.EndModal(1)
         return True
@@ -247,7 +261,7 @@ class Preference(wx.Dialog):
         return True
     #---
 
-    def OnDefault(self, event:Union[wx.CommandEvent, str]) -> bool:
+    def OnDefault(self, event:wx.CommandEvent) -> bool:                         # pylint: disable=unused-argument
         """Set default options.
 
             Parameters
@@ -259,103 +273,308 @@ class Preference(wx.Dialog):
             -------
             bool
         """
-        #region --------------------------------------------------->
-        if isinstance(event, str):
-            data = self.GetConfConf()
-        else:
-            data = self.GetConfFile()
-        #endregion ------------------------------------------------>
-
-        #region --------------------------------------------------->
-        if data:
-            return self.SetConfValues(data)
-        #endregion ------------------------------------------------>
-
-        return False
-    #---
-
-    def GetConfFile(self) -> dict:
-        """Get default data from file.
-
-            Parameters
-            ----------
-             event : wx.CommandEvent
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------->
+        #region -------------------------------------------------------->
         try:
-            data = cFile.ReadJSON(mConfig.core.fConfigDef)
+            self.SetDefault()
         except Exception as e:
-            msg = 'It was not possible to read the default configuration file.'
-            cWindow.Notification('errorF', msg=msg, tException=e)
-            return {}
-        #endregion ------------------------------------------------>
+            self.SetConfValues(mConfig)
+            #------------------------------>
+            msg = ('It was not possible to load the default values for '
+                   'the configuration options.\nThe options displayed are the '
+                   'ones currently in use.')
+            cWindow.Notification('errorU', msg=msg, tException=e)
+        #endregion ----------------------------------------------------->
 
-        return data
+        return True
     #---
+    #endregion ------------------------------------------------> Event Methods
 
-    def GetConfConf(self) -> dict:
-        """Get default options from current options.
+    #region ---------------------------------------------------> Class Methods
+    def SetConfValues(
+        self,
+        data:Union['config.Configuration', 'hMethod.UserConfig'],
+        ) -> bool:
+        """Set the option values.
 
             Parameters
             ----------
-             event : wx.CommandEvent
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------->
-        data = {}
-        #------------------------------>
-        for secStr in mConfig.core.confList:
-            #------------------------------>
-            sec = getattr(mConfig, secStr, None)
-            #------------------------------>
-            if sec is None:
-                continue
-            #------------------------------>
-            secDict = {}
-            for k in sec.converter:
-                secDict[k] = getattr(sec,k)
-            #------------------------------>
-            data[secStr] = secDict
-        #endregion ------------------------------------------------>
-
-        return data
-    #---
-
-    def SetConfValues(self, data:dict) -> bool:
-        """Set the default values.
-
-            Parameters
-            ----------
-            data: dict
+            data: config.Configuration or hMethod.UserConfig
                 Data to be set.
 
             Returns
             -------
             bool
         """
-        #region --------------------------------------------------->
-        try:
-            #------------------------------> Update
-            val = 0 if data['core']['checkUpdate'] else 1
-            self.wUpdate.wRBox.SetSelection(val)
-        except Exception as e:
-            msg = 'Something went wrong when loading the configuration options.'
-            cWindow.Notification('errorU', msg=msg, tException=e)
-            return False
-        #endregion ------------------------------------------------>
+        #region --------------------------------------------------------> Core
+        #------------------------------> Updates
+        val = 1 if data.core.checkUpdate else 0
+        #------------------------------> Colors
+        self.wCore.wUpdate.SetSelection(val)
+        self.wCore.wZebra.wC.SetColour(data.core.cZebra)
+        self.wCore.wProtRec.wC.SetColour(data.core.cRecProt)
+        self.wCore.wProtNat.wC.SetColour(data.core.cNatProt)
+        for k,v in enumerate(data.core.cFragment):
+            self.wCore.wFrag[k].wC.SetColour(v)
+        for k in mConfig.core.lAAGroups:
+            self.wCore.wAA[k[0]].wC.SetColour(data.core.cBarColor[k[0]])
+        #------------------------------> Images
+        self.wCore.wDPI.wCb.SetValue(str(data.core.DPI))
+        self.wCore.wFormat.wCb.SetValue(data.core.imgFormat)
+        #endregion -----------------------------------------------------> Core
+
+        #region -------------------------------------------------------> CorrA
+        self.wCorrA.wMethod.wCb.SetValue(data.corr.corrMethod)
+        self.wCorrA.wBar.wCb.SetValue('True' if data.corr.showBar else 'False')
+        self.wCorrA.wCol.wCb.SetValue(data.corr.axisLabel)
+        #------------------------------> Colors
+        self.wCorrA.wC[0].wC.SetColour(data.corr.CMAP['c1'])
+        self.wCorrA.wC[1].wC.SetColour(data.corr.CMAP['c2'])
+        self.wCorrA.wC[2].wC.SetColour(data.corr.CMAP['c3'])
+        self.wCorrA.wC[3].wC.SetColour(data.corr.CMAP['NA'])
+        #endregion ----------------------------------------------------> CorrA
+
+        #region ----------------------------------------------------> DataPrep
+        self.wData.wCeroB.wCb.SetValue(data.data.ceroT)
+        self.wData.wTransMethod.wCb.SetValue(data.data.tranMethod)
+        self.wData.wNormMethod.wCb.SetValue(data.data.normMethod)
+        self.wData.wImpMethod.wCb.SetValue(data.data.impMethod)
+        self.wData.wShift.wTc.SetValue(data.data.shift)
+        self.wData.wWidth.wTc.SetValue(data.data.width)
+        #------------------------------>
+        self.wData.wBar.wC.SetColour(data.data.cBar)
+        self.wData.wBarI.wC.SetColour(data.data.cBarI)
+        self.wData.wPDF.wC.SetColour(data.data.cPDF)
+        #endregion -------------------------------------------------> DataPrep
+
+        #region -----------------------------------------------------> LimProt
+        self.wLimProt.wScoreVal.wTc.SetValue(data.limp.scoreVal)
+        self.wLimProt.wCorrectP.wCb.SetValue(data.limp.correctP)
+        self.wLimProt.wAlpha.wTc.SetValue(data.limp.alpha)
+        self.wLimProt.wBeta.wTc.SetValue(data.limp.beta)
+        self.wLimProt.wBeta.wTc.SetValue(data.limp.beta)
+        self.wLimProt.wTheta.wTc.SetValue(data.limp.theta)
+        self.wLimProt.wThetaMax.wTc.SetValue(data.limp.thetaMax)
+        #endregion --------------------------------------------------> LimProt
+
+        #region ----------------------------------------------------> ProtProf
+        self.wProtProf.wAlpha.wTc.SetValue(data.prot.alpha)
+        self.wProtProf.wCorrectP.wCb.SetValue(data.prot.correctP)
+        self.wProtProf.wScoreVal.wTc.SetValue(data.prot.scoreVal)
+        self.wProtProf.wLock.wCb.SetValue(data.prot.lock)
+        self.wProtProf.wFilterA.wCb.SetValue(data.prot.filterA)
+        self.wProtProf.wShowAll.wCb.SetValue(data.prot.showAll)
+        self.wProtProf.wPick.wCb.SetValue(data.prot.pickP)
+        self.wProtProf.wT0.wTc.SetValue(data.prot.t0)
+        self.wProtProf.wS0.wTc.SetValue(data.prot.s0)
+        self.wProtProf.wP.wTc.SetValue(data.prot.p)
+        self.wProtProf.wFC.wTc.SetValue(data.prot.fc)
+        self.wProtProf.wZ.wTc.SetValue(data.prot.z)
+        self.FindWindowByName(data.prot.zShow, self.wProtProf).SetValue(True)
+        #------------------------------>
+        self.wProtProf.wVolD.wC.SetColour(data.prot.cVol[0])
+        self.wProtProf.wVolN.wC.SetColour(data.prot.cVol[1])
+        self.wProtProf.wVolU.wC.SetColour(data.prot.cVol[2])
+        self.wProtProf.wVolS.wC.SetColour(data.prot.cVolSel)
+        self.wProtProf.wVolS.wC.SetColour(data.prot.cVolSel)
+        self.wProtProf.wVolT.wC.SetColour(data.prot.cCV)
+        #endregion -------------------------------------------------> ProtProf
+
+        #region -----------------------------------------------------> TarProt
+        self.wTarProt.wScoreVal.wTc.SetValue(data.tarp.scoreVal)
+        self.wTarProt.wAlpha.wTc.SetValue(data.tarp.alpha)
+        self.wTarProt.wCorrectP.wCb.SetValue(data.tarp.correctP)
+        self.wTarProt.wAA.wTc.SetValue(data.tarp.aaPos)
+        self.wTarProt.wHist.wTc.SetValue(data.tarp.histWind)
+        self.wTarProt.wCtrl.wC.SetColour(data.tarp.cCtrl)
+        self.wTarProt.wAve.wC.SetColour(data.tarp.cAve)
+        self.wTarProt.wAveL.wC.SetColour(data.tarp.cAveL)
+        #endregion --------------------------------------------------> TarProt
 
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+
+    def Save(self) -> bool:
+        """Save configuration options.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Check
+        if not self.CheckInput():
+            return False
+        #endregion ----------------------------------------------------> Check
+
+        #region --------------------------------------------------------> Data
+        #------------------------------> Core
+        frag = [hMethod.RGB2Hex(x.wC.GetColour()) for x in self.wCore.wFrag]
+        aa   = {}
+        for k in mConfig.core.lAAGroups:
+            for a in k:
+                aa[a] = hMethod.RGB2Hex(self.wCore.wAA[k[0]].wC.GetColour())
+        #-->
+        core = hMethod.Core(
+            checkUpdate = bool(self.wCore.wUpdate.GetSelection()),
+            DPI         = int(self.wCore.wDPI.wCb.GetValue()),
+            imgFormat   = self.wCore.wFormat.wCb.GetValue(),
+            cZebra      = hMethod.RGB2Hex(self.wCore.wZebra.wC.GetColour()),
+            cRecProt    = hMethod.RGB2Hex(self.wCore.wProtRec.wC.GetColour()),
+            cNatProt    = hMethod.RGB2Hex(self.wCore.wProtNat.wC.GetColour()),
+            cFragment   = frag,
+            cBarColor   = aa,
+        )
+        #------------------------------> CorrA
+        corrA = hMethod.CorrA(
+            CMAP= {
+                'N' : 128,
+                'c1': hMethod.RGB(self.wCorrA.wC[0].wC.GetColour()),
+                'c2': hMethod.RGB(self.wCorrA.wC[1].wC.GetColour()),
+                'c3': hMethod.RGB(self.wCorrA.wC[2].wC.GetColour()),
+                'NA': hMethod.RGB2Hex(self.wCorrA.wC[3].wC.GetColour()),
+            },
+            corrMethod = self.wCorrA.wMethod.wCb.GetValue(),
+            axisLabel  = self.wCorrA.wCol.wCb.GetValue(),
+            showBar    = True if self.wCorrA.wBar.wCb.GetValue() == 'True' else False,
+        )
+        #------------------------------> Data
+        data = hMethod.Data(
+            ceroT      = self.wData.wCeroB.wCb.GetValue(),
+            tranMethod = self.wData.wTransMethod.wCb.GetValue(),
+            normMethod = self.wData.wNormMethod.wCb.GetValue(),
+            impMethod  = self.wData.wImpMethod.wCb.GetValue(),
+            shift      = self.wData.wShift.wTc.GetValue(),
+            width      = self.wData.wWidth.wTc.GetValue(),
+            cBar       = hMethod.RGB2Hex(self.wData.wBar.wC.GetColour()),
+            cBarI      = hMethod.RGB2Hex(self.wData.wBarI.wC.GetColour()),
+            cPDF       = hMethod.RGB2Hex(self.wData.wPDF.wC.GetColour()),
+        )
+        #------------------------------> LimProt
+        limp = hMethod.LimProt(
+            alpha    = self.wLimProt.wAlpha.wTc.GetValue(),
+            beta     = self.wLimProt.wBeta.wTc.GetValue(),
+            gamma    = self.wLimProt.wGamma.wTc.GetValue(),
+            theta    = self.wLimProt.wTheta.wTc.GetValue(),
+            thetaMax = self.wLimProt.wThetaMax.wTc.GetValue(),
+            scoreVal = self.wLimProt.wScoreVal.wTc.GetValue(),
+            correctP = self.wLimProt.wCorrectP.wCb.GetValue(),
+        )
+        #------------------------------> ProtProf
+        prot = hMethod.ProtProf(
+            alpha    = self.wProtProf.wAlpha.wTc.GetValue(),
+            correctP = self.wProtProf.wCorrectP.wCb.GetValue(),
+            scoreVal = self.wProtProf.wScoreVal.wTc.GetValue(),
+            lock     = self.wProtProf.wLock.wCb.GetValue(),
+            filterA  = self.wProtProf.wFilterA.wCb.GetValue(),
+            showAll  = self.wProtProf.wShowAll.wCb.GetValue(),
+            pickP    = self.wProtProf.wPick.wCb.GetValue(),
+            t0       = self.wProtProf.wT0.wTc.GetValue(),
+            s0       = self.wProtProf.wS0.wTc.GetValue(),
+            p        = self.wProtProf.wP.wTc.GetValue(),
+            fc       = self.wProtProf.wFC.wTc.GetValue(),
+            z        = self.wProtProf.wZ.wTc.GetValue(),
+            zShow    = self.wProtProf.rCheck,
+            cCV      = hMethod.RGB2Hex(self.wProtProf.wVolT.wC.GetColour()),
+            cVolSel  = hMethod.RGB2Hex(self.wProtProf.wVolS.wC.GetColour()),
+            cVol     = [
+                hMethod.RGB2Hex(self.wProtProf.wVolD.wC.GetColour()),
+                hMethod.RGB2Hex(self.wProtProf.wVolN.wC.GetColour()),
+                hMethod.RGB2Hex(self.wProtProf.wVolU.wC.GetColour()),
+            ]
+        )
+        #------------------------------> TarProt
+        tarp = hMethod.TarProt(
+            alpha    = self.wTarProt.wAlpha.wTc.GetValue(),
+            scoreVal = self.wTarProt.wScoreVal.wTc.GetValue(),
+            correctP = self.wTarProt.wCorrectP.wCb.GetValue(),
+            aaPos    = self.wTarProt.wAA.wTc.GetValue(),
+            histWind = self.wTarProt.wHist.wTc.GetValue(),
+            cCtrl    = hMethod.RGB2Hex(self.wTarProt.wCtrl.wC.GetColour()),
+            cAve     = hMethod.RGB2Hex(self.wTarProt.wAve.wC.GetColour()),
+            cAveL    = hMethod.RGB2Hex(self.wTarProt.wAveL.wC.GetColour()),
+        )
+        #------------------------------> Full Options
+        userOpt = dataclasses.asdict(hMethod.UserConfig(
+            core, corrA, data, limp, prot, tarp))
+        #endregion -----------------------------------------------------> Data
+
+        #region -------------------------------------------------> Save 2 File
+        cFile.WriteJSON(mConfig.core.fConfig, userOpt)
+        #endregion ----------------------------------------------> Save 2 File
+
+        #region --------------------------------------------------> Set Values
+        for k,v in userOpt.items():
+            sec = getattr(mConfig, k)
+            for j,w in v.items():
+                setattr(sec, j, w)
+        #------------------------------>
+        self.rErrorMsg  = ''
+        self.rException = ''
+        #endregion -----------------------------------------------> Set Values
+
+        return True
+    #---
+
+    def CheckInput(self) -> bool:
+        """Check individual fields in the user input.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            BaseErrorMessage must be a string with two placeholder for the
+            error value and Field label in that order. For example:
+            'File: {bad_path_placeholder}\n cannot be used as
+                                                    {Field_label_placeholder}'
+
+            The child class must define a rCheckUserInput dict with the correct
+            order for the checking process.
+
+            rCheckUserInput = {'Field label':[Widget, BaseErrorMessage, Bool],}
+
+            The child class must define a rCheckUnique list with the wx.TextCtrl
+            that must hold unique column numbers.
+        """
+        #region -------------------------------------------------------> Check
+        for k,v in self.rCheckUserInput.items():
+            a, b = v[0].GetValidator().Validate()
+            #------------------------------>
+            if not a:
+                self.rErrorMsg  = v[1].format(b[1], k)
+                return False
+        #endregion ----------------------------------------------------> Check
+
+        return True
+    #---
+
+    def SetDefault(self) -> bool:
+        """Load default values.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        dataF = cFile.ReadJSON(mConfig.core.fConfigDef)
+        #------------------------------>
+        core  = hMethod.Core(**dataF['core'])
+        corrA = hMethod.CorrA(**dataF['corr'])
+        data  = hMethod.Data(**dataF['data'])
+        limp  = hMethod.LimProt(**dataF['limp'])
+        prot  = hMethod.ProtProf(**dataF['prot'])
+        tarp  = hMethod.TarProt(**dataF['tarp'])
+        #------------------------------>
+        userOpt = hMethod.UserConfig(core, corrA, data, limp, prot, tarp)
+        #endregion ----------------------------------------------------->
+
+        #region -------------------------------------------------------->
+        self.SetConfValues(userOpt)
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class Methods
 #---
 
 
@@ -478,6 +697,7 @@ Matplotlib 3.5.1
 NumPy 1.23.5
 Pandas 1.2.3
 PyInstaller 5.7.0
+PyPubsub 4.0.3
 Python 3.9.15
 ReportLab 3.6.8
 Requests 2.27.0

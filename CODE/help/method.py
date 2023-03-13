@@ -18,7 +18,8 @@
 import _thread
 import os
 import webbrowser
-from typing import Literal, Optional
+from dataclasses import dataclass
+from typing      import Literal, Optional
 
 import requests
 from pubsub import pub
@@ -33,6 +34,120 @@ from help import window as hWindow
 
 
 LIT_Origin = Literal['menu', 'main']
+
+
+#region -------------------------------------------------------------> Classes
+@dataclass
+class Core():
+    """User defined options for core"""
+    #region ---------------------------------------------------------> Options
+    checkUpdate:bool
+    DPI:int
+    imgFormat:str
+    cZebra: str
+    cRecProt:str
+    cNatProt:str
+    cFragment:list[str]
+    cBarColor:dict
+    #endregion ------------------------------------------------------> Options
+#---
+
+
+@dataclass
+class CorrA():
+    """User defined options for correlation analysis"""
+    #region ---------------------------------------------------------> Options
+    CMAP:dict
+    corrMethod:str
+    axisLabel:str
+    showBar:bool
+    #endregion ------------------------------------------------------> Options
+#---
+
+
+@dataclass
+class Data():
+    """User defined options for data preparation"""
+    #region ---------------------------------------------------------> Options
+    ceroT:str
+    tranMethod:str
+    normMethod:str
+    impMethod:str
+    shift:str
+    width:str
+    cBar:str
+    cBarI:str
+    cPDF:str
+    #endregion ------------------------------------------------------> Options
+#---
+
+
+@dataclass
+class ProtProf():
+    """User defined options for proteome profiling"""
+    #region ---------------------------------------------------------> Options
+    alpha:str
+    correctP:str
+    scoreVal:str
+    lock:str
+    filterA:str
+    showAll:str
+    pickP:str
+    t0:str
+    s0:str
+    p:str
+    fc:str
+    z:str
+    zShow:str
+    cVol:list[str]
+    cVolSel:str
+    cCV:str
+    #endregion ------------------------------------------------------> Options
+#---
+
+
+@dataclass
+class LimProt():
+    """User defined options for limited proteolysis"""
+    #region --------------------------------------------------------> Options
+    alpha:str
+    beta:str
+    gamma:str
+    theta:str
+    thetaMax:str
+    scoreVal:str
+    correctP:str
+    #endregion -----------------------------------------------------> Options
+#---
+
+
+@dataclass
+class TarProt():
+    """User defined options for targeted proteolysis"""
+    #region --------------------------------------------------------> Options
+    alpha:str
+    scoreVal:str
+    correctP:str
+    aaPos:str
+    histWind:str
+    cCtrl:str
+    cAve:str
+    cAveL:str
+    #endregion -----------------------------------------------------> Options
+#---
+
+
+@dataclass
+class UserConfig():
+    """User defined configuration options"""
+    core:Core
+    corr:CorrA
+    data:Data
+    limp:LimProt
+    prot:ProtProf
+    tarp:TarProt
+#---
+#endregion ----------------------------------------------------------> Classes
 
 
 #region -------------------------------------------------------------> Methods
@@ -165,6 +280,7 @@ def Manual() -> bool:
     return True
 #---
 
+
 def Tutorial() -> bool:
     """Show the tutorial.
 
@@ -184,6 +300,7 @@ def Tutorial() -> bool:
     return True
 #---
 
+
 def CheckUpdate() -> bool:
     """Check for updates.
 
@@ -199,6 +316,7 @@ def CheckUpdate() -> bool:
     _thread.start_new_thread(UpdateCheck, ('menu',))
     return True
 #---
+
 
 def Preference() -> bool:
     """Set UMSAP preferences.
@@ -217,6 +335,37 @@ def Preference() -> bool:
     #endregion ----------------------------------------------------->
 
     return True
+#---
+
+
+def RGB2Hex(rgb:wx.Colour) -> str:
+    """Convert wx.Colour to hex.
+
+        Parameters
+        ----------
+        rgb: wx.Colour
+
+        Returns
+        -------
+        str
+    """
+    return '#{:02x}{:02x}{:02x}'.format(rgb.Red(), rgb.Green() , rgb.Blue())
+#---
+
+
+def RGB(rgb:wx.Colour) -> list[int]:
+    """Get RGB as a list.
+
+        Parameters
+        ----------
+        rgb: wx.Colour
+
+        Returns
+        -------
+        list[int]
+            [255,255,255]
+    """
+    return [rgb.Red(), rgb.Green(), rgb.Blue()]
 #---
 #endregion ----------------------------------------------------------> Methods
 

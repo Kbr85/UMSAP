@@ -19,16 +19,17 @@ from itertools import zip_longest
 from pathlib   import Path
 from typing    import Optional, Union, TYPE_CHECKING
 
-import wx
-import wx.richtext
-from wx import aui
-
+import pandas             as pd
 import matplotlib.patches as mpatches
 
 from reportlab.lib.pagesizes      import A4
 from reportlab.platypus           import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.platypus.flowables import KeepTogether
 from reportlab.lib.styles         import getSampleStyleSheet, ParagraphStyle
+
+import wx
+import wx.richtext
+from wx import aui
 
 from config.config import config as mConfig
 from core    import method as cMethod
@@ -54,14 +55,12 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         ----------
         dClearMethod: dict
             Methods to clear the selections in the window.
-        rAlpha: float
-            Significance level of the analysis
-        rBands: list[str]
-            Label for the bands
         rBlSelC: list[int, int]
             Coordinates for the Band/Lane selected from 1 to N
         rBlSelRect: mpatch
-            Rectangle used to highlight the selected Band/Lane
+            Rectangle used to highlight the selected Band/Lane.
+        rCorrP: bool
+            Show P corrected values (True) or regular values (False).
         rData: dict
             Data for the Limited Proteolysis section of the UMSAP File.
         rDate: list[str]
@@ -80,23 +79,14 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
             Coordinated for the currently selected gel spot. 1 based.
         rGelSpotPicked: bool
             Gel spot was selected (True) or not (False).
-        rLanes: list[str]
-            Name of the lanes.
         rLCIdx: int
             Row selected in the wx.ListCtrl.
         rObj: UMSAPFile
             Reference to the UMSAP file in the parent UMSAPCtrl window.
         rPeptide: str
             Sequence of the selected peptide in the wx.ListCtrl.
-        rProtDelta: int
-            Difference between the residue numbers in the recombinant and native
-            protein.
-        rProtLength: int
-            Length of hte Recombinant Protein used in the analysis.
-        rProtLoc: list[int, int]
-            Location of the Native Sequence in the Recombinant Sequence.
-        rProtTarget: str
-            Name of the Recombinant protein used in the analysis.
+        rPStr: str
+            Name of the P column in the dataframe.
         rRecSeq: dict
             Keys are date and values the sequence of the recombinant protein.
         rRecSeqC: str
@@ -124,8 +114,8 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
     cSWindow = (1100, 900)
     #------------------------------>
     cImgName   = {
-        mConfig.core.kwMain: '{}-Protein-Fragments.tiff',
-        mConfig.core.kwSec : '{}-Gel-Representation.tiff',
+        mConfig.core.kwMain: '{}-Protein-Fragments.{}',
+        mConfig.core.kwSec : '{}-Gel-Representation.{}',
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -142,15 +132,15 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         #------------------------------>
         self.rDateC         = self.rDate[0]
         self.rDataC         = getattr(self.rData, self.rDateC)
-        self.rBands         = []
-        self.rLanes         = []
+        self.rCorrP         = False
+        self.rPStr          = 'Ptost'
+        self.rIdxP          = pd.IndexSlice[:,:,'Ptost']
         self.rSelBands      = True
         self.rBlSelRect     = None
         self.rSpotSelLine   = None
         self.rBlSelC        = [None, None]
         self.rGelSpotPicked = False
         self.rUpdateColors  = False
-        self.rAlpha         = None
         self.rRecSeq        = {}
         self.rTextStyleDef  = wx.TextAttr(
             'Black', 'White', mConfig.core.fSeqAlign)
@@ -255,7 +245,9 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
 
         #region --------------------------------------------------->
         self.rBlSelRect = mpatches.Rectangle(
-            (0.55, 0.55), len(self.rLanes)-0.1, len(self.rBands)-0.1,
+            (0.55, 0.55),
+            len(self.rDataC.labelA)-0.1,
+            len(self.rDataC.labelB)-0.1,
             linewidth = 1.5,
             edgecolor = 'red',
             fill      = False,
@@ -275,16 +267,16 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         self.rRectsFrag = []
         #------------------------------>
         if self.rSelBands:
-            for bk, b in enumerate(self.rBands):
-                for lk, l in enumerate(self.rLanes):
-                    tKeys.append(f'{b}-{l}-Ptost')
+            for bk, b in enumerate(self.rDataC.labelB):
+                for lk, l in enumerate(self.rDataC.labelA):
+                    tKeys.append(f'{b}-{l}-{self.rPStr}')
                     tYLabel.append(f'{b}-{l}')
                     tColor.append(bk)
                     tLabel.append(f'{bk}.{lk}')
         else:
-            for lk, l in enumerate(self.rLanes):
-                for bk, b in enumerate(self.rBands):
-                    tKeys.append(f'{b}-{l}-Ptost')
+            for lk, l in enumerate(self.rDataC.labelA):
+                for bk, b in enumerate(self.rDataC.labelB):
+                    tKeys.append(f'{b}-{l}-{self.rPStr}')
                     tYLabel.append(f'{l}-{b}')
                     tColor.append(lk)
                     tLabel.append(f'{bk}.{lk}')
@@ -356,13 +348,20 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         return True
     #---
 
-    def UpdateResultWindow(self, tDate:str='') -> bool:
+    def UpdateResultWindow(
+        self,
+        tDate:str            ='',
+        corrP:Optional[bool] = None,
+        ) -> bool:
         """Update the GUI and attributes when a new date is selected.
 
             Parameters
             ----------
             date: str
                 Selected date.
+            corrP: bool or None
+                Sow corrected P values (True) or regular P values (False, None).
+                Default is None.
 
             Returns
             -------
@@ -370,16 +369,9 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         """
         #region ---------------------------------------------------> Variables
         self.rDateC = tDate if tDate else self.rDateC
-        self.rDataC = getattr(self.rData, self.rDateC)
+        self.rDataC:limpMethod.LimpAnalysis = getattr(self.rData, self.rDateC)
         #------------------------------>
         self.rDf          = self.rDataC.df.copy()
-        self.rBands       = self.rDataC.labelB
-        self.rLanes       = self.rDataC.labelA
-        self.rAlpha       = self.rDataC.alpha
-        self.rProtLoc     = self.rDataC.protLoc
-        self.rProtLength  = self.rDataC.protLength[0]
-        self.rProtDelta   = self.rDataC.protDelta
-        self.rProtTarget  = self.rDataC.targetProt
         self.rRectsGel    = []
         self.rRectsFrag   = []
         self.rBlSelC      = [None, None]
@@ -387,6 +379,10 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         self.rFragSelC    = [None, None, None]
         self.rPeptide     = None
         self.rLCIdx       = None
+        self.rCorrP       = corrP if corrP is not None else self.rCorrP
+        self.rPStr        = 'Pc' if self.rCorrP else 'Ptost'
+        self.rIdxP = pd.IndexSlice[:,:,'Pc'] if self.rCorrP else pd.IndexSlice[:,:,'Ptost']
+
         self.rRecSeqColor = {'Red':[],'Blue':{'Pept':[],'Spot':[],'Frag':[]}}
         self.rRecSeqC     = (
             self.rRecSeq.get(self.rDateC)
@@ -397,12 +393,41 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> Fragments
+        try:
+            df = self.GetDF4FragmentSearch()
+        except KeyError as e:
+            #------------------------------> Notification
+            if 'Pc' in str(e):
+                cWindow.Notification(
+                    'warning',
+                    msg        = mConfig.core.mNoPCorr,
+                    tException = e,
+                    parent     = self,
+                )
+            else:
+                cWindow.Notification(
+                    'errorU',
+                    msg        = mConfig.core.mUnexpectedError,
+                    tException = e,
+                    parent     = self,
+                )
+            #------------------------------> Reset attributes
+            self.rCorrP = False
+            self.rPStr  = 'Ptost'
+            self.rIdxP  = pd.IndexSlice[:,:,'Ptost']
+            #------------------------------> Reset Menu
+            menu = self.mBar.GetMenu(self.mBar.FindMenu(mConfig.core.lmTools))
+            item = menu.FindChildItem(menu.FindItem(mConfig.core.lmPCorrected))[0]
+            item.Check(check=False)
+            #------------------------------> df
+            df = self.GetDF4FragmentSearch()
+        #------------------------------>
         self.rFragments = cMethod.Fragments(
-            self.GetDF4FragmentSearch(),
-            self.rAlpha,
+            df,
+            self.rDataC.alpha,
             'le',
-            self.rProtLength,
-            self.rProtLoc
+            self.rDataC.protLength[0],
+            self.rDataC.protLoc
         )
         #------------------------------>
         self.SetEmptyFragmentAxis()
@@ -453,8 +478,8 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         #endregion -----------------------------------------------------> Axis
 
         #region ---------------------------------------------------> Draw Rect
-        for nb,_ in enumerate(self.rBands, start=1):
-            for nl,_ in enumerate(self.rLanes, start=1):
+        for nb,_ in enumerate(self.rDataC.labelB, start=1):
+            for nl,_ in enumerate(self.rDataC.labelA, start=1):
                 self.rRectsGel.append(mpatches.Rectangle(
                     ((nl-0.4),(nb-0.4)),
                     0.8,
@@ -486,16 +511,16 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
             bool
         """
         #region ----------------------------------------------------> Variables
-        nLanes = len(self.rLanes)
-        nBands = len(self.rBands)
+        nLanes = len(self.rDataC.labelA)
+        nBands = len(self.rDataC.labelB)
         #endregion -------------------------------------------------> Variables
 
         #region --------------------------------------------------->
         self.wPlot['Sec'].rAxes.clear()
         self.wPlot['Sec'].rAxes.set_xticks(range(1, nLanes+1))
-        self.wPlot['Sec'].rAxes.set_xticklabels(self.rLanes)
+        self.wPlot['Sec'].rAxes.set_xticklabels(self.rDataC.labelA)
         self.wPlot['Sec'].rAxes.set_yticks(range(1, nBands+1))
-        self.wPlot['Sec'].rAxes.set_yticklabels(self.rBands)
+        self.wPlot['Sec'].rAxes.set_yticklabels(self.rDataC.labelB)
         self.wPlot['Sec'].rAxes.tick_params(length=0)
         #------------------------------>
         self.wPlot['Sec'].rAxes.set_xlim(0.5, nLanes+0.5)
@@ -535,10 +560,10 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
                 Gel spot color
         """
         #region ---------------------------------------------------> Variables
-        b = self.rBands[nb]
-        l = self.rLanes[nl]
-        c = (self.rDf.loc[:,(b,l,'Ptost')].isna().all() or
-            not getattr(self.rFragments, f'{b}-{l}-Ptost').coord
+        b = self.rDataC.labelB[nb]
+        l = self.rDataC.labelA[nl]
+        c = (self.rDf.loc[:,(b,l,self.rPStr)].isna().all() or                   # type: ignore
+            not getattr(self.rFragments, f'{b}-{l}-{self.rPStr}').coord
         )
         nc = len(self.cSpot)                                                    # type: ignore
         #endregion ------------------------------------------------> Variables
@@ -581,12 +606,12 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         #region ---------------------------------------------------> Variables
         if self.rSelBands:
             xy = (0.55, y-0.45)
-            w = len(self.rLanes) - 0.1
+            w = len(self.rDataC.labelA) - 0.1
             h = 0.9
         else:
             xy = (x-0.45, 0.55)
             w = 0.9
-            h = len(self.rBands) - 0.1
+            h = len(self.rDataC.labelB) - 0.1
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------> Remove Old Rect
@@ -623,18 +648,18 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
             bool
         """
         #region ---------------------------------------------------> Variables
-        b = self.rBands[y-1]
-        l = self.rLanes[x-1]
+        b = self.rDataC.labelB[y-1]
+        l = self.rDataC.labelA[x-1]
         tKeyLabel = {}
         #endregion ------------------------------------------------> Variables
 
         #region --------------------------------------------------------> Keys
         if self.rSelBands:
-            for k,tL in enumerate(self.rLanes):
-                tKeyLabel[f'{b}-{tL}-Ptost'] = f'{y-1}.{k}'
+            for k,tL in enumerate(self.rDataC.labelA):
+                tKeyLabel[f'{b}-{tL}-{self.rPStr}'] = f'{y-1}.{k}'
         else:
-            for k,tB in enumerate(self.rBands):
-                tKeyLabel[f'{tB}-{l}-Ptost'] = f'{k}.{x-1}'
+            for k,tB in enumerate(self.rDataC.labelB):
+                tKeyLabel[f'{tB}-{l}-{self.rPStr}'] = f'{k}.{x-1}'
         #endregion -----------------------------------------------------> Keys
 
         #region -------------------------------------------------------> Super
@@ -662,10 +687,10 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
 
         #region --------------------------------------------------->
         #------------------------------>
-        if self.rProtLoc[0] > -1:
-            xtick = [1] + list(self.rProtLoc) + [self.rProtLength]
+        if self.rDataC.protLoc[0] > -1:
+            xtick = [1] + list(self.rDataC.protLoc) + [self.rDataC.protLength[0]]
         else:
-            xtick = [1] + [self.rProtLength]
+            xtick = [1] + [self.rDataC.protLength[0]]
         self.wPlot['Main'].rAxes.set_xticks(xtick)
         self.wPlot['Main'].rAxes.set_xticklabels(xtick)
         #------------------------------>
@@ -678,22 +703,22 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         else:
             if self.rSelBands:
                 #------------------------------>
-                self.wPlot['Main'].rAxes.set_yticks(range(1, len(self.rLanes)+2))
-                self.wPlot['Main'].rAxes.set_yticklabels(self.rLanes+['Protein'])
-                self.wPlot['Main'].rAxes.set_ylim(0.5, len(self.rLanes)+1.5)
+                self.wPlot['Main'].rAxes.set_yticks(range(1, len(self.rDataC.labelA)+2))
+                self.wPlot['Main'].rAxes.set_yticklabels(self.rDataC.labelA+['Protein'])
+                self.wPlot['Main'].rAxes.set_ylim(0.5, len(self.rDataC.labelA)+1.5)
                 #------------------------------>
-                ymax = len(self.rLanes)+0.8
+                ymax = len(self.rDataC.labelA)+0.8
             else:
                 #------------------------------>
-                self.wPlot['Main'].rAxes.set_yticks(range(1, len(self.rBands)+2))
-                self.wPlot['Main'].rAxes.set_yticklabels(self.rBands+['Protein'])
-                self.wPlot['Main'].rAxes.set_ylim(0.5, len(self.rBands)+1.5)
+                self.wPlot['Main'].rAxes.set_yticks(range(1, len(self.rDataC.labelB)+2))
+                self.wPlot['Main'].rAxes.set_yticklabels(self.rDataC.labelB+['Protein'])
+                self.wPlot['Main'].rAxes.set_ylim(0.5, len(self.rDataC.labelB)+1.5)
                 #------------------------------>
-                ymax = len(self.rBands)+0.8
+                ymax = len(self.rDataC.labelB)+0.8
         #------------------------------>
         self.wPlot['Main'].rAxes.tick_params(length=0)
         #------------------------------>
-        self.wPlot['Main'].rAxes.set_xlim(0, self.rProtLength+1)
+        self.wPlot['Main'].rAxes.set_xlim(0, self.rDataC.protLength[0]+1)
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
@@ -803,11 +828,11 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
                 c = cc
         ncO.append((n,c))
         #------------------------------>
-        if self.rProtDelta is not None:
+        if self.rDataC.protDelta is not None:
             ncONat = []
             for a,b in ncO:
-                aX = a+self.rProtDelta
-                bX = b+self.rProtDelta
+                aX = a+self.rDataC.protDelta
+                bX = b+self.rDataC.protDelta
                 ncONat.append((aX,bX))
         else:
             ncONat = 'NA'
@@ -825,7 +850,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
             Parameters
             ----------
             band: int
-                Index of the selected band in self.rBands.
+                Index of the selected band in self.rDataC.labelB.
 
             Returns
             -------
@@ -833,7 +858,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         """
         #region --------------------------------------------------> Get Values
         #------------------------------> Keys
-        tKeys = [f'{self.rBands[band]}-{x}-Ptost' for x in self.rLanes]
+        tKeys = [f'{self.rDataC.labelB[band]}-{x}-{self.rPStr}' for x in self.rDataC.labelA]
         #------------------------------> Info
         infoDict = self.PrintLBGetInfo(tKeys)                                   # type: ignore
         #endregion -----------------------------------------------> Get Values
@@ -844,9 +869,9 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
 
         #region ----------------------------------------------------> New Text
         if infoDict:
-            self.wText.AppendText(f'Details for {self.rBands[band]}\n\n')
+            self.wText.AppendText(f'Details for {self.rDataC.labelB[band]}\n\n')
             self.wText.AppendText('--> Analyzed Lanes\n\n')
-            self.wText.AppendText(f'Total Lanes  : {len(self.rLanes)}\n')
+            self.wText.AppendText(f'Total Lanes  : {len(self.rDataC.labelA)}\n')
             self.wText.AppendText(f'Lanes with FP: {infoDict["LanesWithFP"]}\n')
             self.wText.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
             self.wText.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
@@ -857,7 +882,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
             self.wText.AppendText(f'{infoDict["NCONat"]}'[1:-1])
         else:
             self.wText.AppendText(f'There were no peptides from '
-                f'{self.rProtTarget} detected here.')
+                f'{self.rDataC.targetProt} detected here.')
 
         self.wText.SetInsertionPoint(0)
         #endregion -------------------------------------------------> New Text
@@ -871,7 +896,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
             Parameters
             ----------
             lane: int
-                Index of the selected lane in self.rLanes.
+                Index of the selected lane in self.rDataC.labelA.
 
             Returns
             -------
@@ -879,7 +904,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         """
         #region --------------------------------------------------> Get Values
         #------------------------------> Keys
-        tKeys = [f'{x}-{self.rLanes[lane]}-Ptost' for x in self.rBands]
+        tKeys = [f'{x}-{self.rDataC.labelA[lane]}-{self.rPStr}' for x in self.rDataC.labelB]
         #------------------------------> Info
         infoDict = self.PrintLBGetInfo(tKeys)                                   # type: ignore
         #endregion -----------------------------------------------> Get Values
@@ -890,9 +915,9 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
 
         #region ----------------------------------------------------> New Text
         if infoDict:
-            self.wText.AppendText(f'Details for {self.rLanes[lane]}\n\n')
+            self.wText.AppendText(f'Details for {self.rDataC.labelA[lane]}\n\n')
             self.wText.AppendText('--> Analyzed Bands\n\n')
-            self.wText.AppendText(f'Total Bands  : {len(self.rBands)}\n')
+            self.wText.AppendText(f'Total Bands  : {len(self.rDataC.labelB)}\n')
             self.wText.AppendText(f'Bands with FP: {infoDict["LanesWithFP"]}\n')
             self.wText.AppendText(f'Fragments    : {infoDict["Fragments"]}\n')
             self.wText.AppendText(f'Number of FP : {infoDict["FP"]}\n\n')
@@ -903,7 +928,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
             self.wText.AppendText(f'{infoDict["NCONat"]}'[1:-1])
         else:
             self.wText.AppendText(f'There were no peptides from '
-                f'{self.rProtTarget} detected here.')
+                f'{self.rDataC.targetProt} detected here.')
 
         self.wText.SetInsertionPoint(0)
         #endregion -------------------------------------------------> New Text
@@ -926,25 +951,25 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
             bool
         """
         #region --------------------------------------------------->
-        tKey = f'{self.rBands[y]}-{self.rLanes[x]}-Ptost'
+        tKey = f'{self.rDataC.labelB[y]}-{self.rDataC.labelA[x]}-{self.rPStr}'
         frag = getattr(self.rFragments, tKey)
         #------------------------------>
         fragments = len(frag.coord)
         if fragments == 0:
             self.wText.Clear()
             self.wText.AppendText(
-                f'Details for {self.rLanes[x]} - {self.rBands[y]}\n\n')
+                f'Details for {self.rDataC.labelA[x]} - {self.rDataC.labelB[y]}\n\n')
             self.wText.AppendText(
-                f'There were no peptides from {self.rProtTarget} detected here.')
+                f'There were no peptides from {self.rDataC.targetProt} detected here.')
             return True
         #------------------------------>
         fp = (f'{sum(frag.np)} (' + f'{frag.np}'[1:-1] + ')')
         #------------------------------>
-        if self.rProtDelta is not None:
+        if self.rDataC.protDelta is not None:
             ncONat = []
             for a,b in frag.coord:
-                aX = a+self.rProtDelta
-                bX = b+self.rProtDelta
+                aX = a+self.rDataC.protDelta
+                bX = b+self.rDataC.protDelta
                 ncONat.append((aX,bX))
         else:
             ncONat = 'NA'
@@ -956,7 +981,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
 
         #region --------------------------------------------------->
         self.wText.AppendText(
-            f'Details for {self.rLanes[x]} - {self.rBands[y]}\n\n')
+            f'Details for {self.rDataC.labelA[x]} - {self.rDataC.labelB[y]}\n\n')
         self.wText.AppendText(f'--> Fragments: {fragments}\n\n')
         self.wText.AppendText(f'--> Number of FP: {fp}\n\n')
         self.wText.AppendText('--> Detected Protein Regions:\n\n')
@@ -990,14 +1015,14 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         frag = getattr(self.rFragments, tKey)
         n, c = frag.coord[fragC[2]]
         #------------------------------>
-        if self.rProtLoc[0] > -1:
-            if self.rProtLoc[0] <= n <= self.rProtLoc[1]:
-                nnat = n + self.rProtDelta
+        if self.rDataC.protLoc[0] > -1:
+            if self.rDataC.protLoc[0] <= n <= self.rDataC.protLoc[1]:
+                nnat = n + self.rDataC.protDelta
             else:
                 nnat = 'NA'
         #------------------------------>
-            if self.rProtLoc[0] <= c <= self.rProtLoc[1]:
-                cnat = c + self.rProtDelta
+            if self.rDataC.protLoc[0] <= c <= self.rDataC.protLoc[1]:
+                cnat = c + self.rDataC.protDelta
             else:
                 cnat = 'NA'
         else:
@@ -1015,7 +1040,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
 
         #region --------------------------------------------------->
         self.wText.AppendText(
-            f'Details for {self.rLanes[fragC[1]]} - {self.rBands[fragC[0]]} - Fragment {fragC[2]+1}\n\n')
+            f'Details for {self.rDataC.labelA[fragC[1]]} - {self.rDataC.labelB[fragC[0]]} - Fragment {fragC[2]+1}\n\n')
         self.wText.AppendText(f'Residue Numbers: {resNum}\n')
         self.wText.AppendText(f'Sequences: {tNP}\n')
         self.wText.AppendText(f'Cleavage Sites: {clSite}\n\n')
@@ -1035,11 +1060,11 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
             bool
         """
         #region ---------------------------------------------------> Variables
-        aSpot = len(self.rBands)*len(self.rLanes)
+        aSpot = len(self.rDataC.labelB)*len(self.rDataC.labelA)
         eSpot = self.rFragments.NumEmptyFrag()
         nPept = self.wLC.wLCS.wLC.GetItemCount()
         coord = self.SeqHighAll()
-        coordN = cMethod.Rec2NatCoord(coord, self.rProtLoc, self.rProtDelta)
+        coordN = cMethod.Rec2NatCoord(coord, self.rDataC.protLoc, self.rDataC.protDelta)
         if coordN[0] == 'NA':
             coordN = coordN[0]
         else:
@@ -1086,7 +1111,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
             #------------------------------>
             if coord:
                 seq = self.GetPDFPrintSeq(coord)
-                coordN = cMethod.Rec2NatCoord(coord, self.rProtLoc, self.rProtDelta)
+                coordN = cMethod.Rec2NatCoord(coord, self.rDataC.protLoc, self.rDataC.protDelta)
                 coord = Paragraph(
                     f"Recombinant protein: {', '.join(map(str,coord))}", style)
                 coordN = Paragraph(
@@ -1112,20 +1137,20 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         #endregion ------------------------------------------------> All
 
         #region ---------------------------------------------------> B/L
-        for k,l in enumerate(self.rLanes):
+        for k,l in enumerate(self.rDataC.labelA):
             coord = self.SeqHighBL(bl=k)
             Story.append(_helper(coord, l, styles['Seq']))
             Story.append(Spacer(1, 18))
         #------------------------------>
-        for k,b in enumerate(self.rBands):
+        for k,b in enumerate(self.rDataC.labelB):
             coord = self.SeqHighBL(bb=k)
             Story.append(_helper(coord, b, styles['Seq']))
             Story.append(Spacer(1, 18))
         #endregion ------------------------------------------------> B/L
 
         #region ----------------------------------------------------> Gel Spot
-        for j,l in enumerate(self.rLanes):
-            for k,b in enumerate(self.rBands):
+        for j,l in enumerate(self.rDataC.labelA):
+            for k,b in enumerate(self.rDataC.labelB):
                 coord = self.SeqHighSpot(spot=[k,j])
                 Story.append(_helper(coord,f'{l} - {b}', styles['Seq']))
                 Story.append(Spacer(1, 18))
@@ -1152,9 +1177,9 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
 
         #region ---------------------------------------------------> Gel
         j = 0
-        for b in self.rBands:
-            for l in self.rLanes:
-                frag = getattr(self.rFragments, f'{b}-{l}-Ptost')
+        for b in self.rDataC.labelB:
+            for l in self.rDataC.labelA:
+                frag = getattr(self.rFragments, f'{b}-{l}-{self.rPStr}')
                 for p in frag.seqL:
                     if self.rPeptide in p:
                         self.rRectsGel[j].set_linewidth(2.0)
@@ -1167,15 +1192,15 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         #------------------------------>
         if self.rBlSelC != [None, None]:
             if self.rSelBands:
-                for l in self.rLanes:
-                    fKeys.append(f'{self.rBands[self.rBlSelC[0]]}-{l}-Ptost')   # type: ignore
+                for l in self.rDataC.labelA:
+                    fKeys.append(f'{self.rDataC.labelB[self.rBlSelC[0]]}-{l}-{self.rPStr}')   # type: ignore
             else:
-                for b in self.rBands:
-                    fKeys.append(f'{b}-{self.rLanes[self.rBlSelC[1]]}-Ptost')   # type: ignore
+                for b in self.rDataC.labelB:
+                    fKeys.append(f'{b}-{self.rDataC.labelA[self.rBlSelC[1]]}-{self.rPStr}')   # type: ignore
         else:
-            for b in self.rBands:
-                for l in self.rLanes:
-                    fKeys.append(f'{b}-{l}-Ptost')
+            for b in self.rDataC.labelB:
+                for l in self.rDataC.labelA:
+                    fKeys.append(f'{b}-{l}-{self.rPStr}')
         #------------------------------>
         if self.rRectsFrag:
             j = 0
@@ -1210,8 +1235,8 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         #------------------------------>
         j = 0
         #------------------------------>
-        for nb,_ in enumerate(self.rBands):
-            for nl,_ in enumerate(self.rLanes):
+        for nb,_ in enumerate(self.rDataC.labelB):
+            for nl,_ in enumerate(self.rDataC.labelA):
                 self.rRectsGel[j].set_facecolor(
                     self.SetGelSpotColor(nb,nl, showAll=showAll)
                 )
@@ -1260,7 +1285,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
             b,l = self.rGelSelC
         else:
             b,l = spot
-        tKey = f'{self.rBands[b]}-{self.rLanes[l]}-Ptost'                       # type: ignore
+        tKey = f'{self.rDataC.labelB[b]}-{self.rDataC.labelA[l]}-{self.rPStr}'                # type: ignore
         #endregion ------------------------------------------------> Variables
 
         return cMethod.MergeOverlappingFragments(
@@ -1284,7 +1309,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
             b,l,j = self.rFragSelC
         else:
             b,l,j = frag
-        tKey = f'{self.rBands[b]}-{self.rLanes[l]}-Ptost'                       # type: ignore
+        tKey = f'{self.rDataC.labelB[b]}-{self.rDataC.labelA[l]}-{self.rPStr}'                       # type: ignore
         #endregion ------------------------------------------------> Variables
 
         return cMethod.MergeOverlappingFragments(
@@ -1309,11 +1334,11 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
             b, l = bb, bl
         #------------------------------>
         if b is not None:
-            bN = self.rBands[b]
-            tKey = [f'{bN}-{l}-Ptost' for l in self.rLanes]
+            bN = self.rDataC.labelB[b]
+            tKey = [f'{bN}-{l}-{self.rPStr}' for l in self.rDataC.labelA]
         else:
-            lN = self.rLanes[l]                                                 # type: ignore
-            tKey = [f'{b}-{lN}-Ptost' for b in self.rBands]
+            lN = self.rDataC.labelA[l]                                                 # type: ignore
+            tKey = [f'{b}-{lN}-{self.rPStr}' for b in self.rDataC.labelB]
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> Seqs
@@ -1683,7 +1708,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         x = round(x)
         y = round(y)
         #------------------------------>
-        tKey = f'{self.rBands[fragC[0]]}-{self.rLanes[fragC[1]]}-Ptost'
+        tKey = f'{self.rDataC.labelB[fragC[0]]}-{self.rDataC.labelA[fragC[1]]}-{self.rPStr}'
         #------------------------------>
         frag = getattr(self.rFragments, tKey)
         x1, x2 = frag.coord[fragC[2]]

@@ -17,7 +17,7 @@
 #region -------------------------------------------------------------> Imports
 from math    import ceil
 from pathlib import Path
-from typing  import Optional, Union, Literal
+from typing  import Optional, Union, Literal, TYPE_CHECKING
 
 import matplotlib.patches as mpatches
 import pandas             as pd
@@ -33,6 +33,10 @@ from core   import pane   as cPane
 from core   import tab    as cTab
 from core   import widget as cWidget
 from result import file   as resFile
+
+if TYPE_CHECKING:
+    from limprot import method as limpMethod
+    from tarprot import method as tarpMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -695,7 +699,7 @@ class BaseWindowResultListText(BaseWindowResult):
         #region --------------------------------------------------->
         idx = self.wLC.wLCS.wLC.GetFirstSelected()
         #------------------------------>
-        if idx < 0 and self.rLCIdx is not None:
+        if idx < 0 and self.rLCIdx > -1:
             self.wLC.wLCS.wLC.Select(self.rLCIdx, on=1)
         #endregion ------------------------------------------------>
 
@@ -1064,7 +1068,7 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
             #------------------------------> Export
             try:
                 for k, v in self.wPlot.items():
-                    fPath = p / self.cImgName[k].format(self.rDateC)
+                    fPath = p / self.cImgName[k].format(self.rDateC, mConfig.core.imgFormat)
                     #------------------------------> Do not overwrite
                     if fPath.exists():
                         fPath = fPath.with_stem(f"{fPath.stem} - {date}")
@@ -1112,28 +1116,22 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
             Data to build the Tool menu of the window. See structure in child
             class.
     """
-    #region -----------------------------------------------------> Class Setup
-    cCNatProt = mConfig.core.cNatProt
-    cCRecProt = mConfig.core.cRecProt
-    #endregion --------------------------------------------------> Class Setup
-
     #region --------------------------------------------------> Instance setup
     def __init__(self, parent:Optional[wx.Window]=None) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.cSpot = getattr(self, 'cSpot', mConfig.core.cFragments)
+        self.cSpot     = getattr(self, 'cSpot', mConfig.core.cFragment)
+        self.cCNatProt = getattr(self, 'cCNatProt',mConfig.core.cNatProt)
+        self.cCRecProt = getattr(self, 'cCRecProt',mConfig.core.cRecProt)
         #------------------------------>
-        self.rIdxP = getattr(self, 'rIdxP', pd.IndexSlice[:,:,'Ptost'])
         self.rIdxSeqNC = getattr(
             self, 'rIdxSeqNC', pd.IndexSlice[mConfig.core.dfcolSeqNC,:,:])
-        self.rAlpha       = getattr(self, 'rAlpha', 0.05)
         self.rFragSelLine = None
         self.rFragments   = {}
-        self.rProtLoc     = []
-        self.rProtLength  = None
         self.rPeptide     = None
         self.rFragSelC    = [None, None, None]
         self.rRectsFrag   = []
+        self.rDataC:Union['limpMethod.LimpAnalysis', 'tarpMethod.TarpAnalysis']
         #------------------------------>
         super().__init__(parent)
         #------------------------------>
@@ -1221,7 +1219,7 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
 
         #region ----------------------------------------------------> Get Data
         col = [self.rDf.columns.get_loc(c) for c in self.rDf.loc[:,self.rIdxP].columns.values]      # type: ignore
-        data = cMethod.DFFilterByColN(self.rDf, col, self.rAlpha, 'le')
+        data = cMethod.DFFilterByColN(self.rDf, col, self.rDataC.alpha, 'le')
         data = data.iloc[:,0:2].reset_index(drop=True)
         data.insert(0, 'kbr', data.index.values.tolist())
         data = data.astype(str)
@@ -1365,22 +1363,22 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         #endregion ------------------------------------------------> Variables
 
         #region --------------------------------------------------->
-        if self.rProtLoc[0] > -1:
+        if self.rDataC.protLoc[0] > -1:
             #------------------------------>
-            natProt.append(self.rProtLoc)
-            a, b = self.rProtLoc
+            natProt.append(self.rDataC.protLoc)
+            a, b = self.rDataC.protLoc
             #------------------------------>
-            if a == 1 and b == self.rProtLength:
+            if a == 1 and b == self.rDataC.protLength[0]:
                 pass
-            elif a == 1 and b < self.rProtLength:
-                recProt.append((b, self.rProtLength))
-            elif a > 1 and b == self.rProtLength:
+            elif a == 1 and b < self.rDataC.protLength[0]:
+                recProt.append((b, self.rDataC.protLength[0]))
+            elif a > 1 and b == self.rDataC.protLength[0]:
                 recProt.append((1, a))
             else:
                 recProt.append((1, a))
-                recProt.append((b, self.rProtLength))
+                recProt.append((b, self.rDataC.protLength[0]))
         else:
-            recProt.append((1, self.rProtLength))
+            recProt.append((1, self.rDataC.protLength[0]))
         #endregion ------------------------------------------------>
 
         #region ---------------------------------------------------> Draw Rect
@@ -2642,6 +2640,11 @@ class FA2Btn(BaseDialogOkCancel):
         self.SetSizer(self.sSizer)
         self.Fit()
         #endregion ---------------------------------------------------> Sizers
+
+        #region --------------------------------------------------------> Show
+        if parent is not None:
+            self.CenterOnParent()
+        #endregion -----------------------------------------------------> Show
     #---
     #endregion -----------------------------------------------> Instance setup
 

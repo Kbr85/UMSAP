@@ -96,9 +96,8 @@ class Configuration():
                 if getattr(sec, j, None) is None:
                     badOpt.append(j)
                     continue
-                #------------------------------> Apply the converter and assign
-                conv = sec.converter.get(j, str)
-                setattr(sec, j, conv(v))
+                #------------------------------> Assign
+                setattr(sec, j, v)
         #------------------------------>
         self.core.confUserWrongOptions = badOpt
         #endregion ----------------------------------------------> Load Config
