@@ -179,10 +179,10 @@ class Test_FastaFile(unittest.TestCase):
         """Test for Sequence delta."""
         #------------------------------>
         tInput = [
-            (self.f2Prot, [15,82]),
-            (self.fSecS,  [ 1,88]),
-            (self.fSecE,  [14,98]),
-            (self.fSecEq, [ 1,98]),
+            (self.f2Prot, (15,82)),
+            (self.fSecS,  ( 1,88)),
+            (self.fSecE,  (14,98)),
+            (self.fSecEq, ( 1,98)),
         ]
         #------------------------------>
         for a,b in tInput:
