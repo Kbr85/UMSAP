@@ -52,6 +52,7 @@ class Test_LimProt(unittest.TestCase):
             targetProt    = 'Mis18alpha',
             scoreVal      = 25.0,
             indSample     = True,
+            correctedP    = 'Bonferroni',
             alpha         = 0.05,
             beta          = 0.05,
             gamma         = 0.8,

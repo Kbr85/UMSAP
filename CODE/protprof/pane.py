@@ -104,8 +104,6 @@ class ProtProf(cPane.BaseConfPanelMod):
     #region -----------------------------------------------------> Class setup
     cName = mConfig.prot.nPane
     #------------------------------> Label
-    cLCorrectP     = mConfig.core.lCbCorrectP
-    cLSample       = mConfig.core.lCbSample
     cLGene         = mConfig.core.lStGeneName
     cLExcludeProt  = mConfig.core.lStExcludeProt
     cLDetectedProt = 'Detected Proteins'
@@ -114,12 +112,7 @@ class ProtProf(cPane.BaseConfPanelMod):
     cLCtrlType     = mConfig.core.lStCtrlType
     cLCtrlName     = mConfig.core.lStCtrlName
     cLPdRunText    = 'Performing Proteome Profiling'
-    #------------------------------> Choices
-    cOCorrectP  = mConfig.core.oCorrectP
-    cOSample    = mConfig.core.oSamples
     #------------------------------> Tooltip
-    cTTCorrectP    = mConfig.core.ttStCorrectP
-    cTTSample      = mConfig.core.ttStSample
     cTTGene        = mConfig.core.ttStGenName
     cTTExcludeProt = f'{mConfig.core.ttStExcludeProt}{mConfig.core.mOptField}'
     #------------------------------> Control Type
@@ -151,21 +144,6 @@ class ProtProf(cPane.BaseConfPanelMod):
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
-        #------------------------------> Values
-        self.wCorrectP = cWidget.StaticTextComboBox(
-            self.wSbValue,
-            label     = self.cLCorrectP,
-            choices   = list(self.cOCorrectP.keys()),
-            tooltip   = self.cTTCorrectP,
-            validator = cValidator.IsNotEmpty(),
-        )
-        self.wSample = cWidget.StaticTextComboBox(
-            self.wSbValue,
-            label     = self.cLSample,
-            choices   = list(self.cOSample.keys()),
-            tooltip   = self.cTTSample,
-            validator = cValidator.IsNotEmpty(),
-        )
         #------------------------------> Columns
         self.wGeneName = cWidget.StaticTextCtrl(
             self.wSbColumn,
@@ -320,15 +298,15 @@ class ProtProf(cPane.BaseConfPanelMod):
 
         #region ----------------------------------------------> checkUserInput
         rCheckUserInput = {
-            self.cLScoreVal    : [self.wScoreVal.wTc,     mConfig.core.mOneRealNum    , False],
-            self.cLSample      : [self.wSample.wCb,       mConfig.core.mOptionBad     , False],
-            self.cLAlpha       : [self.wAlpha.wTc,        mConfig.core.mOne01Num      , False],
-            self.cLCorrectP    : [self.wCorrectP.wCb,     mConfig.core.mOptionBad     , False],
-            self.cLDetectedProt: [self.wDetectedProt.wTc, mConfig.core.mOneZPlusNumCol, True ],
-            self.cLGene        : [self.wGeneName.wTc,     mConfig.core.mOneZPlusNumCol, True ],
-            self.cLScoreCol    : [self.wScore.wTc,        mConfig.core.mOneZPlusNumCol, True ],
-            self.cLExcludeProt : [self.wExcludeProt.wTc,  mConfig.core.mNZPlusNumCol  , True ],
-            self.cLResControl  : [self.wTcResults,        mConfig.core.mResCtrl       , False]
+            self.cLScoreVal     : [self.wScoreVal.wTc,     mConfig.core.mOneRealNum,     False],
+            self.cLSample       : [self.wSample.wCb,       mConfig.core.mOptionBad,      False],
+            self.cLAlpha        : [self.wAlpha.wTc,        mConfig.core.mOne01Num,       False],
+            self.cLCorrectP     : [self.wCorrectP.wCb,     mConfig.core.mOptionBad,      False],
+            self.cLDetectedProt : [self.wDetectedProt.wTc, mConfig.core.mOneZPlusNumCol, True ],
+            self.cLGene         : [self.wGeneName.wTc,     mConfig.core.mOneZPlusNumCol, True ],
+            self.cLScoreCol     : [self.wScore.wTc,        mConfig.core.mOneZPlusNumCol, True ],
+            self.cLExcludeProt  : [self.wExcludeProt.wTc,  mConfig.core.mNZPlusNumCol,   True ],
+            self.cLResControl   : [self.wTcResults,        mConfig.core.mResCtrl,        False]
         }
         self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #------------------------------>
@@ -381,6 +359,12 @@ class ProtProf(cPane.BaseConfPanelMod):
             #------------------------------>
             self.IFileEnter(dataI.iFile)
             self.OnImpMethod('fEvent')
+        else:
+            super().SetConfOptions()
+            #------------------------------>
+            self.wAlpha.wTc.SetValue(mConfig.prot.alpha)
+            self.wScoreVal.wTc.SetValue(mConfig.prot.scoreVal)
+            self.wCorrectP.wCb.SetValue(mConfig.prot.correctP)
         #endregion ----------------------------------------------> Fill Fields
 
         return True

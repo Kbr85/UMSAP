@@ -298,6 +298,10 @@ class CorrA(cPane.BaseConfPanel):
                 self.OnAdd('fEvent')
             #------------------------------>
             self.OnImpMethod('fEvent')
+        else:
+            super().SetConfOptions()
+            #------------------------------>
+            self.wCorrMethod.wCb.SetValue(mConfig.corr.corrMethod)
         #endregion -----------------------------------------------------> Add
 
         return True

@@ -449,7 +449,7 @@ class UMSAPFile():
             setattr(data, k, tarpMethod.TarpAnalysis(
                 df         = df,
                 labelA     = exp,
-                ctrlName   = ctrl,
+                ctrlName   = [ctrl],
                 alpha      = alpha,
                 protLength = protLength,
                 protLoc    = protLoc,
@@ -604,6 +604,10 @@ class UMSAPFile():
                 data['seqFile'] = self.rInputFileP / data['seqFileN']
             except KeyError:
                 pass
+        #------------------------------>
+        if data.get('method') is None and tSection == mConfig.tarp.nMod:
+            data['method']    = 'slope'
+            data['indSample'] = 'i'
         #endregion -----------------------------------------------------> Data
 
         #region ---------------------------------------------------> DataClass

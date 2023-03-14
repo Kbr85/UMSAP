@@ -87,41 +87,33 @@ class LimProt(cPane.BaseConfPanelMod2):
 
         The result data frame has the following structure:
 
-        Sequence Score Nterm Cterm NtermF CtermF Delta Band1 ... BandN
-        Sequence Score Nterm Cterm NtermF CtermF Delta Lane1 ... LaneN
-        Sequence Score Nterm Cterm NtermF CtermF Delta P     ... P
+        Sequence Score Nterm Cterm NtermF CtermF Delta Band1, Band1, ... BandN, BandN
+        Sequence Score Nterm Cterm NtermF CtermF Delta Lane1, Lane1, ... LaneN, LaneN
+        Sequence Score Nterm Cterm NtermF CtermF Delta Ptost,    Pc, ... Ptost,    Pc
     """
     #region -----------------------------------------------------> Class setup
     cName = mConfig.limp.nPane
     #------------------------------> Label
-    cLBeta         = "β level"
-    cLGamma        = "γ level"
-    cLTheta        = "Θ value"
-    cLThetaMax     = "Θmax value"
-    cLSample       = 'Samples'
+    cLBeta         = mConfig.core.lStBeta
+    cLGamma        = mConfig.core.lStGamma
+    cLTheta        = mConfig.core.lStTheta
+    cLThetaMax     = mConfig.core.lStThetaMax
     cLLane         = mConfig.limp.lStLane
     cLBand         = mConfig.limp.lStBand
     cLCtrlName     = mConfig.core.lStCtrlName
     cLDFFirstThree = mConfig.limp.dfcolFirstPart
     cLDFThirdLevel = mConfig.limp.dfcolCLevel
     cLPdRunText    = 'Performing Limited Proteolysis analysis'
-    #------------------------------> Choices
-    cOSample = mConfig.core.oSamples
     #------------------------------> Hints
-    cHBeta     = 'e.g. 0.05'
-    cHGamma    = 'e.g. 0.8'
-    cHTheta    = 'e.g. 4.5'
-    cHThetaMax = 'e.g. 8'
+    cHBeta     = mConfig.limp.hBeta
+    cHGamma    = mConfig.limp.hGamma
+    cHTheta    = mConfig.limp.hTheta
+    cHThetaMax = mConfig.limp.hThetaMax
     #------------------------------> Tooltips
-    cTTSample = mConfig.core.ttStSample
-    cTTBeta = ('Beta level for the analysis.\ne.g. 0.05')
-    cTTGamma = ('Confidence limit level for estimating the measuring '
-                'precision.\ne.g. 0.80')
-    cTTTheta = ('Confidence interval used in the analysis. The value depends '
-        'on the Data Preparation selected. An empty values means that the '
-        'confidence interval will be calculated for each peptide.\ne.g. 3')
-    cTTThetaMax = (f'Maximum value for the calculated Confidence interval. It '
-        f'is only used if {cLTheta} is left empty.\ne.g. 8')
+    cTTBeta     = mConfig.limp.ttBeta
+    cTTGamma    = mConfig.limp.ttGamma
+    cTTTheta    = mConfig.limp.ttTheta
+    cTTThetaMax = mConfig.limp.ttThetaMax
     #------------------------------> Needed by BaseConfPanel
     cURL            = f"{mConfig.core.urlTutorial}/limited-proteolysis"
     cSection        = mConfig.limp.nMod
@@ -178,13 +170,6 @@ class LimProt(cPane.BaseConfPanelMod2):
             validator = cValidator.NumberList(
                 numType='float', nN=1, vMin=0.01),
         )
-        self.wSample = cWidget.StaticTextComboBox(
-            self.wSbValue,
-            label     = self.cLSample,
-            choices   = list(self.cOSample.keys()),
-            tooltip   = self.cTTSample,
-            validator = cValidator.IsNotEmpty(),
-        )
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
@@ -233,62 +218,74 @@ class LimProt(cPane.BaseConfPanelMod2):
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wAlpha.wSt,
+            self.wCorrectP.wSt,
             pos    = (3,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wAlpha.wTc,
+            self.wCorrectP.wCb,
             pos    = (3,2),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wBeta.wSt,
+            self.wAlpha.wSt,
             pos    = (0,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wBeta.wTc,
+            self.wAlpha.wTc,
             pos    = (0,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wGamma.wSt,
+            self.wBeta.wSt,
             pos    = (1,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wGamma.wTc,
+            self.wBeta.wTc,
             pos    = (1,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wTheta.wSt,
+            self.wGamma.wSt,
             pos    = (2,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wTheta.wTc,
+            self.wGamma.wTc,
             pos    = (2,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wThetaMax.wSt,
+            self.wTheta.wSt,
             pos    = (3,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wThetaMax.wTc,
+            self.wTheta.wTc,
             pos    = (3,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wThetaMax.wSt,
+            pos    = (4,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wThetaMax.wTc,
+            pos    = (4,4),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
@@ -312,15 +309,18 @@ class LimProt(cPane.BaseConfPanelMod2):
         #region ----------------------------------------------> checkUserInput
         label = f'{self.cLSeqCol} column'
         rCheckUserInput = {
-            self.cLSample       : [ self.wSample.wCb,       mConfig.core.mOptionBad,      False],
-            self.cLAlpha        : [ self.wAlpha.wTc,        mConfig.core.mOne01Num,       False],
-            self.cLBeta         : [ self.wBeta.wTc,         mConfig.core.mOne01Num,       False],
-            self.cLGamma        : [ self.wGamma.wTc,        mConfig.core.mOne01Num,       False],
-            self.cLTheta        : [ self.wTheta.wTc,        mConfig.core.mOneZPlusNumCol, False],
-            label               : [ self.wSeqCol.wTc,       mConfig.core.mOneZPlusNumCol, True ],
-            self.cLDetectedProt : [ self.wDetectedProt.wTc, mConfig.core.mOneZPlusNumCol, True ],
-            self.cLScoreCol     : [ self.wScore.wTc,        mConfig.core.mOneZPlusNumCol, True ],
-            self.cLResControl   : [ self.wTcResults,        mConfig.core.mResCtrl       , False],
+            self.cLTargetProt   : [self.wTargetProt.wTc,   mConfig.core.mValueBad,       False],
+            self.cLScoreVal     : [self.wScoreVal.wTc,     mConfig.core.mOneRealNum,     False],
+            self.cLSample       : [self.wSample.wCb,       mConfig.core.mOptionBad,      False],
+            self.cLCorrectP     : [self.wCorrectP.wCb,     mConfig.core.mOptionBad,      False],
+            self.cLAlpha        : [self.wAlpha.wTc,        mConfig.core.mOne01Num,       False],
+            self.cLBeta         : [self.wBeta.wTc,         mConfig.core.mOne01Num,       False],
+            self.cLGamma        : [self.wGamma.wTc,        mConfig.core.mOne01Num,       False],
+            self.cLTheta        : [self.wTheta.wTc,        mConfig.core.mOneRPlusNum,    False],
+            label               : [self.wSeqCol.wTc,       mConfig.core.mOneRPlusNum,    True ],
+            self.cLDetectedProt : [self.wDetectedProt.wTc, mConfig.core.mOneZPlusNumCol, True ],
+            self.cLScoreCol     : [self.wScore.wTc,        mConfig.core.mOneZPlusNumCol, True ],
+            self.cLResControl   : [self.wTcResults,        mConfig.core.mResCtrl,        False],
         }
         self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #endregion -------------------------------------------> checkUserInput
@@ -357,6 +357,7 @@ class LimProt(cPane.BaseConfPanelMod2):
             #------------------------------> Values
             self.wTargetProt.wTc.SetValue(dataI.targetProt)
             self.wScoreVal.wTc.SetValue(str(dataI.scoreVal))
+            self.wCorrectP.wCb.SetValue(dataI.correctedP)
             self.wAlpha.wTc.SetValue(str(dataI.alpha))
             self.wSample.wCb.SetValue(mConfig.core.oSamplesP[dataI.indSample])
             self.wBeta.wTc.SetValue(str(dataI.beta))
@@ -376,6 +377,16 @@ class LimProt(cPane.BaseConfPanelMod2):
             #------------------------------>
             self.IFileEnter(dataI.iFile)
             self.OnImpMethod('fEvent')
+        else:
+            super().SetConfOptions()
+            #------------------------------>
+            self.wScoreVal.wTc.SetValue(mConfig.limp.scoreVal)
+            self.wAlpha.wTc.SetValue(mConfig.limp.alpha)
+            self.wBeta.wTc.SetValue(mConfig.limp.beta)
+            self.wGamma.wTc.SetValue(mConfig.limp.gamma)
+            self.wTheta.wTc.SetValue(mConfig.limp.theta)
+            self.wThetaMax.wTc.SetValue(mConfig.limp.thetaMax)
+            self.wCorrectP.wCb.SetValue(mConfig.limp.correctP)
         #endregion ----------------------------------------------> Fill Fields
 
         return True
@@ -464,8 +475,9 @@ class LimProt(cPane.BaseConfPanelMod2):
             'width'        : self.cLWidth,
             'targetProt'   : self.cLTargetProt,
             'scoreVal'     : self.cLScoreVal,
-            'alpha'        : self.cLAlpha,
             'indSample'    : self.cLSample,
+            'correctedP'   : self.cLCorrectP,
+            'alpha'        : self.cLAlpha,
             'beta'         : self.cLBeta,
             'gamma'        : self.cLGamma,
             'theta'        : self.cLTheta,
@@ -501,6 +513,7 @@ class LimProt(cPane.BaseConfPanelMod2):
             targetProt    = self.wTargetProt.wTc.GetValue(),
             scoreVal      = float(self.wScore.wTc.GetValue()),
             indSample     = self.cOSample[self.wSample.wCb.GetValue()],
+            correctedP    = self.wCorrectP.wCb.GetValue(),
             alpha         = float(self.wAlpha.wTc.GetValue()),
             beta          = float(self.wBeta.wTc.GetValue()),
             gamma         = float(self.wGamma.wTc.GetValue()),

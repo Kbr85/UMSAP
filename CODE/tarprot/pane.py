@@ -16,7 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from typing  import Optional
+from typing  import Optional, Union
 
 import pandas as pd
 
@@ -88,16 +88,17 @@ class TarProt(cPane.BaseConfPanelMod2):
 
         The result data frame has the following structure:
 
-        Sequence Score Nterm Cterm NtermF CtermF Ctrl Ctrl  Exp1, Exp1,..., ExpN, ExpN
-        Sequence Score Nterm Cterm NtermF CtermF IntL,   P, IntL,    P,..., IntL, P
+        Sequence Score Nterm Cterm NtermF CtermF Ctrl, Ctrl, Ctrl,  Exp1, Exp1, Exp1,..., ExpN, ExpN, ExpN
+        Sequence Score Nterm Cterm NtermF CtermF IntL,    P,   Pc,  IntL,    P,   Pc,..., IntL,    P,   Pc
 
         All p values in (Ctrl P) are NA
     """
     #region -----------------------------------------------------> Class setup
     cName = mConfig.tarp.nPane
     #------------------------------> Label
-    cLAAPos     = 'AA Positions'
-    cLHist      = 'Histogram Windows'
+    cLMethod    = 'Method'
+    cLAAPos     = mConfig.core.lStAAPos
+    cLHist      = mConfig.core.lStHistWind
     cLExp       = mConfig.tarp.lStExp
     cLCtrlName  = mConfig.core.lStCtrlName
     cLDFFirst   = mConfig.tarp.dfcolFirstPart
@@ -107,16 +108,19 @@ class TarProt(cPane.BaseConfPanelMod2):
     cHAAPos = 'e.g. 5'
     cHHist  = 'e.g. 50 or 50 100 200'
     #------------------------------> Tooltip
-    cTTAAPos = (f'Number of positions around the cleavage sites to consider '
-        f'for the AA distribution analysis.\ne.g. 5{mConfig.core.mOptField}')
-    cTTHist = (f'Size of the histogram windows. One number will result in '
-        f'equally spaced windows. Multiple numbers allow defining custom sized '
-        f'windows.\ne.g. 50 or 0 50 100 150 500{mConfig.core.mOptField}')
+    cTTMethod = 'Select the Analysis Method.'
+    cTTAAPos  = mConfig.core.ttAAPos
+    cTTHist   = mConfig.core.ttHist
+    #------------------------------> Options
+    cOMethod    = mConfig.tarp.oMethod
+    cOSampleReq = mConfig.tarp.lOSampleReq
+    #------------------------------> Default Values
+    cValSample = 'Independent Samples'
     #------------------------------> Needed by BaseConfPanel
     cURL      = f"{mConfig.core.urlTutorial}/targeted-proteolysis"
     cSection  = mConfig.tarp.nMod
     cTitlePD  = f"Running {mConfig.tarp.nMod} Analysis"
-    cGaugePD  = 34
+    cGaugePD  = 35
     rMainData = '{}_{}-TargetedProteolysis-Data.txt'
     rAnalysisMethod = tarpMethod.TarProt
     #------------------------------> Optional configuration
@@ -150,6 +154,13 @@ class TarProt(cPane.BaseConfPanelMod2):
             validator = cValidator.NumberList(
                 numType='int', vMin=0, sep=' ', opt=True),
         )
+        self.wMethod = cWidget.StaticTextComboBox(
+            self.wSbValue,
+            label     = self.cLMethod,
+            choices   = list(self.cOMethod.keys()), # type: ignore
+            tooltip   = self.cTTMethod,
+            validator = cValidator.IsNotEmpty(),
+        )
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
@@ -162,62 +173,98 @@ class TarProt(cPane.BaseConfPanelMod2):
             span   = (2, 0),
         )
         self.sSbValueWid.Add(
-            self.wTargetProt.wSt,
+            self.wMethod.wSt,
             pos    = (0,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wTargetProt.wTc,
+            self.wMethod.wCb,
             pos    = (0,2),
             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wScoreVal.wSt,
+            self.wTargetProt.wSt,
             pos    = (1,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wScoreVal.wTc,
+            self.wTargetProt.wTc,
             pos    = (1,2),
             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wAlpha.wSt,
+            self.wScoreVal.wSt,
             pos    = (2,1),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wAlpha.wTc,
+            self.wScoreVal.wTc,
             pos    = (2,2),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wAlpha.wSt,
+            pos    = (3,1),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wAlpha.wTc,
+            pos    = (3,2),
             flag   = wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wAAPos.wSt,
+            self.wSample.wSt,
             pos    = (0,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wAAPos.wTc,
+            self.wSample.wCb,
             pos    = (0,4),
             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wHist.wSt,
+            self.wCorrectP.wSt,
             pos    = (1,3),
             flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
             border = 5,
         )
         self.sSbValueWid.Add(
-            self.wHist.wTc,
+            self.wCorrectP.wCb,
             pos    = (1,4),
+            flag   = wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wAAPos.wSt,
+            pos    = (2,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wAAPos.wTc,
+            pos    = (2,4),
+            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wHist.wSt,
+            pos    = (3,3),
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT,
+            border = 5,
+        )
+        self.sSbValueWid.Add(
+            self.wHist.wTc,
+            pos    = (3,4),
             flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
             border = 5,
         )
@@ -233,29 +280,93 @@ class TarProt(cPane.BaseConfPanelMod2):
         self.sSbValueWid.AddGrowableCol(2, 1)
         self.sSbValueWid.AddGrowableCol(4, 1)
         self.sSbValueWid.AddGrowableCol(5, 1)
+        #------------------------------> Hide Samples
+        self.sSbValueWid.Hide(self.wSample.wSt)
+        self.sSbValueWid.Hide(self.wSample.wCb)
         #------------------------------> Main Sizer
         self.SetSizer(self.sSizer)
         self.sSizer.Fit(self)
         self.SetupScrolling()
         #endregion ---------------------------------------------------> Sizers
 
+        #region --------------------------------------------------------> Bind
+        self.wMethod.wCb.Bind(wx.EVT_COMBOBOX, self.OnMethod)
+        #endregion -----------------------------------------------------> Bind
+
         #region ----------------------------------------------> checkUserInput
         label = f'{self.cLSeqCol} column'
         rCheckUserInput = {
-            self.cLAlpha       : [self.wAlpha.wTc,        mConfig.core.mOne01Num,       False],
-            self.cLAAPos       : [self.wAAPos.wTc,        mConfig.core.mOneZPlusNum,    False],
-            self.cLHist        : [self.wHist.wTc,         mConfig.core.mValueBad,       False],
-            label              : [self.wSeqCol.wTc,       mConfig.core.mOneZPlusNumCol, True ],
-            self.cLDetectedProt: [self.wDetectedProt.wTc, mConfig.core.mOneZPlusNumCol, True ],
-            self.cLScoreCol    : [self.wScore.wTc,        mConfig.core.mOneZPlusNumCol, True ],
-            self.cLResControl  : [self.wTcResults,        mConfig.core.mResCtrl,        False]
+            self.cLMethod       : [self.wMethod.wCb,       mConfig.core.mOptionBad,      False],
+            self.cLTargetProt   : [self.wTargetProt.wTc,   mConfig.core.mValueBad,       False],
+            self.cLScoreVal     : [self.wScoreVal.wTc,     mConfig.core.mOneRealNum,     False],
+            self.cLAlpha        : [self.wAlpha.wTc,        mConfig.core.mOne01Num,       False],
+            self.cLSample       : [self.wSample.wCb,       mConfig.core.mOptionBad,      False],
+            self.cLCorrectP     : [self.wCorrectP.wCb,     mConfig.core.mOptionBad,      False],
+            self.cLAAPos        : [self.wAAPos.wTc,        mConfig.core.mOneZPlusNum,    False],
+            self.cLHist         : [self.wHist.wTc,         mConfig.core.mValueBad,       False],
+            label               : [self.wSeqCol.wTc,       mConfig.core.mOneZPlusNumCol, True ],
+            self.cLDetectedProt : [self.wDetectedProt.wTc, mConfig.core.mOneZPlusNumCol, True ],
+            self.cLScoreCol     : [self.wScore.wTc,        mConfig.core.mOneZPlusNumCol, True ],
+            self.cLResControl   : [self.wTcResults,        mConfig.core.mResCtrl,        False]
         }
         self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #endregion -------------------------------------------> checkUserInput
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class Event
+    #region ---------------------------------------------------> Event Methods
+    def OnMethod(self, event:Union[wx.CommandEvent, str]) -> bool:              # pylint: disable=unused-argument
+        """Show/Hide Sample type options.
+
+            Parameters
+            ----------
+            event: wx.CommandEvent or str
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        if self.wMethod.wCb.GetValue() == self.cOSampleReq:
+            self.sSbValueWid.Show(self.wSample.wSt)
+            self.sSbValueWid.Show(self.wSample.wCb)
+            self.wSample.wCb.SetValue('')
+        else:
+            self.sSbValueWid.Hide(self.wSample.wSt)
+            self.sSbValueWid.Hide(self.wSample.wCb)
+            self.wSample.wCb.SetValue(self.cValSample)
+        #------------------------------>
+        self.sSizer.Layout()
+        self.SetupScrolling()
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
+    def OnClear(self, event:wx.CommandEvent) -> bool:
+        """Clear all input, including the Imputation options.
+
+            Parameters
+            ----------
+            event: wx.CommandEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        super().OnClear(event)
+        #------------------------------>
+        self.OnMethod('fEvent')
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
+    #region -----------------------------------------------------> Class Event
     def SetInitialData(self, dataI:Optional[tarpMethod.UserData]) -> bool:
         """Set initial data.
 
@@ -288,11 +399,13 @@ class TarProt(cPane.BaseConfPanelMod2):
             self.wShift.wTc.SetValue(str(dataI.shift))
             self.wWidth.wTc.SetValue(str(dataI.width))
             #------------------------------> Values
+            self.wMethod.wCb.SetValue(mConfig.tarp.oMethodP[dataI.method])
             self.wTargetProt.wTc.SetValue(dataI.targetProt)
             self.wScoreVal.wTc.SetValue(str(dataI.scoreVal))
             self.wAlpha.wTc.SetValue(str(dataI.alpha))
             self.wAAPos.wTc.SetValue(posAA)
             self.wHist.wTc.SetValue(winHist)
+            self.wCorrectP.wCb.SetValue(dataI.correctedP)
             #------------------------------> Columns
             self.wSeqCol.wTc.SetValue(str(dataI.ocSeq))
             self.wDetectedProt.wTc.SetValue(str(dataI.ocTargetProt))
@@ -303,13 +416,61 @@ class TarProt(cPane.BaseConfPanelMod2):
             #------------------------------>
             self.IFileEnter(dataI.iFile)
             self.OnImpMethod('fEvent')
+            self.OnMethod('fEvent')
+            self.wSample.wCb.SetValue(mConfig.core.oSamplesP[dataI.indSample])
+        else:
+            super().SetConfOptions()
+            #------------------------------>
+            self.wScoreVal.wTc.SetValue(mConfig.tarp.scoreVal)
+            self.wAlpha.wTc.SetValue(mConfig.tarp.alpha)
+            self.wCorrectP.wCb.SetValue(mConfig.tarp.correctP)
+            self.wAAPos.wTc.SetValue(mConfig.tarp.aaPos)
+            self.wHist.wTc.SetValue(mConfig.tarp.histWind)
         #endregion ----------------------------------------------------->
 
         return True
     #---
-    #endregion ------------------------------------------------> Class Event
+    #endregion --------------------------------------------------> Class Event
 
     #region ---------------------------------------------------> Run methods
+    def CheckInput(self) -> bool:
+        """Check user input
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Super
+        if not super().CheckInput():
+            return False
+        #endregion ----------------------------------------------------> Super
+
+        #region ------------------------------------------------> Mixed Fields
+        #region ---------------------------------------------> # of Replicates
+        msgStep = self.cLPdCheck + 'Number of Replicates'
+        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
+        #------------------------------>
+        if self.wSample.wCb.GetValue() == 'Paired Samples':
+            #------------------------------>
+            resCtrl = cMethod.ResControl2ListNumber(self.wTcResults.GetValue())
+            nCtrl = len(resCtrl[0][0])
+            badExp = []
+            #------------------------------>
+            for k,x in enumerate(resCtrl[1:]):
+                if len(x[0]) != nCtrl:
+                    badExp.append(self.rLbDict[0][k])
+            #------------------------------>
+            if badExp:
+                self.rMsgError  = mConfig.core.mRepNum
+                self.rException = ValueError(mConfig.tarp.mRepNum.format(
+                    ', '.join(badExp)))
+                return False
+        #endregion ------------------------------------------> # of Replicates
+        #endregion ---------------------------------------------> Mixed Fields
+
+        return True
+    #---
+
     def PrepareRun(self) -> bool:
         """Set variable and prepare data for analysis.
 
@@ -322,6 +483,7 @@ class TarProt(cPane.BaseConfPanelMod2):
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------> Read values
         impMethod = self.wImputationMethod.wCb.GetValue()
+        method    = self.wMethod.wCb.GetValue()
         #--------------> SeqLength
         aaPosVal = self.wAAPos.wTc.GetValue()
         aaPos    = int(aaPosVal) if aaPosVal != '' else None
@@ -346,6 +508,9 @@ class TarProt(cPane.BaseConfPanelMod2):
             'imp'         : self.cLImputation,
             'shift'       : self.cLShift,
             'width'       : self.cLWidth,
+            'method'      : self.cLMethod,
+            'indSample'   : self.cLSample,
+            'correctedP'  : self.cLCorrectP,
             'targetProt'  : self.cLTargetProt,
             'scoreVal'    : self.cLScoreVal,
             'alpha'       : self.cLAlpha,
@@ -361,6 +526,8 @@ class TarProt(cPane.BaseConfPanelMod2):
         if impMethod != mConfig.data.lONormDist:
             dI.pop('shift')
             dI.pop('width')
+        if method != self.cOSampleReq:
+            dI.pop('indSample')
         #endregion --------------------------------------------------------> d
 
         #region ----------------------------------------------------------> do
@@ -378,8 +545,11 @@ class TarProt(cPane.BaseConfPanelMod2):
             imp           = impMethod,
             shift         = float(self.wShift.wTc.GetValue()),
             width         = float(self.wWidth.wTc.GetValue()),
+            method        = mConfig.tarp.oMethod[method],
+            indSample     = mConfig.core.oSamples[self.wSample.wCb.GetValue()],
             targetProt    = self.wTargetProt.wTc.GetValue(),
             scoreVal      = float(self.wScoreVal.wTc.GetValue()),
+            correctedP    = self.wCorrectP.wCb.GetValue(),
             alpha         = float(self.wAlpha.wTc.GetValue()),
             posAA         = aaPos,
             winHist       = hist,
