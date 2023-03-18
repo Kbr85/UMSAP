@@ -275,7 +275,7 @@ class Test_UniqueColNumbers(unittest.TestCase):
     """Test for core.check.UniqueColNumbers"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):                                                             # pylint: disable=arguments-differ
+    def setUpClass(cls):                                                        # pylint: disable=arguments-differ
         """Set test"""
         cls.a = [1, 2, 3, 4]
         cls.b = ['1 2 3 4', '5-7, 8-10; 11-13, 14-16', '17-20']
@@ -319,7 +319,7 @@ class Test_Comparison(unittest.TestCase):
     """Test for core.check.Comparison"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):                                                             # pylint: disable=arguments-differ
+    def setUpClass(cls):                                                        # pylint: disable=arguments-differ
         """Set test"""
         cls.op1 = ['<', '>', '<=', '>=']
         cls.op2 = ['>', '<=', '>=']

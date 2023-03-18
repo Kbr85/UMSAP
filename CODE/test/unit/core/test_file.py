@@ -37,14 +37,51 @@ filePDB = folder / '2y4f.pdb'
 #endregion ----------------------------------------------------> File Location
 
 
+#region -------------------------------------------------------> pd.DataFrames
+dfReadCSV = pd.DataFrame({
+    'Unnamed: 0'   : ['Intensity 01','Intensity 02','Intensity 03','Intensity 04','Intensity 05'],
+    'Intensity 01' : [1,0.771522826,0.162302365,0.135884213,0.565984785],
+    'Intensity 02' : [0.771522826,1,0.190119989,0.110859159,0.588782624],
+    'Intensity 03' : [0.162302365,0.190119989,1,0.77544234,-0.010326525],
+    'Intensity 04' : [0.135884213,0.110859159,0.77544234,1,0.01022121],
+    'Intensity 05' : [0.565984785,0.588782624,-0.010326525,0.01022121,1],
+})
+#endregion ----------------------------------------------------> pd.DataFrames
+
+
 #region ---------------------------------------------------------> Class Setup
+class Test_ReadCSV2DF(unittest.TestCase):
+    """Test for core.file.ReadCSV2DF"""
+    #region -------------------------------------------------> Expected Output
+    def test_expected_output(self):
+        """Test for expected output"""
+        #------------------------------>
+        tInput = [
+            (fileCSV, '\t', None, 'infer', dfReadCSV),
+            (fileCSV, '\t', None, 0,       dfReadCSV),
+            (fileCSV, '\t', None, [0],     dfReadCSV),
+        ]
+        #------------------------------>
+        for a,b,c,d,e in tInput:
+            msg = f"fileP={a}, sep={b}, index_col={c}, header={d}"
+            with self.subTest(msg):
+                #------------------------------>
+                result = cFile.ReadCSV2DF(a, sep=b, index_col=c, header=d)
+                #------------------------------>
+                pd._testing.assert_frame_equal(result, e)                       # type: ignore
+    #---
+    #endregion ----------------------------------------------> Expected Output
+#---
+
+
 class Test_ReadFileFirstLine(unittest.TestCase):
     """Test for core.file.ReadFileFirstLine"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Create class instances"""
-        self.firstLine = ['>sp|P31545|EFEB_ECOLI Recombinant']
-        self.firstLineSpace = ['>sp|P31545|EFEB_ECOLI', 'Recombinant']
+        cls.firstLine = ['>sp|P31545|EFEB_ECOLI Recombinant']
+        cls.firstLineSpace = ['>sp|P31545|EFEB_ECOLI', 'Recombinant']
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -71,23 +108,24 @@ class Test_ReadFileFirstLine(unittest.TestCase):
 class Test_FastaFile(unittest.TestCase):
     """Test for core.file.FastaFile"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Create class instances"""
-        self.f1Prot = cFile.FastaFile(fileA)
-        self.f2Prot = cFile.FastaFile(fileB)
-        self.fNProt = cFile.FastaFile(fileC)
-        self.fSecS  = cFile.FastaFile(fileD)
-        self.fSecE  = cFile.FastaFile(fileE)
-        self.fSecEq = cFile.FastaFile(fileF)
-        self.seq1 = ('HHHHHHHHHHHHHHMKKTAIAIAVALAGFATVAQAASWSHPQFEKIEGRRDRGQKTQSAP'
+        cls.f1Prot = cFile.FastaFile(fileA)
+        cls.f2Prot = cFile.FastaFile(fileB)
+        cls.fNProt = cFile.FastaFile(fileC)
+        cls.fSecS  = cFile.FastaFile(fileD)
+        cls.fSecE  = cFile.FastaFile(fileE)
+        cls.fSecEq = cFile.FastaFile(fileF)
+        cls.seq1 = ('HHHHHHHHHHHHHHMKKTAIAIAVALAGFATVAQAASWSHPQFEKIEGRRDRGQKTQSAP'
                     'FFALPGVKDANDYFGSALLRVMMMMMMMHHHHHHHHHH')
-        self.head1 = '>sp|P31545|EFEB_ECOLI Recombinant'
-        self.seq2 = ('MKKTAIAIAVALAGFATVAQAASWSHPQFEKIEGRRDRGQKTQSAPFFALPGVKDANDYF'
+        cls.head1 = '>sp|P31545|EFEB_ECOLI Recombinant'
+        cls.seq2 = ('MKKTAIAIAVALAGFATVAQAASWSHPQFEKIEGRRDRGQKTQSAPFFALPGVKDANDYF'
                     'GSALLRVM')
-        self.head2 = '>sp|P31545|EFEB_ECOLI Native'
-        self.seq3  = ('VLLQICANTQDTVIHALRDIIKHTPDLLSVRWKREGFISDHAARSKGKETPINLLGFKDG'
+        cls.head2 = '>sp|P31545|EFEB_ECOLI Native'
+        cls.seq3  = ('VLLQICANTQDTVIHALRDIIKHTPDLLSVRWKREGFISDHAARSKGKETPINLLGFKDG'
                      'TNSGQLDMGLLFVCYQHDL')
-        self.head3 = '>sp|X|Other protein'
+        cls.head3 = '>sp|X|Other protein'
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -214,10 +252,11 @@ class Test_FastaFile(unittest.TestCase):
 class Test_CSVFile(unittest.TestCase):
     """Test for core.file.CSVFile"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Create class instances"""
-        self.csvFile = cFile.CSVFile(fileCSV)
-        self.header = [
+        cls.csvFile = cFile.CSVFile(fileCSV)
+        cls.header = [
             'Unnamed: 0', 'Intensity 01', 'Intensity 02', 'Intensity 03',
             'Intensity 04', 'Intensity 05']
     #---
@@ -262,12 +301,12 @@ class Test_CSVFile(unittest.TestCase):
 
 class Test_PDBFile(unittest.TestCase):
     """Test for core.file.PDB"""
-    # pylint: disable=protected-access
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Create class instances"""
-        self.pdb = cFile.PDBFile(filePDB)
-        self.df = pd.DataFrame({
+        cls.pdb = cFile.PDBFile(filePDB)
+        cls.df = pd.DataFrame({
             'ATOM'      : 44*['ATOM'],
             'ANumber'   : [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,2991,2992,2993,2994,2995,2996,2997,2998,3000,3001,3002,3003,3004,3005,3006,3007,3008,3009,3010,3011,3012,3013,3014,3015,3016,3017],
             'AName'     : ['N','CA','C','O','CB','OG','N','CA','C','O','CB','N','CA','C','O','CB','CG','CD','N','CA','C','O','CB','CG1','CG2','OXT','N','CA','C','O','CB','OG','N','CA','C','O','CB','N','CA','C','O','CB','CG','CD'],
@@ -284,7 +323,7 @@ class Test_PDBFile(unittest.TestCase):
             'Segment'   : 44*[''],
             'Element'   : ['N','C','C','O','C','O','N','C','C','O','C','N','C','C','O','C','C','C','N','C','C','O','C','C','C','O','N','C','C','O','C','O','N','C','C','O','C','N','C','C','O','C','C','C'],
         })
-        self.dfA = pd.DataFrame({
+        cls.dfA = pd.DataFrame({
             'ATOM'      : 44*['ATOM'],
             'ANumber'   : [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,2991,2992,2993,2994,2995,2996,2997,2998,3000,3001,3002,3003,3004,3005,3006,3007,3008,3009,3010,3011,3012,3013,3014,3015,3016,3017],
             'AName'     : ['N','CA','C','O','CB','OG','N','CA','C','O','CB','N','CA','C','O','CB','CG','CD','N','CA','C','O','CB','CG1','CG2','OXT','N','CA','C','O','CB','OG','N','CA','C','O','CB','N','CA','C','O','CB','CG','CD'],
@@ -301,7 +340,7 @@ class Test_PDBFile(unittest.TestCase):
             'Segment'   : 44*[''],
             'Element'   : ['N','C','C','O','C','O','N','C','C','O','C','N','C','C','O','C','C','C','N','C','C','O','C','C','C','O','N','C','C','O','C','O','N','C','C','O','C','N','C','C','O','C','C','C'],
         })
-        self.dfB = pd.DataFrame({
+        cls.dfB = pd.DataFrame({
             'ATOM'      : 44*['ATOM'],
             'ANumber'   : [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,2991,2992,2993,2994,2995,2996,2997,2998,3000,3001,3002,3003,3004,3005,3006,3007,3008,3009,3010,3011,3012,3013,3014,3015,3016,3017],
             'AName'     : ['N','CA','C','O','CB','OG','N','CA','C','O','CB','N','CA','C','O','CB','CG','CD','N','CA','C','O','CB','CG1','CG2','OXT','N','CA','C','O','CB','OG','N','CA','C','O','CB','N','CA','C','O','CB','CG','CD'],
@@ -384,8 +423,6 @@ class Test_PDBFile(unittest.TestCase):
                 #------------------------------>
                 self.pdb.SetBeta(a, b)
                 pd._testing.assert_frame_equal(self.pdb.rDFAtom, c)             # type: ignore
-                #------------------------------>
-
     #---
     #endregion ----------------------------------------------> Expected Output
 #---
