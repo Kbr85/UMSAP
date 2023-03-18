@@ -132,8 +132,7 @@ def Path2FFOutput(
                 code is:
                 - NotPath, Input is not a valid path.
                 - NoWrite, It is not possible to write.
-                - NoFile, fof is file but value points to a folder
-                - NoFolder, fof is folder but value points to a file.
+                - Exception, message.
 
         Examples
         --------
@@ -172,7 +171,7 @@ def Path2FFOutput(
         f.touch()
         f.unlink()
     except Exception:
-        msg = f"{tPath.parent} cannot be used for writing."
+        msg = f"{f.parent} cannot be used for writing."
         return (False, ('NoWrite', str(value), msg))
     #endregion ----------------------------------------------------> Can write
 
@@ -219,7 +218,6 @@ def Path2FFInput(
     # Test in test.unit.core.test_check.Test_Path2FFInput
     #region --------------------------------------------------------> Optional
     if value == '':
-        #------------------------------>
         if opt:
             return (True, None)
         #------------------------------>
@@ -349,8 +347,12 @@ def NumberList(
             numbers = numbers + rN
         else:
             for tN in rN:
+                try:
+                    a = AInRange(tN, refMin=vMin, refMax=vMax)[0]
+                except Exception as e:
+                    return (False, ('Exception', n, str(e)))
                 #------------------------------>
-                if not AInRange(tN, refMin=vMin, refMax=vMax)[0]:
+                if not a:
                     msg = mConfig.core.mInvalidValue.format(n)
                     return (False, ('BadElement', n, msg))
                 #------------------------------>
@@ -358,7 +360,7 @@ def NumberList(
     #endregion -------------------------------------> numType, refMin & refMax
 
     #region -----------------------------------------------------> List Length
-    lN = len(numbers)                                                           # Number of Elements
+    lN = len(numbers)
     #------------------------------> Exact Number of Elements
     if nN is not None:
         if lN != nN:
@@ -366,8 +368,13 @@ def NumberList(
                 f'ranges, is not equal to nN ({nN}).')
             return (False, ('ListLength', tStr, msg))
     #------------------------------> Number of Elements in range
-    elif nMin is not None or nMax is not None:
-        if not AInRange(lN, refMin=nMin, refMax=nMax)[0]:
+    else:
+        try:
+            a = AInRange(lN, refMin=nMin, refMax=nMax)[0]
+        except Exception as e:
+            return (False, ('Exception', tStr, str(e)))
+        #------------------------------>
+        if not a:
             msg = (f'The number of elements in tStr ({lN}), after expanding '
                 f'ranges, is not in the [{nMin}, {nMax}] range.')
             return (False, ('ListLength', tStr, msg))
@@ -375,7 +382,10 @@ def NumberList(
 
     #region ----------------------------------------------------------> Unique
     if unique:
-        return ListUnique(numbers)
+        try:
+            return ListUnique(numbers)
+        except Exception as e:
+            return (False, ('Exception', tStr, str(e)))
     #endregion -------------------------------------------------------> Unique
 
     return (True, None)
@@ -428,16 +438,19 @@ def AInRange(
     """
     # Test in test.unit.core.test_check.Test_AInRange
     #region -------------------------------------------------------> Variables
-    a = float(a)
-    b = float(refMin) if refMin is not None else float('-inf')
-    c = float(refMax) if refMax is not None else float('inf')
+    try:
+        a = float(a)
+        b = float(refMin) if refMin is not None else float('-inf')
+        c = float(refMax) if refMax is not None else float('inf')
+    except Exception as e:
+        return (False, ('Exception', str(a), str(e)))
     #endregion ----------------------------------------------------> Variables
 
     #region ---------------------------------------------------------> Compare
     if b <= a <= c:
         return (True, None)
     #------------------------------>
-    msg = (f'{a} is not in the range: [{refMin}, {refMax}].')
+    msg = f'{a} is not in the range: [{refMin}, {refMax}].'
     return (False, ('AInRange', str(a), msg))
     #endregion ------------------------------------------------------> Compare
 #---
@@ -473,11 +486,6 @@ def ListUnique(
         >>> (False, ('NotUnique', '9, 2, 6', 'Duplicated elements: 9, 2, 6'))
     """
     # Test in test.unit.core.test_check.Test_ListUnique
-    #region -------------------------------------------------------> Variables
-    seen = set()
-    dup  = []
-    #endregion ----------------------------------------------------> Variables
-
     #region --------------------------------------------------------> Optional
     if not tList:
         if opt:
@@ -486,14 +494,17 @@ def ListUnique(
         return (False, ('NotOptional', '', "tList cannot be empty."))
     #endregion -----------------------------------------------------> Optional
 
+    #region -------------------------------------------------------> Variables
+    seen = set()
+    dup  = set()
+    #endregion ----------------------------------------------------> Variables
+
     #region ----------------------------------------------------------> Search
     for x in tList:
         if x not in seen:
             seen.add(x)
         else:
-            dup.append(x)
-    #------------------------------>
-    dup = list(set(dup))
+            dup.add(x)
     #endregion -------------------------------------------------------> Search
 
     #region ----------------------------------------------------------> Return
@@ -579,7 +590,7 @@ def UniqueColNumbers(                                                           
     try:
         value = list(map(str, value))
     except Exception:
-        msg = ('value must be a list of strings.')
+        msg = 'Value must be a list of strings.'
         return (False, ('NotString', None, msg))
     #------------------------------>
     try:
@@ -683,9 +694,8 @@ def Comparison(                                                                 
 
     #region ---------------------------------------------------------> Operand
     if not elements[0] in op:
-        msg = (
-            f'The given operand ({elements[0]}) is not valid '
-            f'({str(op)[1:-1]}).')
+        msg = (f'The given operand ({elements[0]}) is not valid '
+               f'({str(op)[1:-1]}).')
         return (False, ('FalseOperand', str(elements[0]), msg))
     #endregion ------------------------------------------------------> Operand
 
@@ -698,14 +708,13 @@ def Comparison(                                                                 
     #endregion ------------------------------------------------------> NumType
 
     #region -----------------------------------------------------------> Range
-    if vMin is not None and vMax is not None:
-        try:
-            if not AInRange(elements[1], refMin=vMin, refMax=vMax)[0]:
-                msg = mConfig.core.mInvalidValue.format(tStr)
-                return (False, ('BadElement', tStr, msg))
-        except Exception:
+    try:
+        if not AInRange(elements[1], refMin=vMin, refMax=vMax)[0]:
             msg = mConfig.core.mInvalidValue.format(tStr)
             return (False, ('BadElement', tStr, msg))
+    except Exception:
+        msg = mConfig.core.mInvalidValue.format(tStr)
+        return (False, ('BadElement', tStr, msg))
     #endregion --------------------------------------------------------> Range
 
     return (True, None)
@@ -757,7 +766,12 @@ def TcUniqueColNumbers(                                                         
         return (False, ('Exception', None, str(e)))
     #endregion ----------------------------------------------------> Form list
 
-    return UniqueColNumbers(values, sepList=sepList)
+    #region -----------------------------------------------------------> Check
+    try:
+        return UniqueColNumbers(values, sepList=sepList)
+    except Exception as e:
+        return (False, ('Exception', None, str(e)))
+    #endregion --------------------------------------------------------> Check
 #---
 
 
@@ -794,8 +808,11 @@ def AllTcEmpty(
     #endregion ----------------------------------------------------> Variables
 
     #region ------------------------------------------------------> Get values
-    for k in tcList:
-        values.append(k.GetValue().strip())
+    try:
+        for k in tcList:
+            values.append(k.GetValue().strip())
+    except Exception as e:
+        return (False, ('Exception', None, str(e)))
     #endregion ---------------------------------------------------> Get values
 
     #region -----------------------------------------------------> Check empty

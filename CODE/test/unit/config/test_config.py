@@ -45,10 +45,10 @@ class Test_Configuration(unittest.TestCase):
         #------------------------------>
         tInput = [
             #Config File Path,       Return, Attr,  badOpt
-            (folder/'no_file.json',  True,   True,  []),                        # File Not Found Error
-            (folder/'config_A.json', False,  False, []),                        # File cannot be read
-            (folder/'config_B.json', True,   True,  ["BadOption", "BadSection",]),# File with bad options
-            ('Users/bravo/umsap_config.json', True, True, [])                   # Real file
+            (folder/'no_file.json',           True,  True,  []),                           # File Not Found Error
+            (folder/'config_A.json',          False, False, []),                           # File cannot be read
+            (folder/'config_B.json',          True,  True,  ["BadOption", "BadSection",]), # File with bad options
+            ('Users/bravo/umsap_config.json', True,  True,  [])                            # Real file
         ]
         #------------------------------>
         for a,b,c,d in tInput:

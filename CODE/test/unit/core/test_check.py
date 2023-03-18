@@ -119,17 +119,17 @@ class Test_Path2FFInput(unittest.TestCase):
         """Test for the first element of the expected output"""
         #------------------------------>
         tInput = [
-            (self.file,  'baInput',  True, False), # Bad Input
-            ('',            'file',  True,  True), # Optional
-            ('',            'file', False, False), #
-            ('',          'folder',  True,  True), #
-            ('',          'folder', False, False), #
-            (list(),        'file', False, False), # Path() fails
-            (self.file,     'file', False,  True), # File
-            (self.file,   'folder', False, False), #
-            (self.folder, 'folder', False,  True), # Folder
-            (self.folder,   'file', False, False), #
-            (self.noPerm,   'file', False, False), # No Read Permission
+            (self.file,  'baInput',  True, False),                              # Bad Input
+            ('',            'file',  True,  True),                              # Optional
+            ('',            'file', False, False),                              #
+            ('',          'folder',  True,  True),                              #
+            ('',          'folder', False, False),                              #
+            (list(),        'file', False, False),                              # Path() fails
+            (self.file,     'file', False,  True),                              # File
+            (self.file,   'folder', False, False),                              #
+            (self.folder, 'folder', False,  True),                              # Folder
+            (self.folder,   'file', False, False),                              #
+            (self.noPerm,   'file', False, False),                              # No Read Permission
         ]
         #------------------------------>
         for a,b,c,d in tInput:
