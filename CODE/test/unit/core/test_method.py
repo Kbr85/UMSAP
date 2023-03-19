@@ -563,7 +563,7 @@ class Test_Fragments(unittest.TestCase):
         """Test for expected output"""
         #------------------------------>
         tInput = [
-            (self.a, 0.05, 'le', 441, [55, 350], self.b),
+            (self.a, 0.05, 'le', 441, (55, 350), self.b),
         ]
         #------------------------------>
         for a,b,c,d,e,f in tInput:

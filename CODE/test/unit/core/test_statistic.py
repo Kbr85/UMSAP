@@ -19,6 +19,7 @@ import unittest
 from pathlib import Path
 
 import pandas as pd
+import numpy  as np
 from numpy import nan
 
 from core import statistic as cStatistic
@@ -27,7 +28,6 @@ from core import statistic as cStatistic
 
 #region -------------------------------------------------------> File Location
 folder  = Path(__file__).parent / 'files'
-
 #endregion ----------------------------------------------------> File Location
 
 
@@ -98,41 +98,26 @@ DF_test_slope = pd.DataFrame({
 class Test_DataRange(unittest.TestCase):
     """Test for core.statistic.DataRange"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Set test"""
-        self.Tlist = [1,2,3,4,5]
+        cls.Tlist  = [1,2,3,4,5]
+        cls.TTuple = (1,2,3,4,5)
+        cls.NPArray = np.array([[0,1,2],[3,4,5]])
     #---
     #endregion --------------------------------------------------> Class Setup
-
-    #region -----------------------------------------------------> Valid Input
-    def test_invalid_input(self):
-        """Test for invalid input"""
-        #------------------------------>
-        badInput = [
-            (DF_CI_Mean, 0),
-            (['a', 'b', 1, 2], 0.04),
-            ([], 0.04),
-        ]
-        #------------------------------>
-        for a,b in badInput:
-            with self.subTest(f'x={a}, margin={b}'):
-                self.assertRaises(
-                    ValueError,
-                    cStatistic.DataRange,
-                    a,
-                    margin=b,
-                )
-    #---
-    #endregion --------------------------------------------------> Valid Input
 
     #region -------------------------------------------------> Expected Output
     def test_expected_output(self):
         """Test for expected output"""
         #------------------------------>
         tInput = [
-            (self.Tlist,     0, [  1,   5]),
-            (self.Tlist,   0.1, [0.6, 5.4]),
-            (DF_Log2['A'], 0.5, [-32,  96]),
+            (self.Tlist,     0, [   1,   5]),
+            (self.Tlist,   0.1, [ 0.6, 5.4]),
+            (self.TTuple,    0, [   1,   5]),
+            (DF_Log2['A'], 0.5, [ -32,  96]),
+            (DF_Log2,      0.5, [-128, 384]),
+            (self.NPArray, 0.5, [-2.5, 7.5]),
         ]
         #------------------------------>
         for a,b,c in tInput:
@@ -149,14 +134,15 @@ class Test_DataRange(unittest.TestCase):
 class Test_CI_Sample(unittest.TestCase):
     """Test for core.statistic.CI_Sample"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Set test"""
-        self.dfA = pd.DataFrame({
+        cls.dfA = pd.DataFrame({
             'CI' : [179.2944069, 83.3328547, 30.35666427, 22.94748123, 45.89496245, 69.79203948, 154.043247],
             'LL' : [-134.6277402, -57.99952137, -11.6899976, -12.28081456, -35.22829578, -35.12537281, -88.70991364],
             'UL' : [223.9610735, 108.666188, 49.02333094, 33.61414789, 56.56162912, 104.4587061, 219.3765803],
         })
-        self.dfB = pd.DataFrame({
+        cls.dfB = pd.DataFrame({
             'CI' : [21.33168297, 42.66336593, 42.66336593],
             'LL' : [-3.331682966, -6.663365932, -6.663365932],
             'UL' : [39.33168297, 78.66336593, 78.66336593],
@@ -189,24 +175,25 @@ class Test_CI_Sample(unittest.TestCase):
 class Test_CI_Mean_Diff(unittest.TestCase):
     """Test for core.statistic.CI_Mean_Diff"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Set test"""
-        self.dfA = pd.DataFrame({
+        cls.dfA = pd.DataFrame({
             'CI' : [242.8856155, 118.4182679, 54.53278713, 16.55551998, 31.6292765, 51.7277215, 114.819424],
             'LL' : [-304.8856155, -147.0849346, -63.86612046, -11.22218664, -32.96260984, -31.06105484, -72.15275732],
             'UL' : [180.8856155, 89.75160125, 45.1994538, 21.88885331, 30.29594317, 72.39438817, 157.4860907],
         })
-        self.dfB = pd.DataFrame({
+        cls.dfB = pd.DataFrame({
             'CI' : [26.86220863, 42.47288113, 86.86151901],
             'LL' : [-26.86220863, -24.47288113, -118.861519],
             'UL' : [26.86220863, 60.47288113, 54.86151901],
         })
-        self.dfC = pd.DataFrame({
+        cls.dfC = pd.DataFrame({
             'CI' : [274.3139, 136.4241, 68.6797, 19.193, 40.1394, 57.6398, 127.0213],
             'LL' : [-336.3139,-165.0908, -78.013, -13.8596, -41.4727, -36.9731, -84.3547],
             'UL' : [212.3139,107.7575, 59.3464, 24.5263, 38.806, 78.3064, 169.688],
         })
-        self.dfD = pd.DataFrame({
+        cls.dfD = pd.DataFrame({
             'CI' : [26.8622, 44.2324, 90.6806],
             'LL' : [-26.8622, -26.2324, -122.6806],
             'UL' : [26.8622, 62.2324, 58.6806],
@@ -277,9 +264,7 @@ class Test_chi(unittest.TestCase):
         ]
         #------------------------------>
         for a,b,c,d in tInput:
-            msg = (
-                f'df={a}, alpha={b}, check5={c}'
-            )
+            msg = f'df={a}, alpha={b}, check5={c}'
             with self.subTest(msg):
                 #------------------------------>
                 result = cStatistic.Test_chi(a,b,c)[0]
