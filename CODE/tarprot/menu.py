@@ -520,7 +520,7 @@ class ToolTarProt(cMenu.BaseMenuMainResult):
         self.AppendSeparator()
         #------------------------------>
         self.mFurtherA = ToolFurtherAnalysis(
-            self.cMenuData['FA'], self.rPlotDate[0].GetItemLabelText())
+            self.rMenuData['FA'], self.rPlotDate[0].GetItemLabelText())
         self.AppendSubMenu(self.mFurtherA, self.cLFurtherA)
         self.AppendSeparator()
         #------------------------------>

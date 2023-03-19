@@ -91,7 +91,7 @@ class BaseUserData():
     ctrlType:str     = ''
     ctrlName:str     = ''
     #------------------------------> Correlation Analysis
-    corr:LIT_Corr = ''                                                         # Correlation method
+    corr:LIT_Corr = ''                                                          # Correlation method
     #------------------------------> Further Analysis
     posAA:Optional[int]         = None                                          # Position number for AA analysis
     winHist:Optional[list[int]] = None                                          # Windows for Histograms
@@ -231,25 +231,25 @@ class LabelDetail():
         coord : [(x1, x2),...., (xN, xM)]
             First and last residue number of the fragment in Recombinant Protein
             sequence.
-        coordN: [(x1, x2),.(NaN, NaN)..., (xN, xM)]
+        coordN : [(x1, x2),.(NaN, NaN)..., (xN, xM)]
             First and last residue number of the fragment in Native Protein
             sequence.
-        seq   : [Aligned Seq1, ...., Aligned SeqN]
+        seq : [Aligned Seq1, ...., Aligned SeqN]
             Sequence alignment within the fragment as a str.
-        seqL  : [Flat List with Seqs1, ...., Flat List with SeqsN]
+        seqL : [Flat List with Seqs1, ...., Flat List with SeqsN]
             Flat list of peptide sequences withing the fragment.
-        np    : [Number of peptides1, ...., NpN]
+        np : [Number of peptides1, ...., NpN]
             Number of peptides in each fragment.
         npNat : [Number of native peptides1, ...., NpNatN]
             Number of native peptides in each fragment.
-        nc    : [Number of cleavages1, ...., NcN]
+        nc : [Number of cleavages1, ...., NcN]
             Number of unique cleavages in each fragment.
         ncNat : [Number of native cleavages1, ....., NcNatN]
             Number of unique cleavages in each fragment for the Native sequence.
         nFrag : (Number of fragments, Number of fragments Nat)
             Total number of fragments for the experiment in the Recombinant and
             Native sequence.
-        ncT   : (Number of cleavages for the Exp as a whole, Nat),
+        ncT : (Number of cleavages for the Exp as a whole, Nat),
             Total number of cleavages for the experiment in the Recombinant and
             Native sequence.
 
@@ -421,16 +421,15 @@ def Str2ListNumber(
     # Test in test.unit.core.test_method.Test_Str2ListNumber
     #region -------------------------------------------------------> Variables
     lN = []
-    values = tStr.strip().split(sep)
+    values = ' '.join(tStr.split()).split(sep)
     #endregion ----------------------------------------------------> Variables
 
     #region -----------------------------------------------------> Get numbers
     for k in values:
-        if k.strip() != '':
-            #------------------------------> Expand ranges
-            lK = ExpandRange(k, numType)
-            #------------------------------> Get list of numbers
-            lN = lN + lK
+        #------------------------------> Expand ranges
+        lK = ExpandRange(k, numType)
+        #------------------------------> Get list of numbers
+        lN = lN + lK
     #endregion --------------------------------------------------> Get numbers
 
     #region ----------------------------------------------------------> Unique
@@ -498,6 +497,8 @@ def StrEqualLength(
         Notes
         -----
         Filling characters are added at the end or start of each str.
+        If loc has an invalid value then characters are added to the start of
+        strings.
     """
     # Test in test.unit.core.test_method.Test_StrEqualLength
     #region ---------------------------------------------------> Variables
@@ -510,14 +511,10 @@ def StrEqualLength(
         for x in strL:
             space = (long-len(x))*char
             lOut.append(f'{x}{space}')
-    elif loc == 'start':
+    else:
         for x in strL:
             space = (long-len(x))*char
             lOut.append(f'{space}{x}')
-    else:
-        msg = mConfig.core.mNotImplementedFull.format(
-            loc, 'loc', LIT_Region)
-        raise ValueError(msg)
     #endregion ------------------------------------------------> Fill lOut
 
     return lOut
@@ -686,6 +683,9 @@ def ExpandRange(
     # Test in test.unit.core.test_method.Test_ExpandRange
     #region -------------------------------------------------> Expand & Return
     tr = r.strip()
+    #------------------------------> Empty
+    if not tr:
+        return []
     #------------------------------> Expand
     if '-' in tr:
         #------------------------------> Catch more than one - in range by raising ValueError
@@ -728,7 +728,7 @@ def DFFilterByColS(
         refStr: string
             Reference string.
         comp: str
-            Numeric comparison to use in the filter. One of: 'e', 'ne.
+            Comparison to use in the filter. One of: 'e', 'ne.
 
         Returns
         -------
@@ -739,6 +739,7 @@ def DFFilterByColS(
         - Rows with values in col that do not comply with c[x] comp refStr are
         discarded, e.g. c[x] == 'refString'
         - Assumes all values in col are strings.
+        - If comp has an invalid value then non equal values are returned.
     """
     # Test in test.unit.core.test_method.Test_DFFilterByColS
     #region ----------------------------------------------------------> Filter
@@ -747,12 +748,8 @@ def DFFilterByColS(
     #------------------------------> Filter
     if comp == 'e':
         dfo = dfo.loc[dfo.iloc[:,col] == refStr]
-    elif comp == 'ne':
-        dfo = dfo.loc[dfo.iloc[:,col] != refStr]
     else:
-        msg = mConfig.core.mNotImplementedFull.format(
-            comp, 'comp', LIT_CompEq)
-        raise ValueError(msg)
+        dfo = dfo.loc[dfo.iloc[:,col] != refStr]
     #endregion -------------------------------------------------------> Filter
 
     return dfo
@@ -1156,21 +1153,15 @@ def MatplotLibCmap(
     # No test
     #region ----------------------------------------------------------> Colors
     #------------------------------>  c1 -> c2
-    try:
-        vals1 = np.ones((N, 4))
-        vals1[:, 0] = np.linspace(c1[0]/255, c2[0]/255, N)
-        vals1[:, 1] = np.linspace(c1[1]/255, c2[1]/255, N)
-        vals1[:, 2] = np.linspace(c1[2]/255, c2[2]/255, N)
-    except Exception as e:
-        raise ValueError(str(e)) from e
+    vals1 = np.ones((N, 4))
+    vals1[:, 0] = np.linspace(c1[0]/255, c2[0]/255, N)
+    vals1[:, 1] = np.linspace(c1[1]/255, c2[1]/255, N)
+    vals1[:, 2] = np.linspace(c1[2]/255, c2[2]/255, N)
     #------------------------------>  c2 -> c3
-    try:
-        vals2 = np.ones((N, 4))
-        vals2[:, 0] = np.linspace(c2[0]/255, c3[0]/255, N)
-        vals2[:, 1] = np.linspace(c2[1]/255, c3[1]/255, N)
-        vals2[:, 2] = np.linspace(c2[2]/255, c3[2]/255, N)
-    except Exception as e:
-        raise ValueError(str(e)) from e
+    vals2 = np.ones((N, 4))
+    vals2[:, 0] = np.linspace(c2[0]/255, c3[0]/255, N)
+    vals2[:, 1] = np.linspace(c2[1]/255, c3[1]/255, N)
+    vals2[:, 2] = np.linspace(c2[2]/255, c3[2]/255, N)
     #endregion -------------------------------------------------------> Colors
 
     #region ------------------------------------------------------------> CMAP

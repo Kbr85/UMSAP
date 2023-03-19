@@ -585,7 +585,7 @@ class ToolProtProf(cMenu.BaseMenuMainResult):
 
         #region --------------------------------------------------> Menu Items
         self.mVolcano =  ToolProtProfVolcanoPlot(
-                self.cMenuData['crp'], self.rPlotDate[0].GetItemLabelText()
+                self.rMenuData['crp'], self.rPlotDate[0].GetItemLabelText()
         )
         self.AppendSubMenu(self.mVolcano, self.cLVol)
         self.AppendSeparator()

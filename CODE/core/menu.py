@@ -39,7 +39,7 @@ class BaseMenu(wx.Menu):
             functions in the win, e.g.
             {self.miMon.GetId(): 'mon',}
         rPubSub: dict
-            Maps wx.MenuItems with pubsub messages.
+            Maps menu items's ID with pubsub messages.
 
         Notes
         -----
@@ -71,7 +71,6 @@ class BaseMenu(wx.Menu):
             ----------
             event:wx.Event
                 Information about the event
-
 
             Returns
             -------
@@ -282,14 +281,14 @@ class BaseMenuMainResult(BaseMenu):
     def __init__(self, menuData:dict) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.cMenuData = menuData
+        self.rMenuData = menuData
         self.rPlotDate = []
         #------------------------------>
         super().__init__()
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
-        self.AddDateItems(self.cMenuData['MenuDate'])
+        self.AddDateItems(self.rMenuData['MenuDate'])
         #endregion -----------------------------------------------> Menu Items
     #---
     #endregion -----------------------------------------------> Instance setup
@@ -398,7 +397,7 @@ class BaseMenuMainResult(BaseMenu):
             the Further Analysis menu.
         """
         #region ---------------------------------------------------> Variables
-        self.cMenuData = menuData
+        self.rMenuData = menuData
         dateC = self.GetCheckedRadioItem(self.rPlotDate).GetItemLabelText()
         checkedFound = False
         #------------------------------>
@@ -413,7 +412,7 @@ class BaseMenuMainResult(BaseMenu):
         #------------------------------> Add new items
         for k in reversed(menuData['MenuDate']):
             self.rPlotDate.insert(0, self.InsertRadioItem(0,-1,k))
-            self.rIDMap[self.rPlotDate[0].GetId()] = mConfig.core.kwWinUpdate
+            self.rIDMap[self.rPlotDate[0].GetId()]  = self.cVWinUpdate
             self.rKeyMap[self.rPlotDate[0].GetId()] = self.cVtDate
             self.Bind(wx.EVT_MENU, self.OnMethodKey, source=self.rPlotDate[0])
         #------------------------------> Search for previously checked item
@@ -590,8 +589,8 @@ class BaseMenuFurtherAnalysis(BaseMenu):
     def AddNatRecSeqEntry(
         self,
         tMethod:Callable,
-        idMap:str ='',
-        idKey:str ='',
+        idMap:str = '',
+        idKey:str = '',
         ) -> bool:
         """Add the Native Sequence entry to the menu.
 
@@ -739,7 +738,7 @@ class BaseMenuFurtherAnalysisEntry(BaseMenu):
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        self.cMenuData  = menuData
+        self.rMenuData  = menuData
         self.rDictKey   = dictKey
         self.rItemLabel = itemLabel
         #------------------------------>
@@ -771,12 +770,12 @@ class BaseMenuFurtherAnalysisEntry(BaseMenu):
 
         #region --------------------------------------------------->
         #------------------------------> Available Date
-        for v in self.cMenuData[tDate][self.rDictKey]:
+        for v in self.rMenuData[tDate][self.rDictKey]:
             itemList.append(self.Append(-1, v))
             self.Bind(wx.EVT_MENU, self.OnMethodLabel, source=itemList[-1])
             self.rIDMap[itemList[-1].GetId()] = f'{self.rDictKey}-Item'
         #------------------------------> Separator
-        if self.cMenuData[tDate][self.rDictKey]:
+        if self.rMenuData[tDate][self.rDictKey]:
             self.rSep = self.AppendSeparator()
         else:
             self.rSep = None
@@ -812,7 +811,7 @@ class BaseMenuFurtherAnalysisEntry(BaseMenu):
         #endregion ----------------------------------------------------->
 
         #region --------------------------------------------------->
-        self.cMenuData = menuData if menuData else self.cMenuData
+        self.rMenuData = menuData if menuData else self.rMenuData
         self.rItemList = self.SetItems(tDate)
         #endregion ------------------------------------------------>
 
