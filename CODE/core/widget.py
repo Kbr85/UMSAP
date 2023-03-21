@@ -18,18 +18,19 @@
 import _thread
 import json
 import math
+import webbrowser
 from datetime import datetime
 from pathlib  import Path
 from typing   import Optional, Callable, Union, Literal
 
-import webbrowser
-
-import wx
-import wx.lib.mixins.listctrl as listmix
+from pubsub  import pub
 
 import matplotlib as mpl
 from matplotlib                        import patches
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
+
+import wx
+import wx.lib.mixins.listctrl as listmix
 
 from config.config import config as mConfig
 from core import generator as cGenerator
@@ -107,7 +108,7 @@ class StaticBoxes():
         Attributes
         ----------
         Depending on the values of labelF, labelV and labelC, the corresponding
-        attributes may not be created.
+        attributes may or may not be created.
 
         wSbFile: wx.StaticBox
             StaticBox to contain the input/output file information.
@@ -209,7 +210,18 @@ class StaticBoxes():
             event: wx.MouseEvent
                 Information about the event
         """
-        return ClearInput(event.GetEventObject())
+        #region -------------------------------------------------------->
+        try:
+            ClearInput(event.GetEventObject())
+        except Exception as e:
+            pub.sendMessage(
+                mConfig.core.kwPubErrorU,
+                tException = e,
+                msg        = mConfig.core.mClearError,
+            )
+        #endregion ----------------------------------------------------->
+
+        return True
     #---
     #endregion ------------------------------------------------> Event Methods
 #---
@@ -236,8 +248,8 @@ class StaticTextCtrl():
             Hint for the wx.TextCtrl. Default is ''.
         tcName: str
             Name for the wx.TextCtrl.
-        validator: wx.Validator or None
-            To validate input for wx.TexCtrl.
+        validator: wx.Validator
+            To validate input for wx.TexCtrl. Default is wx.DefaultValidator.
 
         Attributes
         ----------
@@ -263,7 +275,7 @@ class StaticTextCtrl():
         tcHint:str                             = '',
         tcStyle:int                            =  0,
         tcName:str                             = '',
-        validator:Optional[wx.Validator]       = None,
+        validator:wx.Validator                 = wx.DefaultValidator,
         ) -> None:
         """"""
         #region -----------------------------------------------------> Widgets
@@ -278,7 +290,7 @@ class StaticTextCtrl():
             value     = "",
             size      = tcSize,
             style     = tcStyle,
-            validator = wx.DefaultValidator if validator is None else validator,
+            validator = validator,
         )
         self.wTc.SetHint(tcHint)
         #endregion --------------------------------------------------> Widgets
@@ -388,7 +400,7 @@ class StaticTextComboBox():
             Tooltip for the wx.StaticText. Default is ''.
         choices: list of str
             Options for the wx.ComboBox.
-        validator: wx.Validator or None
+        validator: wx.Validator
             Validator for the wx.ComboBox. Default is wx.DefaultValidator.
         setSizer: boolean
             Set (True) or not (False) a sizer for the widgets.
@@ -416,11 +428,11 @@ class StaticTextComboBox():
         parent:wx.Window,
         label:str,
         choices:list[str],
-        value:str                        = '',
-        tooltip:str                      = '',
-        styleCB:int                      = wx.CB_READONLY,
-        setSizer:bool                    = False,
-        validator:Optional[wx.Validator] = None,
+        value:str              = '',
+        tooltip:str            = '',
+        styleCB:int            = wx.CB_READONLY,
+        setSizer:bool          = False,
+        validator:wx.Validator = wx.DefaultValidator,
         ) -> None:
         """ """
         #region -----------------------------------------------------> Widgets
@@ -431,7 +443,7 @@ class StaticTextComboBox():
             value     = value,
             choices   = choices,
             style     = styleCB,
-            validator = wx.DefaultValidator if validator is None else validator,
+            validator = validator,
         )
         #endregion --------------------------------------------------> Widgets
 
@@ -506,7 +518,14 @@ class ButtonClearAll():
             event: wx.CommandEvent
                 Information about the event.
         """
-        ClearInput(self.rDelParent)
+        try:
+            ClearInput(self.rDelParent)
+        except Exception as e:
+            pub.sendMessage(
+                mConfig.core.kwPubErrorU,
+                tException = e,
+                msg        = mConfig.core.mClearError,
+            )
         return True
     #---
     #endregion ------------------------------------------------> Event Methods
@@ -576,7 +595,7 @@ class ButtonRun():
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event methods
-    def OnRun(self, event:wx.CommandEvent) -> bool:                            # pylint: disable=unused-argument
+    def OnRun(self, event:wx.CommandEvent) -> bool:                             # pylint: disable=unused-argument
         """Start new thread to run the analysis. Override as needed.
 
             Parameter
@@ -749,7 +768,8 @@ class ButtonOnlineHelp():
         try:
             webbrowser.open_new_tab(self.rUrl)
         except Exception as e:
-            raise e
+            msg = 'It was not possible to access the online resource.'
+            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e, msg=msg)
         #endregion -------------------------------------------------> Open web
 
         return True
@@ -980,6 +1000,23 @@ class ButtonTextCtrlFF():
             event: wx.CommandEvent
                 Event information.
         """
+        #region -------------------------------------------------------->
+        try:
+            self.Btn()
+        except Exception as e:
+            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
+    def Btn(self) -> bool:
+        """Action to perform when button is clicked.
+
+            Returns
+            -------
+            bool
+        """
         #region ------------------------------------------> Select file/folder
         if self.rMode != 'folder':
             dlg = cWindow.FileSelect(
@@ -997,9 +1034,10 @@ class ButtonTextCtrlFF():
 
         #region ---------------------------------------------> After selection
         if self.rAfterBtn is not None:
-            try:
+            try:                                                                # To make sure dlg is destroyed if error
                 self.rAfterBtn(Path(path))
             except Exception as e:
+                dlg.Destroy()
                 raise e
         #endregion ------------------------------------------> After selection
 
@@ -1014,6 +1052,27 @@ class ButtonTextCtrlFF():
             ----------
             event: wx.Event
                 Information about the event.
+        """
+        #region -------------------------------------------------------->
+        try:
+            self.Copy()
+        except Exception as e:
+            pub.sendMessage(
+                mConfig.core.kwPubErrorU,
+                tException = e,
+                msg        = mConfig.core.mCopyFailedW,
+            )
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
+    def Copy(self) -> bool:
+        """Copy wx.TextCtrl content.
+
+            Return
+            ------
+            bool
         """
         #region ----------------------------------------------------> Get data
         data    = self.wTc.GetValue()
@@ -1033,7 +1092,7 @@ class ButtonTextCtrlFF():
         return True
     #---
 
-    def OnCut(self, event:wx.Event) -> bool:
+    def OnCut(self, event:wx.Event) -> bool:                                    # pylint: disable=unused-argument
         """Cut wx.TextCtrl content.
 
             Parameters
@@ -1041,10 +1100,29 @@ class ButtonTextCtrlFF():
             event: wx.Event
                 Information about the event.
         """
-        #region -------------------------------------------> Copy to clipboard
+        #region -------------------------------------------------------->
         try:
-            self.OnCopy(event)
-        except Exception:
+            self.Cut()
+        except Exception as e:
+            pub.sendMessage(
+                mConfig.core.kwPubErrorU,
+                tException = e,
+                msg        = mConfig.core.mCutFailedW,
+            )
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
+    def Cut(self) -> bool:
+        """Cut wx.TextCtrl content.
+
+            Return
+            ------
+            bool
+        """
+        #region -------------------------------------------> Copy to clipboard
+        if not self.Copy():
             return False
         #endregion ----------------------------------------> Copy to clipboard
 
@@ -1235,10 +1313,10 @@ class MyListCtrl(wx.ListCtrl):
             do this where the event handler can be temporarily disabled.
         """
         #region --------------------------------------------------> Select all
-        #------------------------------> Prevent
-        self.Freeze()
-        self.SelectAll()
-        self.Thaw()
+        try:
+            self.SelectAll()
+        except Exception as e:
+            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
         #endregion -----------------------------------------------> Select all
 
         return True
@@ -1251,6 +1329,31 @@ class MyListCtrl(wx.ListCtrl):
             ----------
             event: wx.Event
                 Information about the event.
+
+            Notes
+            -----
+            If self.copyFullContent, then data is dict with keys being the
+            selected row indexes and values a list with the rows's content from
+            left to right.
+            If not, then data is a string with comma-separated selected row's
+            indexes
+        """
+        #region -------------------------------------------------------->
+        try:
+            self.Copy()
+        except Exception as e:
+            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
+    def Copy(self) -> bool:
+        """Copy selected rows in the wx.ListCtrl to the clipboard.
+
+            Return
+            ------
+            bool
 
             Notes
             -----
@@ -1290,7 +1393,7 @@ class MyListCtrl(wx.ListCtrl):
         return True
     #---
 
-    def OnCut(self, event:wx.Event) -> bool:
+    def OnCut(self, event:wx.Event) -> bool:                                    # pylint: disable=unused-argument
         """Cut selected rows in the wx.ListCtrl to the clipboard.
 
             Parameters
@@ -1298,9 +1401,34 @@ class MyListCtrl(wx.ListCtrl):
             event: wx.Event
                 Information about the event.
 
+            Return
+            ------
+            bool
+
             Notes
             -----
             See also self.OnCopy
+        """
+        #region -------------------------------------------------------->
+        try:
+            self.Cut()
+        except Exception as e:
+            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
+    def Cut(self) -> bool:
+        """Cut selected rows in the wx.ListCtrl to the clipboard.
+
+            Return
+            ------
+            bool
+
+            Notes
+            -----
+            See also self.Copy
         """
         #region -----------------------------------------------> Check can cut
         if not self.rCanCut:
@@ -1310,15 +1438,9 @@ class MyListCtrl(wx.ListCtrl):
         #endregion --------------------------------------------> Check can cut
 
         #region --------------------------------------------------------> Copy
-        try:
-            self.OnCopy(event)
-        except Exception as e:
-            raise e
+        if self.Copy():
+            self.DeleteSelected()
         #endregion -----------------------------------------------------> Copy
-
-        #region ------------------------------------------------------> Delete
-        self.DeleteSelected()
-        #endregion ---------------------------------------------------> Delete
 
         return True
     #---
@@ -1330,6 +1452,31 @@ class MyListCtrl(wx.ListCtrl):
             ----------
             event: wx.Event, str
                 Information about the event.
+
+            Return
+            ------
+            bool
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        try:
+            self.Paste()
+        except Exception as e:
+            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
+    def Paste(self) -> bool:
+        """Paste selected rows in the wx.ListCtrl from the clipboard.
+
+            Return
+            ------
+            bool
 
             Returns
             -------
@@ -1517,10 +1664,15 @@ class MyListCtrl(wx.ListCtrl):
             If the wx.EVT_LIST_ITEM_SELECTED is used then it will be better to
             do this where the event handler can be temporarily disabled.
         """
+        #region -------------------------------------------------------->
+        self.Freeze()
         #------------------------------>
         for k in range(0, self.GetItemCount()):
             self.Select(k, on=1)
         #------------------------------>
+        self.Thaw()
+        #endregion ----------------------------------------------------->
+
         return True
     #---
 
@@ -2029,10 +2181,14 @@ class ResControl():
             -------
             bool
         """
-        #------------------------------>
-        with cWindow.ResControlExp(self.cParent) as dlg:
-            dlg.ShowModal()
-        #------------------------------>
+        #region -------------------------------------------------------->
+        try:
+            with cWindow.ResControlExp(self.cParent) as dlg:
+                dlg.ShowModal()
+        except Exception as e:
+            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+        #endregion ----------------------------------------------------->
+
         return True
     #---
     #endregion ------------------------------------------------> Event methods
@@ -2161,7 +2317,49 @@ class MatPlotPanel(wx.Panel):
             -------
             bool
         """
-        return self.SaveImage(mConfig.core.elMatPlotSaveI, parent=self)
+        #region -------------------------------------------------------->
+        try:
+            self.SaveImage(mConfig.core.elMatPlotSaveI, parent=self)
+        except Exception as e:
+            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
+    def SaveImage(
+        self,
+        ext:str,
+        parent:Optional[wx.Window] = None,
+        msg:str                    = '',
+        ) -> bool:
+        """Save an image of the plot.
+
+            Parameters
+            ----------
+            ext: file extension
+                wxPython extension spec.
+            parent: wx.Widget or None
+                To center the save dialog. Default is None.
+            msg: str or None
+                Title for the save file window. Default is None.
+
+            Returns
+            -------
+            bool
+        """
+        #region ------------------------------------------------------> Dialog
+        dlg = cWindow.FileSelect('save', ext, parent=parent, msg=msg)
+        #endregion ---------------------------------------------------> Dialog
+
+        #region ----------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            path = dlg.GetPath()
+            self.rFigure.savefig(path, dpi=self.rDPI)
+        #endregion -------------------------------------------------> Get Path
+
+        dlg.Destroy()
+        return True
     #---
 
     def OnZoomResetPlot(self, event:wx.CommandEvent) -> bool:                   # pylint: disable=unused-argument
@@ -2176,7 +2374,28 @@ class MatPlotPanel(wx.Panel):
             -------
             bool
         """
-        return self.ZoomResetPlot()
+        #region -------------------------------------------------------->
+        try:
+            self.ZoomResetPlot()
+        except Exception as e:
+            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
+    def ZoomResetPlot(self) -> bool:
+        """Reset the zoom level of the plot.
+
+            Return
+            ------
+            True
+        """
+        self.rAxes.set_xlim(self.rZoomReset['x'])
+        self.rAxes.set_ylim(self.rZoomReset['y'])
+        self.rCanvas.draw()
+        #------------------------------>
+        return True
     #---
 
     def OnKeyPress(self, event) -> bool:
@@ -2193,60 +2412,41 @@ class MatPlotPanel(wx.Panel):
         """
         #region -------------------------------------------------------> Event
         if event.key == 'escape':
-            self.OnZoomInAbort(event)
+            try:
+                self.ZoomInAbort(event)
+            except Exception as e:
+                pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
         #endregion ----------------------------------------------------> Event
 
         return True
     #---
 
-    def OnGetAxesXY(self, event) -> tuple[float, float]:
-        """Get the x,y mouse coordinates.
-
-            Parameters
-            ----------
-            event: mpl.event
-                Information about the event.
-
-            Returns
-            -------
-            tuple
-                (X, Y) coordinates.
-        """
-        #region --------------------------------------------------->
-        x = event.xdata
-        #------------------------------>
-        if getattr(self, 'rAxes2', None) is not None:
-            _, y = self.rAxes.transData.inverted().transform((event.x,event.y))
-        else:
-            y = event.ydata
-        #endregion ------------------------------------------------>
-
-        return (x,y)
-    #---
-
-    def OnMotionMouse(self, event) -> bool:
-        """Handle move mouse event.
+    def ZoomInAbort(self, event) -> bool:
+        """Abort a zoom in operation when Esc is pressed.
 
             Parameters
             ----------
             event: mpl.MouseEvent
                 Information about the mpl event.
 
-            Returns
-            -------
+            Return
+            ------
             bool
         """
-        #region -------------------------------------------------------> Event
-        if event.button == 1:
-            self.OnDrawZoomRect(event)
-        else:
-            self.OnUpdateStatusBar(event)
-        #endregion ----------------------------------------------------> Event
+        #------------------------------>
+        self.rInitX  = float('inf')
+        self.rInitY  = float('inf')
+        self.rFinalX = float('inf')
+        self.rFinalY = float('inf')
+        #------------------------------>
+        self.ZoomRectDelete()
+        #------------------------------>
+        self.UpdateStatusBar(event)
 
         return True
     #---
 
-    def OnUpdateStatusBar(self, event):
+    def UpdateStatusBar(self, event):
         """To update status bar. Basic functionality.
 
             Parameters
@@ -2268,7 +2468,7 @@ class MatPlotPanel(wx.Panel):
             if self.rStatusMethod is not None:
                 self.rStatusMethod(event)
             else:
-                x,y = self.OnGetAxesXY(event)
+                x,y = self.GetAxesXY(event)
                 self.wStatBar.SetStatusText(
                     f"x={x:.2f} y={y:.2f}"
                 )
@@ -2279,7 +2479,35 @@ class MatPlotPanel(wx.Panel):
         return True
     #---
 
-    def OnDrawZoomRect(self, event) -> bool:
+    def OnMotionMouse(self, event) -> bool:
+        """Handle move mouse event.
+
+            Parameters
+            ----------
+            event: mpl.MouseEvent
+                Information about the mpl event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Event
+        if event.button == 1:
+            try:
+                self.DrawZoomRect(event)
+            except Exception as e:
+                pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+        else:
+            try:
+                self.UpdateStatusBar(event)
+            except Exception as e:
+                pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+        #endregion ----------------------------------------------------> Event
+
+        return True
+    #---
+
+    def DrawZoomRect(self, event) -> bool:
         """Draw a rectangle to highlight area that will be zoomed in.
 
             Parameters
@@ -2298,11 +2526,11 @@ class MatPlotPanel(wx.Panel):
 
         #region -----------------------------------------> Initial coordinates
         if math.isinf(self.rInitX):
-            self.rInitX, self.rInitY = self.OnGetAxesXY(event)
+            self.rInitX, self.rInitY = self.GetAxesXY(event)
         #endregion --------------------------------------> Initial coordinates
 
         #region -------------------------------------------> Final coordinates
-        self.rFinalX, self.rFinalY = self.OnGetAxesXY(event)
+        self.rFinalX, self.rFinalY = self.GetAxesXY(event)
         #endregion ----------------------------------------> Final coordinates
 
         #region ------------------------------------> Delete & Create zoomRect
@@ -2330,27 +2558,6 @@ class MatPlotPanel(wx.Panel):
         return True
     #---
 
-    def OnZoomInAbort(self, event) -> bool:
-        """Abort a zoom in operation when Esc is pressed.
-
-            Parameters
-            ----------
-            event: mpl.MouseEvent
-                Information about the mpl event
-        """
-        #------------------------------>
-        self.rInitX  = float('inf')
-        self.rInitY  = float('inf')
-        self.rFinalX = float('inf')
-        self.rFinalY = float('inf')
-        #------------------------------>
-        self.ZoomRectDelete()
-        #------------------------------>
-        self.OnUpdateStatusBar(event)
-
-        return True
-    #---
-
     def OnPressMouse(self, event) -> bool:
         """Process press mouse event.
 
@@ -2365,13 +2572,16 @@ class MatPlotPanel(wx.Panel):
         """
         #region -------------------------------------------------------> Event
         if event.inaxes and event.button == 1:
-            self.OnLeftClick(event)
+            try:
+                self.LeftClick(event)
+            except Exception as e:
+                pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
         #endregion ----------------------------------------------------> Event
 
         return True
     #---
 
-    def OnLeftClick(self, event) -> bool:
+    def LeftClick(self, event) -> bool:
         """Process left click event.
 
             Parameters
@@ -2384,7 +2594,7 @@ class MatPlotPanel(wx.Panel):
             bool
         """
         #region -------------------------------------------------------> Event
-        self.rInitX, self.rInitY = self.OnGetAxesXY(event)
+        self.rInitX, self.rInitY = self.GetAxesXY(event)
         #endregion ----------------------------------------------------> Event
 
         return True
@@ -2404,13 +2614,16 @@ class MatPlotPanel(wx.Panel):
         """
         #region ---------------------------------------------------> Event
         if event.button == 1:
-            self.OnLeftRelease(event)
+            try:
+                self.LeftRelease(event)
+            except Exception as e:
+                pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
         #endregion ------------------------------------------------> Event
 
         return True
     #---
 
-    def OnLeftRelease(self, event) -> bool:                                     # pylint: disable=unused-argument
+    def LeftRelease(self, event) -> bool:                                     # pylint: disable=unused-argument
         """Process a left button release event.
 
             Parameters
@@ -2496,6 +2709,31 @@ class MatPlotPanel(wx.Panel):
         return True
     #---
 
+    def GetAxesXY(self, event) -> tuple[float, float]:
+        """Get the x,y mouse coordinates.
+
+            Parameters
+            ----------
+            event: mpl.event
+                Information about the event.
+
+            Returns
+            -------
+            tuple
+                (X, Y) coordinates.
+        """
+        #region --------------------------------------------------->
+        x = event.xdata
+        #------------------------------>
+        if getattr(self, 'rAxes2', None) is not None:
+            _, y = self.rAxes.transData.inverted().transform((event.x,event.y))
+        else:
+            y = event.ydata
+        #endregion ------------------------------------------------>
+
+        return (x,y)
+    #---
+
     def ZoomResetSetValues(self) -> bool:
         """Set the axis limit in the cero zoom state. Should be called after all
             initial plotting and axis configuration is done.
@@ -2509,20 +2747,6 @@ class MatPlotPanel(wx.Panel):
         return True
     #---
 
-    def ZoomResetPlot(self) -> bool:
-        """Reset the zoom level of the plot.
-
-            Return
-            ------
-            True
-        """
-        self.rAxes.set_xlim(self.rZoomReset['x'])
-        self.rAxes.set_ylim(self.rZoomReset['y'])
-        self.rCanvas.draw()
-        #------------------------------>
-        return True
-    #---
-
     def ZoomRectDelete(self) -> bool:
         """Delete the zoom in rectangle"""
         #region --------------------------------------------------------> Rect
@@ -2532,41 +2756,6 @@ class MatPlotPanel(wx.Panel):
             self.rZoomRect = None
         #endregion -----------------------------------------------------> Rect
 
-        return True
-    #---
-
-    def SaveImage(
-        self,
-        ext:str,
-        parent:Optional[wx.Window] = None,
-        msg:str                    = '',
-        ) -> bool:
-        """Save an image of the plot.
-
-            Parameters
-            ----------
-            ext: file extension
-                wxPython extension spec.
-            parent: wx.Widget or None
-                To center the save dialog. Default is None.
-            msg: str or None
-                Title for the save file window. Default is None.
-
-            Returns
-            -------
-            bool
-        """
-        #region ------------------------------------------------------> Dialog
-        dlg = cWindow.FileSelect('save', ext, parent=parent, msg=msg)
-        #endregion ---------------------------------------------------> Dialog
-
-        #region ----------------------------------------------------> Get Path
-        if dlg.ShowModal() == wx.ID_OK:
-            path = dlg.GetPath()
-            self.rFigure.savefig(path, dpi=self.rDPI)
-        #endregion -------------------------------------------------> Get Path
-
-        dlg.Destroy()
         return True
     #---
 

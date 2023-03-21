@@ -118,6 +118,7 @@ class Configuration():
     kwMain:str         = 'Main'
     kwSec:str          = 'Sec'
     kwPCorrected:str   = 'corrP'
+    kwPubErrorU:str    = 'PubSub Code Unexpected Error'                         # PubSub topic
     #------------------------------> Sizes
     sLCtrlColI:list[int] = field(default_factory=lambda: [50, 150])             # Size for # Name columns in a wx.ListCtrl
     sTc:tuple[int,int]         = (50, 22)                                       # wx.TextCtrl
@@ -218,6 +219,7 @@ class Configuration():
     mColNumbers:str         = ('In addition, each value must be smaller than '
                                'the total number of columns in the Data file.')
     mCopyFailedW:str        = 'Copy operation failed. Try again.'
+    mCutFailedW:str         = 'Cut operation failed. Try again.'
     mCtrlEmpty:str          = 'None of the Control fields can be empty.'
     mEmpty:str              = 'The field value cannot be empty.'
     mFileBad:str            = "File: '{}'\ncannot be used as {} file."
@@ -267,6 +269,8 @@ class Configuration():
     mValueBad:str           = "Value '{}' cannot be accepted in {}.\n"
     mNoPCorr:str            = ('This analysis does not contain information '
                                'about corrected P values.')
+    mClearError:str         = ('It was not possible to clear the content of '
+                               'some or all the widgets.')
     #-->
     mOneRPlusNum:str    = f'{mValueBad}{mOneRPlusNumText}'
     mNZPlusNum:str      = f'{mValueBad}{mNZPlusNumText}'

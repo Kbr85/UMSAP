@@ -644,7 +644,7 @@ class BaseWindowResultListText(BaseWindowResult):
 
         #region ----------------------------------------------> Show N Results
         if iSimilar:
-            msg = (f'The string, {tStr}, was found in multiple rows.')
+            msg = f'The string, {tStr}, was found in multiple rows.'
             tException = (
                 f'The row numbers where the string was found are:\n '
                 f'{str(iSimilar)[1:-1]}')
@@ -656,7 +656,7 @@ class BaseWindowResultListText(BaseWindowResult):
                 parent     = self,
             )
         else:
-            msg = (f'The string, {tStr}, was not found.')
+            msg = f'The string, {tStr}, was not found.'
             Notification(
                 'warning',
                 msg        = msg,
@@ -2036,7 +2036,7 @@ class Progress(wx.Dialog):
         """
         #region -------------------------------------------------> Check input
         if not error and tException is None:
-            msg = ("Both error and tException cannot be None")
+            msg = "Both error and tException cannot be None"
             raise ValueError(msg)
         #endregion ----------------------------------------------> Check input
 
@@ -2212,11 +2212,15 @@ class Notification(wx.Dialog):
         self.Fit()
         #endregion ---------------------------------------------------> Sizers
 
+        #region ---------------------------------------------> Position & Show
         if parent is not None:
             self.CenterOnParent()
+        else:
+            self.Center()
         #------------------------------>
         self.ShowModal()
         self.Destroy()
+        #endregion ------------------------------------------> Position & Show
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -3008,3 +3012,35 @@ class MultipleCheckBox(BaseDialogOkCancel):
     #endregion ------------------------------------------------> Class methods
 #---
 #endregion ----------------------------------------------------------> Dialogs
+
+
+#region -------------------------------------------------------------> Methods
+def UnexpectedErrorNotification(
+    tException:Exception,
+    msg:str                    = '',
+    parent:Optional[wx.Window] = None,
+    ) -> bool:
+    """Show an unexpected error notification
+
+        Parameters
+        ----------
+        tException: Exception
+            Exception with the unexpected error
+
+        Returns
+        -------
+        bool
+    """
+    #region -------------------------------------------------------->
+    tMsg = msg if msg else mConfig.core.mUnexpectedError
+    Notification('errorU', msg=tMsg, tException=tException, parent=parent)
+    #endregion ----------------------------------------------------->
+
+    return True
+#---
+#endregion ----------------------------------------------------------> Methods
+
+
+#region --------------------------------------------------------------> PubSub
+pub.subscribe(UnexpectedErrorNotification, mConfig.core.kwPubErrorU)
+#endregion -----------------------------------------------------------> PubSub
