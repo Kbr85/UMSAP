@@ -766,13 +766,12 @@ class ButtonOnlineHelp():
         """
         #region ----------------------------------------------------> Open web
         try:
-            webbrowser.open_new_tab(self.rUrl)
+            return webbrowser.open_new_tab(self.rUrl)
         except Exception as e:
             msg = 'It was not possible to access the online resource.'
             pub.sendMessage(mConfig.core.kwPubErrorU, tException=e, msg=msg)
+            return False
         #endregion -------------------------------------------------> Open web
-
-        return True
     #---
     #endregion ------------------------------------------------> Event Methods
 #---
@@ -1002,12 +1001,11 @@ class ButtonTextCtrlFF():
         """
         #region -------------------------------------------------------->
         try:
-            self.Btn()
+            return self.Btn()
         except Exception as e:
             pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+            return False
         #endregion ----------------------------------------------------->
-
-        return True
     #---
 
     def Btn(self) -> bool:
@@ -1314,12 +1312,11 @@ class MyListCtrl(wx.ListCtrl):
         """
         #region --------------------------------------------------> Select all
         try:
-            self.SelectAll()
+            return self.SelectAll()
         except Exception as e:
             pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+            return False
         #endregion -----------------------------------------------> Select all
-
-        return True
     #---
 
     def OnCopy(self, event:Union[wx.Event, str]) -> bool:                      # pylint: disable=unused-argument
@@ -1340,12 +1337,11 @@ class MyListCtrl(wx.ListCtrl):
         """
         #region -------------------------------------------------------->
         try:
-            self.Copy()
+            return self.Copy()
         except Exception as e:
             pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+            return False
         #endregion ----------------------------------------------------->
-
-        return True
     #---
 
     def Copy(self) -> bool:
@@ -1411,12 +1407,11 @@ class MyListCtrl(wx.ListCtrl):
         """
         #region -------------------------------------------------------->
         try:
-            self.Cut()
+            return self.Cut()
         except Exception as e:
             pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+            return False
         #endregion ----------------------------------------------------->
-
-        return True
     #---
 
     def Cut(self) -> bool:
@@ -1463,12 +1458,11 @@ class MyListCtrl(wx.ListCtrl):
         """
         #region -------------------------------------------------------->
         try:
-            self.Paste()
+            return self.Paste()
         except Exception as e:
             pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+            return False
         #endregion ----------------------------------------------------->
-
-        return True
     #---
 
     def Paste(self) -> bool:
@@ -2185,11 +2179,12 @@ class ResControl():
         try:
             with cWindow.ResControlExp(self.cParent) as dlg:
                 dlg.ShowModal()
+            #------------------------------>
+            return True
         except Exception as e:
             pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+            return False
         #endregion ----------------------------------------------------->
-
-        return True
     #---
     #endregion ------------------------------------------------> Event methods
 #---
@@ -2319,12 +2314,11 @@ class MatPlotPanel(wx.Panel):
         """
         #region -------------------------------------------------------->
         try:
-            self.SaveImage(mConfig.core.elMatPlotSaveI, parent=self)
+            return self.SaveImage(mConfig.core.elMatPlotSaveI, parent=self)
         except Exception as e:
             pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+            return False
         #endregion ----------------------------------------------------->
-
-        return True
     #---
 
     def SaveImage(
@@ -2376,12 +2370,11 @@ class MatPlotPanel(wx.Panel):
         """
         #region -------------------------------------------------------->
         try:
-            self.ZoomResetPlot()
+            return self.ZoomResetPlot()
         except Exception as e:
             pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+            return False
         #endregion ----------------------------------------------------->
-
-        return True
     #---
 
     def ZoomResetPlot(self) -> bool:
@@ -2413,9 +2406,10 @@ class MatPlotPanel(wx.Panel):
         #region -------------------------------------------------------> Event
         if event.key == 'escape':
             try:
-                self.ZoomInAbort(event)
+                return self.ZoomInAbort(event)
             except Exception as e:
                 pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+                return False
         #endregion ----------------------------------------------------> Event
 
         return True
@@ -2494,17 +2488,17 @@ class MatPlotPanel(wx.Panel):
         #region -------------------------------------------------------> Event
         if event.button == 1:
             try:
-                self.DrawZoomRect(event)
+                return self.DrawZoomRect(event)
             except Exception as e:
                 pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+                return False
         else:
             try:
-                self.UpdateStatusBar(event)
+                return self.UpdateStatusBar(event)
             except Exception as e:
                 pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+                return False
         #endregion ----------------------------------------------------> Event
-
-        return True
     #---
 
     def DrawZoomRect(self, event) -> bool:
@@ -2573,9 +2567,10 @@ class MatPlotPanel(wx.Panel):
         #region -------------------------------------------------------> Event
         if event.inaxes and event.button == 1:
             try:
-                self.LeftClick(event)
+                return self.LeftClick(event)
             except Exception as e:
                 pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+                return False
         #endregion ----------------------------------------------------> Event
 
         return True
@@ -2615,9 +2610,10 @@ class MatPlotPanel(wx.Panel):
         #region ---------------------------------------------------> Event
         if event.button == 1:
             try:
-                self.LeftRelease(event)
+                return self.LeftRelease(event)
             except Exception as e:
                 pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+                return False
         #endregion ------------------------------------------------> Event
 
         return True

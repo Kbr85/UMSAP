@@ -509,10 +509,20 @@ class BaseConfPanel(
             ------
             bool
         """
+        #region -------------------------------------------------------->
         if (fileP := self.wIFile.wTc.GetValue()) == '':
-            return self.LCtrlEmpty()
-        #------------------------------>
-        return self.IFileEnter(fileP)
+            try:
+                return self.LCtrlEmpty()
+            except Exception as e:
+                pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+                return False
+        else:
+            try:
+                return self.IFileEnter(fileP)
+            except Exception as e:
+                pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+                return False
+        #endregion ----------------------------------------------------->
     #---
 
     def OnImpMethod(self, event:Union[wx.CommandEvent, str])-> bool:            # pylint: disable=unused-argument
@@ -522,6 +532,22 @@ class BaseConfPanel(
             ----------
             event: wx.CommandEvent or str
                 Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        try:
+            return self.ImpMethod()
+        except Exception as e:
+            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+            return False
+        #endregion ----------------------------------------------------->
+    #---
+
+    def ImpMethod(self)-> bool:
+        """Show/Hide the Imputation options.
 
             Returns
             -------
@@ -555,9 +581,30 @@ class BaseConfPanel(
             bool
         """
         #region -------------------------------------------------------->
+        try:
+            return self.Clear(event)
+        except Exception as e:
+            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+            return False
+        #endregion ----------------------------------------------------->
+    #---
+
+    def Clear(self, event:wx.CommandEvent) -> bool:
+        """Clear all input, including the Imputation options.
+
+            Parameters
+            ----------
+            event: wx.CommandEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
         super().OnClear(event)
         #------------------------------>
-        self.OnImpMethod('fEvent')
+        self.ImpMethod()
         #endregion ----------------------------------------------------->
 
         return True
@@ -580,7 +627,7 @@ class BaseConfPanel(
         self.wShift.wTc.SetValue(mConfig.data.shift)
         self.wWidth.wTc.SetValue(mConfig.data.width)
         #------------------------------>
-        self.OnImpMethod('fEvent')
+        self.ImpMethod()
         #endregion ----------------------------------------------------->
 
         return True
@@ -634,9 +681,11 @@ class BaseConfPanel(
         try:
             cMethod.LCtrlFillColNames(self.wLCtrlI, fileP)
         except Exception as e:
+            self.wIFile.wTc.SetValue('')
+            self.LCtrlEmpty()
+            #------------------------------>
             cWindow.Notification(
                 'errorF', parent=self, msg=str(e), tException=e)
-            self.wIFile.wTc.SetValue('')
             return False
         #endregion ------------------------------------------------> Fill list
 
@@ -1626,10 +1675,47 @@ class BaseResControlExpConf(wx.Panel):
             -------
             True
         """
+        #region -------------------------------------------------------->
+        try:
+            return self.Create()
+        except Exception as e:
+            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+            return False
+        #endregion ----------------------------------------------------->
+    #---
+
+    def Create(self) -> bool:
+        """Create the field widgets
+
+            Returns
+            -------
+            bool
+        """
         return True
     #---
 
     def OnLabelNumber(self, event:Union[wx.Event, str]) -> bool:
+        """Creates fields for names when the total wx.TextCtrl looses focus.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        try:
+            return self.LabelNumber(event)
+        except Exception as e:
+            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+            return False
+        #endregion ----------------------------------------------------->
+    #---
+
+    def LabelNumber(self, event:Union[wx.Event, str]) -> bool:
         """Creates fields for names when the total wx.TextCtrl looses focus.
 
             Parameters
@@ -1704,7 +1790,65 @@ class BaseResControlExpConf(wx.Panel):
         return True
     #---
 
-    def OnOK(self, export:bool=True) -> tuple[bool, str]:
+    def OnClear(self, event:wx.Event) -> bool:                                  # pylint: disable=unused-argument
+        """Clear all input in the wx.Dialog.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        try:
+            return self.Clear()
+        except Exception as e:
+            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
+            return False
+        #endregion ----------------------------------------------------->
+    #---
+
+    def Clear(self) -> bool:
+        """Clear all input in the wx.Dialog.
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------------> Widgets
+        #------------------------------> Labels
+        self.sSWLabel.Clear(delete_windows=True)
+        #------------------------------> Control
+        self.wControlN.wTc.SetValue('')
+        try:
+            self.wCbControl.SetValue('')                                        # type: ignore
+        except Exception:
+            pass
+        #------------------------------> Fields
+        self.sSWMatrix.Clear(delete_windows=True)
+        #endregion --------------------------------------------------> Widgets
+
+        #region -------------------------------------------------> List & Dict
+        self.rLSectWidget = []
+        self.rLSectTcDict = {}
+        self.rFSectTcDict = {}
+        self.rFSectStDict = {}
+        #endregion ----------------------------------------------> List & Dict
+
+        #region --------------------------------------------------> Add Labels
+        self.AddLabelFields()
+        self.Add2SWLabel()
+        #endregion -----------------------------------------------> Add Labels
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event methods
+
+    #region --------------------------------------------------> Manage methods
+    def OK(self, export:bool=True) -> tuple[bool, str]:
         """Validate and set the Results - Control Experiments text.
 
             Parameters
@@ -1770,48 +1914,6 @@ class BaseResControlExpConf(wx.Panel):
         return (True, oText)
     #---
 
-    def OnClear(self, event:wx.Event) -> bool:                                  # pylint: disable=unused-argument
-        """Clear all input in the wx.Dialog.
-
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region -----------------------------------------------------> Widgets
-        #------------------------------> Labels
-        self.sSWLabel.Clear(delete_windows=True)
-        #------------------------------> Control
-        self.wControlN.wTc.SetValue('')
-        try:
-            self.wCbControl.SetValue('')                                        # type: ignore
-        except Exception:
-            pass
-        #------------------------------> Fields
-        self.sSWMatrix.Clear(delete_windows=True)
-        #endregion --------------------------------------------------> Widgets
-
-        #region -------------------------------------------------> List & Dict
-        self.rLSectWidget = []
-        self.rLSectTcDict = {}
-        self.rFSectTcDict = {}
-        self.rFSectStDict = {}
-        #endregion ----------------------------------------------> List & Dict
-
-        #region --------------------------------------------------> Add Labels
-        self.AddLabelFields()
-        self.Add2SWLabel()
-        #endregion -----------------------------------------------> Add Labels
-
-        return True
-    #---
-    #endregion ------------------------------------------------> Event methods
-
-    #region --------------------------------------------------> Manage methods
     def Export2TopParent(self, oText:str) -> bool:
         """Export the data to the top parent.
 
@@ -1880,7 +1982,7 @@ class BaseResControlExpConf(wx.Panel):
             if k not in ['Control', 'ControlType']:
                 self.rLSectWidget[k].wTc.SetValue(str(len(v)))
         #------------------------------> Create labels fields
-        self.OnLabelNumber('test')
+        self.LabelNumber('test')
         #------------------------------> Fill. 2 iterations needed. Improve
         for k, v in self.cTopParent.rLbDict.items():                            # type: ignore
             if k not in ['Control', 'ControlType']:
@@ -1901,7 +2003,7 @@ class BaseResControlExpConf(wx.Panel):
         #endregion ----------------------------------------------> Set Control
 
         #region ---------------------------------------------> Create tcFields
-        self.OnCreate('fEvent')
+        self.Create()
         #endregion ------------------------------------------> Create tcFields
 
         #region --------------------------------------------> Add Field Values

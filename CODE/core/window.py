@@ -21,6 +21,7 @@ from typing  import Optional, Union, Literal, TYPE_CHECKING
 
 import matplotlib.patches as mpatches
 import pandas             as pd
+
 from pubsub  import pub
 
 import wx
