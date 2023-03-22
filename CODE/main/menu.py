@@ -94,7 +94,7 @@ class MenuModule(cMenu.BaseMenu):
         #endregion ----------------------------------------------> Check MainW
 
         #region --------------------------------------------------> Create Tab
-        mConfig.main.mainWin.CreateTab(self.rIDMap[event.GetId()])
+        mConfig.main.mainWin.OnCreateTab(self.rIDMap[event.GetId()])
         #endregion -----------------------------------------------> Create Tab
 
         return True
@@ -163,7 +163,7 @@ class MenuUtility(cMenu.BaseMenu):
         #endregion ----------------------------------------------> Check MainW
 
         #region --------------------------------------------------> Create Tab
-        mConfig.main.mainWin.CreateTab(self.rIDMap[event.GetId()])
+        mConfig.main.mainWin.OnCreateTab(self.rIDMap[event.GetId()])
         #endregion -----------------------------------------------> Create Tab
 
         return True
