@@ -21,11 +21,13 @@ from dataclasses import dataclass, field
 from datetime    import datetime
 from operator    import itemgetter
 from pathlib     import Path
-from typing      import Literal, Union, Optional, Any, TYPE_CHECKING
+from typing      import Callable, Literal, Union, Optional, Any, TYPE_CHECKING
 
 import matplotlib as mpl
 import numpy      as np
 import pandas     as pd
+
+from pubsub import pub
 
 import wx
 
@@ -977,6 +979,39 @@ def LCtrlFillColNames(lc:wx.ListCtrl, fileP:Union[Path, str]) -> bool:
     #endregion ----------------------------------------------------> Fill List
 
     return True
+#---
+
+
+def OnGUIMethod(
+    tFunc: Callable,
+    *args,
+    errorMsg:str                    = '',
+    errorParent:Optional[wx.Window] = None,
+    **kwargs
+    ) -> bool:
+    """Execute a method called from the GUI.
+
+        Parameters
+        ----------
+        tFunc: Callable
+            Method to execute with the given args and kwargs. Must return bool.
+
+        Returns
+        -------
+        bool
+    """
+    #region -------------------------------------------------------->
+    try:
+        return tFunc(*args, **kwargs)
+    except Exception as e:
+        pub.sendMessage(
+            mConfig.core.kwPubErrorU,
+            tException = e,
+            msg        = errorMsg,
+            parent     = errorParent,
+        )
+        return False
+    #endregion ----------------------------------------------------->
 #---
 #endregion ------------------------------------------------------> GUI Methods
 

@@ -511,17 +511,9 @@ class BaseConfPanel(
         """
         #region -------------------------------------------------------->
         if (fileP := self.wIFile.wTc.GetValue()) == '':
-            try:
-                return self.LCtrlEmpty()
-            except Exception as e:
-                pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-                return False
+            return cMethod.OnGUIMethod(self.LCtrlEmpty)
         else:
-            try:
-                return self.IFileEnter(fileP)
-            except Exception as e:
-                pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-                return False
+            return cMethod.OnGUIMethod(self.IFileEnter, fileP)
         #endregion ----------------------------------------------------->
     #---
 
@@ -537,13 +529,7 @@ class BaseConfPanel(
             -------
             bool
         """
-        #region -------------------------------------------------------->
-        try:
-            return self.ImpMethod()
-        except Exception as e:
-            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-            return False
-        #endregion ----------------------------------------------------->
+        return cMethod.OnGUIMethod(self.ImpMethod)
     #---
 
     def ImpMethod(self)-> bool:
@@ -580,13 +566,7 @@ class BaseConfPanel(
             -------
             bool
         """
-        #region -------------------------------------------------------->
-        try:
-            return self.Clear(event)
-        except Exception as e:
-            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-            return False
-        #endregion ----------------------------------------------------->
+        return cMethod.OnGUIMethod(self.Clear, event)
     #---
 
     def Clear(self, event:wx.CommandEvent) -> bool:
@@ -1675,13 +1655,7 @@ class BaseResControlExpConf(wx.Panel):
             -------
             True
         """
-        #region -------------------------------------------------------->
-        try:
-            return self.Create()
-        except Exception as e:
-            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-            return False
-        #endregion ----------------------------------------------------->
+        return cMethod.OnGUIMethod(self.Create)
     #---
 
     def Create(self) -> bool:
@@ -1706,13 +1680,7 @@ class BaseResControlExpConf(wx.Panel):
             -------
             bool
         """
-        #region -------------------------------------------------------->
-        try:
-            return self.LabelNumber(event)
-        except Exception as e:
-            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-            return False
-        #endregion ----------------------------------------------------->
+        return cMethod.OnGUIMethod(self.LabelNumber, event)
     #---
 
     def LabelNumber(self, event:Union[wx.Event, str]) -> bool:
@@ -1802,13 +1770,7 @@ class BaseResControlExpConf(wx.Panel):
             -------
             bool
         """
-        #region -------------------------------------------------------->
-        try:
-            return self.Clear()
-        except Exception as e:
-            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-            return False
-        #endregion ----------------------------------------------------->
+        return cMethod.OnGUIMethod(self.Clear)
     #---
 
     def Clear(self) -> bool:

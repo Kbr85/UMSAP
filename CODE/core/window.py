@@ -28,12 +28,13 @@ import wx
 from wx import aui
 
 from config.config import config as mConfig
-from core   import file   as cFile
-from core   import method as cMethod
-from core   import pane   as cPane
-from core   import tab    as cTab
-from core   import widget as cWidget
-from result import file   as resFile
+from core   import exception as cException
+from core   import file      as cFile
+from core   import method    as cMethod
+from core   import pane      as cPane
+from core   import tab       as cTab
+from core   import widget    as cWidget
+from result import file      as resFile
 
 if TYPE_CHECKING:
     from limprot import method as limpMethod
@@ -106,6 +107,16 @@ class BaseWindow(wx.Frame):
             ----------
             event: wx.CloseEvent
                 Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.Close)
+    #---
+
+    def Close(self) -> bool:
+        """Destroy window.
 
             Returns
             -------
@@ -202,12 +213,12 @@ class BaseWindowResult(BaseWindow):
         super().__init__(parent=parent)
         #------------------------------>
         dKeyMethod = {
-            mConfig.core.kwWinUpdate   : self.UpdateResultWindow,
-            mConfig.core.kwDupWin      : self.DupWin,
-            mConfig.core.kwExpData     : self.ExportData,
-            mConfig.core.kwExpImgAll   : self.ExportImgAll,
-            mConfig.core.kwZoomResetAll: self.ZoomResetAll,
-            mConfig.core.kwCheckDP     : self.CheckDataPrep,
+            mConfig.core.kwWinUpdate   : self.OnUpdateResultWindow,
+            mConfig.core.kwDupWin      : self.OnDupWin,
+            mConfig.core.kwExpData     : self.OnExportData,
+            mConfig.core.kwExpImgAll   : self.OnExportImgAll,
+            mConfig.core.kwZoomResetAll: self.OnZoomResetAll,
+            mConfig.core.kwCheckDP     : self.OnCheckDataPrep,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -215,7 +226,7 @@ class BaseWindowResult(BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnClose(self, event:wx.CloseEvent) -> bool:
+    def OnClose(self, event:wx.CloseEvent) -> bool:                             # pylint: disable=unused-argument
         """Close window and uncheck section in UMSAPFile window. Assumes
             self.cParent is an instance of UMSAPControl.
 
@@ -223,6 +234,17 @@ class BaseWindowResult(BaseWindow):
             ----------
             event: wx.CloseEvent
                 Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.Close)
+    #---
+
+    def Close(self) -> bool:
+        """Close window and uncheck section in UMSAPFile window. Assumes
+            self.cParent is an instance of UMSAPControl.
 
             Returns
             -------
@@ -242,41 +264,15 @@ class BaseWindowResult(BaseWindow):
 
         return True
     #---
-    #endregion ------------------------------------------------> Event Methods
 
-    #region ---------------------------------------------------> Class methods
-    def ReportPlotDataError(self) -> bool:
-        """Check that there is something to plot after reading a section in
-            an UMSAP Plot.
+    def OnDupWin(self) -> bool:
+        """Duplicate window. Method called from Menu.
 
             Returns
             -------
             bool
         """
-        #region ---------------------------------------------> Nothing to Plot
-        if len(self.rData.date) < 1:
-            msg = (f'All entries for {self.cSection} in file '
-                   f'{self.rObj.rFileP.name} are corrupted or were not found.')
-            Notification('errorU', msg=msg)
-            raise ValueError(msg)
-        #endregion ------------------------------------------> Nothing to Plot
-
-        #region -------------------------------------------------> Some Errors
-        if self.rData.error:
-            #------------------------------>
-            fileList = '\n'.join(self.rData.error)
-            #------------------------------>
-            if len(self.rData.error) == 1:
-                msg = (f'The data for analysis:\n{fileList}\n '
-                       f'contains errors or was not found.')
-            else:
-                msg = (f'The data for analysis:\n{fileList}\n '
-                       f'contain errors or were not found.')
-            #------------------------------>
-            Notification('warning', msg=msg)
-        #endregion ----------------------------------------------> Some Errors
-
-        return True
+        return cMethod.OnGUIMethod(self.DupWin)
     #---
 
     def DupWin(self) -> bool:
@@ -293,6 +289,16 @@ class BaseWindowResult(BaseWindow):
         #endregion ------------------------------------------------> Duplicate
 
         return True
+    #---
+
+    def OnExportData(self) -> bool:
+        """Export result Data. Method called from the Menu.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.ExportData)
     #---
 
     def ExportData(self, df:Optional[pd.DataFrame]=None) -> bool:
@@ -319,71 +325,21 @@ class BaseWindowResult(BaseWindow):
             if tDF is None:
                 tDF = self.rDataC.df if df is None else df
             #------------------------------> Export
-            try:
-                cFile.WriteDF2CSV(p, tDF)                                       # type: ignore
-            except Exception as e:
-                Notification(
-                    'errorF',
-                    msg        = self.cMsgExportFailed.format('Data'),
-                    tException = e,
-                    parent     = self,
-                )
+            cFile.WriteDF2CSV(p, tDF)                                           # type: ignore
         #endregion ------------------------------------------------> Get Path
 
         dlg.Destroy()
         return True
     #---
 
-    def ExportDataFiltered(self, df: Optional[pd.DataFrame]=None) -> bool:
-        """Export data to a csv file.
+    def OnUpdateResultWindow(self) -> bool:
+        """Update the window. Method called from the Menu.
 
             Returns
             -------
             bool
         """
-        #region --------------------------------------------------> Dlg window
-        dlg = FileSelect('save', mConfig.core.elData, parent=self)
-        #endregion -----------------------------------------------> Dlg window
-
-        #region ---------------------------------------------------> Get Path
-        if dlg.ShowModal() == wx.ID_OK:
-            #------------------------------> Variables
-            p = Path(dlg.GetPath())
-            tDF = self.rDf if df is None else df
-            #------------------------------> Export
-            try:
-                cFile.WriteDF2CSV(p, tDF)
-            except Exception as e:
-                Notification(
-                    'errorF',
-                    msg        = self.cMsgExportFailed.format('Data'),
-                    tException = e,
-                    parent     = self,
-                )
-        #endregion ------------------------------------------------> Get Path
-
-        dlg.Destroy()
-        return True
-    #---
-
-    def ExportImgAll(self) -> bool:
-        """Create and image of all plots in the window.
-
-            Returns
-            -------
-            bool
-        """
-        return True
-    #---
-
-    def ZoomResetAll(self) -> bool:
-        """Reset the zoom of all plots in the window.
-
-            Returns
-            -------
-            bool
-        """
-        return True
+        return cMethod.OnGUIMethod(self.UpdateResultWindow)
     #---
 
     def UpdateResultWindow(self) -> bool:
@@ -396,22 +352,55 @@ class BaseWindowResult(BaseWindow):
         return True
     #---
 
-    def PlotTitle(self) -> bool:
-        """Set the title of a plot window.
+    def OnExportImgAll(self) -> bool:
+        """Export Images. Method called from the Menu.
 
             Returns
             -------
             bool
-
-            Notes
-            -----
-            Assumes child class has self.cSection and self.rDateC and the parent
-            is an UMSAPControl window
         """
-        self.SetTitle(
-            f"{self.cParent.cTitle} - {self.cSection} - {self.rDateC}")         # type: ignore
+        return cMethod.OnGUIMethod(self.ExportImgAll)
+    #---
 
+    def ExportImgAll(self) -> bool:
+        """Create and image of all plots in the window.
+
+            Returns
+            -------
+            bool
+        """
         return True
+    #---
+
+
+    def OnZoomResetAll(self) -> bool:
+        """Reset Zoom of plots. Method called from the Menu.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.ZoomResetAll)
+    #---
+
+    def ZoomResetAll(self) -> bool:
+        """Reset the zoom of all plots in the window.
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
+    def OnCheckDataPrep(self) -> bool:
+        """Check Data Preparation steps. Method called from the Menu.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.CheckDataPrep)
     #---
 
     def CheckDataPrep(self) -> bool:
@@ -432,6 +421,81 @@ class BaseWindowResult(BaseWindow):
             tDate    = self.rDateC
         )
         #endregion ------------------------------------------------>
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
+    #region ---------------------------------------------------> Class methods
+    def ReportPlotDataError(self) -> bool:
+        """Check that there is something to plot after reading a section in
+            an UMSAP Plot.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------> Nothing to Plot
+        if len(self.rData.date) < 1:
+            raise cException.Nothing2Plot(self.cSection, self.rObj.rFileP)
+        #endregion ------------------------------------------> Nothing to Plot
+
+        #region -------------------------------------------------> Some Errors
+        if self.rData.error:
+            #------------------------------>
+            fileList = '\n'.join(self.rData.error)
+            #------------------------------>
+            if len(self.rData.error) == 1:
+                msg = (f'The data for analysis:\n{fileList}\n '
+                       f'contains errors or was not found.')
+            else:
+                msg = (f'The data for analysis:\n{fileList}\n '
+                       f'contain errors or were not found.')
+            #------------------------------>
+            Notification('warning', msg=msg)
+        #endregion ----------------------------------------------> Some Errors
+
+        return True
+    #---
+
+    def ExportDataFiltered(self, df: Optional[pd.DataFrame]=None) -> bool:
+        """Export data to a csv file.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Dlg window
+        dlg = FileSelect('save', mConfig.core.elData, parent=self)
+        #endregion -----------------------------------------------> Dlg window
+
+        #region ---------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            #------------------------------> Variables
+            p = Path(dlg.GetPath())
+            tDF = self.rDf if df is None else df
+            #------------------------------> Export
+            cFile.WriteDF2CSV(p, tDF)
+        #endregion ------------------------------------------------> Get Path
+
+        dlg.Destroy()
+        return True
+    #---
+
+    def PlotTitle(self) -> bool:
+        """Set the title of a plot window.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Assumes child class has self.cSection and self.rDateC and the parent
+            is an UMSAPControl window
+        """
+        self.SetTitle(
+            f"{self.cParent.cTitle} - {self.cSection} - {self.rDateC}")         # type: ignore
 
         return True
     #---
@@ -494,7 +558,7 @@ class BaseWindowResultOnePlot(BaseWindowResult):
 
         #region ---------------------------------------------------> Widget
         self.wPlot = {0:cWidget.MatPlotPanel(self)}
-        self.wPlot[0].SetStatBar(self.wStatBar, self.OnUpdateStatusBar)
+        self.wPlot[0].SetStatBar(self.wStatBar, self.UpdateStatusBar)
         #endregion ------------------------------------------------> Widget
 
         #region ---------------------------------------------------> Sizers
@@ -513,12 +577,8 @@ class BaseWindowResultOnePlot(BaseWindowResult):
             bool
         """
         #region --------------------------------------------------->
-        try:
-            self.wPlot[0].SaveImage(
+        self.wPlot[0].SaveImage(
                 ext=mConfig.core.elMatPlotSaveI, parent=self)
-        except Exception as e:
-            msg = "The image of the plot could not be saved."
-            Notification('errorU', msg=msg, tException=e, parent=self)
         #endregion ------------------------------------------------>
 
         return True
@@ -532,17 +592,13 @@ class BaseWindowResultOnePlot(BaseWindowResult):
             bool
         """
         #region --------------------------------------------------->
-        try:
-            self.wPlot[0].ZoomResetPlot()
-        except Exception as e:
-            msg = 'The zoom level of the plot could not be reset.'
-            Notification('errorU', msg=msg, tException=e, parent=self)
+        self.wPlot[0].ZoomResetPlot()
         #endregion ------------------------------------------------>
 
         return True
     #---
 
-    def OnUpdateStatusBar(self, event) -> bool:                                 # pylint: disable=unused-argument
+    def UpdateStatusBar(self, event) -> bool:                                 # pylint: disable=unused-argument
         """Update the statusbar info.
 
             Parameters
@@ -623,6 +679,16 @@ class BaseWindowResultListText(BaseWindowResult):
             Returns
             -------
             bool
+        """
+        return cMethod.OnGUIMethod(self.Search)
+    #---
+
+    def Search(self) -> bool:
+        """Search for a given string in the wx.ListCtrl.
+
+            Returns
+            -------
+            bool
 
             Notes
             -----
@@ -681,6 +747,21 @@ class BaseWindowResultListText(BaseWindowResult):
             -------
             bool
         """
+        return cMethod.OnGUIMethod(self.ListSelect)
+    #---
+
+    def ListSelect(self) -> bool:
+        """Processes a wx.ListCtrl event.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
         self.rLCIdx = self.wLC.wLCS.wLC.GetLastSelected()
         return True
     #---
@@ -697,6 +778,20 @@ class BaseWindowResultListText(BaseWindowResult):
             -------
             bool
         """
+        #region -------------------------------------------------------->
+        cMethod.OnGUIMethod(self.ListSelectEmpty)
+        event.Skip()
+        return True
+        #endregion ----------------------------------------------------->
+    #---
+
+    def ListSelectEmpty(self) -> bool:
+        """What to do after selecting a row in the wx.ListCtrl.
+
+            Returns
+            -------
+            bool
+        """
         #region --------------------------------------------------->
         idx = self.wLC.wLCS.wLC.GetFirstSelected()
         #------------------------------>
@@ -704,9 +799,9 @@ class BaseWindowResultListText(BaseWindowResult):
             self.wLC.wLCS.wLC.Select(self.rLCIdx, on=1)
         #endregion ------------------------------------------------>
 
-        event.Skip()
         return True
     #---
+
     #endregion ------------------------------------------------> Event Methods
 
     #region ---------------------------------------------------> Class Methods
@@ -728,7 +823,7 @@ class BaseWindowResultListText(BaseWindowResult):
         self.wLC.wLCS.wLC.Select(tRow, on=1)
         self.wLC.wLCS.wLC.EnsureVisible(tRow)
         self.wLC.wLCS.wLC.SetFocus()
-        self.OnListSelect('fEvent')
+        self.ListSelect()
         #------------------------------>
         return True
     #---
@@ -763,8 +858,8 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
         super().__init__(parent=parent)
         #------------------------------>
         dKeyMethod = {
-            mConfig.core.kwExpImg   : self.ExportImg,
-            mConfig.core.kwZoomReset: self.ZoomReset,
+            mConfig.core.kwExpImg   : self.OnExportImg,
+            mConfig.core.kwZoomReset: self.OnZoomReset,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -833,20 +928,20 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class Methods
-    def ZoomResetAll(self) -> bool:
-        """Reset Zoom of all plots.
+    #region ----------------------------------------------------> Event Method
+    def OnExportImg(self, tKey:str) -> bool:
+        """Export Images. Method called from Menu.
+
+            Parameters
+            ----------
+            tKey: str
+                Key in self.wPlot.dPlot
 
             Returns
             -------
             bool
         """
-        #region --------------------------------------------------->
-        for v in self.wPlot.dPlot.values():
-            v.ZoomResetPlot()
-        #endregion ------------------------------------------------>
-
-        return True
+        return cMethod.OnGUIMethod(self.ExportImg, tKey)
     #---
 
     def ExportImg(self, tKey: str) -> bool:
@@ -861,18 +956,24 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
             -------
             bool
         """
-        try:
-            self.wPlot.dPlot[tKey].SaveImage(
-                mConfig.core.elMatPlotSaveI, parent=self)
-        except Exception as e:
-            Notification(
-                'errorU',
-                msg        = self.cMsgExportFailed.format('Image'),
-                tException = e,
-                parent     = self,
-                )
-            return False
+        self.wPlot.dPlot[tKey].SaveImage(
+            mConfig.core.elMatPlotSaveI, parent=self)
         return True
+    #---
+
+    def OnZoomReset(self, tKey:str) -> bool:
+        """Reset Zoom of plots. Method called from Menu.
+
+            Parameters
+            ----------
+            tKey: str
+                Key in self.wPlot.dPlot
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.ZoomReset, tKey)
     #---
 
     def ZoomReset(self, tKey: str) -> bool:
@@ -887,12 +988,24 @@ class BaseWindowResultListTextNPlot(BaseWindowResultListText):
             -------
             bool
         """
-        try:
-            self.wPlot.dPlot[tKey].ZoomResetPlot()
-        except Exception as e:
-            msg = 'It was not possible to reset the zoom on the selected plot.'
-            Notification('errorU', msg=msg, tException=e, parent=self)
-            return False
+        self.wPlot.dPlot[tKey].ZoomResetPlot()
+        return True
+    #---
+    #endregion -------------------------------------------------> Event Method
+
+    #region ---------------------------------------------------> Class Methods
+    def ZoomResetAll(self) -> bool:
+        """Reset Zoom of all plots.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        for v in self.wPlot.dPlot.values():
+            v.ZoomResetPlot()
+        #endregion ------------------------------------------------>
+
         return True
     #---
     #endregion ------------------------------------------------> Class Methods
@@ -926,8 +1039,8 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
         super().__init__(parent)
         #------------------------------>
         dKeyMethod = {
-            mConfig.core.kwExpImg   : self.ExportImg,
-            mConfig.core.kwZoomReset: self.ZoomReset,
+            mConfig.core.kwExpImg   : self.OnExportImg,
+            mConfig.core.kwZoomReset: self.OnZoomReset,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -1020,6 +1133,21 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
+    def OnExportImg(self, tKey:str) -> bool:
+        """Export Images. Method called from Menu.
+
+            Parameters
+            ----------
+            tKey: str
+                Key in self.wPlot.dPlot
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.ExportImg, tKey)
+    #---
+
     def ExportImg(self, tKey:str) -> bool:
         """Save an image of the selected plot.
 
@@ -1036,6 +1164,21 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
             ext=mConfig.core.elMatPlotSaveI, parent=self)
     #---
 
+    def OnZoomReset(self, tKey:str) -> bool:
+        """Reset Zoom of plots. Method called from Menu.
+
+            Parameters
+            ----------
+            tKey: str
+                Key in self.wPlot.dPlot
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.ZoomReset, tKey)
+    #---
+
     def ZoomReset(self, tKey:str) -> bool:
         """Reset the Zoom of the selected plot.
 
@@ -1049,7 +1192,9 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
         """
         return self.wPlot[tKey].ZoomResetPlot()
     #---
+    #endregion ------------------------------------------------> Event Methods
 
+    #region ---------------------------------------------------> Class Methods
     def ExportImgAll(self) -> bool:
         """Export all plots to a tiff image.
 
@@ -1067,21 +1212,13 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
             p    = Path(dlg.GetPath())
             date = cMethod.StrNow()
             #------------------------------> Export
-            try:
-                for k, v in self.wPlot.items():
-                    fPath = p / self.cImgName[k].format(self.rDateC, mConfig.core.imgFormat)
-                    #------------------------------> Do not overwrite
-                    if fPath.exists():
-                        fPath = fPath.with_stem(f"{fPath.stem} - {date}")
-                    #------------------------------> Write
-                    v.rFigure.savefig(fPath)
-            except Exception as e:
-                Notification(
-                    'errorF',
-                    msg        = self.cMsgExportFailed.format('Images'),
-                    tException = e,
-                    parent     = self,
-                )
+            for k, v in self.wPlot.items():
+                fPath = p / self.cImgName[k].format(self.rDateC, mConfig.core.imgFormat)
+                #------------------------------> Do not overwrite
+                if fPath.exists():
+                    fPath = fPath.with_stem(f"{fPath.stem} - {date}")
+                #------------------------------> Write
+                v.rFigure.savefig(fPath)
         #endregion ------------------------------------------------> Get Path
 
         dlg.Destroy()
@@ -1102,7 +1239,7 @@ class BaseWindowResultListText2Plot(BaseWindowResultListText):
 
         return True
     #---
-    #endregion ------------------------------------------------> Event Methods
+    #endregion ------------------------------------------------> Class Methods
 #---
 
 
@@ -1137,7 +1274,7 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         super().__init__(parent)
         #------------------------------>
         dKeyMethod = {
-            mConfig.core.kwExpSeq : self.SeqExport,
+            mConfig.core.kwExpSeq : self.OnSeqExport,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -1149,14 +1286,82 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
     #---
     #endregion -----------------------------------------------> Instance setup
 
+    #region ---------------------------------------------------> Event Methods
+    def OnSeqExport(self):
+        """Export the sequences to a pdf file. Method called from the Menu.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.SeqExport)
+    #---
+
+    def SeqExport(self) -> bool:
+        """Export the recombinant sequence.
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
+    def OnPickFragment(self, event) -> bool:                                    # pylint: disable=dangerous-default-value, unused-argument
+        """Display info about the selected fragment.
+
+            Parameters
+            ----------
+            event: matplotlib pick event.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.PickFragment)
+    #---
+
+    def PickFragment(self) -> bool:
+        """Display info about the selected fragment.
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
     #region ---------------------------------------------------> Class methods
+    def ListSelect(self) -> bool:
+        """Process a wx.ListCtrl select event.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        self.rLCIdx = self.wLC.wLCS.wLC.GetFirstSelected()
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        self.rPeptide = self.wLC.wLCS.wLC.GetItemText(self.rLCIdx, col=1)
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        self.ShowPeptideLoc()
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+
     def GetDF4FragmentSearch(self) -> pd.DataFrame:
         """Get the pd.Dataframe needed to create the fragments.
 
             Returns
             -------
             pd.DataFrame
-            Seq Nrec Crec Nnat Cnat Col1 Col2 ColN
+                Seq Nrec Crec Nnat Cnat Col1 Col2 ColN
 
             Notes
             -----
@@ -1200,11 +1405,6 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
 
     def FillListCtrl(self) -> bool:
         """Update the protein list for the given analysis.
-
-            Attributes
-            ----------
-            tIDX: pd.IndexSlice
-                To select columns used to filter self.rDf by alpha value
 
             Returns
             -------
@@ -1312,30 +1512,6 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         return True
     #---
 
-    def SeqExport(self) -> bool:
-        """Export the recombinant sequence
-
-            Returns
-            -------
-            bool
-        """
-        return True
-    #---
-
-    def OnPickFragment(self, event) -> bool:                     # pylint: disable=dangerous-default-value, unused-argument
-        """Display info about the selected fragment.
-
-            Parameters
-            ----------
-            event: matplotlib pick event.
-
-            Returns
-            -------
-            bool
-        """
-        return True
-    #---
-
     def ShowPeptideLoc(self) -> bool:
         """Show the location of the selected peptide.
 
@@ -1405,35 +1581,6 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         return True
     #---
     #endregion ------------------------------------------------> Class methods
-
-    #region ---------------------------------------------------> Event Methods
-    def OnListSelect(self, event:Union[wx.CommandEvent, str]) -> bool:
-        """Process a wx.ListCtrl select event.
-
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------->
-        self.rLCIdx = self.wLC.wLCS.wLC.GetFirstSelected()
-        #endregion ------------------------------------------------>
-
-        #region --------------------------------------------------->
-        self.rPeptide = self.wLC.wLCS.wLC.GetItemText(self.rLCIdx, col=1)
-        #endregion ------------------------------------------------>
-
-        #region --------------------------------------------------->
-        self.ShowPeptideLoc()
-        #endregion ------------------------------------------------>
-
-        return True
-    #---
-    #endregion ------------------------------------------------> Event Methods
 #---
 
 
@@ -1473,15 +1620,10 @@ class BaseWindowResultOnePlotFA(BaseWindowResultOnePlot):
     #endregion ------------------------------------------------> Class methods
 
     #region ---------------------------------------------------> Event Methods
-    def OnClose(self, event:wx.CloseEvent) -> bool:
+    def Close(self) -> bool:
         """Close window and uncheck section in UMSAPFile window. Assumes
             self.parent is an instance of UMSAPControl.
             Override as needed.
-
-            Parameters
-            ----------
-            event: wx.CloseEvent
-                Information about the event
 
             Returns
             -------
@@ -1574,6 +1716,25 @@ class BaseDialogOkCancel(wx.Dialog):
             -----
             Basic implementation. Override as needed.
         """
+        return cMethod.OnGUIMethod(self.OK)
+    #---
+
+    def OK(self) -> bool:
+        """Validate user information and close the window.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Basic implementation. Override as needed.
+        """
         self.EndModal(1)
         self.Close()
         #------------------------------>
@@ -1581,6 +1742,22 @@ class BaseDialogOkCancel(wx.Dialog):
     #---
 
     def OnCancel(self, event:wx.CommandEvent) -> bool:                          # pylint: disable=unused-argument
+        """The macOs implementation has a bug here that does not discriminate
+            between the Cancel and Ok button and always return self.EndModal(1).
+
+            Parameters
+            ----------
+            event:wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            True
+        """
+        return cMethod.OnGUIMethod(self.Cancel)
+    #---
+
+    def Cancel(self) -> bool:
         """The macOs implementation has a bug here that does not discriminate
             between the Cancel and Ok button and always return self.EndModal(1).
 
@@ -1746,13 +1923,65 @@ class ListSelect(BaseDialogOkCancel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event methods
-    def OnOK(self, event:wx.CommandEvent) -> bool:
-        """Validate user information and close the window.
+    def OnAdd(self, event:Union[wx.Event, str]) -> bool:                        # pylint: disable=unused-argument
+        """Add columns to analyze using the button.
 
             Parameters
             ----------
-            event: wx.CommandEvent
-                Information about the event.
+            event: wx.Event
+                Event information.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.Add)
+    #---
+
+    def Add(self) -> bool:
+        """Add columns to analyze using the button.
+
+            Returns
+            -------
+            bool
+        """
+        self.wLCtrlI.Copy()
+        self.wLCtrlO.Paste()
+        #------------------------------>
+        return True
+    #---
+
+    def OnRightDelete(self, event:Union[wx.Event, str]) -> bool:                # pylint: disable=unused-argument
+        """Delete list with a right click.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Event information.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.RightDelete)
+    #---
+
+    def RightDelete(self) -> bool:
+        """Delete list with a right click.
+
+            Returns
+            -------
+            bool
+        """
+        self.wLCtrlO.DeleteAllItems()
+        #------------------------------>
+        return True
+    #---
+    #endregion ------------------------------------------------> Event methods
+
+    #region ---------------------------------------------------> Class Methods
+    def OK(self) -> bool:
+        """Validate user information and close the window.
 
             Returns
             -------
@@ -1775,42 +2004,7 @@ class ListSelect(BaseDialogOkCancel):
 
         return True
     #---
-
-    def OnAdd(self, event:Union[wx.Event, str]) -> bool:                        # pylint: disable=unused-argument
-        """Add columns to analyze using the button.
-
-            Parameters
-            ----------
-            event: wx.Event
-                Event information.
-
-            Returns
-            -------
-            bool
-        """
-        self.wLCtrlI.OnCopy('')
-        self.wLCtrlO.OnPaste('')
-        #------------------------------>
-        return True
-    #---
-
-    def OnRightDelete(self, event:Union[wx.Event, str]) -> bool:                # pylint: disable=unused-argument
-        """Delete list with a right click.
-
-            Parameters
-            ----------
-            event: wx.Event
-                Event information.
-
-            Returns
-            -------
-            bool
-        """
-        self.wLCtrlO.DeleteAllItems()
-        #------------------------------>
-        return True
-    #---
-    #endregion ------------------------------------------------> Event methods
+    #endregion ------------------------------------------------> Class Methods
 #---
 
 
@@ -2313,10 +2507,6 @@ class ResControlExp(BaseDialogOkCancel):
         self.SetSizer(self.sSizer)
         #endregion ----------------------------------------------------> Sizer
 
-        #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_BUTTON, self.OnOK, id=wx.ID_OK)
-        #endregion -----------------------------------------------------> Bind
-
         #region ---------------------------------------------> Window position
         if parent is not None:
             self.CenterOnParent()
@@ -2325,13 +2515,8 @@ class ResControlExp(BaseDialogOkCancel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event methods
-    def OnOK(self, event:wx.CommandEvent) -> bool:
+    def OK(self) -> bool:
         """Validate user information and close the window.
-
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event.
 
             Returns
             -------
@@ -2536,13 +2721,8 @@ class FABtnText(BaseDialogOkCancel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnOK(self, event:wx.CommandEvent) -> bool:
+    def OK(self) -> bool:
         """Validate user information and close the window
-
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event.
 
             Returns
             -------
@@ -2654,13 +2834,8 @@ class FA2Btn(BaseDialogOkCancel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnOK(self, event:wx.CommandEvent) -> bool:
+    def OK(self) -> bool:
         """Validate user information and close the window.
-
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event.
 
             Returns
             -------
@@ -2778,13 +2953,8 @@ class UserInputText(BaseDialogOkCancel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnOK(self, event:wx.CommandEvent) -> bool:
+    def OK(self) -> bool:
         """Validate user information and close the window.
-
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event.
 
             Returns
             -------
@@ -2945,8 +3115,23 @@ class MultipleCheckBox(BaseDialogOkCancel):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Class methods
+    #region ----------------------------------------------------> Event Method
     def OnCheck(self, event:wx.CommandEvent) -> bool:
+        """Deselect all other selected options.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.Check, event)
+    #---
+
+    def Check(self, event:wx.CommandEvent) -> bool:
         """Deselect all other selected options.
 
             Parameters
@@ -2971,8 +3156,10 @@ class MultipleCheckBox(BaseDialogOkCancel):
 
         return True
     #---
+    #endregion -------------------------------------------------> Event Method
 
-    def OnOK(self, event:wx.CommandEvent) -> bool:
+    #region ---------------------------------------------------> Class Methods
+    def OK(self) -> bool:
         """Validate user information and close the window.
 
             Parameters
@@ -3010,7 +3197,7 @@ class MultipleCheckBox(BaseDialogOkCancel):
         """
         return self.rChecked
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Class Methods
 #---
 #endregion ----------------------------------------------------------> Dialogs
 

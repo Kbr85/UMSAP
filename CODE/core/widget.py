@@ -34,6 +34,7 @@ import wx.lib.mixins.listctrl as listmix
 
 from config.config import config as mConfig
 from core import generator as cGenerator
+from core import method    as cMethod
 from core import validator as cValidator
 from core import window    as cWindow
 #endregion ----------------------------------------------------------> Imports
@@ -139,11 +140,11 @@ class StaticBoxes():
     def __init__(
         self,
         parent:wx.Window,
-        rightDelete:bool  = True,
-        labelF:str        = 'Files',
-        labelD:str        = 'Data Preparation',
-        labelV:str        = 'User-defined Values',
-        labelC:str        = "Column Numbers",
+        rightDelete:bool = True,
+        labelF:str       = 'Files',
+        labelD:str       = 'Data Preparation',
+        labelV:str       = 'User-defined Values',
+        labelC:str       = "Column Numbers",
         ) -> None:
         """"""
         #region ----------------------------------------------> File & Folders
@@ -210,18 +211,7 @@ class StaticBoxes():
             event: wx.MouseEvent
                 Information about the event
         """
-        #region -------------------------------------------------------->
-        try:
-            ClearInput(event.GetEventObject())
-        except Exception as e:
-            pub.sendMessage(
-                mConfig.core.kwPubErrorU,
-                tException = e,
-                msg        = mConfig.core.mClearError,
-            )
-        #endregion ----------------------------------------------------->
-
-        return True
+        return cMethod.OnGUIMethod(ClearInput, event.GetEventObject())
     #---
     #endregion ------------------------------------------------> Event Methods
 #---
@@ -518,15 +508,7 @@ class ButtonClearAll():
             event: wx.CommandEvent
                 Information about the event.
         """
-        try:
-            ClearInput(self.rDelParent)
-        except Exception as e:
-            pub.sendMessage(
-                mConfig.core.kwPubErrorU,
-                tException = e,
-                msg        = mConfig.core.mClearError,
-            )
-        return True
+        return cMethod.OnGUIMethod(ClearInput, self.rDelParent)
     #---
     #endregion ------------------------------------------------> Event Methods
 #---
@@ -764,14 +746,7 @@ class ButtonOnlineHelp():
             event: wx.CommandEvent
                 Information about the event.
         """
-        #region ----------------------------------------------------> Open web
-        try:
-            return webbrowser.open_new_tab(self.rUrl)
-        except Exception as e:
-            msg = 'It was not possible to access the online resource.'
-            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e, msg=msg)
-            return False
-        #endregion -------------------------------------------------> Open web
+        return cMethod.OnGUIMethod(webbrowser.open_new_tab, self.rUrl)
     #---
     #endregion ------------------------------------------------> Event Methods
 #---
@@ -999,13 +974,7 @@ class ButtonTextCtrlFF():
             event: wx.CommandEvent
                 Event information.
         """
-        #region -------------------------------------------------------->
-        try:
-            return self.Btn()
-        except Exception as e:
-            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-            return False
-        #endregion ----------------------------------------------------->
+        return cMethod.OnGUIMethod(self.Btn)
     #---
 
     def Btn(self) -> bool:
@@ -1051,18 +1020,7 @@ class ButtonTextCtrlFF():
             event: wx.Event
                 Information about the event.
         """
-        #region -------------------------------------------------------->
-        try:
-            self.Copy()
-        except Exception as e:
-            pub.sendMessage(
-                mConfig.core.kwPubErrorU,
-                tException = e,
-                msg        = mConfig.core.mCopyFailedW,
-            )
-        #endregion ----------------------------------------------------->
-
-        return True
+        return cMethod.OnGUIMethod(self.Copy)
     #---
 
     def Copy(self) -> bool:
@@ -1098,18 +1056,7 @@ class ButtonTextCtrlFF():
             event: wx.Event
                 Information about the event.
         """
-        #region -------------------------------------------------------->
-        try:
-            self.Cut()
-        except Exception as e:
-            pub.sendMessage(
-                mConfig.core.kwPubErrorU,
-                tException = e,
-                msg        = mConfig.core.mCutFailedW,
-            )
-        #endregion ----------------------------------------------------->
-
-        return True
+        return cMethod.OnGUIMethod(self.Cut)
     #---
 
     def Cut(self) -> bool:
@@ -1310,13 +1257,7 @@ class MyListCtrl(wx.ListCtrl):
             If the wx.EVT_LIST_ITEM_SELECTED is used then it will be better to
             do this where the event handler can be temporarily disabled.
         """
-        #region --------------------------------------------------> Select all
-        try:
-            return self.SelectAll()
-        except Exception as e:
-            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-            return False
-        #endregion -----------------------------------------------> Select all
+        return cMethod.OnGUIMethod(self.SelectAll)
     #---
 
     def OnCopy(self, event:Union[wx.Event, str]) -> bool:                      # pylint: disable=unused-argument
@@ -1335,13 +1276,7 @@ class MyListCtrl(wx.ListCtrl):
             If not, then data is a string with comma-separated selected row's
             indexes
         """
-        #region -------------------------------------------------------->
-        try:
-            return self.Copy()
-        except Exception as e:
-            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-            return False
-        #endregion ----------------------------------------------------->
+        return cMethod.OnGUIMethod(self.Copy)
     #---
 
     def Copy(self) -> bool:
@@ -1405,13 +1340,7 @@ class MyListCtrl(wx.ListCtrl):
             -----
             See also self.OnCopy
         """
-        #region -------------------------------------------------------->
-        try:
-            return self.Cut()
-        except Exception as e:
-            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-            return False
-        #endregion ----------------------------------------------------->
+        return cMethod.OnGUIMethod(self.Cut)
     #---
 
     def Cut(self) -> bool:
@@ -1456,13 +1385,7 @@ class MyListCtrl(wx.ListCtrl):
             -------
             bool
         """
-        #region -------------------------------------------------------->
-        try:
-            return self.Paste()
-        except Exception as e:
-            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-            return False
-        #endregion ----------------------------------------------------->
+        return cMethod.OnGUIMethod(self.Paste)
     #---
 
     def Paste(self) -> bool:
@@ -2312,13 +2235,9 @@ class MatPlotPanel(wx.Panel):
             -------
             bool
         """
-        #region -------------------------------------------------------->
-        try:
-            return self.SaveImage(mConfig.core.elMatPlotSaveI, parent=self)
-        except Exception as e:
-            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-            return False
-        #endregion ----------------------------------------------------->
+        return cMethod.OnGUIMethod(
+            self.SaveImage, mConfig.core.elMatPlotSaveI, parent=self
+        )
     #---
 
     def SaveImage(
@@ -2368,13 +2287,7 @@ class MatPlotPanel(wx.Panel):
             -------
             bool
         """
-        #region -------------------------------------------------------->
-        try:
-            return self.ZoomResetPlot()
-        except Exception as e:
-            pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-            return False
-        #endregion ----------------------------------------------------->
+        return cMethod.OnGUIMethod(self.ZoomResetPlot)
     #---
 
     def ZoomResetPlot(self) -> bool:
@@ -2405,11 +2318,7 @@ class MatPlotPanel(wx.Panel):
         """
         #region -------------------------------------------------------> Event
         if event.key == 'escape':
-            try:
-                return self.ZoomInAbort(event)
-            except Exception as e:
-                pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-                return False
+            return cMethod.OnGUIMethod(self.ZoomInAbort, event)
         #endregion ----------------------------------------------------> Event
 
         return True
@@ -2487,17 +2396,9 @@ class MatPlotPanel(wx.Panel):
         """
         #region -------------------------------------------------------> Event
         if event.button == 1:
-            try:
-                return self.DrawZoomRect(event)
-            except Exception as e:
-                pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-                return False
+            return cMethod.OnGUIMethod(self.DrawZoomRect, event)
         else:
-            try:
-                return self.UpdateStatusBar(event)
-            except Exception as e:
-                pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-                return False
+            return cMethod.OnGUIMethod(self.UpdateStatusBar, event)
         #endregion ----------------------------------------------------> Event
     #---
 
@@ -2566,11 +2467,7 @@ class MatPlotPanel(wx.Panel):
         """
         #region -------------------------------------------------------> Event
         if event.inaxes and event.button == 1:
-            try:
-                return self.LeftClick(event)
-            except Exception as e:
-                pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-                return False
+            cMethod.OnGUIMethod(self.LeftClick, event)
         #endregion ----------------------------------------------------> Event
 
         return True
@@ -2609,11 +2506,7 @@ class MatPlotPanel(wx.Panel):
         """
         #region ---------------------------------------------------> Event
         if event.button == 1:
-            try:
-                return self.LeftRelease(event)
-            except Exception as e:
-                pub.sendMessage(mConfig.core.kwPubErrorU, tException=e)
-                return False
+            return cMethod.OnGUIMethod(self.LeftRelease, event)
         #endregion ------------------------------------------------> Event
 
         return True
