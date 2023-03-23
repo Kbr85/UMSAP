@@ -28,6 +28,7 @@ import wx
 
 from config.config import config as mConfig
 from core import check  as cCheck
+from core import method as cMethod
 from core import window as cWindow
 from help import window as hWindow
 #endregion ----------------------------------------------------------> Imports
@@ -241,73 +242,43 @@ def UpdateCheck(
 #---
 
 
-def About() -> bool:
-    """Show the About UMSAP window.
+def OnAbout() -> bool:
+    """Show the About UMSAP window. Method called from the menu.
 
         Returns
         -------
         bool
     """
-    #region --------------------------------------------------->
-    try:
-        hWindow.WindowAbout()
-    except Exception as e:
-        msg = 'Failed to show the About UMSAP window.'
-        cWindow.Notification('errorU', msg=msg, tException=e)
-        return False
-    #endregion ------------------------------------------------>
-
-    return True
+    return cMethod.OnGUIMethod(hWindow.WindowAbout)
 #---
 
 
-def Manual() -> bool:
-    """Show the About UMSAP window.
+def OnManual() -> bool:
+    """Show the About UMSAP window. Method called from the menu.
 
         Returns
         -------
         bool
     """
-    #region -------------------------------------------------------->
-    try:
-        os.system(f'{mConfig.core.commOpen} {mConfig.core.fManual}')
-    except Exception as e:
-        msg = 'Failed to open the manual of UMSAP.'
-        cWindow.Notification('errorU', msg=msg, tException=e)
-        return False
-    #endregion ----------------------------------------------------->
-
-    return True
+    return cMethod.OnGUIMethod(
+        os.system, f'{mConfig.core.commOpen} {mConfig.core.fManual}')
 #---
 
 
-def Tutorial() -> bool:
-    """Show the tutorial.
+def OnTutorial() -> bool:
+    """Show the tutorial. Method called from the menu.
 
         Returns
         -------
         bool
     """
-    #region --------------------------------------------------->
-    try:
-        webbrowser.open_new(f'{mConfig.core.urlTutorial}/start')
-    except Exception as e:
-        msg = 'Failed to open the url with the tutorials for UMSAP.'
-        cWindow.Notification('errorU', msg=msg, tException=e)
-        return False
-    #endregion ------------------------------------------------>
-
-    return True
+    return cMethod.OnGUIMethod(
+        webbrowser.open_new_tab, f'{mConfig.core.urlTutorial}/start')
 #---
 
 
 def CheckUpdate() -> bool:
     """Check for updates.
-
-        Parameters
-        ----------
-        event: wx.MenuEvent
-            Information about the event.
 
         Returns
         -------
@@ -318,23 +289,14 @@ def CheckUpdate() -> bool:
 #---
 
 
-def Preference() -> bool:
-    """Set UMSAP preferences.
+def OnPreference() -> bool:
+    """Set UMSAP preferences. Method called from the menu.
 
         Returns
         -------
         bool
     """
-    #region -------------------------------------------------------->
-    try:
-        hWindow.Preference()
-    except Exception as e:
-        msg = 'Failed to show the Preferences window.'
-        cWindow.Notification('errorU', msg=msg, tException=e)
-        return False
-    #endregion ----------------------------------------------------->
-
-    return True
+    return cMethod.OnGUIMethod(hWindow.Preference)
 #---
 
 
@@ -349,7 +311,7 @@ def RGB2Hex(rgb:wx.Colour) -> str:
         -------
         str
     """
-    return '#{:02x}{:02x}{:02x}'.format(rgb.Red(), rgb.Green() , rgb.Blue())
+    return f'#{rgb.Red():02x}{rgb.Green():02x}{rgb.Blue():02x}'
 #---
 
 
@@ -371,9 +333,9 @@ def RGB(rgb:wx.Colour) -> list[int]:
 
 
 #region ------------------------------------------------> PubSub Subscriptions
-pub.subscribe(About, mConfig.help.kwAbout)
-pub.subscribe(Manual, mConfig.help.kwManual)
-pub.subscribe(Preference, mConfig.help.kwPreference)
-pub.subscribe(Tutorial, mConfig.help.kwTutorial)
-pub.subscribe(CheckUpdate, mConfig.help.kwCheckUp)
+pub.subscribe(OnAbout, mConfig.help.kwPubAbout)
+pub.subscribe(OnManual, mConfig.help.kwPubManual)
+pub.subscribe(OnPreference, mConfig.help.kwPubPreference)
+pub.subscribe(OnTutorial, mConfig.help.kwPubTutorial)
+pub.subscribe(CheckUpdate, mConfig.help.kwPubCheckUp)
 #endregion ---------------------------------------------> PubSub Subscriptions

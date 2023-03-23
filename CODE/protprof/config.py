@@ -138,7 +138,7 @@ class Configuration():
     #------------------------------> User defined options
     alpha:str      = ''
     correctP:str   = ''
-    scoreVal:str   = '0'
+    scoreVal:str   = ''
     lock:str       = 'Analysis'
     filterA:str    = 'No'
     showAll:str    = ''

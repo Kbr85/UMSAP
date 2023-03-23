@@ -19,6 +19,7 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 
 from config.config import config as mConfig
+from core import method    as cMethod
 from core import validator as cValidator
 from core import widget    as cWidget
 #endregion ----------------------------------------------------------> Imports
@@ -36,7 +37,7 @@ class General(scrolled.ScrolledPanel):
     #region -----------------------------------------------------> Class setup
     cName = mConfig.help.npGeneral
     #------------------------------>
-    cLTab = mConfig.help.ntGeneral
+    cLTab = mConfig.help.ttGeneral
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -185,7 +186,7 @@ class CorrA(scrolled.ScrolledPanel):
     #region -----------------------------------------------------> Class setup
     cName = mConfig.help.npCorrA
     #------------------------------>
-    cLTab = mConfig.help.ntCorrA
+    cLTab = mConfig.help.ttCorrA
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -288,7 +289,7 @@ class Data(scrolled.ScrolledPanel):
     #region -----------------------------------------------------> Class setup
     cName = mConfig.help.npData
     #------------------------------>
-    cLTab = mConfig.help.ntData
+    cLTab = mConfig.help.ttData
     cLCeroTreat   = 'Treat 0s as Missing Values'
     cLNormMethod  = 'Normalization'
     cLTransMethod = 'Transformation'
@@ -433,7 +434,7 @@ class LimProt(scrolled.ScrolledPanel):
     #region -----------------------------------------------------> Class setup
     cName = mConfig.help.npLimProt
     #------------------------------> Labels
-    cLTab      = mConfig.help.ntLimProt
+    cLTab      = mConfig.help.ttLimProt
     cLAlpha    = mConfig.core.lStAlpha
     cLBeta     = mConfig.core.lStBeta
     cLGamma    = mConfig.core.lStGamma
@@ -625,7 +626,7 @@ class ProtProf(scrolled.ScrolledPanel):
     cNLineHyp  = f'{mConfig.prot.lmFilterHypCurve} Line'
     cNLinePLog = f'{mConfig.prot.lmColorSchemePLog2} Line'
     #------------------------------>
-    cLTab      = mConfig.help.ntProtProf
+    cLTab      = mConfig.help.ttProtProf
     cLAlpha    = mConfig.core.lStAlpha
     cLScoreVal = mConfig.core.lStScoreVal
     cLCorrectP = mConfig.core.lCbCorrectP
@@ -896,6 +897,21 @@ class ProtProf(scrolled.ScrolledPanel):
             -------
             bool
         """
+        return cMethod.OnGUIMethod(self.CheckChange, event)
+    #---
+
+    def CheckChange(self, event:wx.CommandEvent) -> bool:
+        """Update Selected Radio Button
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
         self.rCheck = event.GetEventObject().GetName()
         return True
     #---
@@ -914,7 +930,7 @@ class TarProt(scrolled.ScrolledPanel):
     #region -----------------------------------------------------> Class setup
     cName = mConfig.help.npTarProt
     #------------------------------>
-    cLTab      = mConfig.help.ntTarProt
+    cLTab      = mConfig.help.ttTarProt
     cLAlpha    = mConfig.core.lStAlpha
     cLScoreVal = mConfig.core.lStScoreVal
     cLAA       = mConfig.core.lStAAPos

@@ -33,11 +33,11 @@ class MenuHelp(cMenu.BaseMenu):
     cLPreference  = 'Preferences'
     cLTutorial    = 'Tutorial'
     #------------------------------> Values
-    cVAbout    = mConfig.help.kwAbout
-    cVManual   = mConfig.help.kwManual
-    cVTutorial = mConfig.help.kwTutorial
-    cVCheckUp  = mConfig.help.kwCheckUp
-    cVPref     = mConfig.help.kwPreference
+    cVAbout    = mConfig.help.kwPubAbout
+    cVManual   = mConfig.help.kwPubManual
+    cVTutorial = mConfig.help.kwPubTutorial
+    cVCheckUp  = mConfig.help.kwPubCheckUp
+    cVPref     = mConfig.help.kwPubPreference
     #endregion ------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance setup
