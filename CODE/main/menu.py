@@ -107,7 +107,7 @@ class MenuUtility(cMenu.BaseMenu):
     """Menu with the utilities entries."""
     #region -----------------------------------------------------> Class Setup
     #------------------------------> Labels
-    cLCorrA    = mConfig.corr.nUtil
+    cLCorrA    = mConfig.corr.tUtil
     cLDataPrep = mConfig.data.nUtil
     cLReadF    = mConfig.res.nUtil
     #------------------------------> Key - Values

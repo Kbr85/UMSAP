@@ -109,10 +109,10 @@ def CorrA(                                                                      
         dfR = tOut[0]['dfIm'].corr(method=rDO.corr.lower())
     except Exception as e:
         return ({}, 'Correlation coefficients calculation failed.', e)
-    else:
-        dictO        = tOut[0]
-        dictO['dfR'] = dfR
-        return (dictO, '', None)
+    #------------------------------>
+    tOut[0]['dfR'] = dfR
     #endregion --------------------------------------------------------> CorrA
+
+    return (tOut[0], '', None)
 #---
 #endregion ----------------------------------------------------------> Methods

@@ -332,17 +332,17 @@ class BaseWindowResult(BaseWindow):
         return True
     #---
 
-    def OnUpdateResultWindow(self) -> bool:
+    def OnUpdateResultWindow(self, *args, **kwargs) -> bool:
         """Update the window. Method called from the Menu.
 
             Returns
             -------
             bool
         """
-        return cMethod.OnGUIMethod(self.UpdateResultWindow)
+        return cMethod.OnGUIMethod(self.UpdateResultWindow, *args, **kwargs)
     #---
 
-    def UpdateResultWindow(self) -> bool:
+    def UpdateResultWindow(self, *args, **kwargs) -> bool:                      # pylint: disable=unused-argument
         """Update the result window.
 
             Returns

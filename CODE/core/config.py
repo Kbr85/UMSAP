@@ -58,12 +58,12 @@ class Configuration():
     version:str      = '2.3.1 (beta)'                                           # String to write in the output files
     winNumber:dict   = field(default_factory=lambda: {})                        # Keys: Windows ID - Values: Total number of opened windows, except conf win
     #------------------------------> Name & Title
-    ndResCtrlExp:str      = 'Name Dialog Results & Control Experiments'         # Unique name for wx, not shown to user
-    npDef:str             = 'Name Pane Default'
-    npLCtrlSearchPlot:str = 'Name Pane ListCtrl Search Plot'
-    npNPlot:str           = 'Name Pane NPlot'
-    ntDef:str             = 'Name Tab Default'
-    nwDef:str             = 'Name Window Default'
+    ndResCtrlExp:str      = 'Core Results & Control Experiments'                # Unique name for wx, not shown to user
+    npDef:str             = 'Core Default'
+    npLCtrlSearchPlot:str = 'Core ListCtrl Search Plot'
+    npNPlot:str           = 'Core NPlot'
+    ntDef:str             = 'Core Tab Default'
+    nwDef:str             = 'Core Window Default'
     tpConf:str            = 'Configuration Options'                             # Titles, shown to user
     tpList:str            = 'Data File Content'
     ttDef:str             = 'Tab'

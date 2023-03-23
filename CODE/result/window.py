@@ -77,7 +77,7 @@ class UMSAPControl(cWindow.BaseWindow):
     cFileLabelCheck = ['Data']
     #------------------------------>
     dPlotMethod = {                                                             # Methods to create plot windows
-        mConfig.corr.nUtil: corrWindow.ResCorrA,
+        mConfig.corr.tUtil: corrWindow.ResCorrA,
         mConfig.data.nUtil: dataWindow.ResDataPrep,
         mConfig.prot.nMod : protWindow.ResProtProf,
         mConfig.limp.nMod : limpWindow.ResLimProt,
@@ -85,7 +85,7 @@ class UMSAPControl(cWindow.BaseWindow):
     }
     #------------------------------>
     dSectionTab = {                                                             # Section name and Tab name correlation
-        mConfig.corr.nUtil: mConfig.corr.nTab,
+        mConfig.corr.tUtil: mConfig.corr.nTab,
         mConfig.data.nUtil: mConfig.data.nTab,
         mConfig.prot.nMod : mConfig.prot.nTab,
         mConfig.limp.nMod : mConfig.limp.nTab,

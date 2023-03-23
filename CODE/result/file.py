@@ -61,7 +61,7 @@ class UMSAPFile():
     SeqF = [mConfig.tarp.nMod, mConfig.limp.nMod]
     #------------------------------>
     rUserDataClass = {
-        mConfig.corr.nUtil : corrMethod.UserData,
+        mConfig.corr.tUtil : corrMethod.UserData,
         mConfig.data.nUtil : dataMethod.UserData,
         mConfig.prot.nMod  : protMethod.UserData,
         mConfig.tarp.nMod  : tarpMethod.UserData,
@@ -86,7 +86,7 @@ class UMSAPFile():
         self.rInputFileP = self.rFileP.parent / mConfig.core.fnDataInit
         #------------------------------>
         self.dConfigure = {                                                     # Configure methods. Keys are section names.
-            mConfig.corr.nUtil: self.ConfigureDataCorrA,
+            mConfig.corr.tUtil: self.ConfigureDataCorrA,
             mConfig.data.nUtil: self.ConfigureDataDataPrep,
             mConfig.prot.nMod : self.ConfigureDataProtProf,
             mConfig.limp.nMod : self.ConfigureDataLimProt,
@@ -130,12 +130,12 @@ class UMSAPFile():
         """
         #region ---------------------------------------------------> Variables
         data  = cMethod.BaseAnalysis()
-        pathB = mConfig.corr.nUtil.replace(" ", "-")
+        pathB = mConfig.corr.tUtil.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Fill
-        for k, v in self.rData[mConfig.corr.nUtil].items():
+        for k, v in self.rData[mConfig.corr.tUtil].items():
             #------------------------------>
             pathA = k.split(" - ")[0]
             tPath = self.rStepDataP / f'{pathA}_{pathB}'

@@ -53,7 +53,7 @@ class Start(wx.Panel):
         self.wImg = wx.StaticBitmap(
             self,bitmap=wx.Bitmap(str(self.cImg), wx.BITMAP_TYPE_ANY))
         #------------------------------> Buttons
-        self.wBtnCorrA    = wx.Button(self, label=mConfig.corr.nUtil)
+        self.wBtnCorrA    = wx.Button(self, label=mConfig.corr.tUtil)
         self.wBtnDataPrep = wx.Button(self, label=mConfig.data.nUtil)
         self.wBtnLimProt  = wx.Button(self, label=mConfig.limp.nMod)
         self.wBtnProtProf = wx.Button(self, label=mConfig.prot.nMod)
@@ -61,7 +61,7 @@ class Start(wx.Panel):
         #endregion --------------------------------------------------> Widgets
 
         #region ----------------------------------------------------> Tooltips
-        self.wBtnCorrA.SetToolTip(f'Start the utility {mConfig.corr.nUtil}')
+        self.wBtnCorrA.SetToolTip(f'Start the utility {mConfig.corr.tUtil}')
         self.wBtnDataPrep.SetToolTip(f'Start the utility {mConfig.data.nUtil}')
         self.wBtnLimProt.SetToolTip (f'Start the module {mConfig.limp.nMod}')
         self.wBtnProtProf.SetToolTip(f'Start the module {mConfig.prot.nMod}')
