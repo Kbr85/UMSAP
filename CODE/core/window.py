@@ -414,9 +414,9 @@ class BaseWindowResult(BaseWindow):
         # dataWindow.ResDataPrep
         #region --------------------------------------------------->
         pub.sendMessage(
-            mConfig.data.psResDataPrep,
+            mConfig.data.kwPubResDataPrep,
             parent   = self,
-            title    = f'{self.GetTitle()} - {mConfig.data.nUtil}',
+            title    = f'{self.GetTitle()} - {mConfig.data.tUtil}',
             tSection = self.cSection,
             tDate    = self.rDateC
         )

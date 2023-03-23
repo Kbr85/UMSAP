@@ -316,7 +316,7 @@ class CorrA(cPane.BaseConfPanel):
         #endregion -----------------------------------------------------> Add
 
         #region --------------------------------------------------------> Test
-        if mConfig.core.development:
+        if mConfig.core.development and dataI is None:
             import getpass                                                      # pylint: disable=import-outside-toplevel
             user = getpass.getuser()
             if mConfig.core.os == "Darwin":

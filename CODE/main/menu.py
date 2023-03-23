@@ -110,7 +110,7 @@ class MenuUtility(cMenu.BaseMenu):
     #region -----------------------------------------------------> Class Setup
     #------------------------------> Labels
     cLCorrA    = mConfig.corr.tUtil
-    cLDataPrep = mConfig.data.nUtil
+    cLDataPrep = mConfig.data.tUtil
     cLReadF    = mConfig.res.nUtil
     #------------------------------> Key - Values
     cVCorrA    = mConfig.corr.nTab

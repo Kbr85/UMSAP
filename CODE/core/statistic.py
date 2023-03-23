@@ -93,7 +93,7 @@ def DataRange(
             -------
             tuple[min, max]
         """
-        npA:np.ndarray = x.astype(np.float16)                                              # type: ignore
+        npA:np.ndarray = x.astype(np.float64)                                   # type: ignore
         return (np.amin(npA), np.amax(npA))
     #---
     #endregion -----------------------------------------------> Helper Methods
