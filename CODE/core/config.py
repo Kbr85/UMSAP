@@ -119,6 +119,7 @@ class Configuration():
     kwSec:str          = 'Sec'
     kwPCorrected:str   = 'corrP'
     kwPubErrorU:str    = 'pub.core.errorU'                                      # PubSub topic
+    kwPubLoadUmsap:str = 'pub.core.loadUmsap'
     #------------------------------> Sizes
     sLCtrlColI:list[int] = field(default_factory=lambda: [50, 150])             # Size for # Name columns in a wx.ListCtrl
     sTc:tuple[int,int]         = (50, 22)                                       # wx.TextCtrl

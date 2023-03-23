@@ -1158,7 +1158,7 @@ class BaseConfPanel(
         if not self.rMsgError:
             self.rDFile.append(self.rDO.uFile)
             #--> Here to avoid circular imports problems and thread limitations.
-            pub.sendMessage('load_umsap', fileP=self.rDO.uFile)
+            pub.sendMessage(mConfig.core.kwPubLoadUmsap, fileP=self.rDO.uFile)
             #------------------------------>
             self.rDlg.SuccessMessage(
                 self.cLPdDone, eTime=f"{self.cLPdElapsed} {self.rDeltaT}")

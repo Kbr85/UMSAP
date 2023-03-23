@@ -26,7 +26,8 @@ from limprot  import menu   as limpMenu
 from main     import window as mWindow
 from protprof import menu   as protMenu
 from result   import menu   as resMenu
-from result   import method as resMethod
+# Deleting the unused import below breaks Read Umsap File via PubSub
+from result   import method as resMethod                                        # pylint: disable=unused-import
 from tarprot  import menu   as tarpMenu
 #endregion ----------------------------------------------------------> Imports
 
@@ -60,11 +61,12 @@ class MenuModule(cMenu.BaseMenu):
         #endregion -----------------------------------------------> Menu items
 
         #region -------------------------------------------------------> Names
-        self.rIDMap = { # Associate IDs with Tab names. Avoid manual IDs
+        rIDMap = { # Associate IDs with Tab names. Avoid manual IDs
             self.miLimProt.GetId() : self.cVLimProt,
             self.miProtProf.GetId(): self.cVProtProf,
             self.miTarProt.GetId() : self.cVTarProt,
         }
+        self.rIDMap = self.rIDMap | rIDMap
         #endregion ----------------------------------------------------> Names
 
         #region --------------------------------------------------------> Bind
@@ -113,6 +115,7 @@ class MenuUtility(cMenu.BaseMenu):
     #------------------------------> Key - Values
     cVCorrA    = mConfig.corr.nTab
     cVDataPrep = mConfig.data.nTab
+    cVReadFile = mConfig.core.kwPubLoadUmsap
     #endregion --------------------------------------------------> Class Setup
 
     #region --------------------------------------------------> Instance Setup
@@ -130,14 +133,20 @@ class MenuUtility(cMenu.BaseMenu):
         #endregion -----------------------------------------------> Menu items
 
         #region -------------------------------------------------------> Names
-        self.rIDMap = {
+        rIDMap = {
             self.miCorrA.GetId()   : self.cVCorrA,
             self.miDataPrep.GetId(): self.cVDataPrep,
         }
+        self.rIDMap = self.rIDMap | rIDMap
+        #------------------------------>
+        rPubSub = {
+            self.miReadFile.GetId(): self.cVReadFile,
+        }
+        self.rPubSub = self.rPubSub | rPubSub
         #endregion ----------------------------------------------------> Names
 
         #region --------------------------------------------------------> Bind
-        self.Bind(wx.EVT_MENU, self.OnReadFile,  source=self.miReadFile)
+        self.Bind(wx.EVT_MENU, self.OnPubSub,    source=self.miReadFile)
         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miCorrA)
         self.Bind(wx.EVT_MENU, self.OnCreateTab, source=self.miDataPrep)
         #endregion -----------------------------------------------------> Bind
@@ -165,25 +174,6 @@ class MenuUtility(cMenu.BaseMenu):
         #region --------------------------------------------------> Create Tab
         mConfig.main.mainWin.OnCreateTab(self.rIDMap[event.GetId()])
         #endregion -----------------------------------------------> Create Tab
-
-        return True
-    #---
-
-    def OnReadFile(self, event:wx.CommandEvent) -> bool:                        # pylint: disable=unused-argument
-        """Read an UMSAP output file.
-
-            Parameters
-            ----------
-            event: wx.CommandEvent
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> Load file
-        resMethod.LoadUMSAPFile()
-        #endregion ------------------------------------------------> Load file
 
         return True
     #---
