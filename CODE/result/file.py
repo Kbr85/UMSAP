@@ -227,10 +227,7 @@ class UMSAPFile():
         #endregion ------------------------------------------------> Variables
 
         #region --------------------------------------------------------> Data
-        try:
-            dp = {j:cFile.ReadCSV2DF(tPath/w) for j,w in self.rData[tSection][tDate]['DP'].items()}
-        except Exception as e:
-            raise ValueError(f"Data for analysis {tDate} is corrupted.") from e
+        dp = {j:cFile.ReadCSV2DF(tPath/w) for j,w in self.rData[tSection][tDate]['DP'].items()}
         #------------------------------>
         try:
             numColList = self.rData[tSection][tDate]['CI']['oc']['Column']      # Keep support for previous versions

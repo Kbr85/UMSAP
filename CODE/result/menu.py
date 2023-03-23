@@ -56,12 +56,13 @@ class ToolUmsapControl(cMenu.BaseMenu):
         #endregion -----------------------------------------------> Menu Items
 
         #region -------------------------------------------------------> Links
-        self.rIDMap = {
+        rIDMap = {
             self.miAddData.GetId()   : self.cVAddDelExp,
             self.miDelData.GetId()   : self.cVAddDelExp,
             self.miExpData.GetId()   : self.cVAddDelExp,
             self.miUpdateFile.GetId(): self.cVUpdate,
         }
+        self.rIDMap = self.rIDMap | rIDMap
         #endregion ----------------------------------------------------> Links
 
         #region --------------------------------------------------------> Bind

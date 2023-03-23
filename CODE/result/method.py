@@ -93,23 +93,13 @@ def LoadUMSAPFile(
     #region ----------------------------> Raise window if file is already open
     if mConfig.res.winUMSAP.get(tFileP, '') != '':
         #------------------------------>
-        try:
-            mConfig.res.winUMSAP[tFileP].UpdateFileContent()
-        except Exception as e:
-            msg = mConfig.core.mFileRead.format(tFileP)
-            cWindow.Notification('errorU', msg=msg, tException=e)
-            return False
+        mConfig.res.winUMSAP[tFileP].UpdateFileContent()
         #------------------------------>
         mConfig.res.winUMSAP[tFileP].Raise()
         #------------------------------>
         return True
     #------------------------------>
-    try:
-        mConfig.res.winUMSAP[tFileP] = resWindow.UMSAPControl(tFileP)
-    except Exception as e:
-        msg = mConfig.core.mFileRead.format(tFileP)
-        cWindow.Notification('errorU', msg=msg, tException=e)
-        return False
+    mConfig.res.winUMSAP[tFileP] = resWindow.UMSAPControl(tFileP)
     #endregion -------------------------> Raise window if file is already open
 
     return True

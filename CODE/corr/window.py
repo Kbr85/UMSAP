@@ -295,7 +295,7 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         return True
     #---
 
-    def UpdateResultWindow(
+    def UpdateResultWindow(                                                     # pylint: disable=arguments-differ
         self,
         tDate:str          = '',
         col:Optional[bool] = None,
