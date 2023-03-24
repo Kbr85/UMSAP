@@ -81,7 +81,7 @@ class UMSAPControl(cWindow.BaseWindow):
         mConfig.data.tUtil: dataWindow.ResDataPrep,
         mConfig.prot.nMod : protWindow.ResProtProf,
         mConfig.limp.tMod : limpWindow.ResLimProt,
-        mConfig.tarp.nMod : tarpWindow.ResTarProt,
+        mConfig.tarp.tMod : tarpWindow.ResTarProt,
     }
     #------------------------------>
     dSectionTab = {                                                             # Section name and Tab name correlation
@@ -89,10 +89,10 @@ class UMSAPControl(cWindow.BaseWindow):
         mConfig.data.tUtil: mConfig.data.nTab,
         mConfig.prot.nMod : mConfig.prot.nTab,
         mConfig.limp.tMod : mConfig.limp.nTab,
-        mConfig.tarp.nMod : mConfig.tarp.nTab,
+        mConfig.tarp.tMod : mConfig.tarp.nTab,
     }
     #------------------------------>
-    cLSecSeqF = [mConfig.limp.tMod, mConfig.tarp.nMod]
+    cLSecSeqF = [mConfig.limp.tMod, mConfig.tarp.tMod]
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -883,7 +883,7 @@ class UMSAPAddDelExport(cWindow.BaseDialogOkCancel):
     }
     cFAList = mConfig.tarp.faID                                                 # List of FA IDs in UMSAP file
     cFADict = {                                                                 # Key are section names & values List of FA IDs in UMSAP file
-        mConfig.tarp.nMod: mConfig.tarp.faID,
+        mConfig.tarp.tMod: mConfig.tarp.faID,
     }
     #endregion --------------------------------------------------> Class setup
 

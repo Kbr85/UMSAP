@@ -22,6 +22,7 @@ from pubsub import pub
 import wx
 
 from config.config import config as mConfig
+from core import method as cMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -70,7 +71,7 @@ class BaseMenu(wx.Menu):
             Parameters
             ----------
             event:wx.Event
-                Information about the event
+                Information about the event.
 
             Returns
             -------
@@ -95,10 +96,11 @@ class BaseMenu(wx.Menu):
         """
         #region --------------------------------------------------->
         win = self.GetWindow()
-        win.dKeyMethod[self.rIDMap[event.GetId()]]()
+        #------------------------------>
+        return cMethod.OnGUIMethod(
+            win.dKeyMethod[self.rIDMap[event.GetId()]]
+        )
         #endregion ------------------------------------------------>
-
-        return True
     #---
 
     def OnMethodLabel(self, event:wx.MenuEvent) -> bool:
@@ -117,13 +119,11 @@ class BaseMenu(wx.Menu):
         #region ---------------------------------------------------> Variables
         tID = event.GetId()
         win = self.GetWindow()
+        #------------------------------>
+        return cMethod.OnGUIMethod(
+            win.dKeyMethod[self.rIDMap[tID]], self.GetLabelText(tID)
+        )
         #endregion ------------------------------------------------> Variables
-
-        #region -------------------------------------------------> Call Method
-        win.dKeyMethod[self.rIDMap[tID]](self.GetLabelText(tID))
-        #endregion ----------------------------------------------> Call Method
-
-        return True
     #---
 
     def OnMethodLabelKey(self, event:wx.MenuEvent) -> bool:
@@ -142,13 +142,11 @@ class BaseMenu(wx.Menu):
         #region ---------------------------------------------------> Variables
         tID = event.GetId()
         win = self.GetWindow()
+        #------------------------------>
+        return cMethod.OnGUIMethod(
+            win.dKeyMethod[self.rIDMap[tID]], self.rKeyMap[tID]
+        )
         #endregion ------------------------------------------------> Variables
-
-        #region -------------------------------------------------> Call Method
-        win.dKeyMethod[self.rIDMap[tID]](self.rKeyMap[tID])
-        #endregion ----------------------------------------------> Call Method
-
-        return True
     #---
 
     def OnMethodLabelBool(self, event:wx.MenuEvent) -> bool:
@@ -172,13 +170,11 @@ class BaseMenu(wx.Menu):
         #region ---------------------------------------------------> Variables
         tID = event.GetId()
         win = self.GetWindow()
+        #------------------------------>
+        return cMethod.OnGUIMethod(
+            win.dKeyMethod[self.rIDMap[tID]], self.IsChecked(tID)
+        )
         #endregion ------------------------------------------------> Variables
-
-        #region -------------------------------------------------> Call Method
-        win.dKeyMethod[self.rIDMap[tID]](self.IsChecked(tID))
-        #endregion ----------------------------------------------> Call Method
-
-        return True
     #---
 
     def OnMethodKey(self, event:wx.MenuEvent) -> bool:
@@ -197,13 +193,11 @@ class BaseMenu(wx.Menu):
         tID   = event.GetId()
         win   = self.GetWindow()
         tDict = {self.rKeyMap[tID] : self.GetLabelText(tID)}
+        #------------------------------>
+        return cMethod.OnGUIMethod(
+            win.dKeyMethod[self.rIDMap[tID]], **tDict
+        )
         #endregion ------------------------------------------------> Variables
-
-        #region -------------------------------------------------> Call Method
-        win.dKeyMethod[self.rIDMap[tID]](**tDict)
-        #endregion ----------------------------------------------> Call Method
-
-        return True
     #---
 
     def OnMethodKeyBool(self, event:wx.MenuEvent) -> bool:
@@ -228,13 +222,11 @@ class BaseMenu(wx.Menu):
         tID   = event.GetId()
         win   = self.GetWindow()
         tDict = {self.rKeyMap[tID] : self.IsChecked(tID)}
+        #------------------------------>
+        return cMethod.OnGUIMethod(
+            win.dKeyMethod[self.rIDMap[tID]], **tDict
+        )
         #endregion ------------------------------------------------> Variables
-
-        #region -------------------------------------------------> Call Method
-        win.dKeyMethod[self.rIDMap[tID]](**tDict)
-        #endregion ----------------------------------------------> Call Method
-
-        return True
     #---
     #endregion ------------------------------------------------> Event methods
 #---

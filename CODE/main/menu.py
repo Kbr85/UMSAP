@@ -40,7 +40,7 @@ class MenuModule(cMenu.BaseMenu):
     #------------------------------> Labels
     cLLimProt  = mConfig.limp.tMod
     cLProtProf = mConfig.prot.nMod
-    cLTarProt  = mConfig.tarp.nMod
+    cLTarProt  = mConfig.tarp.tMod
     #------------------------------> Key - Values
     cVLimProt  = mConfig.limp.nTab
     cVProtProf = mConfig.prot.nTab

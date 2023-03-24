@@ -58,13 +58,13 @@ class UMSAPFile():
     """
     # No Test
     #region -----------------------------------------------------> Class setup
-    SeqF = [mConfig.tarp.nMod, mConfig.limp.tMod]
+    SeqF = [mConfig.tarp.tMod, mConfig.limp.tMod]
     #------------------------------>
     rUserDataClass = {
         mConfig.corr.tUtil : corrMethod.UserData,
         mConfig.data.tUtil : dataMethod.UserData,
         mConfig.prot.nMod  : protMethod.UserData,
-        mConfig.tarp.nMod  : tarpMethod.UserData,
+        mConfig.tarp.tMod  : tarpMethod.UserData,
         mConfig.limp.tMod  : limpMethod.UserData,
     }
     #endregion --------------------------------------------------> Class setup
@@ -90,7 +90,7 @@ class UMSAPFile():
             mConfig.data.tUtil: self.ConfigureDataDataPrep,
             mConfig.prot.nMod : self.ConfigureDataProtProf,
             mConfig.limp.tMod : self.ConfigureDataLimProt,
-            mConfig.tarp.nMod : self.ConfigureDataTarProt,
+            mConfig.tarp.tMod : self.ConfigureDataTarProt,
         }
         #endregion ------------------------------------------------> Variables
     #---
@@ -411,11 +411,11 @@ class UMSAPFile():
         """
         #region ---------------------------------------------------> Variables
         data  = cMethod.BaseAnalysis()
-        pathB = mConfig.tarp.nMod.replace(" ", "-")
+        pathB = mConfig.tarp.tMod.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu
-        for k,v in self.rData[mConfig.tarp.nMod].items():
+        for k,v in self.rData[mConfig.tarp.tMod].items():
             #------------------------------>
             pathA = k.split(" - ")[0]
             tPath = self.rStepDataP / f'{pathA}_{pathB}'
@@ -602,7 +602,7 @@ class UMSAPFile():
             except KeyError:
                 pass
         #------------------------------>
-        if data.get('method') is None and tSection == mConfig.tarp.nMod:
+        if data.get('method') is None and tSection == mConfig.tarp.tMod:
             data['method']    = 'slope'
             data['indSample'] = 'i'
         #endregion -----------------------------------------------------> Data

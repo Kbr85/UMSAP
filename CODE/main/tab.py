@@ -57,7 +57,7 @@ class Start(wx.Panel):
         self.wBtnDataPrep = wx.Button(self, label=mConfig.data.tUtil)
         self.wBtnLimProt  = wx.Button(self, label=mConfig.limp.tMod)
         self.wBtnProtProf = wx.Button(self, label=mConfig.prot.nMod)
-        self.wBtnTarProt  = wx.Button(self, label=mConfig.tarp.nMod)
+        self.wBtnTarProt  = wx.Button(self, label=mConfig.tarp.tMod)
         #endregion --------------------------------------------------> Widgets
 
         #region ----------------------------------------------------> Tooltips
@@ -65,7 +65,7 @@ class Start(wx.Panel):
         self.wBtnDataPrep.SetToolTip(f'Start the utility {mConfig.data.tUtil}')
         self.wBtnLimProt.SetToolTip (f'Start the module {mConfig.limp.tMod}')
         self.wBtnProtProf.SetToolTip(f'Start the module {mConfig.prot.nMod}')
-        self.wBtnTarProt.SetToolTip (f'Start the module {mConfig.tarp.nMod}')
+        self.wBtnTarProt.SetToolTip (f'Start the module {mConfig.tarp.tMod}')
         #endregion -------------------------------------------------> Tooltips
 
         #region ------------------------------------------------------> Sizers

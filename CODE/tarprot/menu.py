@@ -18,7 +18,8 @@
 import wx
 
 from config.config import config as mConfig
-from core import menu as cMenu
+from core import method as cMethod
+from core import menu   as cMenu
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -138,13 +139,9 @@ class ToolAA(cMenu.BaseMenuFurtherAnalysis):
         [x.Check(check=False) for x in self.rItems]                             # pylint: disable=expression-not-assigned
         tID = event.GetId()
         self.Check(tID, True)
+        #------------------------------>
+        return self.OnMethodLabel(event)
         #endregion ------------------------------------------------>
-
-        #region --------------------------------------------------->
-        self.OnMethodLabel(event)
-        #endregion ------------------------------------------------>
-
-        return True
     #---
     #endregion ------------------------------------------------> Class methods
 #---
@@ -229,10 +226,10 @@ class ToolHist(cMenu.BaseMenuFurtherAnalysis):
 
         #region --------------------------------------------------->
         win = self.GetWindow()
-        win.UpdateResultWindow(nat=False, allC=False)
+        #------------------------------>
+        return cMethod.OnGUIMethod(
+            win.UpdateResultWindow, nat=False, allC=False)
         #endregion ------------------------------------------------>
-
-        return True
     #---
     #endregion ------------------------------------------------> Class Methods
 #---
@@ -340,10 +337,9 @@ class ToolCpR(cMenu.BaseMenuFurtherAnalysis):
 
         #region --------------------------------------------------->
         win = self.GetWindow()
-        win.UpdateResultWindow(nat, label, show)
+        #------------------------------>
+        return cMethod.OnGUIMethod(win.UpdateResultWindow, nat, label, show)
         #endregion ------------------------------------------------>
-
-        return True
     #---
 
     def OnClear(self, event:wx.CommandEvent) -> bool:
@@ -379,10 +375,11 @@ class ToolCpR(cMenu.BaseMenuFurtherAnalysis):
 
         #region --------------------------------------------------->
         win = self.GetWindow()
-        win.UpdateResultWindow(False, [self.rItems[0].GetItemLabel()], True)
+        #------------------------------>
+        return cMethod.OnGUIMethod(
+            win.UpdateResultWindow, False, [self.rItems[0].GetItemLabel()], True
+        )
         #endregion ------------------------------------------------>
-
-        return True
     #---
     #endregion ------------------------------------------------> Class methods
 #---
@@ -466,10 +463,9 @@ class ToolCleavageEvol(cMenu.BaseMenuFurtherAnalysis):
 
         #region --------------------------------------------------->
         win = self.GetWindow()
-        win.UpdateResultWindow(nat=False, mon=False)
+        #------------------------------>
+        return cMethod.OnGUIMethod(win.UpdateResultWindow, nat=False, mon=False)
         #endregion ------------------------------------------------>
-
-        return True
     #---
     #endregion ------------------------------------------------> Class Methods
 #---
