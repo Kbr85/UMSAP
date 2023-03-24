@@ -532,6 +532,44 @@ class BaseConfPanel(
         return cMethod.OnGUIMethod(self.ImpMethod)
     #---
 
+    def OnClear(self, event:wx.CommandEvent) -> bool:
+        """Clear all input, including the Imputation options.
+
+            Parameters
+            ----------
+            event: wx.CommandEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.Clear, event)
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
+    #region ---------------------------------------------------> Class Methods
+    def Clear(self, event:wx.CommandEvent) -> bool:
+        """Clear all input, including the Imputation options.
+
+            Parameters
+            ----------
+            event: wx.CommandEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        super().OnClear(event)
+        #------------------------------>
+        self.ImpMethod()
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
     def ImpMethod(self)-> bool:
         """Show/Hide the Imputation options.
 
@@ -554,44 +592,6 @@ class BaseConfPanel(
         return True
     #---
 
-    def OnClear(self, event:wx.CommandEvent) -> bool:
-        """Clear all input, including the Imputation options.
-
-            Parameters
-            ----------
-            event: wx.CommandEvent
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        return cMethod.OnGUIMethod(self.Clear, event)
-    #---
-
-    def Clear(self, event:wx.CommandEvent) -> bool:
-        """Clear all input, including the Imputation options.
-
-            Parameters
-            ----------
-            event: wx.CommandEvent
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region -------------------------------------------------------->
-        super().OnClear(event)
-        #------------------------------>
-        self.ImpMethod()
-        #endregion ----------------------------------------------------->
-
-        return True
-    #---
-    #endregion ------------------------------------------------> Event Methods
-
-    #region ---------------------------------------------------> Class Methods
     def SetConfOptions(self) -> bool:
         """Set Field values to the configuration values.
 
@@ -1658,16 +1658,6 @@ class BaseResControlExpConf(wx.Panel):
         return cMethod.OnGUIMethod(self.Create)
     #---
 
-    def Create(self) -> bool:
-        """Create the field widgets
-
-            Returns
-            -------
-            bool
-        """
-        return True
-    #---
-
     def OnLabelNumber(self, event:Union[wx.Event, str]) -> bool:
         """Creates fields for names when the total wx.TextCtrl looses focus.
 
@@ -1683,6 +1673,23 @@ class BaseResControlExpConf(wx.Panel):
         return cMethod.OnGUIMethod(self.LabelNumber, event)
     #---
 
+    def OnClear(self, event:wx.Event) -> bool:                                  # pylint: disable=unused-argument
+        """Clear all input in the wx.Dialog.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.Clear)
+    #---
+    #endregion ------------------------------------------------> Event methods
+
+    #region ---------------------------------------------------> Class Methods
     def LabelNumber(self, event:Union[wx.Event, str]) -> bool:
         """Creates fields for names when the total wx.TextCtrl looses focus.
 
@@ -1758,21 +1765,6 @@ class BaseResControlExpConf(wx.Panel):
         return True
     #---
 
-    def OnClear(self, event:wx.Event) -> bool:                                  # pylint: disable=unused-argument
-        """Clear all input in the wx.Dialog.
-
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        return cMethod.OnGUIMethod(self.Clear)
-    #---
-
     def Clear(self) -> bool:
         """Clear all input in the wx.Dialog.
 
@@ -1807,9 +1799,17 @@ class BaseResControlExpConf(wx.Panel):
 
         return True
     #---
-    #endregion ------------------------------------------------> Event methods
 
-    #region --------------------------------------------------> Manage methods
+    def Create(self) -> bool:
+        """Create the field widgets
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
     def CheckOK(self, export:bool=True) -> bool:
         """Validate and set the Results - Control Experiments text.
 
@@ -2109,7 +2109,7 @@ class BaseResControlExpConf(wx.Panel):
 
         return n
     #---
-    #endregion -----------------------------------------------> Manage methods
+    #endregion ------------------------------------------------> Class Methods
 #---
 
 

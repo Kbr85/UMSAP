@@ -880,7 +880,6 @@ class ProtProf(scrolled.ScrolledPanel):
             f'{self.cLTab} - {self.cLZ}'        : [self.wZ.wTc ,       mConfig.core.mOne0100Num],
         }
         #endregion -----------------------------------------> Check User Input
-
     #---
     #endregion -----------------------------------------------> Instance setup
 
@@ -899,7 +898,9 @@ class ProtProf(scrolled.ScrolledPanel):
         """
         return cMethod.OnGUIMethod(self.CheckChange, event)
     #---
+    #endregion ------------------------------------------------> Event Methods
 
+    #region ---------------------------------------------------> Class Methods
     def CheckChange(self, event:wx.CommandEvent) -> bool:
         """Update Selected Radio Button
 
@@ -915,7 +916,7 @@ class ProtProf(scrolled.ScrolledPanel):
         self.rCheck = event.GetEventObject().GetName()
         return True
     #---
-    #endregion ------------------------------------------------> Event Methods
+    #endregion ------------------------------------------------> Class Methods
 #---
 
 

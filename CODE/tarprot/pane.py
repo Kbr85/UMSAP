@@ -329,66 +329,6 @@ class TarProt(cPane.BaseConfPanelMod2):
         """
         return cMethod.OnGUIMethod(self.Method)
     #---
-
-    def Method(self) -> bool:
-        """Show/Hide Sample type options.
-
-            Returns
-            -------
-            bool
-        """
-        #region -------------------------------------------------------->
-        if self.wMethod.wCb.GetValue() == self.cOSampleReq:
-            self.sSbValueWid.Show(self.wSample.wSt)
-            self.sSbValueWid.Show(self.wSample.wCb)
-            self.wSample.wCb.SetValue('')
-        else:
-            self.sSbValueWid.Hide(self.wSample.wSt)
-            self.sSbValueWid.Hide(self.wSample.wCb)
-            self.wSample.wCb.SetValue(self.cValSample)
-        #------------------------------>
-        self.sSizer.Layout()
-        self.SetupScrolling()
-        #endregion ----------------------------------------------------->
-
-        return True
-    #---
-
-    def OnClear(self, event:wx.CommandEvent) -> bool:
-        """Clear all input, including the Imputation options.
-
-            Parameters
-            ----------
-            event: wx.CommandEvent
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        return cMethod.OnGUIMethod(self.Clear, event)
-    #---
-
-    def Clear(self, event:wx.CommandEvent) -> bool:
-        """Clear all input, including the Imputation options.
-
-            Parameters
-            ----------
-            event: wx.CommandEvent
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region -------------------------------------------------------->
-        super().Clear(event)
-        #------------------------------>
-        self.Method()
-        #endregion ----------------------------------------------------->
-
-        return True
-    #---
     #endregion ------------------------------------------------> Event Methods
 
     #region -----------------------------------------------------> Class Event
@@ -495,6 +435,51 @@ class TarProt(cPane.BaseConfPanelMod2):
             self.OnMethod('fEvent')
             self.wSample.wCb.SetValue('Independent Samples')
         #endregion -----------------------------------------------------> Test
+
+        return True
+    #---
+
+    def Method(self) -> bool:
+        """Show/Hide Sample type options.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        if self.wMethod.wCb.GetValue() == self.cOSampleReq:
+            self.sSbValueWid.Show(self.wSample.wSt)
+            self.sSbValueWid.Show(self.wSample.wCb)
+            self.wSample.wCb.SetValue('')
+        else:
+            self.sSbValueWid.Hide(self.wSample.wSt)
+            self.sSbValueWid.Hide(self.wSample.wCb)
+            self.wSample.wCb.SetValue(self.cValSample)
+        #------------------------------>
+        self.sSizer.Layout()
+        self.SetupScrolling()
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
+    def Clear(self, event:wx.CommandEvent) -> bool:
+        """Clear all input, including the Imputation options.
+
+            Parameters
+            ----------
+            event: wx.CommandEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        super().Clear(event)
+        #------------------------------>
+        self.Method()
+        #endregion ----------------------------------------------------->
 
         return True
     #---

@@ -122,27 +122,27 @@ class WindowMain(cWindow.BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnCreateTab(
-        self,
-        name:str,
-        dataI:Optional[cMethod.BaseUserData]=None,
-        ) -> bool:
-        """Create a tab. Method called from menu.
+    def OnTabClose(self, event:wx.Event) -> bool:
+        """Make sure to show the Start Tab if no other tab exists.
 
             Parameters
             ----------
-            name: str
-                One of the values in section Names of config for tabs
-            dataI: cMethod.BaseUserData or None
-                Data class representation of user input. Default is None.
+            event: wx.aui.Event
+                Information about the event.
 
             Returns
             -------
             bool
         """
-        return cMethod.OnGUIMethod(self.CreateTab, name, dataI=dataI)
+        #region --------------------------------------------------->
+        event.Skip()
+        #------------------------------>
+        return cMethod.OnGUIMethod(self.TabClose)
+        #endregion ------------------------------------------------>
     #---
+    #endregion ------------------------------------------------> Event Methods
 
+    #region ---------------------------------------------------> Class Methods
     def CreateTab(
         self,
         name:str,
@@ -198,25 +198,6 @@ class WindowMain(cWindow.BaseWindow):
         return True
     #---
 
-    def OnTabClose(self, event:wx.Event) -> bool:
-        """Make sure to show the Start Tab if no other tab exists.
-
-            Parameters
-            ----------
-            event: wx.aui.Event
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------->
-        event.Skip()
-        #------------------------------>
-        return cMethod.OnGUIMethod(self.TabClose)
-        #endregion ------------------------------------------------>
-    #---
-
     def TabClose(self) -> bool:
         """Make sure to show the Start Tab if no other tab exists.
 
@@ -247,21 +228,6 @@ class WindowMain(cWindow.BaseWindow):
         return True
     #---
 
-    def OnClose(self, event:wx.CloseEvent) -> bool:
-        """Destroy window and set config.winMain to None.
-
-            Parameters
-            ----------
-            event: wx.CloseEvent
-                Information about the event
-
-            Returns
-            -------
-            bool
-        """
-        return cMethod.OnGUIMethod(self.Close)
-    #---
-
     def Close(self) -> bool:
         """Destroy window and set config.winMain to None.
 
@@ -277,6 +243,6 @@ class WindowMain(cWindow.BaseWindow):
 
         return True
     #---
-    #endregion ------------------------------------------------> Event Methods
+    #endregion ------------------------------------------------> Class Methods
 #---
 #endregion ----------------------------------------------------------> Classes

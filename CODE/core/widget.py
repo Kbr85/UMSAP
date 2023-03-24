@@ -977,6 +977,30 @@ class ButtonTextCtrlFF():
         return cMethod.OnGUIMethod(self.Btn)
     #---
 
+    def OnCopy(self, event:wx.Event) -> bool:                                   # pylint: disable=unused-argument
+        """Copy wx.TextCtrl content.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+        """
+        return cMethod.OnGUIMethod(self.Copy)
+    #---
+
+    def OnCut(self, event:wx.Event) -> bool:                                    # pylint: disable=unused-argument
+        """Cut wx.TextCtrl content.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+        """
+        return cMethod.OnGUIMethod(self.Cut)
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
+    #region ---------------------------------------------------> Class Methods
     def Btn(self) -> bool:
         """Action to perform when button is clicked.
 
@@ -1012,17 +1036,6 @@ class ButtonTextCtrlFF():
         return True
     #---
 
-    def OnCopy(self, event:wx.Event) -> bool:                                   # pylint: disable=unused-argument
-        """Copy wx.TextCtrl content.
-
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event.
-        """
-        return cMethod.OnGUIMethod(self.Copy)
-    #---
-
     def Copy(self) -> bool:
         """Copy wx.TextCtrl content.
 
@@ -1048,17 +1061,6 @@ class ButtonTextCtrlFF():
         return True
     #---
 
-    def OnCut(self, event:wx.Event) -> bool:                                    # pylint: disable=unused-argument
-        """Cut wx.TextCtrl content.
-
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event.
-        """
-        return cMethod.OnGUIMethod(self.Cut)
-    #---
-
     def Cut(self) -> bool:
         """Cut wx.TextCtrl content.
 
@@ -1077,7 +1079,7 @@ class ButtonTextCtrlFF():
 
         return True
     #---
-    #endregion ------------------------------------------------> Event Methods
+    #endregion ------------------------------------------------> Class Methods
 #---
 
 
@@ -1279,51 +1281,6 @@ class MyListCtrl(wx.ListCtrl):
         return cMethod.OnGUIMethod(self.Copy)
     #---
 
-    def Copy(self) -> bool:
-        """Copy selected rows in the wx.ListCtrl to the clipboard.
-
-            Return
-            ------
-            bool
-
-            Notes
-            -----
-            If self.copyFullContent, then data is dict with keys being the
-            selected row indexes and values a list with the rows's content from
-            left to right.
-            If not, then data is a string with comma-separated selected row's
-            indexes
-        """
-        #region ----------------------------------------------> Check can copy
-        if not self.rCanCopy:
-            cWindow.Notification(
-                'warning', parent=self, msg=mConfig.core.mLCtrNoCopy)
-            return False
-        #endregion -------------------------------------------> Check can copy
-
-        #region ----------------------------------------------------> Get data
-        if self.rCopyFullContent:
-            data = json.dumps(
-                self.GetSelectedRows(content=self.rCopyFullContent))
-        else:
-            data = self.GetSelectedRows(content=self.rCopyFullContent)
-            data = self.rSep.join(map(str, list(data)))
-        dataObj = wx.TextDataObject(data)
-        #endregion -------------------------------------------------> Get data
-
-        #region -------------------------------------------> Copy to clipboard
-        if wx.TheClipboard.Open():
-            wx.TheClipboard.SetData(dataObj)
-            wx.TheClipboard.Close()
-        else:
-            cWindow.Notification(
-                'warning', parent=self, msg=mConfig.core.mCopyFailedW)
-            return False
-        #endregion ----------------------------------------> Copy to clipboard
-
-        return True
-    #---
-
     def OnCut(self, event:wx.Event) -> bool:                                    # pylint: disable=unused-argument
         """Cut selected rows in the wx.ListCtrl to the clipboard.
 
@@ -1341,32 +1298,6 @@ class MyListCtrl(wx.ListCtrl):
             See also self.OnCopy
         """
         return cMethod.OnGUIMethod(self.Cut)
-    #---
-
-    def Cut(self) -> bool:
-        """Cut selected rows in the wx.ListCtrl to the clipboard.
-
-            Return
-            ------
-            bool
-
-            Notes
-            -----
-            See also self.Copy
-        """
-        #region -----------------------------------------------> Check can cut
-        if not self.rCanCut:
-            cWindow.Notification(
-                'warning', parent=self, msg=mConfig.core.mLCtrNoChange)
-            return False
-        #endregion --------------------------------------------> Check can cut
-
-        #region --------------------------------------------------------> Copy
-        if self.Copy():
-            self.DeleteSelected()
-        #endregion -----------------------------------------------------> Copy
-
-        return True
     #---
 
     def OnPaste(self, event:Union[wx.Event, str]) -> bool:                      # pylint: disable=unused-argument
@@ -1387,7 +1318,9 @@ class MyListCtrl(wx.ListCtrl):
         """
         return cMethod.OnGUIMethod(self.Paste)
     #---
+    #endregion ------------------------------------------------> Event Methods
 
+    #region ---------------------------------------------------> Class Methods
     def Paste(self) -> bool:
         """Paste selected rows in the wx.ListCtrl from the clipboard.
 
@@ -1464,9 +1397,78 @@ class MyListCtrl(wx.ListCtrl):
 
         return True
     #---
-    #endregion ------------------------------------------------> Event Methods
 
-    #region ---------------------------------------------------> Class methods
+    def Cut(self) -> bool:
+        """Cut selected rows in the wx.ListCtrl to the clipboard.
+
+            Return
+            ------
+            bool
+
+            Notes
+            -----
+            See also self.Copy
+        """
+        #region -----------------------------------------------> Check can cut
+        if not self.rCanCut:
+            cWindow.Notification(
+                'warning', parent=self, msg=mConfig.core.mLCtrNoChange)
+            return False
+        #endregion --------------------------------------------> Check can cut
+
+        #region --------------------------------------------------------> Copy
+        if self.Copy():
+            self.DeleteSelected()
+        #endregion -----------------------------------------------------> Copy
+
+        return True
+    #---
+
+    def Copy(self) -> bool:
+        """Copy selected rows in the wx.ListCtrl to the clipboard.
+
+            Return
+            ------
+            bool
+
+            Notes
+            -----
+            If self.copyFullContent, then data is dict with keys being the
+            selected row indexes and values a list with the rows's content from
+            left to right.
+            If not, then data is a string with comma-separated selected row's
+            indexes
+        """
+        #region ----------------------------------------------> Check can copy
+        if not self.rCanCopy:
+            cWindow.Notification(
+                'warning', parent=self, msg=mConfig.core.mLCtrNoCopy)
+            return False
+        #endregion -------------------------------------------> Check can copy
+
+        #region ----------------------------------------------------> Get data
+        if self.rCopyFullContent:
+            data = json.dumps(
+                self.GetSelectedRows(content=self.rCopyFullContent))
+        else:
+            data = self.GetSelectedRows(content=self.rCopyFullContent)
+            data = self.rSep.join(map(str, list(data)))
+        dataObj = wx.TextDataObject(data)
+        #endregion -------------------------------------------------> Get data
+
+        #region -------------------------------------------> Copy to clipboard
+        if wx.TheClipboard.Open():
+            wx.TheClipboard.SetData(dataObj)
+            wx.TheClipboard.Close()
+        else:
+            cWindow.Notification(
+                'warning', parent=self, msg=mConfig.core.mCopyFailedW)
+            return False
+        #endregion ----------------------------------------> Copy to clipboard
+
+        return True
+    #---
+
     def Search(self, tStr:str) -> list[list[int]]:
         """Search tStr in the content of the wx.ListCtrl.
 
@@ -1830,7 +1832,7 @@ class MyListCtrl(wx.ListCtrl):
 
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
+    #endregion ------------------------------------------------> Class Methods
 #---
 
 
@@ -2240,41 +2242,6 @@ class MatPlotPanel(wx.Panel):
         )
     #---
 
-    def SaveImage(
-        self,
-        ext:str,
-        parent:Optional[wx.Window] = None,
-        msg:str                    = '',
-        ) -> bool:
-        """Save an image of the plot.
-
-            Parameters
-            ----------
-            ext: file extension
-                wxPython extension spec.
-            parent: wx.Widget or None
-                To center the save dialog. Default is None.
-            msg: str or None
-                Title for the save file window. Default is None.
-
-            Returns
-            -------
-            bool
-        """
-        #region ------------------------------------------------------> Dialog
-        dlg = cWindow.FileSelect('save', ext, parent=parent, msg=msg)
-        #endregion ---------------------------------------------------> Dialog
-
-        #region ----------------------------------------------------> Get Path
-        if dlg.ShowModal() == wx.ID_OK:
-            path = dlg.GetPath()
-            self.rFigure.savefig(path, dpi=self.rDPI)
-        #endregion -------------------------------------------------> Get Path
-
-        dlg.Destroy()
-        return True
-    #---
-
     def OnZoomResetPlot(self, event:wx.CommandEvent) -> bool:                   # pylint: disable=unused-argument
         """Reset the zoom level of the plot.
 
@@ -2288,20 +2255,6 @@ class MatPlotPanel(wx.Panel):
             bool
         """
         return cMethod.OnGUIMethod(self.ZoomResetPlot)
-    #---
-
-    def ZoomResetPlot(self) -> bool:
-        """Reset the zoom level of the plot.
-
-            Return
-            ------
-            True
-        """
-        self.rAxes.set_xlim(self.rZoomReset['x'])
-        self.rAxes.set_ylim(self.rZoomReset['y'])
-        self.rCanvas.draw()
-        #------------------------------>
-        return True
     #---
 
     def OnKeyPress(self, event) -> bool:
@@ -2319,64 +2272,6 @@ class MatPlotPanel(wx.Panel):
         #region -------------------------------------------------------> Event
         if event.key == 'escape':
             return cMethod.OnGUIMethod(self.ZoomInAbort, event)
-        #endregion ----------------------------------------------------> Event
-
-        return True
-    #---
-
-    def ZoomInAbort(self, event) -> bool:
-        """Abort a zoom in operation when Esc is pressed.
-
-            Parameters
-            ----------
-            event: mpl.MouseEvent
-                Information about the mpl event.
-
-            Return
-            ------
-            bool
-        """
-        #------------------------------>
-        self.rInitX  = float('inf')
-        self.rInitY  = float('inf')
-        self.rFinalX = float('inf')
-        self.rFinalY = float('inf')
-        #------------------------------>
-        self.ZoomRectDelete()
-        #------------------------------>
-        self.UpdateStatusBar(event)
-
-        return True
-    #---
-
-    def UpdateStatusBar(self, event):
-        """To update status bar. Basic functionality.
-
-            Parameters
-            ----------
-            event: mpl.MouseEvent
-                Information about the mpl event.
-
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> Skip
-        if self.wStatBar is None:
-            return True
-        #endregion ------------------------------------------------> Skip
-
-        #region -------------------------------------------------------> Event
-        if event.inaxes:
-            if self.rStatusMethod is not None:
-                self.rStatusMethod(event)
-            else:
-                x,y = self.GetAxesXY(event)
-                self.wStatBar.SetStatusText(
-                    f"x={x:.2f} y={y:.2f}"
-                )
-        else:
-            self.wStatBar.SetStatusText('')
         #endregion ----------------------------------------------------> Event
 
         return True
@@ -2400,6 +2295,151 @@ class MatPlotPanel(wx.Panel):
         else:
             return cMethod.OnGUIMethod(self.UpdateStatusBar, event)
         #endregion ----------------------------------------------------> Event
+    #---
+
+    def OnPressMouse(self, event) -> bool:
+        """Process press mouse event.
+
+            Parameter
+            ---------
+            event: mpl.MouseEvent
+                Information about the mpl event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Event
+        if event.inaxes and event.button == 1:
+            cMethod.OnGUIMethod(self.LeftClick, event)
+        #endregion ----------------------------------------------------> Event
+
+        return True
+    #---
+
+    def OnReleaseMouse(self, event) -> bool:
+        """Process a release mouse event.
+
+            Parameters
+            ----------
+            event: mpl.MouseEvent
+                Information about the mpl event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Event
+        if event.button == 1:
+            return cMethod.OnGUIMethod(self.LeftRelease, event)
+        #endregion ------------------------------------------------> Event
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
+    #region ---------------------------------------------------> Class methods
+    def ConnectEvent(self) -> bool:
+        """Connect all event handlers.
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------> Connect events
+        self.rBindId.append(
+            self.rCanvas.mpl_connect('motion_notify_event', self.OnMotionMouse)
+        )
+        self.rBindId.append(
+            self.rCanvas.mpl_connect('button_press_event', self.OnPressMouse)
+        )
+        self.rBindId.append(
+            self.rCanvas.mpl_connect('button_release_event', self.OnReleaseMouse)
+        )
+        self.rBindId.append(
+            self.rCanvas.mpl_connect('key_press_event', self.OnKeyPress)
+        )
+        #endregion --------------------------------------------> Connect events
+
+        return True
+    #---
+
+    def DisconnectEvent(self) -> bool:
+        """Disconnect the event defined in ConnectEvent.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------> Disconnect
+        for k in self.rBindId:
+            self.rCanvas.mpl_disconnect(k)
+        #endregion -----------------------------------------------> Disconnect
+
+        #region --------------------------------------------------> Reset list
+        self.rBindId = []
+        #endregion -----------------------------------------------> Reset list
+
+        return True
+    #---
+
+    def LeftRelease(self, event) -> bool:                                     # pylint: disable=unused-argument
+        """Process a left button release event.
+
+            Parameters
+            ----------
+            event: mpl.MouseEvent
+                Information about the mpl event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------------> Zoom in
+        if not math.isinf(self.rFinalX):
+            self.rAxes.set_xlim(
+                min(self.rInitX, self.rFinalX),
+                max(self.rInitX, self.rFinalX),
+            )
+            self.rAxes.set_ylim(
+                min(self.rInitY, self.rFinalY),
+                max(self.rInitY, self.rFinalY),
+            )
+        else:
+            return True
+        #endregion --------------------------------------------------> Zoom in
+
+        #region -----------------------------------> Reset initial coordinates
+        self.rInitY  = float('inf')
+        self.rInitX  = float('inf')
+        self.rFinalX = float('inf')
+        self.rFinalY = float('inf')
+        #endregion --------------------------------> Reset initial coordinates
+
+        #region --------------------------------------------> Delete zoom rect
+        self.ZoomRectDelete()
+        #endregion -----------------------------------------> Delete zoom rect
+
+        return True
+    #---
+
+    def LeftClick(self, event) -> bool:
+        """Process left click event.
+
+            Parameters
+            ----------
+            event: mpl.MouseEvent
+                Information about the mpl event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Event
+        self.rInitX, self.rInitY = self.GetAxesXY(event)
+        #endregion ----------------------------------------------------> Event
+
+        return True
     #---
 
     def DrawZoomRect(self, event) -> bool:
@@ -2453,28 +2493,43 @@ class MatPlotPanel(wx.Panel):
         return True
     #---
 
-    def OnPressMouse(self, event) -> bool:
-        """Process press mouse event.
+    def SaveImage(
+        self,
+        ext:str,
+        parent:Optional[wx.Window] = None,
+        msg:str                    = '',
+        ) -> bool:
+        """Save an image of the plot.
 
-            Parameter
-            ---------
-            event: mpl.MouseEvent
-                Information about the mpl event.
+            Parameters
+            ----------
+            ext: file extension
+                wxPython extension spec.
+            parent: wx.Widget or None
+                To center the save dialog. Default is None.
+            msg: str or None
+                Title for the save file window. Default is None.
 
             Returns
             -------
             bool
         """
-        #region -------------------------------------------------------> Event
-        if event.inaxes and event.button == 1:
-            cMethod.OnGUIMethod(self.LeftClick, event)
-        #endregion ----------------------------------------------------> Event
+        #region ------------------------------------------------------> Dialog
+        dlg = cWindow.FileSelect('save', ext, parent=parent, msg=msg)
+        #endregion ---------------------------------------------------> Dialog
 
+        #region ----------------------------------------------------> Get Path
+        if dlg.ShowModal() == wx.ID_OK:
+            path = dlg.GetPath()
+            self.rFigure.savefig(path, dpi=self.rDPI)
+        #endregion -------------------------------------------------> Get Path
+
+        dlg.Destroy()
         return True
     #---
 
-    def LeftClick(self, event) -> bool:
-        """Process left click event.
+    def UpdateStatusBar(self, event):
+        """To update status bar. Basic functionality.
 
             Parameters
             ----------
@@ -2485,115 +2540,23 @@ class MatPlotPanel(wx.Panel):
             -------
             bool
         """
-        #region -------------------------------------------------------> Event
-        self.rInitX, self.rInitY = self.GetAxesXY(event)
-        #endregion ----------------------------------------------------> Event
-
-        return True
-    #---
-
-    def OnReleaseMouse(self, event) -> bool:
-        """Process a release mouse event.
-
-            Parameters
-            ----------
-            event: mpl.MouseEvent
-                Information about the mpl event.
-
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> Event
-        if event.button == 1:
-            return cMethod.OnGUIMethod(self.LeftRelease, event)
-        #endregion ------------------------------------------------> Event
-
-        return True
-    #---
-
-    def LeftRelease(self, event) -> bool:                                     # pylint: disable=unused-argument
-        """Process a left button release event.
-
-            Parameters
-            ----------
-            event: mpl.MouseEvent
-                Information about the mpl event.
-
-            Returns
-            -------
-            bool
-        """
-        #region -----------------------------------------------------> Zoom in
-        if not math.isinf(self.rFinalX):
-            self.rAxes.set_xlim(
-                min(self.rInitX, self.rFinalX),
-                max(self.rInitX, self.rFinalX),
-            )
-            self.rAxes.set_ylim(
-                min(self.rInitY, self.rFinalY),
-                max(self.rInitY, self.rFinalY),
-            )
-        else:
+        #region ---------------------------------------------------> Skip
+        if self.wStatBar is None:
             return True
-        #endregion --------------------------------------------------> Zoom in
+        #endregion ------------------------------------------------> Skip
 
-        #region -----------------------------------> Reset initial coordinates
-        self.rInitY  = float('inf')
-        self.rInitX  = float('inf')
-        self.rFinalX = float('inf')
-        self.rFinalY = float('inf')
-        #endregion --------------------------------> Reset initial coordinates
-
-        #region --------------------------------------------> Delete zoom rect
-        self.ZoomRectDelete()
-        #endregion -----------------------------------------> Delete zoom rect
-
-        return True
-    #---
-    #endregion ------------------------------------------------> Event Methods
-
-    #region ---------------------------------------------------> Class methods
-    def ConnectEvent(self) -> bool:
-        """Connect all event handlers.
-
-            Returns
-            -------
-            bool
-        """
-        #region -----------------------------------------------> Connect events
-        self.rBindId.append(
-            self.rCanvas.mpl_connect('motion_notify_event', self.OnMotionMouse)
-        )
-        self.rBindId.append(
-            self.rCanvas.mpl_connect('button_press_event', self.OnPressMouse)
-        )
-        self.rBindId.append(
-            self.rCanvas.mpl_connect('button_release_event', self.OnReleaseMouse)
-        )
-        self.rBindId.append(
-            self.rCanvas.mpl_connect('key_press_event', self.OnKeyPress)
-        )
-        #endregion --------------------------------------------> Connect events
-
-        return True
-    #---
-
-    def DisconnectEvent(self) -> bool:
-        """Disconnect the event defined in ConnectEvent.
-
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------> Disconnect
-        for k in self.rBindId:
-            self.rCanvas.mpl_disconnect(k)
-        #endregion -----------------------------------------------> Disconnect
-
-        #region --------------------------------------------------> Reset list
-        self.rBindId = []
-        #endregion -----------------------------------------------> Reset list
+        #region -------------------------------------------------------> Event
+        if event.inaxes:
+            if self.rStatusMethod is not None:
+                self.rStatusMethod(event)
+            else:
+                x,y = self.GetAxesXY(event)
+                self.wStatBar.SetStatusText(
+                    f"x={x:.2f} y={y:.2f}"
+                )
+        else:
+            self.wStatBar.SetStatusText('')
+        #endregion ----------------------------------------------------> Event
 
         return True
     #---
@@ -2644,6 +2607,45 @@ class MatPlotPanel(wx.Panel):
             self.rCanvas.draw()
             self.rZoomRect = None
         #endregion -----------------------------------------------------> Rect
+
+        return True
+    #---
+
+    def ZoomResetPlot(self) -> bool:
+        """Reset the zoom level of the plot.
+
+            Return
+            ------
+            True
+        """
+        self.rAxes.set_xlim(self.rZoomReset['x'])
+        self.rAxes.set_ylim(self.rZoomReset['y'])
+        self.rCanvas.draw()
+        #------------------------------>
+        return True
+    #---
+
+    def ZoomInAbort(self, event) -> bool:
+        """Abort a zoom in operation when Esc is pressed.
+
+            Parameters
+            ----------
+            event: mpl.MouseEvent
+                Information about the mpl event.
+
+            Return
+            ------
+            bool
+        """
+        #------------------------------>
+        self.rInitX  = float('inf')
+        self.rInitY  = float('inf')
+        self.rFinalX = float('inf')
+        self.rFinalY = float('inf')
+        #------------------------------>
+        self.ZoomRectDelete()
+        #------------------------------>
+        self.UpdateStatusBar(event)
 
         return True
     #---

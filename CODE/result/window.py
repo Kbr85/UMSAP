@@ -112,8 +112,8 @@ class UMSAPControl(cWindow.BaseWindow):
         super().__init__(parent=parent)
         #------------------------------>
         dKeyMethod = {
-            mConfig.res.kwToolAddDelExp: self.OnAddDelExport,
-            mConfig.res.kwToolReload   : self.OnUpdateFileContent,
+            mConfig.res.kwToolAddDelExp: self.AddDelExport,
+            mConfig.res.kwToolReload   : self.UpdateFileContent,
             mConfig.res.lmToolAdd      : self.AddAnalysis,                      # Methods used directly
             mConfig.res.lmToolDel      : self.DeleteAnalysis,                   # here in the window class
             mConfig.res.lmToolExp      : self.ExportAnalysis,                   # and not in the menu.
@@ -149,20 +149,108 @@ class UMSAPControl(cWindow.BaseWindow):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnAddDelExport(self, mode:str) -> bool:
-        """Set variables to start the Add/Del/Export method. Method called from
-            Menu.
+    def OnHyperLink(self, event:wxCT.TreeEvent) -> bool:
+        """Setup analysis.
 
             Parameters
             ----------
-            mode: str
-                Label of the selected Tool menu item.
+            event: wxCT.TreeEvent
+                Information about the event.
 
             Returns
             -------
             bool
         """
-        return cMethod.OnGUIMethod(self.AddDelExport, mode)
+        return cMethod.OnGUIMethod(self.HyperLink, event)
+    #---
+
+    def OnCheckItem(self, event:wxCT.TreeEvent) -> bool:
+        """Show window when section is checked.
+
+            Parameters
+            ----------
+            event: wxCT.TreeEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.CheckItem, event)
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
+    #region ---------------------------------------------------> Class Methods
+    def CheckItem(self, event:wxCT.TreeEvent) -> bool:
+        """Show window when section is checked.
+
+            Parameters
+            ----------
+            event: wxCT.TreeEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ------------------------------------------> Get Item & Section
+        item    = event.GetItem()
+        section = self.wTrc.GetItemText(item)
+        #endregion ---------------------------------------> Get Item & Section
+
+        #region ----------------------------------------------> Destroy window
+        #------------------------------> Event triggers before checkbox changes
+        if self.wTrc.IsItemChecked(item):
+            #------------------------------>
+            for v in self.rWindow[section].values():
+                for x in v:
+                    mConfig.core.winNumber[x.cName] -= 1
+                    x.Destroy()
+            #------------------------------>
+            event.Skip()
+            return True
+        #endregion -------------------------------------------> Destroy window
+
+        #region -----------------------------------------------> Create window
+        self.rWindow[section] = {'Main':[], 'FA':[]}
+        self.rWindow[section]['Main'].append(
+            self.dPlotMethod[section](self))
+        #endregion --------------------------------------------> Create window
+
+        event.Skip()
+        return True
+    #---
+
+    def HyperLink(self, event:wxCT.TreeEvent) -> bool:
+        """Setup analysis.
+
+            Parameters
+            ----------
+            event: wxCT.TreeEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> DateI
+        dateI   = event.GetItem()
+        section = dateI.GetParent().GetText()
+        #endregion ----------------------------------------------------> DateI
+
+        #region -------------------------------------------------------> DataI
+        dataI = self.rObj.GetDataUser(section, dateI.GetText())                 # type: ignore
+        #endregion ----------------------------------------------------> DataI
+
+        #region --------------------------------------------------> Create Tab
+        #------------------------------>
+        if mConfig.main.mainWin is None:
+            mConfig.main.mainWin = mWindow.WindowMain()
+        #------------------------------>
+        mConfig.main.mainWin.CreateTab(self.dSectionTab[section], dataI)
+        #endregion -----------------------------------------------> Create Tab
+
+        return True
     #---
 
     def AddDelExport(self, mode:str) -> bool:
@@ -222,16 +310,6 @@ class UMSAPControl(cWindow.BaseWindow):
         #endregion ------------------------------------------------>
     #---
 
-    def OnUpdateFileContent(self) -> bool:
-        """Update the content of the file.
-
-            Returns
-            -------
-            bool
-        """
-        return cMethod.OnGUIMethod(self.UpdateFileContent)
-    #---
-
     def UpdateFileContent(self) -> bool:
         """Update the content of the file.
 
@@ -272,110 +350,6 @@ class UMSAPControl(cWindow.BaseWindow):
         return True
     #---
 
-    def OnHyperLink(self, event:wxCT.TreeEvent) -> bool:
-        """Setup analysis.
-
-            Parameters
-            ----------
-            event: wxCT.TreeEvent
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        return cMethod.OnGUIMethod(self.HyperLink, event)
-    #---
-
-    def HyperLink(self, event:wxCT.TreeEvent) -> bool:
-        """Setup analysis.
-
-            Parameters
-            ----------
-            event: wxCT.TreeEvent
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region -------------------------------------------------------> DateI
-        dateI   = event.GetItem()
-        section = dateI.GetParent().GetText()
-        #endregion ----------------------------------------------------> DateI
-
-        #region -------------------------------------------------------> DataI
-        dataI = self.rObj.GetDataUser(section, dateI.GetText())                 # type: ignore
-        #endregion ----------------------------------------------------> DataI
-
-        #region --------------------------------------------------> Create Tab
-        #------------------------------>
-        if mConfig.main.mainWin is None:
-            mConfig.main.mainWin = mWindow.WindowMain()
-        #------------------------------>
-        mConfig.main.mainWin.CreateTab(self.dSectionTab[section], dataI)
-        #endregion -----------------------------------------------> Create Tab
-
-        return True
-    #---
-
-    def OnCheckItem(self, event:wxCT.TreeEvent) -> bool:
-        """Show window when section is checked.
-
-            Parameters
-            ----------
-            event: wxCT.TreeEvent
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        return cMethod.OnGUIMethod(self.CheckItem, event)
-    #---
-
-    def CheckItem(self, event:wxCT.TreeEvent) -> bool:
-        """Show window when section is checked.
-
-            Parameters
-            ----------
-            event: wxCT.TreeEvent
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region ------------------------------------------> Get Item & Section
-        item    = event.GetItem()
-        section = self.wTrc.GetItemText(item)
-        #endregion ---------------------------------------> Get Item & Section
-
-        #region ----------------------------------------------> Destroy window
-        #------------------------------> Event triggers before checkbox changes
-        if self.wTrc.IsItemChecked(item):
-            #------------------------------>
-            for v in self.rWindow[section].values():
-                for x in v:
-                    mConfig.core.winNumber[x.cName] -= 1
-                    x.Destroy()
-            #------------------------------>
-            event.Skip()
-            return True
-        #endregion -------------------------------------------> Destroy window
-
-        #region -----------------------------------------------> Create window
-        self.rWindow[section] = {'Main':[], 'FA':[]}
-        self.rWindow[section]['Main'].append(
-            self.dPlotMethod[section](self))
-        #endregion --------------------------------------------> Create window
-
-        event.Skip()
-        return True
-    #---
-    #endregion ------------------------------------------------> Event Methods
-
-    #region ---------------------------------------------------> Class Methods
     def Close(self) -> bool:
         """Destroy window and remove reference from config.umsapW.
 
@@ -777,7 +751,7 @@ class UMSAPControl(cWindow.BaseWindow):
         return True
         #endregion -----------------------------------------------> Update GUI
     #---
-    #endregion -----------------------------------------------> Manage Methods
+    #endregion ------------------------------------------------> Class Methods
 
     #region -----------------------------------------------------> Get Methods
     def GetCheckedSection(self) -> list[str]:
@@ -941,7 +915,9 @@ class UMSAPAddDelExport(cWindow.BaseDialogOkCancel):
         """
         return cMethod.OnGUIMethod(self.CheckItem, event)
     #---
+    #endregion ------------------------------------------------> Event Methods
 
+    #region ---------------------------------------------------> Class Methods
     def CheckItem(self, event:wx.Event) -> bool:
         """Adjust checked items.
 
@@ -991,9 +967,7 @@ class UMSAPAddDelExport(cWindow.BaseDialogOkCancel):
         event.Skip()
         return True
     #---
-    #endregion ------------------------------------------------> Event Methods
 
-    #region ---------------------------------------------------> Class Methods
     def SetTree(self) -> bool:
         """Set the elements of the wx.TreeCtrl.
 

@@ -239,127 +239,6 @@ class Preference(wx.Dialog):
         return True
     #---
 
-    def Save(self) -> bool:
-        """Save configuration options.
-
-            Returns
-            -------
-            bool
-        """
-        #region -------------------------------------------------------> Check
-        if not self.CheckInput():
-            return False
-        #endregion ----------------------------------------------------> Check
-
-        #region --------------------------------------------------------> Data
-        #------------------------------> Core
-        frag = [hMethod.RGB2Hex(x.wC.GetColour()) for x in self.wCore.wFrag]
-        aa   = {}
-        for k in mConfig.core.lAAGroups:
-            for a in k:
-                aa[a] = hMethod.RGB2Hex(self.wCore.wAA[k[0]].wC.GetColour())
-        #-->
-        core = hMethod.Core(
-            checkUpdate = bool(self.wCore.wUpdate.GetSelection()),
-            DPI         = int(self.wCore.wDPI.wCb.GetValue()),
-            imgFormat   = self.wCore.wFormat.wCb.GetValue(),
-            cZebra      = hMethod.RGB2Hex(self.wCore.wZebra.wC.GetColour()),
-            cRecProt    = hMethod.RGB2Hex(self.wCore.wProtRec.wC.GetColour()),
-            cNatProt    = hMethod.RGB2Hex(self.wCore.wProtNat.wC.GetColour()),
-            cFragment   = frag,
-            cBarColor   = aa,
-        )
-        #------------------------------> CorrA
-        corrA = hMethod.CorrA(
-            CMAP= {
-                'N' : 128,
-                'c1': hMethod.RGB(self.wCorrA.wC[0].wC.GetColour()),
-                'c2': hMethod.RGB(self.wCorrA.wC[1].wC.GetColour()),
-                'c3': hMethod.RGB(self.wCorrA.wC[2].wC.GetColour()),
-                'NA': hMethod.RGB2Hex(self.wCorrA.wC[3].wC.GetColour()),
-            },
-            corrMethod = self.wCorrA.wMethod.wCb.GetValue(),
-            axisLabel  = self.wCorrA.wCol.wCb.GetValue(),
-            showBar    = True if self.wCorrA.wBar.wCb.GetValue() == 'True' else False,
-        )
-        #------------------------------> Data
-        data = hMethod.Data(
-            ceroT      = self.wData.wCeroB.wCb.GetValue(),
-            tranMethod = self.wData.wTransMethod.wCb.GetValue(),
-            normMethod = self.wData.wNormMethod.wCb.GetValue(),
-            impMethod  = self.wData.wImpMethod.wCb.GetValue(),
-            shift      = self.wData.wShift.wTc.GetValue(),
-            width      = self.wData.wWidth.wTc.GetValue(),
-            cBar       = hMethod.RGB2Hex(self.wData.wBar.wC.GetColour()),
-            cBarI      = hMethod.RGB2Hex(self.wData.wBarI.wC.GetColour()),
-            cPDF       = hMethod.RGB2Hex(self.wData.wPDF.wC.GetColour()),
-        )
-        #------------------------------> LimProt
-        limp = hMethod.LimProt(
-            alpha    = self.wLimProt.wAlpha.wTc.GetValue(),
-            beta     = self.wLimProt.wBeta.wTc.GetValue(),
-            gamma    = self.wLimProt.wGamma.wTc.GetValue(),
-            theta    = self.wLimProt.wTheta.wTc.GetValue(),
-            thetaMax = self.wLimProt.wThetaMax.wTc.GetValue(),
-            scoreVal = self.wLimProt.wScoreVal.wTc.GetValue(),
-            correctP = self.wLimProt.wCorrectP.wCb.GetValue(),
-        )
-        #------------------------------> ProtProf
-        prot = hMethod.ProtProf(
-            alpha    = self.wProtProf.wAlpha.wTc.GetValue(),
-            correctP = self.wProtProf.wCorrectP.wCb.GetValue(),
-            scoreVal = self.wProtProf.wScoreVal.wTc.GetValue(),
-            lock     = self.wProtProf.wLock.wCb.GetValue(),
-            filterA  = self.wProtProf.wFilterA.wCb.GetValue(),
-            showAll  = self.wProtProf.wShowAll.wCb.GetValue(),
-            pickP    = self.wProtProf.wPick.wCb.GetValue(),
-            t0       = self.wProtProf.wT0.wTc.GetValue(),
-            s0       = self.wProtProf.wS0.wTc.GetValue(),
-            p        = self.wProtProf.wP.wTc.GetValue(),
-            fc       = self.wProtProf.wFC.wTc.GetValue(),
-            z        = self.wProtProf.wZ.wTc.GetValue(),
-            zShow    = self.wProtProf.rCheck,
-            cCV      = hMethod.RGB2Hex(self.wProtProf.wVolT.wC.GetColour()),
-            cVolSel  = hMethod.RGB2Hex(self.wProtProf.wVolS.wC.GetColour()),
-            cVol     = [
-                hMethod.RGB2Hex(self.wProtProf.wVolD.wC.GetColour()),
-                hMethod.RGB2Hex(self.wProtProf.wVolN.wC.GetColour()),
-                hMethod.RGB2Hex(self.wProtProf.wVolU.wC.GetColour()),
-            ]
-        )
-        #------------------------------> TarProt
-        tarp = hMethod.TarProt(
-            alpha    = self.wTarProt.wAlpha.wTc.GetValue(),
-            scoreVal = self.wTarProt.wScoreVal.wTc.GetValue(),
-            correctP = self.wTarProt.wCorrectP.wCb.GetValue(),
-            aaPos    = self.wTarProt.wAA.wTc.GetValue(),
-            histWind = self.wTarProt.wHist.wTc.GetValue(),
-            cCtrl    = hMethod.RGB2Hex(self.wTarProt.wCtrl.wC.GetColour()),
-            cAve     = hMethod.RGB2Hex(self.wTarProt.wAve.wC.GetColour()),
-            cAveL    = hMethod.RGB2Hex(self.wTarProt.wAveL.wC.GetColour()),
-        )
-        #------------------------------> Full Options
-        userOpt = dataclasses.asdict(hMethod.UserConfig(
-            core, corrA, data, limp, prot, tarp))
-        #endregion -----------------------------------------------------> Data
-
-        #region -------------------------------------------------> Save 2 File
-        cFile.WriteJSON(mConfig.core.fConfig, userOpt)
-        #endregion ----------------------------------------------> Save 2 File
-
-        #region --------------------------------------------------> Set Values
-        for k,v in userOpt.items():
-            sec = getattr(mConfig, k)
-            for j,w in v.items():
-                setattr(sec, j, w)
-        #------------------------------>
-        self.rErrorMsg  = ''
-        self.rException = ''
-        #endregion -----------------------------------------------> Set Values
-
-        return True
-    #---
-
     def OnCancel(self, event:wx.CommandEvent) -> bool:                          # pylint: disable=unused-argument
         """Close the window.
 
@@ -373,17 +252,6 @@ class Preference(wx.Dialog):
             bool
         """
         return cMethod.OnGUIMethod(self.Cancel)
-    #---
-
-    def Cancel(self) -> bool:
-        """Close the window.
-
-            Returns
-            -------
-            bool
-        """
-        self.EndModal(0)
-        return True
     #---
 
     def OnDefault(self, event:wx.CommandEvent) -> bool:                         # pylint: disable=unused-argument
@@ -402,33 +270,6 @@ class Preference(wx.Dialog):
                'the configuration options.\nThe options displayed are the '
                'ones currently in use.')
         return cMethod.OnGUIMethod(self.SetDefault, errorMsg=msg)
-    #---
-
-    def SetDefault(self) -> bool:
-        """Load default values.
-
-            Returns
-            -------
-            bool
-        """
-        #region -------------------------------------------------------->
-        dataF = cFile.ReadJSON(mConfig.core.fConfigDef)
-        #------------------------------>
-        core  = hMethod.Core(**dataF['core'])
-        corrA = hMethod.CorrA(**dataF['corr'])
-        data  = hMethod.Data(**dataF['data'])
-        limp  = hMethod.LimProt(**dataF['limp'])
-        prot  = hMethod.ProtProf(**dataF['prot'])
-        tarp  = hMethod.TarProt(**dataF['tarp'])
-        #------------------------------>
-        userOpt = hMethod.UserConfig(core, corrA, data, limp, prot, tarp)
-        #endregion ----------------------------------------------------->
-
-        #region -------------------------------------------------------->
-        self.SetConfValues(userOpt)
-        #endregion ----------------------------------------------------->
-
-        return True
     #---
     #endregion ------------------------------------------------> Event Methods
 
@@ -569,6 +410,165 @@ class Preference(wx.Dialog):
 
         return True
     #---
+
+    def Save(self) -> bool:
+        """Save configuration options.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Check
+        if not self.CheckInput():
+            return False
+        #endregion ----------------------------------------------------> Check
+
+        #region --------------------------------------------------------> Data
+        #------------------------------> Core
+        frag = [hMethod.RGB2Hex(x.wC.GetColour()) for x in self.wCore.wFrag]
+        aa   = {}
+        for k in mConfig.core.lAAGroups:
+            for a in k:
+                aa[a] = hMethod.RGB2Hex(self.wCore.wAA[k[0]].wC.GetColour())
+        #-->
+        core = hMethod.Core(
+            checkUpdate = bool(self.wCore.wUpdate.GetSelection()),
+            DPI         = int(self.wCore.wDPI.wCb.GetValue()),
+            imgFormat   = self.wCore.wFormat.wCb.GetValue(),
+            cZebra      = hMethod.RGB2Hex(self.wCore.wZebra.wC.GetColour()),
+            cRecProt    = hMethod.RGB2Hex(self.wCore.wProtRec.wC.GetColour()),
+            cNatProt    = hMethod.RGB2Hex(self.wCore.wProtNat.wC.GetColour()),
+            cFragment   = frag,
+            cBarColor   = aa,
+        )
+        #------------------------------> CorrA
+        corrA = hMethod.CorrA(
+            CMAP= {
+                'N' : 128,
+                'c1': hMethod.RGB(self.wCorrA.wC[0].wC.GetColour()),
+                'c2': hMethod.RGB(self.wCorrA.wC[1].wC.GetColour()),
+                'c3': hMethod.RGB(self.wCorrA.wC[2].wC.GetColour()),
+                'NA': hMethod.RGB2Hex(self.wCorrA.wC[3].wC.GetColour()),
+            },
+            corrMethod = self.wCorrA.wMethod.wCb.GetValue(),
+            axisLabel  = self.wCorrA.wCol.wCb.GetValue(),
+            showBar    = True if self.wCorrA.wBar.wCb.GetValue() == 'True' else False,
+        )
+        #------------------------------> Data
+        data = hMethod.Data(
+            ceroT      = self.wData.wCeroB.wCb.GetValue(),
+            tranMethod = self.wData.wTransMethod.wCb.GetValue(),
+            normMethod = self.wData.wNormMethod.wCb.GetValue(),
+            impMethod  = self.wData.wImpMethod.wCb.GetValue(),
+            shift      = self.wData.wShift.wTc.GetValue(),
+            width      = self.wData.wWidth.wTc.GetValue(),
+            cBar       = hMethod.RGB2Hex(self.wData.wBar.wC.GetColour()),
+            cBarI      = hMethod.RGB2Hex(self.wData.wBarI.wC.GetColour()),
+            cPDF       = hMethod.RGB2Hex(self.wData.wPDF.wC.GetColour()),
+        )
+        #------------------------------> LimProt
+        limp = hMethod.LimProt(
+            alpha    = self.wLimProt.wAlpha.wTc.GetValue(),
+            beta     = self.wLimProt.wBeta.wTc.GetValue(),
+            gamma    = self.wLimProt.wGamma.wTc.GetValue(),
+            theta    = self.wLimProt.wTheta.wTc.GetValue(),
+            thetaMax = self.wLimProt.wThetaMax.wTc.GetValue(),
+            scoreVal = self.wLimProt.wScoreVal.wTc.GetValue(),
+            correctP = self.wLimProt.wCorrectP.wCb.GetValue(),
+        )
+        #------------------------------> ProtProf
+        prot = hMethod.ProtProf(
+            alpha    = self.wProtProf.wAlpha.wTc.GetValue(),
+            correctP = self.wProtProf.wCorrectP.wCb.GetValue(),
+            scoreVal = self.wProtProf.wScoreVal.wTc.GetValue(),
+            lock     = self.wProtProf.wLock.wCb.GetValue(),
+            filterA  = self.wProtProf.wFilterA.wCb.GetValue(),
+            showAll  = self.wProtProf.wShowAll.wCb.GetValue(),
+            pickP    = self.wProtProf.wPick.wCb.GetValue(),
+            t0       = self.wProtProf.wT0.wTc.GetValue(),
+            s0       = self.wProtProf.wS0.wTc.GetValue(),
+            p        = self.wProtProf.wP.wTc.GetValue(),
+            fc       = self.wProtProf.wFC.wTc.GetValue(),
+            z        = self.wProtProf.wZ.wTc.GetValue(),
+            zShow    = self.wProtProf.rCheck,
+            cCV      = hMethod.RGB2Hex(self.wProtProf.wVolT.wC.GetColour()),
+            cVolSel  = hMethod.RGB2Hex(self.wProtProf.wVolS.wC.GetColour()),
+            cVol     = [
+                hMethod.RGB2Hex(self.wProtProf.wVolD.wC.GetColour()),
+                hMethod.RGB2Hex(self.wProtProf.wVolN.wC.GetColour()),
+                hMethod.RGB2Hex(self.wProtProf.wVolU.wC.GetColour()),
+            ]
+        )
+        #------------------------------> TarProt
+        tarp = hMethod.TarProt(
+            alpha    = self.wTarProt.wAlpha.wTc.GetValue(),
+            scoreVal = self.wTarProt.wScoreVal.wTc.GetValue(),
+            correctP = self.wTarProt.wCorrectP.wCb.GetValue(),
+            aaPos    = self.wTarProt.wAA.wTc.GetValue(),
+            histWind = self.wTarProt.wHist.wTc.GetValue(),
+            cCtrl    = hMethod.RGB2Hex(self.wTarProt.wCtrl.wC.GetColour()),
+            cAve     = hMethod.RGB2Hex(self.wTarProt.wAve.wC.GetColour()),
+            cAveL    = hMethod.RGB2Hex(self.wTarProt.wAveL.wC.GetColour()),
+        )
+        #------------------------------> Full Options
+        userOpt = dataclasses.asdict(hMethod.UserConfig(
+            core, corrA, data, limp, prot, tarp))
+        #endregion -----------------------------------------------------> Data
+
+        #region -------------------------------------------------> Save 2 File
+        cFile.WriteJSON(mConfig.core.fConfig, userOpt)
+        #endregion ----------------------------------------------> Save 2 File
+
+        #region --------------------------------------------------> Set Values
+        for k,v in userOpt.items():
+            sec = getattr(mConfig, k)
+            for j,w in v.items():
+                setattr(sec, j, w)
+        #------------------------------>
+        self.rErrorMsg  = ''
+        self.rException = ''
+        #endregion -----------------------------------------------> Set Values
+
+        return True
+    #---
+
+    def Cancel(self) -> bool:
+        """Close the window.
+
+            Returns
+            -------
+            bool
+        """
+        self.EndModal(0)
+        return True
+    #---
+
+    def SetDefault(self) -> bool:
+        """Load default values.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        dataF = cFile.ReadJSON(mConfig.core.fConfigDef)
+        #------------------------------>
+        core  = hMethod.Core(**dataF['core'])
+        corrA = hMethod.CorrA(**dataF['corr'])
+        data  = hMethod.Data(**dataF['data'])
+        limp  = hMethod.LimProt(**dataF['limp'])
+        prot  = hMethod.ProtProf(**dataF['prot'])
+        tarp  = hMethod.TarProt(**dataF['tarp'])
+        #------------------------------>
+        userOpt = hMethod.UserConfig(core, corrA, data, limp, prot, tarp)
+        #endregion ----------------------------------------------------->
+
+        #region -------------------------------------------------------->
+        self.SetConfValues(userOpt)
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
     #endregion ------------------------------------------------> Class Methods
 #---
 
@@ -671,7 +671,9 @@ class CheckUpdateResult(wx.Dialog):
         """
         return cMethod.OnGUIMethod(self.Link, event)
     #---
+    #endregion ------------------------------------------------> Event Methods
 
+    #region ---------------------------------------------------> Class Methods
     def Link(self, event:wx.Event) -> bool:
         """Process the link event.
 
@@ -691,7 +693,7 @@ class CheckUpdateResult(wx.Dialog):
         #------------------------------>
         return True
     #---
-    #endregion ------------------------------------------------> Event Methods
+    #endregion ------------------------------------------------> Class Methods
 #---
 #endregion ----------------------------------------------------------> Dialogs
 

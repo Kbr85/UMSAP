@@ -114,7 +114,7 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         super().__init__(parent)
         #------------------------------>
         dKeyMethod = {
-            mConfig.corr.kwCol: self.OnSelectColumn,
+            mConfig.corr.kwCol: self.SelectColumn,
         }
         self.dKeyMethod = self.dKeyMethod | dKeyMethod
         #endregion --------------------------------------------> Initial Setup
@@ -133,20 +133,27 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Event Methods
-    def OnSelectColumn(self, showAllCol:str) -> bool:
-        """Plot only selected columns. Method called from the menu.
-
-            Parameters
-            ----------
-            showAllCol: str
-                Show all columns or select columns to show.
+    #region ---------------------------------------------------> Class Methods
+    def WinPos(self) -> bool:
+        """Set the position on the screen and adjust the total number of
+            shown windows.
 
             Returns
             -------
             bool
         """
-        return cMethod.OnGUIMethod(self.SelectColumn, showAllCol)
+        #region --------------------------------------------------------> Super
+        info = super().WinPos()
+        #endregion -----------------------------------------------------> Super
+
+        #region ------------------------------------------------> Set Position
+        self.SetPosition(pt=(
+            info['D']['w'] - (info['W']['N']*self.cSDeltaWin + info['W']['w']),
+            info['D']['yo'] + info['W']['N']*self.cSDeltaWin,
+        ))
+        #endregion ---------------------------------------------> Set Position
+
+        return True
     #---
 
     def SelectColumn(self, showAllCol:str) -> bool:
@@ -209,30 +216,6 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         #endregion ----------------------------------------------> Get New Sel
 
         dlg.Destroy()
-        return True
-    #---
-    #endregion ------------------------------------------------> Event Methods
-
-    #region --------------------------------------------------> Manage Methods
-    def WinPos(self) -> bool:
-        """Set the position on the screen and adjust the total number of
-            shown windows.
-
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------------> Super
-        info = super().WinPos()
-        #endregion -----------------------------------------------------> Super
-
-        #region ------------------------------------------------> Set Position
-        self.SetPosition(pt=(
-            info['D']['w'] - (info['W']['N']*self.cSDeltaWin + info['W']['w']),
-            info['D']['yo'] + info['W']['N']*self.cSDeltaWin,
-        ))
-        #endregion ---------------------------------------------> Set Position
-
         return True
     #---
 
@@ -430,6 +413,6 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
 
         return True
     #---
-    #endregion -----------------------------------------------> Manage Methods
+    #endregion ------------------------------------------------> Class Methods
 #---
 #endregion ----------------------------------------------------------> Classes

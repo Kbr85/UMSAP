@@ -248,18 +248,6 @@ class CorrA(cPane.BaseConfPanel):
         """
         return cMethod.OnGUIMethod(self.Add)
     #---
-
-    def Add(self) -> bool:
-        """Add columns to analyze using the button.
-
-            Returns
-            -------
-            bool
-        """
-        self.wLCtrlI.Copy()
-        self.wLCtrlO.Paste()
-        return True
-    #---
     #endregion ------------------------------------------------> Event Methods
 
     #region ---------------------------------------------------> Class Methods
@@ -338,6 +326,18 @@ class CorrA(cPane.BaseConfPanel):
             self.wCorrMethod.wCb.SetValue("Pearson")
         #endregion -----------------------------------------------------> Test
 
+        return True
+    #---
+
+    def Add(self) -> bool:
+        """Add columns to analyze using the button.
+
+            Returns
+            -------
+            bool
+        """
+        self.wLCtrlI.Copy()
+        self.wLCtrlO.Paste()
         return True
     #---
     #endregion ------------------------------------------------> Class Methods
