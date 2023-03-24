@@ -1810,7 +1810,7 @@ class BaseResControlExpConf(wx.Panel):
     #endregion ------------------------------------------------> Event methods
 
     #region --------------------------------------------------> Manage methods
-    def OK(self, export:bool=True) -> tuple[bool, str]:
+    def CheckOK(self, export:bool=True) -> bool:
         """Validate and set the Results - Control Experiments text.
 
             Parameters
@@ -1820,8 +1820,7 @@ class BaseResControlExpConf(wx.Panel):
 
             Returns
             -------
-            tuple[bool, str]
-                Str is the string to show in Result - Control.
+            bool
 
             Notes
             -----
@@ -1846,7 +1845,7 @@ class BaseResControlExpConf(wx.Panel):
                     cWindow.Notification(
                         'errorF', msg=msg, parent=self, tException=e)
                     j.SetFocus()
-                    return (False,'')
+                    return False
             #--------------> Add row delimiter
             oText = f"{oText[0:-2]}; "
         #------------------------------> All cannot be empty
@@ -1854,7 +1853,7 @@ class BaseResControlExpConf(wx.Panel):
         if a:
             cWindow.Notification(
                 'errorF', msg=mConfig.core.mAllTextFieldEmpty, parent=self)
-            return (False, '')
+            return False
         #------------------------------> All unique
         a, b = cCheck.TcUniqueColNumbers(tcList)
         if not a:
@@ -1865,7 +1864,7 @@ class BaseResControlExpConf(wx.Panel):
                 parent     = self,
                 tException = e,
             )
-            return (False, '')
+            return False
         #endregion ----------------------------------------------> Check input
 
         #region ---------------------------------------------------> Export
@@ -1873,7 +1872,7 @@ class BaseResControlExpConf(wx.Panel):
             self.Export2TopParent(oText)
         #endregion ------------------------------------------------> Export
 
-        return (True, oText)
+        return True
     #---
 
     def Export2TopParent(self, oText:str) -> bool:

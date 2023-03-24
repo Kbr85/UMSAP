@@ -25,11 +25,11 @@ class Configuration():
     """Configuration for the limprot module"""
     #region ---------------------------------------------------------> Options
     #------------------------------> Names & Titles
-    nMod:str            = 'Limited Proteolysis'                                 # Name of the Module
-    nwRes:str           = 'Window Result LimProt'                               # Name for the Result Window
+    nwRes:str           = 'LimProt Window Result LimProt'                       # Name for the Result Window
     nTab:str            = 'LimProt Tab Configuration'                           # Name of the Config Tab
     nPane:str           = 'LimProt Pane Configuration'                          # Name of the Config Pane
-    npResControlExp:str = 'ResControlExp Pane LimProt'                          # Name of the ResCtrl Config Pane
+    npResControlExp:str = 'LimProt ResControlExp Pane'                          # Name of the ResCtrl Config Pane
+    tMod:str            = 'Limited Proteolysis'                                 # Name of the Module
     tTab:str            = 'LimProt'                                             # Title of the Config Tab
     #------------------------------> Label
     lStLane:str         = 'Lanes'                                               # lSt: Label for wx.StaticText

@@ -80,7 +80,7 @@ class UMSAPControl(cWindow.BaseWindow):
         mConfig.corr.tUtil: corrWindow.ResCorrA,
         mConfig.data.tUtil: dataWindow.ResDataPrep,
         mConfig.prot.nMod : protWindow.ResProtProf,
-        mConfig.limp.nMod : limpWindow.ResLimProt,
+        mConfig.limp.tMod : limpWindow.ResLimProt,
         mConfig.tarp.nMod : tarpWindow.ResTarProt,
     }
     #------------------------------>
@@ -88,11 +88,11 @@ class UMSAPControl(cWindow.BaseWindow):
         mConfig.corr.tUtil: mConfig.corr.nTab,
         mConfig.data.tUtil: mConfig.data.nTab,
         mConfig.prot.nMod : mConfig.prot.nTab,
-        mConfig.limp.nMod : mConfig.limp.nTab,
+        mConfig.limp.tMod : mConfig.limp.nTab,
         mConfig.tarp.nMod : mConfig.tarp.nTab,
     }
     #------------------------------>
-    cLSecSeqF = [mConfig.limp.nMod, mConfig.tarp.nMod]
+    cLSecSeqF = [mConfig.limp.tMod, mConfig.tarp.nMod]
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup

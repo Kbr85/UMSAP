@@ -58,14 +58,14 @@ class UMSAPFile():
     """
     # No Test
     #region -----------------------------------------------------> Class setup
-    SeqF = [mConfig.tarp.nMod, mConfig.limp.nMod]
+    SeqF = [mConfig.tarp.nMod, mConfig.limp.tMod]
     #------------------------------>
     rUserDataClass = {
         mConfig.corr.tUtil : corrMethod.UserData,
         mConfig.data.tUtil : dataMethod.UserData,
         mConfig.prot.nMod  : protMethod.UserData,
         mConfig.tarp.nMod  : tarpMethod.UserData,
-        mConfig.limp.nMod  : limpMethod.UserData,
+        mConfig.limp.tMod  : limpMethod.UserData,
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -89,7 +89,7 @@ class UMSAPFile():
             mConfig.corr.tUtil: self.ConfigureDataCorrA,
             mConfig.data.tUtil: self.ConfigureDataDataPrep,
             mConfig.prot.nMod : self.ConfigureDataProtProf,
-            mConfig.limp.nMod : self.ConfigureDataLimProt,
+            mConfig.limp.tMod : self.ConfigureDataLimProt,
             mConfig.tarp.nMod : self.ConfigureDataTarProt,
         }
         #endregion ------------------------------------------------> Variables
@@ -352,11 +352,11 @@ class UMSAPFile():
         """
         #region ---------------------------------------------------> Variables
         plotData = cMethod.BaseAnalysis()
-        pathB    = mConfig.limp.nMod.replace(" ", "-")
+        pathB    = mConfig.limp.tMod.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu
-        for k,v in self.rData[mConfig.limp.nMod].items():
+        for k,v in self.rData[mConfig.limp.tMod].items():
             #------------------------------>
             pathA = k.split(" - ")[0]
             tPath = self.rStepDataP / f'{pathA}_{pathB}'

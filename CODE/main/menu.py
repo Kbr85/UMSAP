@@ -38,7 +38,7 @@ class MenuModule(cMenu.BaseMenu):
     """Menu with module entries."""
     #region -----------------------------------------------------> Class Setup
     #------------------------------> Labels
-    cLLimProt  = mConfig.limp.nMod
+    cLLimProt  = mConfig.limp.tMod
     cLProtProf = mConfig.prot.nMod
     cLTarProt  = mConfig.tarp.nMod
     #------------------------------> Key - Values

@@ -1307,7 +1307,7 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
         return True
     #---
 
-    def OnPickFragment(self, event) -> bool:                                    # pylint: disable=dangerous-default-value, unused-argument
+    def OnPickFragment(self, event) -> bool:
         """Display info about the selected fragment.
 
             Parameters
@@ -1318,11 +1318,15 @@ class BaseWindowResultListText2PlotFragments(BaseWindowResultListText2Plot):
             -------
             bool
         """
-        return cMethod.OnGUIMethod(self.PickFragment)
+        return cMethod.OnGUIMethod(self.PickFragment, event)
     #---
 
-    def PickFragment(self) -> bool:
+    def PickFragment(self, event) -> bool:                                      # pylint: disable=unused-argument
         """Display info about the selected fragment.
+
+            Parameters
+            ----------
+            event: matplotlib pick event.
 
             Returns
             -------
@@ -2523,7 +2527,7 @@ class ResControlExp(BaseDialogOkCancel):
             bool
         """
         #region --------------------------------------------------->
-        if self.wConf.wConf.OnOK():
+        if self.wConf.wConf.CheckOK():
             self.EndModal(1)
             self.Close()
         #endregion ------------------------------------------------>
