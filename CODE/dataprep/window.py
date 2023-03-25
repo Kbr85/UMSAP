@@ -17,7 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import shutil
 from pathlib import Path
-from typing  import Union, Optional, TYPE_CHECKING
+from typing  import Optional, TYPE_CHECKING
 
 import pandas as pd
 import numpy as np
@@ -63,16 +63,8 @@ def CreateResDataPrep(
         ------
         bool
     """
-    #region --------------------------------------------------->
-    try:
-        ResDataPrep(parent, title=title, tSection=tSection, tDate=tDate)
-    except Exception as e:
-        msg = 'Failed to create the Data Preparation Result window.'
-        cWindow.Notification('errorU', msg=msg, tException=e, parent=parent)
-        return False
-    #endregion ------------------------------------------------>
-
-    return True
+    return cMethod.OnGUIMethod(
+        ResDataPrep, parent, title=title, tSection=tSection, tDate=tDate)
 #---
 #endregion ----------------------------------------------------------> Methods
 
@@ -118,7 +110,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         """
     #region -----------------------------------------------------> Class setup
     cName    = mConfig.data.nwRes
-    cSection = mConfig.data.nUtil
+    cSection = mConfig.data.tUtil
     #------------------------------>
     cLCol    = mConfig.core.lLCtrlColNameI
     cHSearch = 'Column Names'
@@ -170,10 +162,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         self.rCBarI = mConfig.data.cBarI
         self.rCPDF  = mConfig.data.cPDF
         #------------------------------>
-        try:
-            self.ReportPlotDataError()
-        except ValueError as e:
-            raise ValueError from e
+        self.ReportPlotDataError()
         #------------------------------>
         super().__init__(parent=parent)
         #endregion --------------------------------------------> Initial Setup
@@ -198,15 +187,10 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Event Methods
-    def OnClose(self, event:wx.CloseEvent) -> bool:
+    #region --------------------------------------------------> Manage Methods
+    def Close(self) -> bool:
         """Close window and uncheck section in UMSAPFile window. Assumes
             self.parent is an instance of UMSAPControl.
-
-            Parameters
-            ----------
-            event: wx.CloseEvent
-                Information about the event.
 
             Returns
             -------
@@ -228,7 +212,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         return True
     #---
 
-    def OnListSelect(self, event:Union[wx.CommandEvent, str]) -> bool:
+    def ListSelect(self) -> bool:
         """Plot data for the selected column.
 
             Parameters
@@ -241,7 +225,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region ------------------------------------------------>
-        super().OnListSelect(event)
+        super().ListSelect()
         #endregion --------------------------------------------->
 
         #region ------------------------------------------------> Get Selected
@@ -252,30 +236,11 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         #endregion ---------------------------------------------> Get Selected
 
         #region ---------------------------------------------------------> dfF
-        try:
-            self.PlotdfF(self.rLCIdx)
-        except Exception as e:
-            #------------------------------>
-            msg = ('It was not possible to build the histograms for the '
-                   'selected column.')
-            cWindow.Notification('errorU', msg=msg, tException=e, parent=self)
-            #------------------------------>
-            self.ClearPlots()
-            #------------------------------>
-            return False
-        #endregion ------------------------------------------------------> dfF
-
-        #region ---------------------------------------------------------> dfT
+        self.PlotdfF(self.rLCIdx)
         self.PlotdfT(self.rLCIdx)
-        #endregion ------------------------------------------------------> dfT
-
-        #region ---------------------------------------------------------> dfN
         self.PlotdfN(self.rLCIdx)
-        #endregion ------------------------------------------------------> dfN
-
-        #region --------------------------------------------------------> dfIm
         self.PlotdfIm(self.rLCIdx)
-        #endregion -----------------------------------------------------> dfIm
+        #endregion ------------------------------------------------------> dfF
 
         #region --------------------------------------------------------> Text
         self.SetText(self.rLCIdx)
@@ -283,9 +248,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
 
         return True
     #---
-    #endregion ------------------------------------------------> Event Methods
 
-    #region --------------------------------------------------> Manage Methods
     def SetWindow(
         self,
         parent:wx.Window,
@@ -648,7 +611,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         return True
     #---
 
-    def UpdateResultWindow(self, tDate:str='') -> bool:
+    def UpdateResultWindow(self, tDate:str='') -> bool:                         # pylint: disable=arguments-differ
         """Update window when a new date is selected.
 
             Parameters
@@ -728,22 +691,14 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             #------------------------------> Variables
             p = Path(dlg.GetPath())
             #------------------------------> Export
-            try:
-                date = self.rDateC.split(' - ')[0]
-                sec = self.cSection.replace(' ', '-')
-                origin = self.rObj.rStepDataP / f'{date}_{sec}'
-                for k in origin.iterdir():
-                    name = f'{self.rDateC} - {(k.stem).split("_")[1]}'
-                    dest = p / f'{name}{k.suffix}'
-                    #------------------------------>
-                    shutil.copy(k, dest)
-            except Exception as e:
-                cWindow.Notification(
-                    'errorF',
-                    msg        = self.cMsgExportFailed.format('Data'),
-                    tException = e,
-                    parent     = self,
-                )
+            date = self.rDateC.split(' - ')[0]
+            sec = self.cSection.replace(' ', '-')
+            origin = self.rObj.rStepDataP / f'{date}_{sec}'
+            for k in origin.iterdir():
+                name = f'{self.rDateC} - {(k.stem).split("_")[1]}'
+                dest = p / f'{name}{k.suffix}'
+                #------------------------------>
+                shutil.copy(k, dest)
         #endregion ------------------------------------------------> Get Path
 
         dlg.Destroy()
@@ -775,22 +730,14 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             col  = self.wLC.wLCS.wLC.OnGetItemText(self.rLCIdx, 1)
             date = cMethod.StrNow()
             #------------------------------> Export
-            try:
-                for k, v in self.wPlot.dPlot.items():
-                    #------------------------------> file path
-                    fPath = p / self.cImgName[k].format(self.rDateC, col, mConfig.core.imgFormat)
-                    #------------------------------> Do not overwrite
-                    if fPath.exists():
-                        fPath = fPath.with_stem(f"{fPath.stem} - {date}")
-                    #------------------------------> Write
-                    v.rFigure.savefig(fPath)
-            except Exception as e:
-                cWindow.Notification(
-                    'errorF',
-                    msg        = self.cMsgExportFailed.format('Image'),
-                    tException = e,
-                    parent     = self,
-                )
+            for k, v in self.wPlot.dPlot.items():
+                #------------------------------> file path
+                fPath = p / self.cImgName[k].format(self.rDateC, col, mConfig.core.imgFormat)
+                #------------------------------> Do not overwrite
+                if fPath.exists():
+                    fPath = fPath.with_stem(f"{fPath.stem} - {date}")
+                #------------------------------> Write
+                v.rFigure.savefig(fPath)
         #endregion ------------------------------------------------> Get Path
 
         dlg.Destroy()
@@ -800,6 +747,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
 #---
 #endregion ----------------------------------------------------------> Classes
 
+
 #region ------------------------------------------------> PubSub Subscriptions
-pub.subscribe(CreateResDataPrep, mConfig.data.psResDataPrep)
+pub.subscribe(CreateResDataPrep, mConfig.data.kwPubResDataPrep)
 #endregion ---------------------------------------------> PubSub Subscriptions

@@ -25,7 +25,7 @@ class Configuration():
     """Configuration for the result module"""
     #region ---------------------------------------------------------> Options
     #------------------------------> Names & Titles
-    nUtil:str          = 'Read UMSAP File'                                      # Name of the Util
+    nUtil:str          = 'Load UMSAP File'                                      # Name of the Util
     nwUMSAPControl:str = 'Window UMSAP Control'                                 # Name of window
     #------------------------------> Window Trackers
     winUMSAP:dict = field(default_factory=lambda: {})                           # Keys: UMSAP File path - Values: Reference to control window

@@ -40,10 +40,11 @@ fileD  = folder / 'res-tarprot-2.txt'
 class Test_TarProt(unittest.TestCase):
     """Test for tarprot.method.TarProt"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Set test"""
-        self.df    = cFile.ReadCSV2DF(fileA)
-        self.dict1 = tarpMethod.UserData(
+        cls.df    = cFile.ReadCSV2DF(fileA)
+        cls.dict1 = tarpMethod.UserData(
             seqFileObj    = cFile.FastaFile(fileB),
             cero          = True,
             tran          = 'Log2',
@@ -71,7 +72,7 @@ class Test_TarProt(unittest.TestCase):
             dfColumnR     = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
             dfColumnF     = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         )
-        self.dict2 = tarpMethod.UserData(
+        cls.dict2 = tarpMethod.UserData(
             seqFileObj    = cFile.FastaFile(fileB),
             cero          = True,
             tran          = 'Log2',
@@ -306,7 +307,7 @@ class Test_R2CpR(unittest.TestCase):
         """Test for expected output"""
         #------------------------------>
         tInput = [
-            (self.a, 0.05, [45, 45], self.b),
+            (self.a, 0.05, (45, 45), self.b),
         ]
         #------------------------------>
         for a,b,c,d in tInput:
@@ -357,7 +358,7 @@ class Test_R2CEvol(unittest.TestCase):
         """Test for expected output"""
         #------------------------------>
         tInput = [
-            (self.a, 0.05, [45, 47], self.b),
+            (self.a, 0.05, (45, 47), self.b),
         ]
         #------------------------------>
         for a,b,c,d in tInput:

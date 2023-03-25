@@ -119,17 +119,17 @@ class Test_Path2FFInput(unittest.TestCase):
         """Test for the first element of the expected output"""
         #------------------------------>
         tInput = [
-            (self.file,  'baInput',  True, False), # Bad Input
-            ('',            'file',  True,  True), # Optional
-            ('',            'file', False, False), #
-            ('',          'folder',  True,  True), #
-            ('',          'folder', False, False), #
-            (list(),        'file', False, False), # Path() fails
-            (self.file,     'file', False,  True), # File
-            (self.file,   'folder', False, False), #
-            (self.folder, 'folder', False,  True), # Folder
-            (self.folder,   'file', False, False), #
-            (self.noPerm,   'file', False, False), # No Read Permission
+            (self.file,  'baInput',  True, False),                              # Bad Input
+            ('',            'file',  True,  True),                              # Optional
+            ('',            'file', False, False),                              #
+            ('',          'folder',  True,  True),                              #
+            ('',          'folder', False, False),                              #
+            (list(),        'file', False, False),                              # Path() fails
+            (self.file,     'file', False,  True),                              # File
+            (self.file,   'folder', False, False),                              #
+            (self.folder, 'folder', False,  True),                              # Folder
+            (self.folder,   'file', False, False),                              #
+            (self.noPerm,   'file', False, False),                              # No Read Permission
         ]
         #------------------------------>
         for a,b,c,d in tInput:
@@ -275,7 +275,7 @@ class Test_UniqueColNumbers(unittest.TestCase):
     """Test for core.check.UniqueColNumbers"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):                                                             # pylint: disable=arguments-differ
+    def setUpClass(cls):                                                        # pylint: disable=arguments-differ
         """Set test"""
         cls.a = [1, 2, 3, 4]
         cls.b = ['1 2 3 4', '5-7, 8-10; 11-13, 14-16', '17-20']
@@ -319,7 +319,7 @@ class Test_Comparison(unittest.TestCase):
     """Test for core.check.Comparison"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):                                                             # pylint: disable=arguments-differ
+    def setUpClass(cls):                                                        # pylint: disable=arguments-differ
         """Set test"""
         cls.op1 = ['<', '>', '<=', '>=']
         cls.op2 = ['>', '<=', '>=']

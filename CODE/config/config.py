@@ -33,15 +33,7 @@ from tarprot  import config as tarpConfig
 #region -------------------------------------------------------> Configuration
 @dataclass
 class Configuration():
-    """Configuration of the app
-
-        Notes
-        -----
-        Each configuration class must define a converter dict to properly
-        assign the correct type for each attribute that can be defined in a
-        user configuration file, e.g.:
-        converter = {'DPI': int, 'checkForUpdates': bool}
-    """
+    """Configuration of the app"""
     # Test in test.unit.config.test_config.Test_Configuration
     #region ---------------------------------------------------------> Options
     core:cConfig.Configuration

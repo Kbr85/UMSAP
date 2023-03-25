@@ -351,7 +351,7 @@ def TarProt(
     #endregion ----------------------------------------------------> Variables
 
     #region ------------------------------------------------> Data Preparation
-    tOut = dataMethod.DataPreparation(df=df, rDO=rDO, resetIndex=resetIndex)
+    tOut = dataMethod.RunDataPreparation(df=df, rDO=rDO, resetIndex=resetIndex)
     if tOut[0]:
         dfS = tOut[0]['dfS']
     else:
@@ -399,11 +399,11 @@ def TarProt(
     #region --------------------------------------------------------> Sort
     dfR = dfR.sort_values(by=[('Nterm', 'Nterm'),('Cterm', 'Cterm')])           # type: ignore
     dfR = dfR.reset_index(drop=True)
+    #------------------------------>
+    tOut[0]['dfR'] = dfR
     #endregion -----------------------------------------------------> Sort
 
-    dictO = tOut[0]
-    dictO['dfR'] = dfR
-    return (dictO, '', None)
+    return (tOut[0], '', None)
 #---
 
 

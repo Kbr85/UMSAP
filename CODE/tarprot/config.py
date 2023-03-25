@@ -25,19 +25,19 @@ class Configuration():
     """Configuration for the tarprot module"""
     #region ---------------------------------------------------------> Options
     #------------------------------> Names & Titles
-    nMod:str            = 'Targeted Proteolysis'                                # Name of the Module
-    nuAA:str            = 'AA Distribution'                                     # Name of the AA Utility
-    nuHist:str          = 'Histograms'
-    nuCpR:str           = 'Cleavage per Residues'
-    nuCEvol:str         = 'Cleavage Evolution'
-    nwRes:str           = 'Window Result Targeted Proteolysis'                  # Name of the TarProt Res window
-    nwAAPlot:str        = 'Window Result AA Plot'
-    nwHistPlot:str      = 'Window Result Hist Plot'
-    nwCpRPlot:str       = 'Window Result CpR Plot'
-    nwCEvolPlot:str     = 'Window Result CEvol Plot'
+    nwRes:str           = 'TarProt Window Result Targeted Proteolysis'          # Name of the TarProt Res window
+    nwAAPlot:str        = 'TarProt Window Result AA Plot'
+    nwHistPlot:str      = 'TarProt Window Result Hist Plot'
+    nwCpRPlot:str       = 'TarProt Window Result CpR Plot'
+    nwCEvolPlot:str     = 'TarProt Window Result CEvol Plot'
     nTab:str            = 'TarProt Configuration Tab'                           # Name of the Conf Tab
     nPane:str           = 'Pane TarProt'                                        # Name of Conf Pane
     npResControlExp:str = 'ResControlExpPaneTarProt'                            # Name of the ResCtrl Conf Pane
+    tMod:str            = 'Targeted Proteolysis'                                # Name of the Module
+    tuAA:str            = 'AA Distribution'                                     # Name of the AA Utility
+    tuHist:str          = 'Histograms'
+    tuCpR:str           = 'Cleavage per Residues'
+    tuCEvol:str         = 'Cleavage Evolution'
     tTab:str            = 'TarProt'                                             # Title of the Conf Tab
     #------------------------------> Label
     lStExp:str          = 'Experiments'                                         # lSt: Label for wx.StaticText

@@ -30,7 +30,7 @@ from limprot import method as limpMethod
 
 #region -------------------------------------------------------> File Location
 folder = Path(__file__).parent / 'file'
-fileA   = folder / 'fasta-tarprot-seq-both.txt'                                 # Fasta File with two seq
+fileA  = folder / 'fasta-tarprot-seq-both.txt'                                  # Fasta File with two seq
 #endregion ----------------------------------------------------> File Location
 
 
@@ -115,11 +115,12 @@ DF_DFReplace_0_empty_NaN_0_1 = pd.DataFrame({
 class Test_Str2ListNumber(unittest.TestCase):
     """Test for core.method.Str2ListNumber"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Set the line used by the test """
-        self.tStrC  = "1, 2, 3,  4  ,  5, 6  , 7, 6-10"
-        self.tStrCO = "  1, 2, 3, 6-10,  4  ,  5, 6  , 7   "
-        self.tStrS  = "   1 2 3  4    5 6   7 6-10  "
+        cls.tStrC  = "1, 2, 3,  4  ,  5, 6  , 7, 6-10"
+        cls.tStrCO = "  1, 2, 3, 6-10,  4  ,  5, 6  , 7   "
+        cls.tStrS  = "   1 2 3  4    5 6   7 6-10  "
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -172,32 +173,14 @@ class Test_Str2ListNumber(unittest.TestCase):
 
 class Test_StrEqualLength(unittest.TestCase):
     """Test for core.method.StrEqualLength"""
-    #region -----------------------------------------------------> Valid Input
-    def test_invalid_input(self):
-        """Test for invalid input"""
-        #------------------------------>
-        badInput = [
-            (['1, 2, 4b'], ' ', 'Bad Input', ValueError),
-        ]
-        #------------------------------>
-        for a,b,c,d in badInput:
-            msg = f"tStr={a}, char={b}, loc={c}"
-            with self.subTest(msg):
-                self.assertRaises(
-                    d,
-                    cMethod.StrEqualLength,
-                    a, char=b, loc=c
-                )
-    #---
-    #endregion --------------------------------------------------> Valid Input
-
     #region -------------------------------------------------> Expected Output
     def test_expected_output(self):
         """Test for expected output"""
         #------------------------------>
         tInput = [
-            (['A', 'AA', 'AAA'], ' ', 'end', ['A  ', 'AA ', 'AAA']),
+            (['A', 'AA', 'AAA'], ' ', 'end',   ['A  ', 'AA ', 'AAA']),
             (['A', 'AA', 'AAA'], ' ', 'start', ['  A', ' AA', 'AAA']),
+            (['A', 'AA', 'AAA'], ' ', 'bad',   ['  A', ' AA', 'AAA']),
         ]
         #------------------------------>
         for a,b,c,d in tInput:
@@ -336,10 +319,11 @@ class Test_ExpandRange(unittest.TestCase):
 class Test_DFFilterByColS(unittest.TestCase):
     """Test for core.method.DFFilterByColS"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Set test"""
-        self.a = DF_DFFilterByColS.iloc[[1,3],:]
-        self.b = DF_DFFilterByColS.iloc[[0,2,4],:]
+        cls.a = DF_DFFilterByColS.iloc[[1,3],:]
+        cls.b = DF_DFFilterByColS.iloc[[0,2,4],:]
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -348,8 +332,9 @@ class Test_DFFilterByColS(unittest.TestCase):
         """Test for expected output"""
         #------------------------------>
         tInput = [
-            (DF_DFFilterByColS, 1,   '2',  'e', self.a),
-            (DF_DFFilterByColS, 1,   '2', 'ne', self.b),
+            (DF_DFFilterByColS, 1,   '2',  'e',  self.a),
+            (DF_DFFilterByColS, 1,   '2', 'ne',  self.b),
+            (DF_DFFilterByColS, 1,   '2', 'bad', self.b),
         ]
         #------------------------------>
         for a,b,c,d,e in tInput:
@@ -367,12 +352,13 @@ class Test_DFFilterByColS(unittest.TestCase):
 class Test_DFExclude(unittest.TestCase):
     """Test for core.method.DFExclude"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Set test"""
-        self.a = DF_DFExclude.iloc[0:4,:]
-        self.b = DF_DFExclude.iloc[1:4,:]
-        self.c = DF_DFExclude.iloc[[1,3],:]
-        self.d = DF_DFExclude.drop(index=DF_DFExclude.index)                     # type: ignore
+        cls.a = DF_DFExclude.iloc[0:4,:]
+        cls.b = DF_DFExclude.iloc[1:4,:]
+        cls.c = DF_DFExclude.iloc[[1,3],:]
+        cls.d = DF_DFExclude.drop(index=DF_DFExclude.index)                     # type: ignore
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -402,11 +388,12 @@ class Test_DFExclude(unittest.TestCase):
 class Test_DFFilterByColN(unittest.TestCase):
     """Test for core.method.DFFilterByColN"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Set test"""
-        self.a = DF_DFFilterByColN.iloc[2:5,:]
-        self.b = DF_DFFilterByColN.iloc[0,:].to_frame().transpose()
-        self.c = DF_DFFilterByColN.iloc[[0,1],:]
+        cls.a = DF_DFFilterByColN.iloc[2:5,:]
+        cls.b = DF_DFFilterByColN.iloc[0,:].to_frame().transpose()
+        cls.c = DF_DFFilterByColN.iloc[[0,1],:]
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -464,29 +451,30 @@ class Test_DFReplace(unittest.TestCase):
 class Test_NCResNumbers(unittest.TestCase):
     """Test for core.method.NCResNumbers"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Set test"""
-        self.df = pd.DataFrame({
+        cls.df = pd.DataFrame({
             'Seq': ['HMKKTA', 'VALAG', 'SALLR', 'LRVMM'],
             'N'  : [nan, nan, nan, nan,],
             'C'  : [nan, nan, nan, nan,],
             'NF' : [nan, nan, nan, nan,],
             'CF' : [nan, nan, nan, nan,],
         })
-        self.do = limpMethod.UserData(
+        cls.do = limpMethod.UserData(
             dfSeq      = 0,
             seqFileObj = cFile.FastaFile(fileA),
             dfNC       = [1,2],
             dfNCF      = [3,4],
         )
-        self.dfRes = pd.DataFrame({
+        cls.dfRes = pd.DataFrame({
             'Seq': ['HMKKTA', 'VALAG', 'SALLR', 'LRVMM'],
             'N'  : [14, 24, 76, 79,],
             'C'  : [19, 28, 80, 83,],
             'NF' : [NA, 10, 62, 65,],
             'CF' : [5,  14, 66, NA,],
         })
-        self.dfRes.iloc[:,3:5] = self.dfRes.iloc[:,3:5].astype('Int64')
+        cls.dfRes.iloc[:,3:5] = cls.dfRes.iloc[:,3:5].astype('Int64')
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -512,9 +500,10 @@ class Test_NCResNumbers(unittest.TestCase):
 class Test_Fragments(unittest.TestCase):
     """Test for core.method.Fragments"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Set test"""
-        self.a = pd.DataFrame({
+        cls.a = pd.DataFrame({
             ('Seq','Seq')     :  [  'A',  'Q',  'A',  'N',  'P',  'V',  'V',  'A',  'I',  'Q',  'E',  'A',  'Y',  'L',  'L',  'N',  'D'],
             ('N', 'N')        :  [    1,   50,  201,  247,  258,  270,  270,  274,  311,  325,  327,  343,  368,  372,  372,  376,  432],
             ('C', 'C')        :  [   42,   62,  211,  263,  269,  283,  290,  293,  324,  342,  342,  351,  377,  385,  387,  387,  441],
@@ -560,12 +549,12 @@ class Test_Fragments(unittest.TestCase):
             nFrag  = (6, 5),
             nCT    = (4,3),
         )
-        self.b = cMethod.Fragment(
+        cls.b = cMethod.Fragment(
             label = ['Exp1-P', 'Exp2-P', 'Exp3-P'],
         )
-        setattr(self.b, 'Exp1-P', exp1)
-        setattr(self.b, 'Exp2-P', exp2)
-        setattr(self.b, 'Exp3-P', exp3)
+        setattr(cls.b, 'Exp1-P', exp1)
+        setattr(cls.b, 'Exp2-P', exp2)
+        setattr(cls.b, 'Exp3-P', exp3)
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -574,7 +563,7 @@ class Test_Fragments(unittest.TestCase):
         """Test for expected output"""
         #------------------------------>
         tInput = [
-            (self.a, 0.05, 'le', 441, [55, 350], self.b),
+            (self.a, 0.05, 'le', 441, (55, 350), self.b),
         ]
         #------------------------------>
         for a,b,c,d,e,f in tInput:
@@ -592,11 +581,12 @@ class Test_Fragments(unittest.TestCase):
 class Test_Rec2NatCoord(unittest.TestCase):
     """Test for core.method.Rec2NatCoord"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Set test"""
-        self.a = [(1,42), (38, 50), (201, 211), (247, 263)]
-        self.b = [(48, 60), (211, 221), (257, 273)]
-        self.c = [(211, 221)]
+        cls.a = [(1,42), (38, 50), (201, 211), (247, 263)]
+        cls.b = [(48, 60), (211, 221), (257, 273)]
+        cls.c = [(211, 221)]
     #---
     #endregion --------------------------------------------------> Class Setup
 
@@ -624,11 +614,12 @@ class Test_Rec2NatCoord(unittest.TestCase):
 class Test_MergeOverlappingFragments(unittest.TestCase):
     """Test for core.method.MergeOverlappingFragments"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Set test"""
-        self.a = [(1,42), (201, 211), (247, 263), (38, 50), (212, 230)]
-        self.b = [(1,50), (201, 211), (212, 230), (247, 263)]
-        self.c = [(1,50), (201, 230), (247, 263)]
+        cls.a = [(1,42), (201, 211), (247, 263), (38, 50), (212, 230)]
+        cls.b = [(1,50), (201, 211), (212, 230), (247, 263)]
+        cls.c = [(1,50), (201, 230), (247, 263)]
     #---
     #endregion --------------------------------------------------> Class Setup
 

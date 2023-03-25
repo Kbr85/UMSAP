@@ -25,12 +25,12 @@ class Configuration():
     """Configuration for the protprof module"""
     #region ---------------------------------------------------------> Options
     #------------------------------> Names & Titles
-    nMod:str              = 'Proteome Profiling'                                # Name of the Module
     nwRes:str             = 'Window Result ProtProf Plot'                       # Name of the Result window
     ndFilterRemoveAny:str = 'Remove Filters'
     nTab:str              = 'Tab Proteome Profiling'                            # Name of Conf Tab
     nPane:str             = 'Pane ProtProf'                                     # Name of Conf Pane
     npResControlExp:str   = 'ResControlExpPaneProtProf'
+    tMod:str              = 'Proteome Profiling'                                # Name of the Module
     tTab:str              = 'ProtProf'                                          # Title of Conf Tab
     #------------------------------> Labels
     lStCond:str             = 'Conditions'                                      # lSt: Label for wx.StaticText
@@ -138,7 +138,7 @@ class Configuration():
     #------------------------------> User defined options
     alpha:str      = ''
     correctP:str   = ''
-    scoreVal:str   = '0'
+    scoreVal:str   = ''
     lock:str       = 'Analysis'
     filterA:str    = 'No'
     showAll:str    = ''
@@ -154,7 +154,6 @@ class Configuration():
     cVolSel:str    = '#6ac653'
     cVol:list[str] = field(default_factory=lambda:
         ['#ff3333', '#d3d3d3', '#3333ff'])
-
     #endregion ------------------------------------------------------> Options
 #---
 #endregion ----------------------------------------------------> Configuration
