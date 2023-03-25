@@ -93,23 +93,23 @@ class Start(wx.Panel):
         #region --------------------------------------------------------> Bind
         self.wBtnCorrA.Bind(
             wx.EVT_BUTTON,
-            lambda event: mConfig.main.mainWin.CreateTab(mConfig.corr.nTab)     # type: ignore
+            lambda event: mConfig.main.mainWin.OnCreateTab(mConfig.corr.nTab)   # type: ignore
         )
         self.wBtnDataPrep.Bind(
             wx.EVT_BUTTON,
-            lambda event: mConfig.main.mainWin.CreateTab(mConfig.data.nTab)     # type: ignore
+            lambda event: mConfig.main.mainWin.OnCreateTab(mConfig.data.nTab)   # type: ignore
         )
         self.wBtnLimProt.Bind(
             wx.EVT_BUTTON,
-            lambda event: mConfig.main.mainWin.CreateTab(mConfig.limp.nTab)     # type: ignore
+            lambda event: mConfig.main.mainWin.OnCreateTab(mConfig.limp.nTab)   # type: ignore
         )
         self.wBtnProtProf.Bind(
             wx.EVT_BUTTON,
-            lambda event: mConfig.main.mainWin.CreateTab(mConfig.prot.nTab)     # type: ignore
+            lambda event: mConfig.main.mainWin.OnCreateTab(mConfig.prot.nTab)   # type: ignore
         )
         self.wBtnTarProt.Bind(
             wx.EVT_BUTTON,
-            lambda event: mConfig.main.mainWin.CreateTab(mConfig.tarp.nTab)     # type: ignore
+            lambda event: mConfig.main.mainWin.OnCreateTab(mConfig.tarp.nTab)   # type: ignore
         )
         #endregion -----------------------------------------------------> Bind
     #endregion -----------------------------------------------> Instance setup
