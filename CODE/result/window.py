@@ -79,7 +79,7 @@ class UMSAPControl(cWindow.BaseWindow):
     dPlotMethod = {                                                             # Methods to create plot windows
         mConfig.corr.tUtil: corrWindow.ResCorrA,
         mConfig.data.tUtil: dataWindow.ResDataPrep,
-        mConfig.prot.nMod : protWindow.ResProtProf,
+        mConfig.prot.tMod : protWindow.ResProtProf,
         mConfig.limp.tMod : limpWindow.ResLimProt,
         mConfig.tarp.tMod : tarpWindow.ResTarProt,
     }
@@ -87,7 +87,7 @@ class UMSAPControl(cWindow.BaseWindow):
     dSectionTab = {                                                             # Section name and Tab name correlation
         mConfig.corr.tUtil: mConfig.corr.nTab,
         mConfig.data.tUtil: mConfig.data.nTab,
-        mConfig.prot.nMod : mConfig.prot.nTab,
+        mConfig.prot.tMod : mConfig.prot.nTab,
         mConfig.limp.tMod : mConfig.limp.nTab,
         mConfig.tarp.tMod : mConfig.tarp.nTab,
     }

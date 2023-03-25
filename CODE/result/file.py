@@ -63,7 +63,7 @@ class UMSAPFile():
     rUserDataClass = {
         mConfig.corr.tUtil : corrMethod.UserData,
         mConfig.data.tUtil : dataMethod.UserData,
-        mConfig.prot.nMod  : protMethod.UserData,
+        mConfig.prot.tMod  : protMethod.UserData,
         mConfig.tarp.tMod  : tarpMethod.UserData,
         mConfig.limp.tMod  : limpMethod.UserData,
     }
@@ -88,7 +88,7 @@ class UMSAPFile():
         self.dConfigure = {                                                     # Configure methods. Keys are section names.
             mConfig.corr.tUtil: self.ConfigureDataCorrA,
             mConfig.data.tUtil: self.ConfigureDataDataPrep,
-            mConfig.prot.nMod : self.ConfigureDataProtProf,
+            mConfig.prot.tMod : self.ConfigureDataProtProf,
             mConfig.limp.tMod : self.ConfigureDataLimProt,
             mConfig.tarp.tMod : self.ConfigureDataTarProt,
         }
@@ -297,11 +297,11 @@ class UMSAPFile():
         #region ---------------------------------------------------> Variables
         data   = cMethod.BaseAnalysis()
         colStr = [('Gene','Gene','Gene'),('Protein','Protein','Protein')]
-        pathB  = mConfig.prot.nMod.replace(" ", "-")
+        pathB  = mConfig.prot.tMod.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu
-        for k,v in self.rData[mConfig.prot.nMod].items():
+        for k,v in self.rData[mConfig.prot.tMod].items():
             #------------------------------> Path
             pathA = k.split(" - ")[0]
             tPath = self.rStepDataP / f'{pathA}_{pathB}'

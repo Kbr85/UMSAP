@@ -1580,6 +1580,8 @@ class BaseResControlExpConf(wx.Panel):
             self, 'mNoControl', 'The Control Type must defined.')
         self.mLabelEmpty = getattr(
             self, 'mLabelEmpty', 'All labels and control name must be defined.')
+        #------------------------------>
+        self.rResCtrlText = ''
         #------------------------------> super()
         super().__init__(parent, name=name, size=(700,700))
         #endregion --------------------------------------------> Initial Setup
@@ -1868,6 +1870,8 @@ class BaseResControlExpConf(wx.Panel):
         #endregion ----------------------------------------------> Check input
 
         #region ---------------------------------------------------> Export
+        self.rResCtrlText = oText                                               # Save the value for export later.
+        #------------------------------>
         if export:
             self.Export2TopParent(oText)
         #endregion ------------------------------------------------> Export

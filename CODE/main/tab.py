@@ -56,7 +56,7 @@ class Start(wx.Panel):
         self.wBtnCorrA    = wx.Button(self, label=mConfig.corr.tUtil)
         self.wBtnDataPrep = wx.Button(self, label=mConfig.data.tUtil)
         self.wBtnLimProt  = wx.Button(self, label=mConfig.limp.tMod)
-        self.wBtnProtProf = wx.Button(self, label=mConfig.prot.nMod)
+        self.wBtnProtProf = wx.Button(self, label=mConfig.prot.tMod)
         self.wBtnTarProt  = wx.Button(self, label=mConfig.tarp.tMod)
         #endregion --------------------------------------------------> Widgets
 
@@ -64,7 +64,7 @@ class Start(wx.Panel):
         self.wBtnCorrA.SetToolTip(f'Start the utility {mConfig.corr.tUtil}')
         self.wBtnDataPrep.SetToolTip(f'Start the utility {mConfig.data.tUtil}')
         self.wBtnLimProt.SetToolTip (f'Start the module {mConfig.limp.tMod}')
-        self.wBtnProtProf.SetToolTip(f'Start the module {mConfig.prot.nMod}')
+        self.wBtnProtProf.SetToolTip(f'Start the module {mConfig.prot.tMod}')
         self.wBtnTarProt.SetToolTip (f'Start the module {mConfig.tarp.tMod}')
         #endregion -------------------------------------------------> Tooltips
 

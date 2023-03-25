@@ -19,6 +19,7 @@ import wx
 
 from config.config import config as mConfig
 from core     import menu   as cMenu
+from core     import method as cMethod
 from corr     import menu   as corrMenu
 from dataprep import menu   as dataMenu
 from help     import menu   as hMenu
@@ -39,7 +40,7 @@ class MenuModule(cMenu.BaseMenu):
     #region -----------------------------------------------------> Class Setup
     #------------------------------> Labels
     cLLimProt  = mConfig.limp.tMod
-    cLProtProf = mConfig.prot.nMod
+    cLProtProf = mConfig.prot.tMod
     cLTarProt  = mConfig.tarp.tMod
     #------------------------------> Key - Values
     cVLimProt  = mConfig.limp.nTab
@@ -96,10 +97,9 @@ class MenuModule(cMenu.BaseMenu):
         #endregion ----------------------------------------------> Check MainW
 
         #region --------------------------------------------------> Create Tab
-        mConfig.main.mainWin.OnCreateTab(self.rIDMap[event.GetId()])
+        return cMethod.OnGUIMethod(
+            mConfig.main.mainWin.CreateTab, self.rIDMap[event.GetId()])
         #endregion -----------------------------------------------> Create Tab
-
-        return True
     #---
     #endregion ------------------------------------------------> Class Methods
 #---
@@ -172,10 +172,9 @@ class MenuUtility(cMenu.BaseMenu):
         #endregion ----------------------------------------------> Check MainW
 
         #region --------------------------------------------------> Create Tab
-        mConfig.main.mainWin.OnCreateTab(self.rIDMap[event.GetId()])
+        return cMethod.OnGUIMethod(
+            mConfig.main.mainWin.CreateTab, self.rIDMap[event.GetId()])
         #endregion -----------------------------------------------> Create Tab
-
-        return True
     #---
     #endregion ------------------------------------------------> Event Methods
 #---

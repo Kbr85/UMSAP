@@ -18,7 +18,8 @@
 import wx
 
 from config.config import config as mConfig
-from core import menu as cMenu
+from core import menu   as cMenu
+from core import method as cMethod
 #endregion ----------------------------------------------------------> Imports
 
 
@@ -51,6 +52,8 @@ class ToolProtProfFCEvolution(cMenu.BaseMenu):
         self.miSaveI = self.Append(-1, f'{self.cLExpImg}\tAlt+I')
         self.AppendSeparator()
         self.miZoomR = self.Append(-1, f'{self.cLZoomReset}\tAlt+Z')
+        #------------------------------> Configuration
+        self.miShowAll.Check(mConfig.core.oYesNo[mConfig.prot.showAll])
         #endregion -----------------------------------------------> Menu Items
 
         #region ---------------------------------------------------> rKeyID
@@ -139,6 +142,8 @@ class ToolProtProfFilters(cMenu.BaseMenu):
         self.AppendSeparator()
         self.miSave = self.Append(-1, f'{self.cLSave}\tCtrl+Shift+S')
         self.miLoad = self.Append(-1, f'{self.cLLoad}\tCtrl+Shift+L')
+        #------------------------------> Configuration
+        self.miUpdate.Check(mConfig.core.oYesNo[mConfig.prot.filterA])
         #endregion -----------------------------------------------> Menu Items
 
         #region ---------------------------------------------------> rKeyID
@@ -207,7 +212,9 @@ class ToolProtProfLockPlotScale(cMenu.BaseMenu):
         self.miNo      = self.Append(-1, self.cLNo,       kind=wx.ITEM_RADIO)
         self.miDate    = self.Append(-1, self.cLAnalysis, kind=wx.ITEM_RADIO)
         self.miProject = self.Append(-1, self.cLProject,  kind=wx.ITEM_RADIO)
-        self.miDate.Check()
+        #------------------------------> Configuration
+        mi = self.FindItemById(self.FindItem(mConfig.prot.lock))
+        mi.Check()
         #endregion -----------------------------------------------> Menu Items
 
         #region ------------------------------------------------------> nameID
@@ -417,6 +424,8 @@ class ToolProtProfVolcanoPlot(cMenu.BaseMenu):
         self.miSaveI = self.Append(-1, f'{self.cLExpImg}\tShift+I')
         self.AppendSeparator()
         self.miZoomR = self.Append(-1, f'{self.cLZoomReset}\tShift+Z')
+        #------------------------------> Configuration
+        self.miLabelPick.Check(False if mConfig.prot.pickP == 'Select' else True)
         #endregion -----------------------------------------------> Menu Items
 
         #region ---------------------------------------------------> rKeyID
@@ -650,16 +659,16 @@ class ToolProtProf(cMenu.BaseMenuMainResult):
             self.mVolcano.UpdateCondRP(label)
             #------------------------------> Update Plot
             win = self.GetWindow()
-            win.UpdateResultWindow(
+            #------------------------------>
+            return cMethod.OnGUIMethod(
+                win.UpdateResultWindow,
                 tDate = label,
                 cond  = self.mVolcano.rCond[0].GetItemLabelText(),
                 rp    = self.mVolcano.rRp[0].GetItemLabelText(),
             )
-        else:
-            super().OnMethodKey(event)
+        #------------------------------>
+        super().OnMethodKey(event)
         #endregion ------------------------------------------------>
-
-        return True
     #---
 
     def UpdateOtherItems(self, menuData:dict, tDate:wx.MenuItem) -> bool:
