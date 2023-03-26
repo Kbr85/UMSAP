@@ -37,10 +37,11 @@ fileC  = folder / 'res-limprot-1.txt'
 class Test_LimProt(unittest.TestCase):
     """Test for limprot.method.LimProt"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Set test"""
-        self.df    = cFile.ReadCSV2DF(fileA)
-        self.dict1 = limpMethod.UserData(
+        cls.df    = cFile.ReadCSV2DF(fileA)
+        cls.dict1 = limpMethod.UserData(
             seqFile       = fileB,
             seqFileObj    = cFile.FastaFile(fileB),
             cero          = True,
@@ -51,7 +52,7 @@ class Test_LimProt(unittest.TestCase):
             width         = 0.3,
             targetProt    = 'Mis18alpha',
             scoreVal      = 25.0,
-            indSample     = True,
+            indSample     = 'i',
             correctedP    = 'Bonferroni',
             alpha         = 0.05,
             beta          = 0.05,

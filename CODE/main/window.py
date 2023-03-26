@@ -121,6 +121,49 @@ class WindowMain(cWindow.BaseWindow):
     #---
     #endregion -----------------------------------------------> Instance setup
 
+    #region ---------------------------------------------------> Event Methods
+    def OnTabClose(self, event:wx.Event) -> bool:
+        """Make sure to show the Start Tab if no other tab exists.
+
+            Parameters
+            ----------
+            event: wx.aui.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        event.Skip()
+        #------------------------------>
+        return cMethod.OnGUIMethod(self.TabClose)
+        #endregion ------------------------------------------------>
+    #---
+
+    def OnCreateTab(
+        self,
+        name:str,
+        dataI:Optional[cMethod.BaseUserData]=None,) -> bool:
+        """Create the Tabs from the button in Start.
+
+            Parameters
+            ----------
+            name: str
+                One of the values in section Names of config for tabs
+            dataI: cMethod.BaseUserData or None
+                Data class representation of user input. Default is None.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        return cMethod.OnGUIMethod(self.CreateTab, name, dataI=dataI)
+        #endregion ------------------------------------------------>
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
     #region ---------------------------------------------------> Class Methods
     def CreateTab(
         self,
@@ -147,12 +190,7 @@ class WindowMain(cWindow.BaseWindow):
         #region ------------------------------------------> Find/Create & Show
         if win is None:
             #------------------------------> Create tab
-            try:
-                tab = self.dTab[name](self.wNotebook)
-            except Exception as e:
-                msg = f'Failed to create the {name} tab.'
-                cWindow.Notification('errorU', msg=msg, tException=e, parent=self)
-                return False
+            tab = self.dTab[name](self.wNotebook)
             #------------------------------> Initial Data
             if name != mConfig.main.ntStart:
                 tab.wConf.SetInitialData(dataI)                                 # Tab needs to be fully created before adding initial data
@@ -181,25 +219,14 @@ class WindowMain(cWindow.BaseWindow):
 
         return True
     #---
-    #endregion ------------------------------------------------> Class Methods
 
-    #region ---------------------------------------------------> Event methods
-    def OnTabClose(self, event:wx.Event) -> bool:
+    def TabClose(self) -> bool:
         """Make sure to show the Start Tab if no other tab exists.
-
-            Parameters
-            ----------
-            event: wx.aui.Event
-                Information about the event.
 
             Returns
             -------
             bool
         """
-        #region --------------------------------------------------->
-        event.Skip()
-        #endregion ------------------------------------------------>
-
         #region --------------------------------------------------->
         pageC = self.wNotebook.GetPageCount() - 1
         #------------------------------> Update tabs & close buttons
@@ -223,13 +250,8 @@ class WindowMain(cWindow.BaseWindow):
         return True
     #---
 
-    def OnClose(self, event:wx.CloseEvent) -> bool:
+    def Close(self) -> bool:
         """Destroy window and set config.winMain to None.
-
-            Parameters
-            ----------
-            event: wx.CloseEvent
-                Information about the event
 
             Returns
             -------
@@ -243,6 +265,6 @@ class WindowMain(cWindow.BaseWindow):
 
         return True
     #---
-    #endregion ------------------------------------------------> Event methods
+    #endregion ------------------------------------------------> Class Methods
 #---
 #endregion ----------------------------------------------------------> Classes

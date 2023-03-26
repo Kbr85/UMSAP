@@ -17,7 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import _thread
 from pathlib import Path
-from typing  import Optional, Union, TYPE_CHECKING
+from typing  import Optional, TYPE_CHECKING
 
 import pandas as pd
 
@@ -89,7 +89,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
      """
     #region -----------------------------------------------------> Class setup
     cName    = mConfig.tarp.nwRes
-    cSection = mConfig.tarp.nMod
+    cSection = mConfig.tarp.tMod
     #------------------------------> Label
     cLPaneSec = 'Intensity'
     #------------------------------>
@@ -154,7 +154,53 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region --------------------------------------------------> Manage Methods
+    #region ---------------------------------------------------> Class Methods
+    def PickFragment(self, event) -> bool:
+        """Display info about the selected fragment.
+
+            Parameters
+            ----------
+            event: matplotlib pick event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        art   = event.artist
+        fragC = list(map(int, art.get_label().split('.')))
+        #------------------------------>
+        if self.rFragSelC != fragC:
+            self.rFragSelC = fragC
+        else:
+            return True
+        #------------------------------>
+        x, y = event.artist.xy
+        x = round(x)
+        y = round(y)
+        #------------------------------>
+        tKey = f'{self.rDataC.labelA[fragC[0]]}-{self.rPStr}'
+        #------------------------------>
+        x1, x2 = getattr(self.rFragments, tKey).coord[fragC[1]]
+        #endregion ------------------------------------------------> Variables
+
+        #region ------------------------------------------> Highlight Fragment
+        if self.rFragSelLine is not None:
+            self.rFragSelLine[0].remove()
+        #------------------------------
+        self.rFragSelLine = self.wPlot['Main'].rAxes.plot(
+            [x1+2, x2-2], [y,y], color='black', linewidth=4)
+        #------------------------------>
+        self.wPlot['Main'].rCanvas.draw()
+        #endregion ---------------------------------------> Highlight Fragment
+
+        #region -------------------------------------------------------> Print
+        self.PrintFragmentText(tKey, fragC)
+        #endregion ----------------------------------------------------> Print
+
+        return True
+    #---
+
     def WinPos(self) -> bool:
         """Set the position on the screen and adjust the total number of
             shown windows.
@@ -214,7 +260,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         return (date, menuData)
     #---
 
-    def UpdateResultWindow(
+    def UpdateResultWindow(                                                     # pylint: disable=arguments-differ
         self,
         tDate:str            ='',
         corrP:Optional[bool] = None,
@@ -256,7 +302,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         #endregion ------------------------------------------------>
 
         #region ---------------------------------------------------> Fragments
-        try:
+        try:                                                                    # Keep backward compatibility
             df = self.GetDF4FragmentSearch()
         except KeyError as e:
             #------------------------------> Notification
@@ -268,12 +314,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
                     parent     = self,
                 )
             else:
-                cWindow.Notification(
-                    'errorU',
-                    msg        = mConfig.core.mUnexpectedError,
-                    tException = e,
-                    parent     = self,
-                )
+                raise Exception from e
             #------------------------------> Reset attributes
             self.rCorrP = False
             self.rPStr  = 'P'
@@ -569,18 +610,14 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         #endregion ------------------------------------------------> Get Pos
 
         #region ---------------------------------------------------> Run
-        try:
-            tarpMethod.R2SeqAlignment(
-                self.rDf,
-                self.rDataC.alpha,
-                self.rRecSeqC,
-                fileP,
-                length,
-                self.rNatSeqC,
-            )
-        except Exception as e:
-            msg = 'Export of Sequence Alignments failed.'
-            cWindow.Notification('errorF', msg=msg, tException=e)
+        tarpMethod.R2SeqAlignment(
+            self.rDf,
+            self.rDataC.alpha,
+            self.rRecSeqC,
+            fileP,
+            length,
+            self.rNatSeqC,
+        )
         #endregion ------------------------------------------------> Run
 
         dlg.Destroy()
@@ -588,7 +625,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
     #---
 
     def ClearPept(self, plot:bool=True) -> bool:
-        """Clear the Peptide selection.
+        """Clear the Peptide selection. Method called from menu.
 
             Parameters
             ----------
@@ -625,7 +662,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
     #---
 
     def ClearFrag(self, plot=True) -> bool:
-        """Clear the Fragment selection.
+        """Clear the Fragment selection. Method called from Menu.
 
             Parameters
             ----------
@@ -656,7 +693,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
     #---
 
     def ClearAll(self) -> bool:
-        """Clear all selections.
+        """Clear all selections. Method called from menu.
 
             Returns
             -------
@@ -681,7 +718,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
     #---
 
     def AANew(self) -> bool:
-        """Perform a new AA analysis.
+        """Perform a new AA analysis. Method called from Menu.
 
             Returns
             -------
@@ -709,7 +746,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         #region ---------------------------------------------------> Run
         dfI = self.rDataC.df
         idx = pd.IndexSlice
-        dfI = dfI.loc[:,idx[['Sequence']+self.rDataC.labelA,['Sequence', 'P']]]          # type: ignore
+        dfI = dfI.loc[:,idx[['Sequence']+self.rDataC.labelA,['Sequence', 'P']]] # type: ignore
         dfO = tarpMethod.R2AA(
             dfI, self.rRecSeqC, self.rDataC.alpha, self.rDataC.protLength[0], pos=pos)
         #endregion ------------------------------------------------> Run
@@ -745,7 +782,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
     #---
 
     def AASelect(self, aa:str) -> bool:
-        """Show an AA analysis.
+        """Show an AA analysis. Method called from Menu.
 
             Parameters
             ----------
@@ -762,7 +799,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
     #---
 
     def HistSelect(self, hist:str) -> bool:
-        """Show a Histogram.
+        """Show a Histogram. Method called from Menu.
 
             Parameters
             ----------
@@ -783,7 +820,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
     #---
 
     def HistNew(self) -> bool:
-        """Create a new histogram.
+        """Create a new histogram. Method called from Menu.
 
             Returns
             -------
@@ -849,7 +886,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
     #---
 
     def CpR(self) -> bool:
-        """Show the Cleavage per Residue results.
+        """Show the Cleavage per Residue results. Method called from Menu.
 
             Returns
             -------
@@ -864,7 +901,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
     #---
 
     def PDBMap(self) -> bool:
-        """Map results to a PDB.
+        """Map results to a PDB. Method called from Menu.
 
             Returns
             -------
@@ -988,7 +1025,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
     #---
 
     def CEvol(self) -> bool:
-        """Show the Cleavage Evolution results.
+        """Show the Cleavage Evolution results. Method called from Menu.
 
             Returns
             -------
@@ -998,55 +1035,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
             ResCEvol(self, self.rDateC, self.rDataC.CEvol))
         return True
     #---
-    #endregion -----------------------------------------------> Manage Methods
-
-    #region ----------------------------------------------------> Event Methods
-    def OnPickFragment(self, event) -> bool:
-        """Display info about the selected fragment.
-
-            Parameters
-            ----------
-            event: matplotlib pick event.
-
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> Variables
-        art   = event.artist
-        fragC = list(map(int, art.get_label().split('.')))
-        #------------------------------>
-        if self.rFragSelC != fragC:
-            self.rFragSelC = fragC
-        else:
-            return True
-        #------------------------------>
-        x, y = event.artist.xy
-        x = round(x)
-        y = round(y)
-        #------------------------------>
-        tKey = f'{self.rDataC.labelA[fragC[0]]}-{self.rPStr}'
-        #------------------------------>
-        x1, x2 = getattr(self.rFragments, tKey).coord[fragC[1]]
-        #endregion ------------------------------------------------> Variables
-
-        #region ------------------------------------------> Highlight Fragment
-        if self.rFragSelLine is not None:
-            self.rFragSelLine[0].remove()
-        #------------------------------
-        self.rFragSelLine = self.wPlot['Main'].rAxes.plot(
-            [x1+2, x2-2], [y,y], color='black', linewidth=4)
-        #------------------------------>
-        self.wPlot['Main'].rCanvas.draw()
-        #endregion ---------------------------------------> Highlight Fragment
-
-        #region -------------------------------------------------------> Print
-        self.PrintFragmentText(tKey, fragC)
-        #endregion ----------------------------------------------------> Print
-
-        return True
-    #---
-    #endregion -------------------------------------------------> Event Methods
+    #endregion ------------------------------------------------> Class Methods
 #---
 
 
@@ -1088,7 +1077,7 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
     """
     #region -----------------------------------------------------> Class setup
     cName     = mConfig.tarp.nwAAPlot
-    cSection  = mConfig.tarp.nuAA
+    cSection  = mConfig.tarp.tuAA
     cFragment = mConfig.core.cFragment
     cCtrl     = mConfig.tarp.cCtrl
     cBarColor = mConfig.core.cBarColor
@@ -1362,6 +1351,34 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
         return True
     #---
 
+    def UpdateStatusBar(self, event) -> bool:
+        """Update the statusbar info.
+
+            Parameters
+            ----------
+            event: matplotlib event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ----------------------------------------------> Statusbar Text
+        if event.inaxes:
+            #------------------------------>
+            x, y = event.xdata, event.ydata
+            #------------------------------>
+            if self.rExp:
+                return self.UpdateStatusBarExp(x,y)
+            #------------------------------> Position
+            return self.UpdateStatusBarPos(x,y)
+        else:
+            self.wStatBar.SetStatusText('')
+        #endregion -------------------------------------------> Statusbar Text
+
+        return True
+    #---
+
     def UpdateStatusBarExp(self, x:float, y:float) -> bool:
         """Update the wx.StatusBar text when plotting an experiment.
 
@@ -1477,42 +1494,12 @@ class ResAA(cWindow.BaseWindowResultOnePlotFA):
         """
         #------------------------------>
         self.rUMSAP.rWindow[self.cParent.cSection]['FA'].append(                # type: ignore
-            ResAA(self.cParent, self.cDateC, self.cKey, self.cFileN)      # type: ignore
+            ResAA(self.cParent, self.cDateC, self.cKey, self.cFileN)            # type: ignore
         )
         #------------------------------>
         return True
     #---
     #endregion ------------------------------------------------> Class methods
-
-    #region ---------------------------------------------------> Event Methods
-    def OnUpdateStatusBar(self, event) -> bool:
-        """Update the statusbar info.
-
-            Parameters
-            ----------
-            event: matplotlib event
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region ----------------------------------------------> Statusbar Text
-        if event.inaxes:
-            #------------------------------>
-            x, y = event.xdata, event.ydata
-            #------------------------------>
-            if self.rExp:
-                return self.UpdateStatusBarExp(x,y)
-            #------------------------------> Position
-            return self.UpdateStatusBarPos(x,y)
-        else:
-            self.wStatBar.SetStatusText('')
-        #endregion -------------------------------------------> Statusbar Text
-
-        return True
-    #---
-    #endregion ------------------------------------------------> Event Methods
 #---
 
 
@@ -1552,7 +1539,7 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
     """
     #region -----------------------------------------------------> Class setup
     cName     = mConfig.tarp.nwHistPlot
-    cSection  = mConfig.tarp.nuHist
+    cSection  = mConfig.tarp.tuHist
     cFragment = mConfig.core.cFragment
     cRec = {
         True : 'Nat',
@@ -1639,7 +1626,7 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
         return menuData
     #---
 
-    def UpdateResultWindow(
+    def UpdateResultWindow(                                                     # pylint: disable=arguments-differ
         self,
         nat:Optional[bool]  = None,
         allC:Optional[bool] = None,
@@ -1761,10 +1748,8 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
 
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
 
-    #region ---------------------------------------------------> Event Methods
-    def OnUpdateStatusBar(self, event) -> bool:
+    def UpdateStatusBar(self, event) -> bool:
         """Update the statusbar info.
 
             Parameters
@@ -1817,7 +1802,7 @@ class ResHist(cWindow.BaseWindowResultOnePlotFA):
 
         return True
     #---
-    #endregion ------------------------------------------------> Event Methods
+    #endregion ------------------------------------------------> Class methods
 #---
 
 
@@ -1855,7 +1840,7 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
     """
     #region -----------------------------------------------------> Class setup
     cName     = mConfig.tarp.nwCpRPlot
-    cSection  = mConfig.tarp.nuCpR
+    cSection  = mConfig.tarp.tuCpR
     cFragment = mConfig.core.cFragment
     #------------------------------>
     cNat = {
@@ -2044,10 +2029,8 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
         #------------------------------>
         return True
     #---
-    #endregion ------------------------------------------------> Class methods
 
-    #region ---------------------------------------------------> Event Methods
-    def OnUpdateStatusBar(self, event) -> bool:
+    def UpdateStatusBar(self, event) -> bool:
         """Update the statusbar info
 
             Parameters
@@ -2086,7 +2069,7 @@ class ResCpR(cWindow.BaseWindowResultOnePlotFA):
 
         return True
     #---
-    #endregion ------------------------------------------------> Event Methods
+    #endregion ------------------------------------------------> Class methods
 #---
 
 
@@ -2125,7 +2108,7 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
     """
     #region -----------------------------------------------------> Class setup
     cName    = mConfig.tarp.nwCEvolPlot
-    cSection = mConfig.tarp.nuCEvol
+    cSection = mConfig.tarp.tuCEvol
     #------------------------------>
     cTList   = 'Residue Numbers'
     cTPlot   = 'Plot'
@@ -2208,7 +2191,7 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
         return menuData
     #---
 
-    def UpdateResultWindow(
+    def UpdateResultWindow(                                                     # pylint: disable=arguments-differ
         self,
         nat:Optional[bool] = None,
         mon:Optional[bool] = None,
@@ -2379,10 +2362,8 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
         return self.wPlot.dPlot['M'].SaveImage(
             mConfig.core.elMatPlotSaveI, parent=self)
     #---
-    #endregion -----------------------------------------------> Manage Methods
 
-    #region ---------------------------------------------------> Event Methods
-    def OnClose(self, event:wx.CloseEvent) -> bool:
+    def Close(self) -> bool:
         """Close window and uncheck section in UMSAPFile window. Assumes
             self.parent is an instance of UMSAPControl.
 
@@ -2410,7 +2391,7 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
         return True
     #---
 
-    def OnListSelect(self, event: Union[wx.CommandEvent, str]) -> bool:
+    def ListSelect(self) -> bool:
         """What to do after selecting a row in the wx.ListCtrl.
 
             Parameters
@@ -2423,7 +2404,7 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region --------------------------------------------------->
-        super().OnListSelect(event)
+        super().ListSelect()
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
@@ -2433,6 +2414,6 @@ class ResCEvol(cWindow.BaseWindowResultListTextNPlot):
 
         return True
     #---
-    #endregion ------------------------------------------------> Event Methods
+    #endregion -----------------------------------------------> Manage Methods
 #---
 #endregion ----------------------------------------------------------> Classes

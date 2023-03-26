@@ -28,8 +28,8 @@ if TYPE_CHECKING:
 class Configuration():
     """Configuration for the main module"""
     #------------------------------> Name & Title
-    nwMain:str  = 'Window Analysis Setup'
-    ntStart:str = 'Tab Start'
+    nwMain:str  = 'Main Analysis Setup'
+    ntStart:str = 'Main Start'
     twMain:str  = 'Analysis Setup'
     ttStart:str = 'Start'
     #------------------------------> Reference to main window

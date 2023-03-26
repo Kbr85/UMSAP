@@ -99,7 +99,7 @@ def CorrA(                                                                      
     """
     # Test in test.unit.corr.test_method.Test_CorrA
     #region ------------------------------------------------> Data Preparation
-    tOut = dataMethod.DataPreparation(df=df, rDO=rDO, resetIndex=resetIndex)
+    tOut = dataMethod.RunDataPreparation(df=df, rDO=rDO, resetIndex=resetIndex)
     if not tOut[0]:
         return tOut
     #endregion ---------------------------------------------> Data Preparation
@@ -109,10 +109,10 @@ def CorrA(                                                                      
         dfR = tOut[0]['dfIm'].corr(method=rDO.corr.lower())
     except Exception as e:
         return ({}, 'Correlation coefficients calculation failed.', e)
-    else:
-        dictO        = tOut[0]
-        dictO['dfR'] = dfR
-        return (dictO, '', None)
+    #------------------------------>
+    tOut[0]['dfR'] = dfR
     #endregion --------------------------------------------------------> CorrA
+
+    return (tOut[0], '', None)
 #---
 #endregion ----------------------------------------------------------> Methods

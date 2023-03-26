@@ -21,6 +21,7 @@ from typing  import Union, Optional
 import wx
 
 from config.config import config as mConfig
+from core import method    as cMethod
 from core import pane      as cPane
 from core import widget    as cWidget
 from core import validator as cValidator
@@ -92,7 +93,7 @@ class CorrA(cPane.BaseConfPanel):
     #------------------------------> Needed by BaseConfPanel
     cName           = mConfig.corr.nPane
     cURL            = f'{mConfig.core.urlTutorial}/correlation-analysis'
-    cSection        = mConfig.corr.nUtil
+    cSection        = mConfig.corr.tUtil
     cTitlePD        = 'Calculating Correlation Coefficients'
     cGaugePD        = 20
     cTTHelp         = mConfig.core.ttBtnHelp.format(cURL)
@@ -245,9 +246,7 @@ class CorrA(cPane.BaseConfPanel):
             -------
             bool
         """
-        self.wLCtrlI.OnCopy('fEvent')
-        self.wLCtrlO.OnPaste('fEvent')
-        return True
+        return cMethod.OnGUIMethod(self.Add)
     #---
     #endregion ------------------------------------------------> Event Methods
 
@@ -304,6 +303,18 @@ class CorrA(cPane.BaseConfPanel):
             self.wCorrMethod.wCb.SetValue(mConfig.corr.corrMethod)
         #endregion -----------------------------------------------------> Add
 
+        return True
+    #---
+
+    def Add(self) -> bool:
+        """Add columns to analyze using the button.
+
+            Returns
+            -------
+            bool
+        """
+        self.wLCtrlI.Copy()
+        self.wLCtrlO.Paste()
         return True
     #---
     #endregion ------------------------------------------------> Class Methods

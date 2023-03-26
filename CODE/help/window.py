@@ -24,6 +24,7 @@ from wx import adv
 
 from config.config import config as mConfig
 from core import file   as cFile
+from core import method as cMethod
 from core import window as cWindow
 from help import method as hMethod
 from help import pane   as hPane
@@ -119,8 +120,7 @@ class WindowAbout(cWindow.BaseWindow):
             -------
             bool
         """
-        self.Close()
-        return True
+        return cMethod.OnGUIMethod(self.Close)
     #---
     #endregion ------------------------------------------------> Event Methods
 #---
@@ -225,19 +225,13 @@ class Preference(wx.Dialog):
             bool
         """
         #region -------------------------------------------------------->
-        try:
-            if not self.Save():
-                cWindow.Notification(
-                    'errorF',
-                    msg        = self.rErrorMsg,
-                    tException = self.rException,
-                    parent     = self,
-                )
-                return False
-        except Exception as e:
-            msg = ('It was not possible to save the values of the '
-                   'configuration options.')
-            cWindow.Notification('errorU', msg=msg, tException=e, parent=self)
+        if not cMethod.OnGUIMethod(self.Save):
+            cWindow.Notification(
+                'errorF',
+                msg        = self.rErrorMsg,
+                tException = self.rException,
+                parent     = self,
+            )
             return False
         #endregion ----------------------------------------------------->
 
@@ -257,8 +251,7 @@ class Preference(wx.Dialog):
             -------
             bool
         """
-        self.EndModal(0)
-        return True
+        return cMethod.OnGUIMethod(self.Cancel)
     #---
 
     def OnDefault(self, event:wx.CommandEvent) -> bool:                         # pylint: disable=unused-argument
@@ -273,19 +266,10 @@ class Preference(wx.Dialog):
             -------
             bool
         """
-        #region -------------------------------------------------------->
-        try:
-            self.SetDefault()
-        except Exception as e:
-            self.SetConfValues(mConfig)
-            #------------------------------>
-            msg = ('It was not possible to load the default values for '
-                   'the configuration options.\nThe options displayed are the '
-                   'ones currently in use.')
-            cWindow.Notification('errorU', msg=msg, tException=e)
-        #endregion ----------------------------------------------------->
-
-        return True
+        msg = ('It was not possible to load the default values for '
+               'the configuration options.\nThe options displayed are the '
+               'ones currently in use.')
+        return cMethod.OnGUIMethod(self.SetDefault, errorMsg=msg)
     #---
     #endregion ------------------------------------------------> Event Methods
 
@@ -389,6 +373,40 @@ class Preference(wx.Dialog):
         self.wTarProt.wAve.wC.SetColour(data.tarp.cAve)
         self.wTarProt.wAveL.wC.SetColour(data.tarp.cAveL)
         #endregion --------------------------------------------------> TarProt
+
+        return True
+    #---
+
+    def CheckInput(self) -> bool:
+        """Check individual fields in the user input.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            BaseErrorMessage must be a string with two placeholder for the
+            error value and Field label in that order. For example:
+            'File: {bad_path_placeholder}\n cannot be used as
+                                                    {Field_label_placeholder}'
+
+            The child class must define a rCheckUserInput dict with the correct
+            order for the checking process.
+
+            rCheckUserInput = {'Field label':[Widget, BaseErrorMessage, Bool],}
+
+            The child class must define a rCheckUnique list with the wx.TextCtrl
+            that must hold unique column numbers.
+        """
+        #region -------------------------------------------------------> Check
+        for k,v in self.rCheckUserInput.items():
+            a, b = v[0].GetValidator().Validate()
+            #------------------------------>
+            if not a:
+                self.rErrorMsg  = v[1].format(b[1], k)
+                return False
+        #endregion ----------------------------------------------------> Check
 
         return True
     #---
@@ -514,37 +532,14 @@ class Preference(wx.Dialog):
         return True
     #---
 
-    def CheckInput(self) -> bool:
-        """Check individual fields in the user input.
+    def Cancel(self) -> bool:
+        """Close the window.
 
             Returns
             -------
             bool
-
-            Notes
-            -----
-            BaseErrorMessage must be a string with two placeholder for the
-            error value and Field label in that order. For example:
-            'File: {bad_path_placeholder}\n cannot be used as
-                                                    {Field_label_placeholder}'
-
-            The child class must define a rCheckUserInput dict with the correct
-            order for the checking process.
-
-            rCheckUserInput = {'Field label':[Widget, BaseErrorMessage, Bool],}
-
-            The child class must define a rCheckUnique list with the wx.TextCtrl
-            that must hold unique column numbers.
         """
-        #region -------------------------------------------------------> Check
-        for k,v in self.rCheckUserInput.items():
-            a, b = v[0].GetValidator().Validate()
-            #------------------------------>
-            if not a:
-                self.rErrorMsg  = v[1].format(b[1], k)
-                return False
-        #endregion ----------------------------------------------------> Check
-
+        self.EndModal(0)
         return True
     #---
 
@@ -674,13 +669,31 @@ class CheckUpdateResult(wx.Dialog):
             -------
             bool
         """
+        return cMethod.OnGUIMethod(self.Link, event)
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
+    #region ---------------------------------------------------> Class Methods
+    def Link(self, event:wx.Event) -> bool:
+        """Process the link event.
+
+            Parameters
+            ----------
+            event: wx.adv.HyperlinkEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
         #------------------------------>
         event.Skip()
         self.EndModal(1)
         self.Destroy()
         #------------------------------>
         return True
-    #endregion ------------------------------------------------> Event Methods
+    #---
+    #endregion ------------------------------------------------> Class Methods
 #---
 #endregion ----------------------------------------------------------> Dialogs
 
@@ -690,7 +703,7 @@ myText = """UMSAP: Fast post-processing of mass spectrometry data
 
 -- Modules and Python version --
 
-UMSAP 2.3.0 is written in Python 3.9.15 and uses the following modules:
+UMSAP 2.3.1 is written in Python 3.9.15 and uses the following modules:
 
 Biopython 1.79
 Matplotlib 3.5.1

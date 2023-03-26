@@ -44,7 +44,7 @@ def FastaSequence(fileP:Union[Path, str]) -> Iterator[tuple[str, str]]:
     """
     # Test in test.unit.core.test_generator.Test_FastaSequence
     #region -------------------------------------------------------> Variables
-    first  = True # To skip yield in the first header of the fasta file
+    first  = True                                                               # To skip yield in the first header of the fasta file
     header = ''
     seq    = []
     #endregion ----------------------------------------------------> Variables

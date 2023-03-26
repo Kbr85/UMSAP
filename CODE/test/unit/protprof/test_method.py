@@ -36,10 +36,11 @@ fileB  = folder / 'res-protprof-1.txt'
 class Test_ProtProf(unittest.TestCase):
     """Test for protprof.method.ProtProf"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Set test"""
-        self.df    = cFile.ReadCSV2DF(fileA)
-        self.dict1 = protMethod.UserData(
+        cls.df    = cFile.ReadCSV2DF(fileA)
+        cls.dict1 = protMethod.UserData(
             cero          = True,
             norm          = 'Median',
             tran          = 'Log2',

@@ -509,10 +509,12 @@ class BaseConfPanel(
             ------
             bool
         """
+        #region -------------------------------------------------------->
         if (fileP := self.wIFile.wTc.GetValue()) == '':
-            return self.LCtrlEmpty()
-        #------------------------------>
-        return self.IFileEnter(fileP)
+            return cMethod.OnGUIMethod(self.LCtrlEmpty)
+        else:
+            return cMethod.OnGUIMethod(self.IFileEnter, fileP)
+        #endregion ----------------------------------------------------->
     #---
 
     def OnImpMethod(self, event:Union[wx.CommandEvent, str])-> bool:            # pylint: disable=unused-argument
@@ -522,6 +524,54 @@ class BaseConfPanel(
             ----------
             event: wx.CommandEvent or str
                 Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.ImpMethod)
+    #---
+
+    def OnClear(self, event:wx.CommandEvent) -> bool:
+        """Clear all input, including the Imputation options.
+
+            Parameters
+            ----------
+            event: wx.CommandEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.Clear, event)
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
+    #region ---------------------------------------------------> Class Methods
+    def Clear(self, event:wx.CommandEvent) -> bool:
+        """Clear all input, including the Imputation options.
+
+            Parameters
+            ----------
+            event: wx.CommandEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        super().OnClear(event)
+        #------------------------------>
+        self.ImpMethod()
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
+    def ImpMethod(self)-> bool:
+        """Show/Hide the Imputation options.
 
             Returns
             -------
@@ -542,29 +592,6 @@ class BaseConfPanel(
         return True
     #---
 
-    def OnClear(self, event:wx.CommandEvent) -> bool:
-        """Clear all input, including the Imputation options.
-
-            Parameters
-            ----------
-            event: wx.CommandEvent
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region -------------------------------------------------------->
-        super().OnClear(event)
-        #------------------------------>
-        self.OnImpMethod('fEvent')
-        #endregion ----------------------------------------------------->
-
-        return True
-    #---
-    #endregion ------------------------------------------------> Event Methods
-
-    #region ---------------------------------------------------> Class Methods
     def SetConfOptions(self) -> bool:
         """Set Field values to the configuration values.
 
@@ -580,7 +607,7 @@ class BaseConfPanel(
         self.wShift.wTc.SetValue(mConfig.data.shift)
         self.wWidth.wTc.SetValue(mConfig.data.width)
         #------------------------------>
-        self.OnImpMethod('fEvent')
+        self.ImpMethod()
         #endregion ----------------------------------------------------->
 
         return True
@@ -634,9 +661,11 @@ class BaseConfPanel(
         try:
             cMethod.LCtrlFillColNames(self.wLCtrlI, fileP)
         except Exception as e:
+            self.wIFile.wTc.SetValue('')
+            self.LCtrlEmpty()
+            #------------------------------>
             cWindow.Notification(
                 'errorF', parent=self, msg=str(e), tException=e)
-            self.wIFile.wTc.SetValue('')
             return False
         #endregion ------------------------------------------------> Fill list
 
@@ -1129,7 +1158,7 @@ class BaseConfPanel(
         if not self.rMsgError:
             self.rDFile.append(self.rDO.uFile)
             #--> Here to avoid circular imports problems and thread limitations.
-            pub.sendMessage('load_umsap', fileP=self.rDO.uFile)
+            pub.sendMessage(mConfig.core.kwPubLoadUmsap, fileP=self.rDO.uFile)
             #------------------------------>
             self.rDlg.SuccessMessage(
                 self.cLPdDone, eTime=f"{self.cLPdElapsed} {self.rDeltaT}")
@@ -1551,6 +1580,8 @@ class BaseResControlExpConf(wx.Panel):
             self, 'mNoControl', 'The Control Type must defined.')
         self.mLabelEmpty = getattr(
             self, 'mLabelEmpty', 'All labels and control name must be defined.')
+        #------------------------------>
+        self.rResCtrlText = ''
         #------------------------------> super()
         super().__init__(parent, name=name, size=(700,700))
         #endregion --------------------------------------------> Initial Setup
@@ -1626,10 +1657,42 @@ class BaseResControlExpConf(wx.Panel):
             -------
             True
         """
-        return True
+        return cMethod.OnGUIMethod(self.Create)
     #---
 
     def OnLabelNumber(self, event:Union[wx.Event, str]) -> bool:
+        """Creates fields for names when the total wx.TextCtrl looses focus.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.LabelNumber, event)
+    #---
+
+    def OnClear(self, event:wx.Event) -> bool:                                  # pylint: disable=unused-argument
+        """Clear all input in the wx.Dialog.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.Clear)
+    #---
+    #endregion ------------------------------------------------> Event methods
+
+    #region ---------------------------------------------------> Class Methods
+    def LabelNumber(self, event:Union[wx.Event, str]) -> bool:
         """Creates fields for names when the total wx.TextCtrl looses focus.
 
             Parameters
@@ -1704,79 +1767,8 @@ class BaseResControlExpConf(wx.Panel):
         return True
     #---
 
-    def OnOK(self, export:bool=True) -> tuple[bool, str]:
-        """Validate and set the Results - Control Experiments text.
-
-            Parameters
-            ---------
-            export: bool
-                Export data after checks are done.
-
-            Returns
-            -------
-            tuple[bool, str]
-                Str is the string to show in Result - Control.
-
-            Notes
-            -----
-            See also self.Export2TopParent.
-        """
-        #region -------------------------------------------------> Check input
-        #------------------------------> Variables
-        tcList = []
-        oText  = ''
-        #------------------------------> Individual fields and list of tc
-        for v in self.rFSectTcDict.values():
-            #--------------> Check values
-            for j in v:
-                #--------------> Add to lists
-                tcList.append(j)
-                oText = f"{oText}{j.GetValue()}, "
-                #--------------> Check
-                a, b = j.GetValidator().Validate()
-                if not a:
-                    msg = mConfig.core.mResCtrlWin.format(b[1])
-                    e = RuntimeError(b[2])
-                    cWindow.Notification(
-                        'errorF', msg=msg, parent=self, tException=e)
-                    j.SetFocus()
-                    return (False,'')
-            #--------------> Add row delimiter
-            oText = f"{oText[0:-2]}; "
-        #------------------------------> All cannot be empty
-        a, b = cCheck.AllTcEmpty(tcList)
-        if a:
-            cWindow.Notification(
-                'errorF', msg=mConfig.core.mAllTextFieldEmpty, parent=self)
-            return (False, '')
-        #------------------------------> All unique
-        a, b = cCheck.TcUniqueColNumbers(tcList)
-        if not a:
-            e = RuntimeError(b[2]) # type: ignore
-            cWindow.Notification(
-                'errorF',
-                msg        = mConfig.core.mRepeatColNum,
-                parent     = self,
-                tException = e,
-            )
-            return (False, '')
-        #endregion ----------------------------------------------> Check input
-
-        #region ---------------------------------------------------> Export
-        if export:
-            self.Export2TopParent(oText)
-        #endregion ------------------------------------------------> Export
-
-        return (True, oText)
-    #---
-
-    def OnClear(self, event:wx.Event) -> bool:                                  # pylint: disable=unused-argument
+    def Clear(self) -> bool:
         """Clear all input in the wx.Dialog.
-
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event.
 
             Returns
             -------
@@ -1809,9 +1801,84 @@ class BaseResControlExpConf(wx.Panel):
 
         return True
     #---
-    #endregion ------------------------------------------------> Event methods
 
-    #region --------------------------------------------------> Manage methods
+    def Create(self) -> bool:
+        """Create the field widgets
+
+            Returns
+            -------
+            bool
+        """
+        return True
+    #---
+
+    def CheckOK(self, export:bool=True) -> bool:
+        """Validate and set the Results - Control Experiments text.
+
+            Parameters
+            ---------
+            export: bool
+                Export data after checks are done.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            See also self.Export2TopParent.
+        """
+        #region -------------------------------------------------> Check input
+        #------------------------------> Variables
+        tcList = []
+        oText  = ''
+        #------------------------------> Individual fields and list of tc
+        for v in self.rFSectTcDict.values():
+            #--------------> Check values
+            for j in v:
+                #--------------> Add to lists
+                tcList.append(j)
+                oText = f"{oText}{j.GetValue()}, "
+                #--------------> Check
+                a, b = j.GetValidator().Validate()
+                if not a:
+                    msg = mConfig.core.mResCtrlWin.format(b[1])
+                    e = RuntimeError(b[2])
+                    cWindow.Notification(
+                        'errorF', msg=msg, parent=self, tException=e)
+                    j.SetFocus()
+                    return False
+            #--------------> Add row delimiter
+            oText = f"{oText[0:-2]}; "
+        #------------------------------> All cannot be empty
+        a, b = cCheck.AllTcEmpty(tcList)
+        if a:
+            cWindow.Notification(
+                'errorF', msg=mConfig.core.mAllTextFieldEmpty, parent=self)
+            return False
+        #------------------------------> All unique
+        a, b = cCheck.TcUniqueColNumbers(tcList)
+        if not a:
+            e = RuntimeError(b[2]) # type: ignore
+            cWindow.Notification(
+                'errorF',
+                msg        = mConfig.core.mRepeatColNum,
+                parent     = self,
+                tException = e,
+            )
+            return False
+        #endregion ----------------------------------------------> Check input
+
+        #region ---------------------------------------------------> Export
+        self.rResCtrlText = oText                                               # Save the value for export later.
+        #------------------------------>
+        if export:
+            self.Export2TopParent(oText)
+        #endregion ------------------------------------------------> Export
+
+        return True
+    #---
+
     def Export2TopParent(self, oText:str) -> bool:
         """Export the data to the top parent.
 
@@ -1880,7 +1947,7 @@ class BaseResControlExpConf(wx.Panel):
             if k not in ['Control', 'ControlType']:
                 self.rLSectWidget[k].wTc.SetValue(str(len(v)))
         #------------------------------> Create labels fields
-        self.OnLabelNumber('test')
+        self.LabelNumber('test')
         #------------------------------> Fill. 2 iterations needed. Improve
         for k, v in self.cTopParent.rLbDict.items():                            # type: ignore
             if k not in ['Control', 'ControlType']:
@@ -1901,7 +1968,7 @@ class BaseResControlExpConf(wx.Panel):
         #endregion ----------------------------------------------> Set Control
 
         #region ---------------------------------------------> Create tcFields
-        self.OnCreate('fEvent')
+        self.Create()
         #endregion ------------------------------------------> Create tcFields
 
         #region --------------------------------------------> Add Field Values
@@ -2046,7 +2113,7 @@ class BaseResControlExpConf(wx.Panel):
 
         return n
     #---
-    #endregion -----------------------------------------------> Manage methods
+    #endregion ------------------------------------------------> Class Methods
 #---
 
 

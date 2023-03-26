@@ -132,7 +132,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
     """
     #region -----------------------------------------------------> Class setup
     cName    = mConfig.prot.nwRes
-    cSection = mConfig.prot.nMod
+    cSection = mConfig.prot.tMod
     #------------------------------> Labels
     cLProtLAvail  = 'Displayed Proteins'
     cLProtLShow   = 'Proteins to Label'
@@ -297,27 +297,6 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #region --------------------------------------------------------> Menu
         self.mBar = mMenu.MenuBarTool(self.cName, menuData=menuData)
         self.SetMenuBar(self.mBar)
-        #------------------------------>
-        menu = self.mBar.GetMenu(self.mBar.FindMenu('Tools'))
-        #------------------------------>
-        lockM = menu.FindItemById(menu.FindItem('Lock Plot Scale')).GetSubMenu()
-        lockI = lockM.FindItemById(lockM.FindItem(self.rLockScale))
-        lockI.Check(check=True)
-        #-->
-        if self.rPickLabel:
-            volM = menu.FindItemById(menu.FindItem('Volcano Plot')).GetSubMenu()
-            pickI = volM.FindItemById(volM.FindItem('Pick Label'))
-            pickI.Check(check=True)
-        #-->
-        if not self.rShowAll:
-            fcM = menu.FindItemById(menu.FindItem('FC Evolution')).GetSubMenu()
-            showI = fcM.FindItemById(fcM.FindItem('Show All'))
-            showI.Check(check=False)
-        #-->
-        if self.rAutoFilter:
-            filterM = menu.FindItemById(menu.FindItem('Filters')).GetSubMenu()
-            filterI = filterM.FindItemById(filterM.FindItem('Auto Apply'))
-            filterI.Check(check=True)
         #endregion -----------------------------------------------------> Menu
 
         #region --------------------------------------------------------> Bind
@@ -332,7 +311,77 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
     #---
     #endregion -----------------------------------------------> Instance setup
 
+    #region ---------------------------------------------------> Event Methods
+    def OnPick(self, event) -> bool:
+        """Process a pick event in the volcano plot.
+
+            Parameters
+            ----------
+            event: matplotlib pick event.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.Pick, event)
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
     #region ---------------------------------------------------> Class Methods
+    def Pick(self, event) -> bool:
+        """Process a pick event in the volcano plot.
+
+            Parameters
+            ----------
+            event: matplotlib pick event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        ind = event.ind
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Pick
+        if self.rPickLabel:
+            return self.PickLabel(ind)
+        #------------------------------>
+        return self.PickShow(ind)
+        #endregion ------------------------------------------------> Pick
+    #---
+
+    def ListSelect(self) -> bool:
+        """Select an element in the wx.ListCtrl.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Check Sel
+        super().ListSelect()
+        #endregion ------------------------------------------------> Check Sel
+
+        #region ------------------------------------------------> Volcano Plot
+        self.DrawGreenPoint()
+        #endregion ---------------------------------------------> Volcano Plot
+
+        #region ------------------------------------------------> FC Evolution
+        self.DrawProtLine()
+        #endregion ---------------------------------------------> FC Evolution
+
+        #region --------------------------------------------------------> Text
+        self.SetText()
+        #endregion -----------------------------------------------------> Text
+
+        return True
+    #---
+
     def StatusBarFilterText(self, text:str) -> bool:
         """Update the StatusBar text.
 
@@ -1574,7 +1623,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         return True
     #---
 
-    def UpdateResultWindow(
+    def UpdateResultWindow(                                                     # pylint: disable=arguments-differ
         self,
         tDate:str              = '',
         cond:str               = '',
@@ -1620,6 +1669,10 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         self.rLabelProtD = {} if tDate else self.rLabelProtD
         #endregion -----------------------------------------> Update variables
 
+        #region ---------------------------------------------------> FC minMax
+        self.rFcYMax, self.rFcYMin = self.GetFCMinMax()
+        #endregion ------------------------------------------------> FC minMax
+
         #region --------------------------------------------------> Update GUI
         if self.rAutoFilter:
             self.FilterApply(reset=False)
@@ -1632,10 +1685,6 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #region -------------------------------------------> Update FC x label
         self.rFcXLabel = [self.rDataC.ctrlName] + self.rDataC.labelB
         #endregion ----------------------------------------> Update FC x label
-
-        #region ---------------------------------------------------> FC minMax
-        self.rFcYMax, self.rFcYMin = self.GetFCMinMax()
-        #endregion ------------------------------------------------> FC minMax
 
         #region --------------------------------------------------> Lock Scale
         if self.rLockScale:
@@ -1871,7 +1920,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             self.rP,
             self.rLog2FC,
             parent    = self,
-            checkInit = self.rVolLinesZ,
+            checkInit = self.rVolLinesZ,                                        # type: ignore
         )
         #------------------------------>
         if dlg.ShowModal():
@@ -2001,62 +2050,6 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
     #---
     #endregion -----------------------------------------------> Manage Methods
 
-    #region ---------------------------------------------------> Event Methods
-    def OnPick(self, event) -> bool:
-        """Process a pick event in the volcano plot.
-
-            Parameters
-            ----------
-            event: matplotlib pick event.
-
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> Variables
-        ind = event.ind
-        #endregion ------------------------------------------------> Variables
-
-        #region ---------------------------------------------------> Pick
-        if self.rPickLabel:
-            return self.PickLabel(ind)
-        #------------------------------>
-        return self.PickShow(ind)
-        #endregion ------------------------------------------------> Pick
-    #---
-
-    def OnListSelect(self, event:Union[wx.CommandEvent, str]) -> bool:
-        """Select an element in the wx.ListCtrl.
-
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> Check Sel
-        super().OnListSelect(event)
-        #endregion ------------------------------------------------> Check Sel
-
-        #region ------------------------------------------------> Volcano Plot
-        self.DrawGreenPoint()
-        #endregion ---------------------------------------------> Volcano Plot
-
-        #region ------------------------------------------------> FC Evolution
-        self.DrawProtLine()
-        #endregion ---------------------------------------------> FC Evolution
-
-        #region --------------------------------------------------------> Text
-        self.SetText()
-        #endregion -----------------------------------------------------> Text
-
-        return True
-    #---
-    #endregion ------------------------------------------------> Event Methods
-
     #region --------------------------------------------------> Filter Methods
     def Filter_FCChange(self, choice:dict={}, updateL:bool=True) -> bool:       # pylint: disable=dangerous-default-value
         """Filter results based on FC evolution.
@@ -2151,8 +2144,6 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
                  {'choice':choice, 'updateL': False},
                  f'{choice0} ({choice1[0:3]})']
             )
-        else:
-            pass
         #endregion -----------------------------------------------> Update GUI
 
         return True
@@ -2548,7 +2539,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             -------
             bool
         """
-        mConfig.prot.lFilter = [x for x in self.rFilterList]                    # type: ignore
+        mConfig.prot.lFilter = [x for x in self.rFilterList]
         return True
     #---
 
@@ -2560,7 +2551,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             True
         """
         #region ---------------------------------------------------> Copy
-        self.rFilterList = [x for x in mConfig.prot.lFilter]                    # type: ignore
+        self.rFilterList = [x for x in mConfig.prot.lFilter]
         #endregion ------------------------------------------------> Copy
 
         #region --------------------------------------------------->
@@ -2584,7 +2575,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #endregion ------------------------------------------------>
 
         #region --------------------------------------------------->
-        self.rObj.rData[mConfig.prot.nMod][self.rDateC]['F'] = filterDict
+        self.rObj.rData[mConfig.prot.tMod][self.rDateC]['F'] = filterDict
         #------------------------------>
         if self.rObj.Save():
             getattr(self.rData, self.rDateC).filterS = filterDict
@@ -2663,7 +2654,7 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         p:float,
         fc:float,
         parent:Optional[wx.Window]=None,
-        checkInit:LIT_Z_LINES = f'{mConfig.prot.lmFilterZScore} Line',
+        checkInit:LIT_Z_LINES = f'{mConfig.prot.lmFilterZScore} Line',          # type: ignore
         ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
@@ -2820,17 +2811,46 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
             -------
             bool
         """
-        self.rCheck = event.GetEventObject().GetName()
-        return True
+        return cMethod.OnGUIMethod(self.CheckChange, event)
     #---
+    #endregion ------------------------------------------------> Event Methods
 
-    def OnOK(self, event:wx.CommandEvent) -> bool:
-        """Validate user information and close the window.
+    #region ---------------------------------------------------> Class methods
+    def CheckChange(self, event:wx.CommandEvent) -> bool:
+        """Update.
 
             Parameters
             ----------
             event: wx.Event
                 Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        self.rCheck = event.GetEventObject().GetName()
+        return True
+    #---
+
+    def GetVal(self):
+        """Get the selected values.
+
+            Returns
+            -------
+            bool
+        """
+        return (
+            float(self.wT0.wTc.GetValue()),
+            float(self.wS0.wTc.GetValue()),
+            float(self.wP.wTc.GetValue()),
+            float(self.wFC.wTc.GetValue()),
+            float(self.wZ.wTc.GetValue()),
+            self.rCheck,
+        )
+    #---
+
+    def OK(self) -> bool:
+        """Validate user information and close the window.
 
             Returns
             -------
@@ -2854,25 +2874,6 @@ class VolColorScheme(cWindow.BaseDialogOkCancel):
         #endregion ------------------------------------------------>
 
         return True
-    #---
-    #endregion ------------------------------------------------> Event Methods
-
-    #region ---------------------------------------------------> Class methods
-    def GetVal(self):
-        """Get the selected values.
-
-            Returns
-            -------
-            bool
-        """
-        return (
-            float(self.wT0.wTc.GetValue()),
-            float(self.wS0.wTc.GetValue()),
-            float(self.wP.wTc.GetValue()),
-            float(self.wFC.wTc.GetValue()),
-            float(self.wZ.wTc.GetValue()),
-            self.rCheck,
-        )
     #---
     #endregion ------------------------------------------------> Class methods
 #---
@@ -2957,6 +2958,38 @@ class FilterPValue(cWindow.UserInputText):
             -------
             bool
         """
+        return cMethod.OnGUIMethod(self.TextChange)
+    #---
+
+    def OnCheck(self, event:wx.CommandEvent) -> bool:
+        """Allow only one check box to be marked at any given time.
+
+            Parameters
+            ----------
+            event: wx.Event
+             Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.Check, event)
+    #---
+    #endregion ------------------------------------------------> Event methods
+
+    #region ---------------------------------------------------> Class Methods
+    def TextChange(self) -> bool:
+        """Select -log10P if the given value is > 1.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
         #region -------------------------------------------------------> Check
         if self.rInput[0].wTc.GetValidator().Validate()[0]:
             #------------------------------> Get val
@@ -2970,7 +3003,7 @@ class FilterPValue(cWindow.UserInputText):
         return True
     #---
 
-    def OnCheck(self, event:wx.CommandEvent) -> bool:
+    def Check(self, event:wx.CommandEvent) -> bool:
         """Allow only one check box to be marked at any given time.
 
             Parameters
@@ -2995,13 +3028,8 @@ class FilterPValue(cWindow.UserInputText):
         return True
     #---
 
-    def OnOK(self, event:wx.CommandEvent) -> bool:
+    def OK(self) -> bool:
         """Validate user information and close the window.
-
-            Parameters
-            ----------
-            event:wx.Event
-                Information about the event.
 
             Returns
             -------
@@ -3037,12 +3065,15 @@ class FilterPValue(cWindow.UserInputText):
             -------
             tuple(str, bool)
         """
+        #region -------------------------------------------------------->
         uText = self.rInput[0].wTc.GetValue()
         absB  = self.wCbAbs.IsChecked()
+        #endregion ----------------------------------------------------->
 
         return (uText, absB)
     #---
-    #endregion ------------------------------------------------> Event methods
+    #endregion ------------------------------------------------> Class Methods
+
 #---
 
 

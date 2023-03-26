@@ -15,6 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
+import shutil
 from pathlib import Path
 from typing  import Union
 
@@ -58,14 +59,14 @@ class UMSAPFile():
     """
     # No Test
     #region -----------------------------------------------------> Class setup
-    SeqF = [mConfig.tarp.nMod, mConfig.limp.nMod]
+    SeqF = [mConfig.tarp.tMod, mConfig.limp.tMod]
     #------------------------------>
     rUserDataClass = {
-        mConfig.corr.nUtil : corrMethod.UserData,
-        mConfig.data.nUtil : dataMethod.UserData,
-        mConfig.prot.nMod  : protMethod.UserData,
-        mConfig.tarp.nMod  : tarpMethod.UserData,
-        mConfig.limp.nMod  : limpMethod.UserData,
+        mConfig.corr.tUtil : corrMethod.UserData,
+        mConfig.data.tUtil : dataMethod.UserData,
+        mConfig.prot.tMod  : protMethod.UserData,
+        mConfig.tarp.tMod  : tarpMethod.UserData,
+        mConfig.limp.tMod  : limpMethod.UserData,
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -86,11 +87,11 @@ class UMSAPFile():
         self.rInputFileP = self.rFileP.parent / mConfig.core.fnDataInit
         #------------------------------>
         self.dConfigure = {                                                     # Configure methods. Keys are section names.
-            mConfig.corr.nUtil: self.ConfigureDataCorrA,
-            mConfig.data.nUtil: self.ConfigureDataDataPrep,
-            mConfig.prot.nMod : self.ConfigureDataProtProf,
-            mConfig.limp.nMod : self.ConfigureDataLimProt,
-            mConfig.tarp.nMod : self.ConfigureDataTarProt,
+            mConfig.corr.tUtil: self.ConfigureDataCorrA,
+            mConfig.data.tUtil: self.ConfigureDataDataPrep,
+            mConfig.prot.tMod : self.ConfigureDataProtProf,
+            mConfig.limp.tMod : self.ConfigureDataLimProt,
+            mConfig.tarp.tMod : self.ConfigureDataTarProt,
         }
         #endregion ------------------------------------------------> Variables
     #---
@@ -108,10 +109,21 @@ class UMSAPFile():
             -------
             bool
         """
+        #region -----------------------------------------------> Security Copy
+        tempF = self.rFileP.with_name('.kbr-temp.umsap')
+        shutil.copy(self.rFileP, tempF)
+        #endregion --------------------------------------------> Security Copy
+
         #region --------------------------------------------------->
         oPath = tPath if tPath is not None else self.rFileP
         #------------------------------>
-        cFile.WriteJSON(oPath, self.rData)
+        try:
+            cFile.WriteJSON(oPath, self.rData)
+        except Exception as e:
+            shutil.copy(tempF, self.rFileP)
+            raise e
+        finally:
+            tempF.unlink()
         #endregion ------------------------------------------------>
 
         return True
@@ -130,12 +142,12 @@ class UMSAPFile():
         """
         #region ---------------------------------------------------> Variables
         data  = cMethod.BaseAnalysis()
-        pathB = mConfig.corr.nUtil.replace(" ", "-")
+        pathB = mConfig.corr.tUtil.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu
         #------------------------------> Fill
-        for k, v in self.rData[mConfig.corr.nUtil].items():
+        for k, v in self.rData[mConfig.corr.tUtil].items():
             #------------------------------>
             pathA = k.split(" - ")[0]
             tPath = self.rStepDataP / f'{pathA}_{pathB}'
@@ -227,10 +239,7 @@ class UMSAPFile():
         #endregion ------------------------------------------------> Variables
 
         #region --------------------------------------------------------> Data
-        try:
-            dp = {j:cFile.ReadCSV2DF(tPath/w) for j,w in self.rData[tSection][tDate]['DP'].items()}
-        except Exception as e:
-            raise ValueError(f"Data for analysis {tDate} is corrupted.") from e
+        dp = {j:cFile.ReadCSV2DF(tPath/w) for j,w in self.rData[tSection][tDate]['DP'].items()}
         #------------------------------>
         try:
             numColList = self.rData[tSection][tDate]['CI']['oc']['Column']      # Keep support for previous versions
@@ -258,11 +267,11 @@ class UMSAPFile():
         """
         #region ---------------------------------------------------> Variables
         data  = cMethod.BaseAnalysis()
-        pathB = mConfig.data.nUtil.replace(" ", "-")
+        pathB = mConfig.data.tUtil.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu
-        for k,v in self.rData[mConfig.data.nUtil].items():
+        for k,v in self.rData[mConfig.data.tUtil].items():
             #------------------------------> Read and type
             pathA = k.split(" - ")[0]
             tPath = self.rStepDataP / f'{pathA}_{pathB}'
@@ -300,11 +309,11 @@ class UMSAPFile():
         #region ---------------------------------------------------> Variables
         data   = cMethod.BaseAnalysis()
         colStr = [('Gene','Gene','Gene'),('Protein','Protein','Protein')]
-        pathB  = mConfig.prot.nMod.replace(" ", "-")
+        pathB  = mConfig.prot.tMod.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu
-        for k,v in self.rData[mConfig.prot.nMod].items():
+        for k,v in self.rData[mConfig.prot.tMod].items():
             #------------------------------> Path
             pathA = k.split(" - ")[0]
             tPath = self.rStepDataP / f'{pathA}_{pathB}'
@@ -355,11 +364,11 @@ class UMSAPFile():
         """
         #region ---------------------------------------------------> Variables
         plotData = cMethod.BaseAnalysis()
-        pathB    = mConfig.limp.nMod.replace(" ", "-")
+        pathB    = mConfig.limp.tMod.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu
-        for k,v in self.rData[mConfig.limp.nMod].items():
+        for k,v in self.rData[mConfig.limp.tMod].items():
             #------------------------------>
             pathA = k.split(" - ")[0]
             tPath = self.rStepDataP / f'{pathA}_{pathB}'
@@ -414,11 +423,11 @@ class UMSAPFile():
         """
         #region ---------------------------------------------------> Variables
         data  = cMethod.BaseAnalysis()
-        pathB = mConfig.tarp.nMod.replace(" ", "-")
+        pathB = mConfig.tarp.tMod.replace(" ", "-")
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> Plot & Menu
-        for k,v in self.rData[mConfig.tarp.nMod].items():
+        for k,v in self.rData[mConfig.tarp.tMod].items():
             #------------------------------>
             pathA = k.split(" - ")[0]
             tPath = self.rStepDataP / f'{pathA}_{pathB}'
@@ -605,7 +614,7 @@ class UMSAPFile():
             except KeyError:
                 pass
         #------------------------------>
-        if data.get('method') is None and tSection == mConfig.tarp.nMod:
+        if data.get('method') is None and tSection == mConfig.tarp.tMod:
             data['method']    = 'slope'
             data['indSample'] = 'i'
         #endregion -----------------------------------------------------> Data

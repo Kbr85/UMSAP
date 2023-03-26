@@ -116,8 +116,8 @@ class LimProt(cPane.BaseConfPanelMod2):
     cTTThetaMax = mConfig.limp.ttThetaMax
     #------------------------------> Needed by BaseConfPanel
     cURL            = f"{mConfig.core.urlTutorial}/limited-proteolysis"
-    cSection        = mConfig.limp.nMod
-    cTitlePD        = f"Running {mConfig.limp.nMod} Analysis"
+    cSection        = mConfig.limp.tMod
+    cTitlePD        = f"Running {mConfig.limp.tMod} Analysis"
     cGaugePD        = 34
     rMainData       = '{}_{}-LimitedProteolysis-Data.txt'
     rAnalysisMethod = limpMethod.LimProt
@@ -511,7 +511,7 @@ class LimProt(cPane.BaseConfPanelMod2):
             shift         = float(self.wShift.wTc.GetValue()),
             width         = float(self.wWidth.wTc.GetValue()),
             targetProt    = self.wTargetProt.wTc.GetValue(),
-            scoreVal      = float(self.wScore.wTc.GetValue()),
+            scoreVal      = float(self.wScoreVal.wTc.GetValue()),
             indSample     = self.cOSample[self.wSample.wCb.GetValue()],
             correctedP    = self.wCorrectP.wCb.GetValue(),
             alpha         = float(self.wAlpha.wTc.GetValue()),
@@ -648,13 +648,8 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnCreate(self, event:wx.CommandEvent) -> bool:
+    def Create(self) -> bool:
         """Create the fields in the white panel.
-
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event.
 
             Return
             ------
@@ -788,21 +783,6 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         #endregion -----------------------------------------------> Set scroll
 
         return True
-    #---
-
-    def OnOK(self, export:bool=True) -> bool:
-        """Check wx.Dialog content and send values to topParent.
-
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> Super
-        if super().OnOK()[0]:
-            return True
-        #------------------------------>
-        return False
-        #endregion ------------------------------------------------> Super
     #---
     #endregion ------------------------------------------------> Event Methods
 #---

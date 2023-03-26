@@ -411,7 +411,7 @@ def ProtProf(                                                                   
     #endregion ----------------------------------------------------> Variables
 
     #region ------------------------------------------------> Data Preparation
-    tOut = dataMethod.DataPreparation(df=df, rDO=rDO, resetIndex=resetIndex)
+    tOut = dataMethod.RunDataPreparation(df=df, rDO=rDO, resetIndex=resetIndex)
     if tOut[0]:
         dfS = tOut[0]['dfS']
     else:
@@ -440,9 +440,8 @@ def ProtProf(                                                                   
     #endregion ----------------------------------------------------> Calculate
 
     #region --------------------------------------------------->
-    dictO = tOut[0]
-    dictO['dfR'] = dfR
-    return (dictO, '', None)
+    tOut[0]['dfR'] = dfR
+    return (tOut[0], '', None)
     #endregion ------------------------------------------------>
 #---
 

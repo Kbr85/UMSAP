@@ -118,8 +118,8 @@ class TarProt(cPane.BaseConfPanelMod2):
     cValSample = 'Independent Samples'
     #------------------------------> Needed by BaseConfPanel
     cURL      = f"{mConfig.core.urlTutorial}/targeted-proteolysis"
-    cSection  = mConfig.tarp.nMod
-    cTitlePD  = f"Running {mConfig.tarp.nMod} Analysis"
+    cSection  = mConfig.tarp.tMod
+    cTitlePD  = f"Running {mConfig.tarp.tMod} Analysis"
     cGaugePD  = 35
     rMainData = '{}_{}-TargetedProteolysis-Data.txt'
     rAnalysisMethod = tarpMethod.TarProt
@@ -327,42 +327,7 @@ class TarProt(cPane.BaseConfPanelMod2):
             -------
             bool
         """
-        #region -------------------------------------------------------->
-        if self.wMethod.wCb.GetValue() == self.cOSampleReq:
-            self.sSbValueWid.Show(self.wSample.wSt)
-            self.sSbValueWid.Show(self.wSample.wCb)
-            self.wSample.wCb.SetValue('')
-        else:
-            self.sSbValueWid.Hide(self.wSample.wSt)
-            self.sSbValueWid.Hide(self.wSample.wCb)
-            self.wSample.wCb.SetValue(self.cValSample)
-        #------------------------------>
-        self.sSizer.Layout()
-        self.SetupScrolling()
-        #endregion ----------------------------------------------------->
-
-        return True
-    #---
-
-    def OnClear(self, event:wx.CommandEvent) -> bool:
-        """Clear all input, including the Imputation options.
-
-            Parameters
-            ----------
-            event: wx.CommandEvent
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region -------------------------------------------------------->
-        super().OnClear(event)
-        #------------------------------>
-        self.OnMethod('fEvent')
-        #endregion ----------------------------------------------------->
-
-        return True
+        return cMethod.OnGUIMethod(self.Method)
     #---
     #endregion ------------------------------------------------> Event Methods
 
@@ -426,6 +391,51 @@ class TarProt(cPane.BaseConfPanelMod2):
             self.wCorrectP.wCb.SetValue(mConfig.tarp.correctP)
             self.wAAPos.wTc.SetValue(mConfig.tarp.aaPos)
             self.wHist.wTc.SetValue(mConfig.tarp.histWind)
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
+    def Method(self) -> bool:
+        """Show/Hide Sample type options.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        if self.wMethod.wCb.GetValue() == self.cOSampleReq:
+            self.sSbValueWid.Show(self.wSample.wSt)
+            self.sSbValueWid.Show(self.wSample.wCb)
+            self.wSample.wCb.SetValue('')
+        else:
+            self.sSbValueWid.Hide(self.wSample.wSt)
+            self.sSbValueWid.Hide(self.wSample.wCb)
+            self.wSample.wCb.SetValue(self.cValSample)
+        #------------------------------>
+        self.sSizer.Layout()
+        self.SetupScrolling()
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
+    def Clear(self, event:wx.CommandEvent) -> bool:
+        """Clear all input, including the Imputation options.
+
+            Parameters
+            ----------
+            event: wx.CommandEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        super().Clear(event)
+        #------------------------------>
+        self.Method()
         #endregion ----------------------------------------------------->
 
         return True
@@ -790,7 +800,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnCreate(self, event:wx.CommandEvent) -> bool:
+    def Create(self) -> bool:
         """Create the fields in the white panel.
 
             Parameters
@@ -900,21 +910,6 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         #endregion -----------------------------------------------> Set scroll
 
         return True
-    #---
-
-    def OnOK(self, export:bool=True) -> bool:
-        """Check wx.Dialog content and send values to topParent.
-
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> Super
-        if super().OnOK()[0]:
-            return True
-        #------------------------------>
-        return False
-        #endregion ------------------------------------------------> Super
     #---
     #endregion ------------------------------------------------> Class methods
 #---

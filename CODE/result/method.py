@@ -22,12 +22,36 @@ from pubsub import pub
 import wx
 
 from config.config import config as mConfig
+from core   import method as cMethod
 from core   import window as cWindow
 from result import window as resWindow
 #endregion ----------------------------------------------------------> Imports
 
 
 #region -------------------------------------------------------------> Methods
+def OnLoadUMSAPFile(
+    fileP:Optional[Path]    = None,
+    win:Optional[wx.Window] = None,
+    ) -> bool:
+    """Load an UMSAP File either from Read UMSAP File menu, LoadResults
+        method in Tab or Update File Content menu.
+
+        Parameters
+        ----------
+        fileP: Path or None
+            If None, it is assumed the method is called from Read UMSAP File
+            menu. Default is None.
+        win: wx.Window or None
+            If called from menu it is used to center the Select File wx.Dialog.
+            Default is None.
+
+        Return
+        ------
+        bool
+    """
+    return cMethod.OnGUIMethod(LoadUMSAPFile, fileP=fileP, win=win)
+#---
+
 def LoadUMSAPFile(
     fileP:Optional[Path]    = None,
     win:Optional[wx.Window] = None,
@@ -69,23 +93,13 @@ def LoadUMSAPFile(
     #region ----------------------------> Raise window if file is already open
     if mConfig.res.winUMSAP.get(tFileP, '') != '':
         #------------------------------>
-        try:
-            mConfig.res.winUMSAP[tFileP].UpdateFileContent()
-        except Exception as e:
-            msg = mConfig.core.mFileRead.format(tFileP)
-            cWindow.Notification('errorU', msg=msg, tException=e)
-            return False
+        mConfig.res.winUMSAP[tFileP].UpdateFileContent()
         #------------------------------>
         mConfig.res.winUMSAP[tFileP].Raise()
         #------------------------------>
         return True
     #------------------------------>
-    try:
-        mConfig.res.winUMSAP[tFileP] = resWindow.UMSAPControl(tFileP)
-    except Exception as e:
-        msg = mConfig.core.mFileRead.format(tFileP)
-        cWindow.Notification('errorU', msg=msg, tException=e)
-        return False
+    mConfig.res.winUMSAP[tFileP] = resWindow.UMSAPControl(tFileP)
     #endregion -------------------------> Raise window if file is already open
 
     return True
@@ -93,5 +107,5 @@ def LoadUMSAPFile(
 #endregion ----------------------------------------------------------> Methods
 
 #region -------------------------------------------------> PubSub Subscription
-pub.subscribe(LoadUMSAPFile, 'load_umsap')
+pub.subscribe(OnLoadUMSAPFile,   mConfig.core.kwPubLoadUmsap)
 #endregion ----------------------------------------------> PubSub Subscription

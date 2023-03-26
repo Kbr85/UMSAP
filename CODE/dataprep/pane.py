@@ -83,10 +83,10 @@ class DataPrep(cPane.BaseConfPanel):
     cName           = mConfig.data.nPane
     cURL            = f'{mConfig.core.urlTutorial}/data-preparation'
     cTTHelp         = mConfig.core.ttBtnHelp.format(cURL)
-    cSection        = mConfig.data.nUtil
-    cTitlePD        = f"Running {mConfig.data.nUtil} Analysis"
+    cSection        = mConfig.data.tUtil
+    cTitlePD        = f"Running {mConfig.data.tUtil} Analysis"
     cGaugePD        = 19
-    rAnalysisMethod = dataMethod.DataPreparation
+    rAnalysisMethod = dataMethod.RunDataPreparation
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup

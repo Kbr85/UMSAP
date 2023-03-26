@@ -39,10 +39,11 @@ corrA_4 = folder / 'res-corrA-4.txt'
 class Test_CorrA(unittest.TestCase):
     """Test for corr.method.CorrA"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Set test"""
-        self.df = cFile.ReadCSV2DF(fileA)
-        self.test1 = corrMethod.UserData(
+        cls.df = cFile.ReadCSV2DF(fileA)
+        cls.test1 = corrMethod.UserData(
             cero          = False,
             tran          = 'Log2',
             norm          = 'Median',
@@ -56,7 +57,7 @@ class Test_CorrA(unittest.TestCase):
             dfColumnR     = [0,1,2,3,4],
             dfResCtrlFlat = [0,1,2,3,4],
         )
-        self.test2 = corrMethod.UserData(
+        cls.test2 = corrMethod.UserData(
             cero          = False,
             tran          = 'None',
             norm          = 'None',
@@ -70,7 +71,7 @@ class Test_CorrA(unittest.TestCase):
             dfColumnR     = [0,1,2,3,4],
             dfResCtrlFlat = [0,1,2,3,4],
         )
-        self.test3 = corrMethod.UserData(
+        cls.test3 = corrMethod.UserData(
             cero          = True,
             tran          = 'Log2',
             norm          = 'Median',
@@ -84,7 +85,7 @@ class Test_CorrA(unittest.TestCase):
             dfColumnR     = [0,1,2,3,4],
             dfResCtrlFlat = [0,1,2,3,4],
         )
-        self.test4 = corrMethod.UserData(
+        cls.test4 = corrMethod.UserData(
             cero          = True,
             tran          = 'Log2',
             norm          = 'Median',

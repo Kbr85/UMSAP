@@ -17,7 +17,7 @@
 #region -------------------------------------------------------------> Imports
 from itertools import zip_longest
 from pathlib   import Path
-from typing    import Optional, Union, TYPE_CHECKING
+from typing    import Optional, TYPE_CHECKING
 
 import pandas             as pd
 import matplotlib.patches as mpatches
@@ -109,7 +109,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
     """
     #region -----------------------------------------------------> Class setup
     cName    = mConfig.limp.nwRes
-    cSection = mConfig.limp.nMod
+    cSection = mConfig.limp.tMod
     #------------------------------>
     cSWindow = (1100, 900)
     #------------------------------>
@@ -209,117 +209,238 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region --------------------------------------------------> Manage Methods
-    def LaneBandSel(self, state:bool) -> bool:
-        """Change Band/Lane selection mode.
+    #region ---------------------------------------------------> Event Methods
+    def OnPickGel(self, event) -> bool:
+        """Display info about the selected Gel spot.
 
             Parameters
             ----------
-            state: bool
+            event: matplotlib pick event.
 
             Returns
             -------
             bool
         """
-        self.rSelBands     = not state
-        self.rUpdateColors = True
+        return cMethod.OnGUIMethod(self.PickGel, event)
+    #---
+
+    def OnPressMouse(self, event) -> bool:
+        """Press mouse event in the Gel.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.PressMouse, event)
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
+    #region ---------------------------------------------------> Class Methods
+    def PressMouse(self, event) -> bool:
+        """Press mouse event in the Gel.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> In axis
+        if not event.inaxes:
+            return False
+        #endregion ------------------------------------------------> In axis
+
+        #region ---------------------------------------------------> Variables
+        x = round(event.xdata)
+        y = round(event.ydata)
+        #endregion ------------------------------------------------> Variables
+
+        #region -----------------------------------------------> Redraw or Not
+        if self.rGelSpotPicked:
+            self.rGelSpotPicked = False
+            return True
         #------------------------------>
+        blSel = [y-1, x-1]
+        #------------------------------> Update sel curr or print again
+        if self.rSelBands and self.rBlSelC[0] != blSel[0]:
+            self.rBlSelC = [blSel[0], None]
+        elif not self.rSelBands and self.rBlSelC[1] != blSel[1]:
+            self.rBlSelC = [None, blSel[1]]
+        else:
+            self.PrintBLText(x-1,y-1)
+            return True
+        #endregion --------------------------------------------> Redraw or Not
+
+        #region -----------------------------------------------> Draw New Rect
+        self.DrawBLRect(x,y)
+        #endregion --------------------------------------------> Draw New Rect
+
+        #region ----------------------------------------------> Draw Fragments
+        self.DrawFragments(x,y)
+        #endregion -------------------------------------------> Draw Fragments
+
+        #region ---------------------------------------------------> Print
+        self.PrintBLText(x-1,y-1)
+        #endregion ------------------------------------------------> Print
+
+        #region --------------------------------------------------->
+        if self.rUpdateColors:
+            self.UpdateGelColor()
+            self.rUpdateColors = False
+        #endregion ------------------------------------------------>
+
+        #region ---------------------------------------------------> Rec Seq
+        self.rRecSeqColor['Red'] = self.SeqHighBL()
+        self.RecSeqHighlight()
+        #endregion ------------------------------------------------> Rec Seq
+
         return True
     #---
 
-    def ShowAll(self) -> bool:
-        """Show all Fragments.
+    def PickGel(self, event) -> bool:
+        """Display info about the selected Gel spot.
+
+            Parameters
+            ----------
+            event: matplotlib pick event.
 
             Returns
             -------
             bool
         """
-        #region --------------------------------------------------->
-        idx = self.rLCIdx
-        self.ClearAll()
-        #endregion ------------------------------------------------>
+        #region ---------------------------------------------------> Variables
+        x, y = event.artist.xy
+        x = round(x)
+        y = round(y)
+        #endregion ------------------------------------------------> Variables
 
-        #region --------------------------------------------------->
-        self.UpdateGelColor(showAll=True)
-        #endregion ------------------------------------------------>
+        #region -------------------------------------------------> Flag picked
+        self.rGelSpotPicked = True
+        #endregion ----------------------------------------------> Flag picked
 
-        #region --------------------------------------------------->
-        self.rBlSelRect = mpatches.Rectangle(
-            (0.55, 0.55),
-            len(self.rDataC.labelA)-0.1,
-            len(self.rDataC.labelB)-0.1,
-            linewidth = 1.5,
-            edgecolor = 'red',
-            fill      = False,
-        )
-        #------------------------------>
-        self.wPlot['Sec'].rAxes.add_patch(self.rBlSelRect)
+        #region -----------------------------------------------> Spot Selected
+        spotC = [y-1, x-1]
+        if self.rGelSelC != spotC:
+            self.rGelSelC = spotC
+        else:
+            self.PrintGelSpotText(x-1,y-1)
+            return True
+        #endregion --------------------------------------------> Spot Selected
+
+        #region ---------------------------------------------> Remove Old Line
+        if self.rSpotSelLine is not None:
+            self.rSpotSelLine[0].remove()
+        #endregion ------------------------------------------> Remove Old Line
+
+        #region -----------------------------------------------> Draw New Line
+        self.rSpotSelLine = self.wPlot['Sec'].rAxes.plot(
+            [x-0.3, x+0.3], [y,y], color='black', linewidth=4)
         #------------------------------>
         self.wPlot['Sec'].rCanvas.draw()
-        #endregion ------------------------------------------------>
+        #endregion --------------------------------------------> Draw New Line
+
+        #region --------------------------------------------------------> Info
+        self.PrintGelSpotText(x-1,y-1)
+        #endregion -----------------------------------------------------> Info
+
+        #region ----------------------------------------> Remove Sel from Frag
+        if self.rFragSelLine is not None:
+            self.rFragSelLine[0].remove()
+            self.rFragSelLine = None
+            self.wPlot['Main'].rCanvas.draw()
+            self.rFragSelC = [None, None, None]
+        #endregion -------------------------------------> Remove Sel from Frag
 
         #region --------------------------------------------------->
-        #------------------------------>
-        tKeys   = []
-        tLabel  = []
-        tColor  = []
-        tYLabel = []
-        self.rRectsFrag = []
-        #------------------------------>
-        if self.rSelBands:
-            for bk, b in enumerate(self.rDataC.labelB):
-                for lk, l in enumerate(self.rDataC.labelA):
-                    tKeys.append(f'{b}-{l}-{self.rPStr}')
-                    tYLabel.append(f'{b}-{l}')
-                    tColor.append(bk)
-                    tLabel.append(f'{bk}.{lk}')
-        else:
-            for lk, l in enumerate(self.rDataC.labelA):
-                for bk, b in enumerate(self.rDataC.labelB):
-                    tKeys.append(f'{b}-{l}-{self.rPStr}')
-                    tYLabel.append(f'{l}-{b}')
-                    tColor.append(lk)
-                    tLabel.append(f'{bk}.{lk}')
-        #------------------------------>
-        self.SetFragmentAxis(showAll=tYLabel)
-        #------------------------------>
-        nc = len(self.cSpot)                                                    # type: ignore
-        #------------------------------>
-        k = 1
-        for k,v in enumerate(tKeys, start=1):
-            frag = getattr(self.rFragments, v)
-            for j,f in enumerate(frag.coord):
-                self.rRectsFrag.append(mpatches.Rectangle(
-                    (f[0], k-0.2),
-                    (f[1]-f[0]),
-                    0.4,
-                    picker    = True,
-                    linewidth = self.cGelLineWidth,
-                    facecolor = self.cSpot[(tColor[k-1])%nc],                   # type: ignore
-                    edgecolor = 'black',
-                    label     = f'{tLabel[k-1]}.{j}',
-                ))
-                self.wPlot['Main'].rAxes.add_patch(self.rRectsFrag[-1])
-        #------------------------------>
-        self.DrawProtein(k+1)                                                   # type: ignore
-        #------------------------------>
-        self.wPlot['Main'].ZoomResetSetValues()
-        self.wPlot['Main'].rCanvas.draw()
+        if self.rUpdateColors:
+            self.UpdateGelColor()
+            self.rUpdateColors = False
         #endregion ------------------------------------------------>
 
-        #region --------------------------------------------> Reselect peptide
-        if idx is not None:
-            self.wLC.wLCS.wLC.Select(idx, on=1)
-        #endregion -----------------------------------------> Reselect peptide
-
-        #region ---------------------------------------------------> Show Text
-        self.PrintAllText()
-        #endregion ------------------------------------------------> Show Text
-
-        #region ---------------------------------------------------> Rec Sec
-        self.rRecSeqColor['Red'] = self.SeqHighAll()
+        #region -----------------------------------------------------> Rec Seq
+        self.rRecSeqColor['Blue']['Spot'] = self.SeqHighSpot()
         self.RecSeqHighlight()
-        #endregion ------------------------------------------------> Rec Sec
+        #endregion --------------------------------------------------> Rec Seq
+
+        return True
+    #---
+
+    def ListSelect(self) -> bool:
+        """Process a wx.ListCtrl select event.
+
+            Returns
+            -------
+            bool
+        """
+        super().ListSelect()
+        self.SeqHighPept()
+        return True
+    #---
+
+    def PickFragment(self, event) -> bool:
+        """Display info about the selected fragment.
+
+            Parameters
+            ----------
+            event: matplotlib pick event.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        art   = event.artist
+        fragC = list(map(int, art.get_label().split('.')))
+        #------------------------------>
+        if self.rFragSelC != fragC:
+            self.rFragSelC = fragC
+        else:
+            return True
+        #------------------------------>
+        x, y = event.artist.xy
+        x = round(x)
+        y = round(y)
+        #------------------------------>
+        tKey = f'{self.rDataC.labelB[fragC[0]]}-{self.rDataC.labelA[fragC[1]]}-{self.rPStr}'
+        #------------------------------>
+        frag = getattr(self.rFragments, tKey)
+        x1, x2 = frag.coord[fragC[2]]
+        #endregion ------------------------------------------------> Variables
+
+        #region ------------------------------------------> Highlight Fragment
+        if self.rFragSelLine is not None:
+            self.rFragSelLine[0].remove()
+        #------------------------------>
+        self.rFragSelLine = self.wPlot['Main'].rAxes.plot(
+            [x1+2, x2-2], [y,y], color='black', linewidth=4)
+        #------------------------------>
+        self.wPlot['Main'].rCanvas.draw()
+        #endregion ---------------------------------------> Highlight Fragment
+
+        #region -------------------------------------------------------> Print
+        self.PrintFragmentText(tKey, fragC)
+        #endregion ----------------------------------------------------> Print
+
+        #region -------------------------------------------> Remove Sel in Gel
+        if self.rSpotSelLine is not None:
+            self.rSpotSelLine[0].remove()
+            self.rSpotSelLine = None
+            self.wPlot['Sec'].rCanvas.draw()
+            self.rGelSelC = [None, None]
+        #endregion ----------------------------------------> Remove Sel in Gel
+
+        #region -----------------------------------------------------> Rec Seq
+        self.rRecSeqColor['Blue']['Frag'] = self.SeqHighFrag()
+        self.RecSeqHighlight()
+        #endregion --------------------------------------------------> Rec Seq
 
         return True
     #---
@@ -348,7 +469,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         return True
     #---
 
-    def UpdateResultWindow(
+    def UpdateResultWindow(                                                     # pylint: disable=arguments-differ
         self,
         tDate:str            ='',
         corrP:Optional[bool] = None,
@@ -371,16 +492,16 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         self.rDateC = tDate if tDate else self.rDateC
         self.rDataC:limpMethod.LimpAnalysis = getattr(self.rData, self.rDateC)
         #------------------------------>
-        self.rDf          = self.rDataC.df.copy()
-        self.rRectsGel    = []
-        self.rRectsFrag   = []
-        self.rBlSelC      = [None, None]
-        self.rGelSelC     = [None, None]
-        self.rFragSelC    = [None, None, None]
-        self.rPeptide     = None
-        self.rLCIdx       = None
-        self.rCorrP       = corrP if corrP is not None else self.rCorrP
-        self.rPStr        = 'Pc' if self.rCorrP else 'Ptost'
+        self.rDf        = self.rDataC.df.copy()
+        self.rRectsGel  = []
+        self.rRectsFrag = []
+        self.rBlSelC    = [None, None]
+        self.rGelSelC   = [None, None]
+        self.rFragSelC  = [None, None, None]
+        self.rPeptide   = None
+        self.rLCIdx     = None
+        self.rCorrP     = corrP if corrP is not None else self.rCorrP
+        self.rPStr      = 'Pc' if self.rCorrP else 'Ptost'
         self.rIdxP = pd.IndexSlice[:,:,'Pc'] if self.rCorrP else pd.IndexSlice[:,:,'Ptost']
 
         self.rRecSeqColor = {'Red':[],'Blue':{'Pept':[],'Spot':[],'Frag':[]}}
@@ -393,7 +514,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> Fragments
-        try:
+        try:                                                                    # Keep backward compatibility
             df = self.GetDF4FragmentSearch()
         except KeyError as e:
             #------------------------------> Notification
@@ -405,12 +526,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
                     parent     = self,
                 )
             else:
-                cWindow.Notification(
-                    'errorU',
-                    msg        = mConfig.core.mUnexpectedError,
-                    tException = e,
-                    parent     = self,
-                )
+                raise Exception from e
             #------------------------------> Reset attributes
             self.rCorrP = False
             self.rPStr  = 'Ptost'
@@ -1248,7 +1364,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
     #---
 
     def SeqHighPept(self) -> bool:
-        """Highlight the selected sequence in the wx.ListCtrl
+        """Highlight the selected sequence in the wx.ListCtrl.
 
             Returns
             -------
@@ -1510,7 +1626,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         return True
     #---
 
-    def ClearFrag(self, plot=True) -> bool:
+    def ClearFrag(self, plot:bool=True) -> bool:
         """Clear the Fragment selection.
 
             Parameters
@@ -1554,7 +1670,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         return True
     #---
 
-    def ClearGel(self, plot=True) -> bool:
+    def ClearGel(self, plot:bool=True) -> bool:
         """Clear the Gel spot selection.
 
             Parameters
@@ -1583,9 +1699,11 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
                 self.wText.Clear()
                 #------------------------------>
                 if self.rSelBands:
-                    self.PrintBText(self.rBlSelC[0])                            # type: ignore
+                    if self.rBlSelC[0] is not None:
+                        self.PrintBText(self.rBlSelC[0])                        # type: ignore
                 else:
-                    self.PrintLText(self.rBlSelC[1])                            # type: ignore
+                    if self.rBlSelC[1] is not None:
+                        self.PrintLText(self.rBlSelC[1])                        # type: ignore
             #------------------------------>
             self.RecSeqHighlight()
         #endregion ------------------------------------------------>
@@ -1597,7 +1715,7 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
         return True
     #---
 
-    def ClearBL(self, plot=True) -> bool:
+    def ClearBL(self, plot:bool=True) -> bool:
         """Clear the Band/Lane selection.
 
             Parameters
@@ -1663,218 +1781,120 @@ class ResLimProt(cWindow.BaseWindowResultListText2PlotFragments):
 
         return True
     #---
-    #endregion -----------------------------------------------> Manage Methods
 
-    #region ---------------------------------------------------> Event Methods
-    def OnListSelect(self, event:Union[wx.CommandEvent, str]) -> bool:
-        """Process a wx.ListCtrl select event.
+    def LaneBandSel(self, state:bool) -> bool:
+        """Change Band/Lane selection mode.
 
             Parameters
             ----------
-            event:wx.Event
-                Information about the event
-
+            state: bool
 
             Returns
             -------
             bool
         """
-        super().OnListSelect(event)
-        self.SeqHighPept()
+        self.rSelBands     = not state
+        self.rUpdateColors = True
+        #------------------------------>
         return True
     #---
 
-    def OnPickFragment(self, event) -> bool:
-        """Display info about the selected fragment.
-
-            Parameters
-            ----------
-            event: matplotlib pick event.
+    def ShowAll(self) -> bool:
+        """Show all Fragments.
 
             Returns
             -------
             bool
         """
-        #region ---------------------------------------------------> Variables
-        art   = event.artist
-        fragC = list(map(int, art.get_label().split('.')))
+        #region --------------------------------------------------->
+        idx = self.rLCIdx
+        self.ClearAll()
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        self.UpdateGelColor(showAll=True)
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        self.rBlSelRect = mpatches.Rectangle(
+            (0.55, 0.55),
+            len(self.rDataC.labelA)-0.1,
+            len(self.rDataC.labelB)-0.1,
+            linewidth = 1.5,
+            edgecolor = 'red',
+            fill      = False,
+        )
         #------------------------------>
-        if self.rFragSelC != fragC:
-            self.rFragSelC = fragC
-        else:
-            return True
-        #------------------------------>
-        x, y = event.artist.xy
-        x = round(x)
-        y = round(y)
-        #------------------------------>
-        tKey = f'{self.rDataC.labelB[fragC[0]]}-{self.rDataC.labelA[fragC[1]]}-{self.rPStr}'
-        #------------------------------>
-        frag = getattr(self.rFragments, tKey)
-        x1, x2 = frag.coord[fragC[2]]
-        #endregion ------------------------------------------------> Variables
-
-        #region ------------------------------------------> Highlight Fragment
-        if self.rFragSelLine is not None:
-            self.rFragSelLine[0].remove()
-        #------------------------------>
-        self.rFragSelLine = self.wPlot['Main'].rAxes.plot(
-            [x1+2, x2-2], [y,y], color='black', linewidth=4)
-        #------------------------------>
-        self.wPlot['Main'].rCanvas.draw()
-        #endregion ---------------------------------------> Highlight Fragment
-
-        #region -------------------------------------------------------> Print
-        self.PrintFragmentText(tKey, fragC)
-        #endregion ----------------------------------------------------> Print
-
-        #region -------------------------------------------> Remove Sel in Gel
-        if self.rSpotSelLine is not None:
-            self.rSpotSelLine[0].remove()
-            self.rSpotSelLine = None
-            self.wPlot['Sec'].rCanvas.draw()
-            self.rGelSelC = [None, None]
-        #endregion ----------------------------------------> Remove Sel in Gel
-
-        #region -----------------------------------------------------> Rec Seq
-        self.rRecSeqColor['Blue']['Frag'] = self.SeqHighFrag()
-        self.RecSeqHighlight()
-        #endregion --------------------------------------------------> Rec Seq
-
-        return True
-    #---
-
-    def OnPickGel(self, event) -> bool:
-        """Display info about the selected Gel spot.
-
-            Parameters
-            ----------
-            event: matplotlib pick event.
-
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> Variables
-        x, y = event.artist.xy
-        x = round(x)
-        y = round(y)
-        #endregion ------------------------------------------------> Variables
-
-        #region -------------------------------------------------> Flag picked
-        self.rGelSpotPicked = True
-        #endregion ----------------------------------------------> Flag picked
-
-        #region -----------------------------------------------> Spot Selected
-        spotC = [y-1, x-1]
-        if self.rGelSelC != spotC:
-            self.rGelSelC = spotC
-        else:
-            self.PrintGelSpotText(x-1,y-1)
-            return True
-        #endregion --------------------------------------------> Spot Selected
-
-        #region ---------------------------------------------> Remove Old Line
-        if self.rSpotSelLine is not None:
-            self.rSpotSelLine[0].remove()
-        #endregion ------------------------------------------> Remove Old Line
-
-        #region -----------------------------------------------> Draw New Line
-        self.rSpotSelLine = self.wPlot['Sec'].rAxes.plot(
-            [x-0.3, x+0.3], [y,y], color='black', linewidth=4)
+        self.wPlot['Sec'].rAxes.add_patch(self.rBlSelRect)
         #------------------------------>
         self.wPlot['Sec'].rCanvas.draw()
-        #endregion --------------------------------------------> Draw New Line
-
-        #region --------------------------------------------------------> Info
-        self.PrintGelSpotText(x-1,y-1)
-        #endregion -----------------------------------------------------> Info
-
-        #region ----------------------------------------> Remove Sel from Frag
-        if self.rFragSelLine is not None:
-            self.rFragSelLine[0].remove()
-            self.rFragSelLine = None
-            self.wPlot['Main'].rCanvas.draw()
-            self.rFragSelC = [None, None, None]
-        #endregion -------------------------------------> Remove Sel from Frag
-
-        #region --------------------------------------------------->
-        if self.rUpdateColors:
-            self.UpdateGelColor()
-            self.rUpdateColors = False
         #endregion ------------------------------------------------>
 
-        #region -----------------------------------------------------> Rec Seq
-        self.rRecSeqColor['Blue']['Spot'] = self.SeqHighSpot()
-        self.RecSeqHighlight()
-        #endregion --------------------------------------------------> Rec Seq
-
-        return True
-    #---
-
-    def OnPressMouse(self, event) -> bool:
-        """Press mouse event in the Gel.
-
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> In axis
-        if not event.inaxes:
-            return False
-        #endregion ------------------------------------------------> In axis
-
-        #region ---------------------------------------------------> Variables
-        x = round(event.xdata)
-        y = round(event.ydata)
-        #endregion ------------------------------------------------> Variables
-
-        #region -----------------------------------------------> Redraw or Not
-        if self.rGelSpotPicked:
-            self.rGelSpotPicked = False
-            return True
+        #region --------------------------------------------------->
         #------------------------------>
-        blSel = [y-1, x-1]
-        #------------------------------> Update sel curr or print again
-        if self.rSelBands and self.rBlSelC[0] != blSel[0]:
-            self.rBlSelC = [blSel[0], None]
-        elif not self.rSelBands and self.rBlSelC[1] != blSel[1]:
-            self.rBlSelC = [None, blSel[1]]
+        tKeys   = []
+        tLabel  = []
+        tColor  = []
+        tYLabel = []
+        self.rRectsFrag = []
+        #------------------------------>
+        if self.rSelBands:
+            for bk, b in enumerate(self.rDataC.labelB):
+                for lk, l in enumerate(self.rDataC.labelA):
+                    tKeys.append(f'{b}-{l}-{self.rPStr}')
+                    tYLabel.append(f'{b}-{l}')
+                    tColor.append(bk)
+                    tLabel.append(f'{bk}.{lk}')
         else:
-            self.PrintBLText(x-1,y-1)
-            return True
-        #endregion --------------------------------------------> Redraw or Not
-
-        #region -----------------------------------------------> Draw New Rect
-        self.DrawBLRect(x,y)
-        #endregion --------------------------------------------> Draw New Rect
-
-        #region ----------------------------------------------> Draw Fragments
-        self.DrawFragments(x,y)
-        #endregion -------------------------------------------> Draw Fragments
-
-        #region ---------------------------------------------------> Print
-        self.PrintBLText(x-1,y-1)
-        #endregion ------------------------------------------------> Print
-
-        #region --------------------------------------------------->
-        if self.rUpdateColors:
-            self.UpdateGelColor()
-            self.rUpdateColors = False
+            for lk, l in enumerate(self.rDataC.labelA):
+                for bk, b in enumerate(self.rDataC.labelB):
+                    tKeys.append(f'{b}-{l}-{self.rPStr}')
+                    tYLabel.append(f'{l}-{b}')
+                    tColor.append(lk)
+                    tLabel.append(f'{bk}.{lk}')
+        #------------------------------>
+        self.SetFragmentAxis(showAll=tYLabel)
+        #------------------------------>
+        nc = len(self.cSpot)                                                    # type: ignore
+        #------------------------------>
+        k = 1
+        for k,v in enumerate(tKeys, start=1):
+            frag = getattr(self.rFragments, v)
+            for j,f in enumerate(frag.coord):
+                self.rRectsFrag.append(mpatches.Rectangle(
+                    (f[0], k-0.2),
+                    (f[1]-f[0]),
+                    0.4,
+                    picker    = True,
+                    linewidth = self.cGelLineWidth,
+                    facecolor = self.cSpot[(tColor[k-1])%nc],                   # type: ignore
+                    edgecolor = 'black',
+                    label     = f'{tLabel[k-1]}.{j}',
+                ))
+                self.wPlot['Main'].rAxes.add_patch(self.rRectsFrag[-1])
+        #------------------------------>
+        self.DrawProtein(k+1)                                                   # type: ignore
+        #------------------------------>
+        self.wPlot['Main'].ZoomResetSetValues()
+        self.wPlot['Main'].rCanvas.draw()
         #endregion ------------------------------------------------>
 
-        #region ---------------------------------------------------> Rec Seq
-        self.rRecSeqColor['Red'] = self.SeqHighBL()
+        #region --------------------------------------------> Reselect peptide
+        if idx is not None:
+            self.wLC.wLCS.wLC.Select(idx, on=1)
+        #endregion -----------------------------------------> Reselect peptide
+
+        #region ---------------------------------------------------> Show Text
+        self.PrintAllText()
+        #endregion ------------------------------------------------> Show Text
+
+        #region ---------------------------------------------------> Rec Sec
+        self.rRecSeqColor['Red'] = self.SeqHighAll()
         self.RecSeqHighlight()
-        #endregion ------------------------------------------------> Rec Seq
+        #endregion ------------------------------------------------> Rec Sec
 
         return True
     #---
-    #endregion ------------------------------------------------> Event Methods
-#---
+    #endregion ------------------------------------------------> Class Methods
+    #---
 #endregion ----------------------------------------------------------> Classes
