@@ -121,11 +121,11 @@ class UMSAPFile():
             cFile.WriteJSON(oPath, self.rData)
         except Exception as e:
             shutil.copy(tempF, self.rFileP)
-            tempF.unlink()
             raise e
+        finally:
+            tempF.unlink()
         #endregion ------------------------------------------------>
 
-        tempF.unlink()
         return True
     #---
     #endregion -------------------------------------------------> Class Method
