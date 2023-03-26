@@ -25,15 +25,15 @@ class Configuration():
     """Configuration for the dataprep module"""
     #region ---------------------------------------------------------> Options
     #------------------------------> Name & Title
-    nUtil:str = 'Data Preparation'                                              # Name of the Utility
-    nwRes:str = 'Data Preparation'                                              # Name of the Result Window
-    nTab:str  = 'Tab Data Preparation'                                          # Name of Config Tab
-    nPane:str = 'Pane Data Preparation'                                         # Name of Config Panel
+    nwRes:str = 'Data Windows Data Preparation'                                 # Name of the Result Window
+    nTab:str  = 'Data Tab Data Preparation'                                     # Name of Config Tab
+    nPane:str = 'Data Pane Data Preparation'                                    # Name of Config Panel
+    tUtil:str = 'Data Preparation'                                              # Name of the Utility
     tTab:str  = 'DataPrep'                                                      # Title of the tab in Main Window
     #------------------------------> Label
-    lONormDist: str = 'Normal Distribution'
+    lONormDist:str = 'Normal Distribution'
     #------------------------------> PubSub Message
-    psResDataPrep: str = 'data.ResDataPrep'
+    kwPubResDataPrep:str = 'pub.data.ResDataPrep'
     #------------------------------> Options
     oTransMethod:dict = field(default_factory=lambda: {                         # Transformation Methods
         ''    : '',

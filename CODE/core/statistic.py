@@ -25,7 +25,7 @@ from scipy import stats
 
 #region ----------------------------------------------------> Data Description
 def DataRange(
-    x:Union[pd.Series, np.ndarray, list, tuple],
+    x:Union[pd.DataFrame, pd.Series, np.ndarray, list, tuple],
     margin:float = 0,
     ) -> list[float]:
     """Return the range of x with an optional margin applied.
@@ -33,8 +33,8 @@ def DataRange(
 
         Parameters
         ----------
-        x: pd.Series, np.array, list or tuple of numbers.
-            Data.
+        x: pd.DataFrame, pd.Series, np.array, list or tuple of numbers.
+            Data with only numbers.
         margin: float
             Expand the range by (max(x) - min(x)) * margin. Default is 0,
             meaning that no expansion of the max(x) and min(x) is done.
@@ -52,49 +52,68 @@ def DataRange(
         When margin is 0 then the return will simply be [min(x), max(x)]
     """
     # Test in test.unit.core.test_statistic.Test_DataRange
+    #region --------------------------------------------------> Helper Methods
+    def _list_tuple() -> tuple[float, float]:
+        """Find the minimum and maximum value in a list or tuple.
+
+            Returns
+            -------
+            tuple[min, max]
+        """
+        nL = list(map(float, x))
+        return (min(nL), max(nL))
+    #---
+
+    def _pd_series() -> tuple[float, float]:
+        """Find the minimum and maximum value in a pd.Series.
+
+            Returns
+            -------
+            tuple[min, max]
+        """
+        s = pd.to_numeric(x, errors='coerce')                                   # type: ignore
+        return (s.min(), s.max())
+    #---
+
+    def _pd_df() -> tuple[float, float]:
+        """Find the minimum and maximum value in a pd.DataFrame.
+
+            Returns
+            -------
+            tuple[min, max]
+        """
+        df = x.apply(pd.to_numeric, errors='coerce')                            # type: ignore
+        return (df.min().min(), df.max().max())
+    #---
+
+    def _np_ndarray() -> tuple[float, float]:
+        """Find the minimum and maximum value in a np.ndarray.
+
+            Returns
+            -------
+            tuple[min, max]
+        """
+        npA:np.ndarray = x.astype(np.float64)                                   # type: ignore
+        return (np.amin(npA), np.amax(npA))
+    #---
+    #endregion -----------------------------------------------> Helper Methods
+
     #region -------------------------------------------------------> Variables
-    msg = 'x must contain only numbers.'
+    dictM = {
+        list        : _list_tuple,
+        tuple       : _list_tuple,
+        pd.Series   : _pd_series,
+        pd.DataFrame: _pd_df,
+        np.ndarray  : _np_ndarray,
+    }
     #endregion ----------------------------------------------------> Variables
 
     #region -----------------------------------------------------> Check Input
-    #------------------------------> Type and Float
-    #-------------->
     tType = type(x)
-    #-------------->
-    if tType in (list, tuple):
-        try:
-            nL = list(map(float, x))
-        except Exception as e:
-            raise ValueError(msg) from e
-    elif tType == pd.Series:
-        try:
-            nL = list(map(float, x.values.tolist()))                            # type: ignore
-        except Exception as e:
-            raise ValueError(msg) from e
-    elif tType == np.ndarray:
-        if x.ndim == 1:                                                         # type: ignore
-            try:
-                nL = list(map(float, x.tolist()))                               # type: ignore
-            except Exception as e:
-                raise ValueError(msg) from e
-        else:
-            msg = 'A one dimensional np.array is expected here.'
-            raise ValueError(msg)
-    else:
-        msg = 'x must be a tuple, list, numpy.ndarray or pandas.Series.'
-        raise ValueError(msg)
-    #------------------------------> Not empty
-    if not nL:
-        msg = 'x cannot be empty.'
-        raise ValueError(msg)
-    #endregion --------------------------------------------------> Check Input
-
-    #region ----------------------------------------------------------> Values
-    tMax = max(nL)
-    tMin = min(nL)
     #------------------------------>
+    tMin, tMax = dictM[tType]()
     dm = (tMax - tMin) * margin
-    #endregion -------------------------------------------------------> Values
+    #endregion --------------------------------------------------> Check Input
 
     return [tMin - dm, tMax + dm]
 #---

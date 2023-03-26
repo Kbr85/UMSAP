@@ -55,19 +55,22 @@ class ToolCorrA(cMenu.BaseMenuMainResult):
         """ """
         #region -----------------------------------------------> Initial Setup
         super().__init__(menuData)
+        #------------------------------> From user config
+        self.cUCColName = True if mConfig.corr.axisLabel == 'Names' else False
+        self.cUColBar   = mConfig.corr.showBar
         #endregion --------------------------------------------> Initial Setup
 
         #region --------------------------------------------------> Menu Items
         self.miColName = self.Append(-1, self.cLColName, kind=wx.ITEM_CHECK)
-        self.miColName.Check(check=True)
+        self.miColName.Check(check=self.cUCColName)
         #------------------------------>
         self.AppendSeparator()
-        self.miAllCol = self.Append(-1, self.cLAllCol)
         self.miSelCol = self.Append(-1, self.cLSelCol)
+        self.miAllCol = self.Append(-1, self.cLAllCol)
         #------------------------------>
         self.AppendSeparator()
         self.miColBar = self.Append(-1, self.cLColorBar, kind=wx.ITEM_CHECK)
-        self.miColBar.Check(check=False)
+        self.miColBar.Check(check=self.cUColBar)
         #------------------------------>
         self.AppendSeparator()
         self.AddLastItems()

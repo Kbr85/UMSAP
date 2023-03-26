@@ -119,8 +119,8 @@ class ProtProf(cPane.BaseConfPanelMod):
     cDCtrlType = mConfig.prot.oControlType
     #------------------------------> Needed by BaseConfPanel
     cURL         = f'{mConfig.core.urlTutorial}/proteome-profiling'
-    cSection     = mConfig.prot.nMod
-    cTitlePD     = f"Running {mConfig.prot.nMod} Analysis"
+    cSection     = mConfig.prot.tMod
+    cTitlePD     = f"Running {mConfig.prot.tMod} Analysis"
     cGaugePD     = 29
     rMainData    = '{}_{}-ProteomeProfiling-Data.txt'
     rAnalysisMethod = protMethod.ProtProf
@@ -366,6 +366,70 @@ class ProtProf(cPane.BaseConfPanelMod):
             self.wScoreVal.wTc.SetValue(mConfig.prot.scoreVal)
             self.wCorrectP.wCb.SetValue(mConfig.prot.correctP)
         #endregion ----------------------------------------------> Fill Fields
+
+        #region --------------------------------------------------------> Test
+        if mConfig.core.development and dataI is None:
+            # pylint: disable=line-too-long
+            import getpass                                                      # pylint: disable=import-outside-toplevel
+            user = getpass.getuser()
+            if mConfig.core.os == "Darwin":
+                self.wUFile.wTc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
+                self.wIFile.wTc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt")
+            elif mConfig.core.os == 'Windows':
+                self.wUFile.wTc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
+                self.wIFile.wTc.SetValue(str(Path('C:/Users/bravo/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt')))
+            else:
+                pass
+            self.wScoreVal.wTc.SetValue('320')
+            self.wId.wTc.SetValue('Beta Test Dev')
+            self.wCeroB.wCb.SetValue('Yes')
+            self.wTransMethod.wCb.SetValue('Log2')
+            self.wNormMethod.wCb.SetValue('Median')
+            self.wImputationMethod.wCb.SetValue('Normal Distribution')
+            self.wAlpha.wTc.SetValue('0.05')
+            self.wSample.wCb.SetValue('Independent Samples')
+            self.wCorrectP.wCb.SetValue('Benjamini - Hochberg')
+            self.wDetectedProt.wTc.SetValue('0')
+            self.wGeneName.wTc.SetValue('6')
+            self.wScore.wTc.SetValue('39')
+            self.wExcludeProt.wTc.SetValue('171 172 173')
+            #------------------------------>
+            #--> One Control per Column, 2 Cond and 2 TP
+            # self.wTcResults.SetValue('105 115 125, 130 131 132; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            # self.rLbDict = {
+            #     0            : ['C1', 'C2'],
+            #     1            : ['RP1', 'RP2'],
+            #     'Control'    : ['TheControl'],
+            #     'ControlType': 'One Control per Column',
+            # }
+            #--> One Control per Row, 1 Cond and 2 TP
+            # self.wTcResults.SetValue('105 115 125, 106 116 126, 101 111 121')
+            # self.rLbDict = {
+            #     0            : ['DMSO'],
+            #     1            : ['30min', '60min'],
+            #     'Control'    : ['MyControl'],
+            #     'ControlType': 'One Control per Row',
+            # }
+            #--> One Control 2 Cond and 2 TP
+            self.wTcResults.SetValue('105 115 125; 106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            self.rLbDict = {
+                0            : ['C1', 'C2'],
+                1            : ['RP1', 'RP2'],
+                'Control'    : ['1Control'],
+                'ControlType': 'One Control',
+            }
+            #--> Ratio 2 Cond and 2 TP
+            # self.wTcResults.SetValue('106 116 126, 101 111 121; 108 118 128, 103 113 123')
+            # self.rLbDict = {
+            #     0            : ['C1', 'C2'],
+            #     1            : ['RP1', 'RP2'],
+            #     'Control'    : ['1Control'],
+            #     'ControlType': 'Ratio of Intensities',
+            # }
+            self.OnImpMethod('fEvent')
+            self.wShift.wTc.SetValue('1.8')
+            self.wWidth.wTc.SetValue('0.3')
+        #endregion -----------------------------------------------------> Test
 
         return True
     #---
@@ -761,214 +825,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
             -------
             True
         """
-        #region ---------------------------------------------------> Get value
-        control = self.wCbControl.GetValue()
-        #endregion ------------------------------------------------> Get value
-
-        #region ------------------------------------------------------> Action
-        if control == self.cCtrlType['Ratio']:
-            self.wControlN.wTc.SetValue('None')
-            self.wControlN.wTc.SetEditable(False)
-        else:
-            self.wControlN.wTc.SetEditable(True)
-        #endregion ---------------------------------------------------> Action
-
-        return True
-    #---
-
-    def OnCreate(self, event:wx.CommandEvent) -> bool:
-        """Create the widgets in the white panel.
-
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region -------------------------------------------------> Check input
-        if not (n := self.CheckLabel(True)):
-            return False
-        #endregion ----------------------------------------------> Check input
-
-        #region ---------------------------------------------------> Variables
-        control = self.wCbControl.GetValue()
-        #------------------------------>
-        if control == self.cCtrlType['OCR']:
-            Nc   = n[0]                                                         # Number of rows of tc needed
-            Nr   = n[1] + 1                                                     # Number of tc needed for each row
-            NCol = n[1] + 2                                                     # Number of columns in the sizer
-            NRow = n[0] + 1                                                     # Number of rows in the sizer
-        elif control == self.cCtrlType['Ratio']:
-            Nc   = n[0]
-            Nr   = n[1]
-            NCol = n[1] + 1
-            NRow = n[0] + 1
-        else:
-            Nc   = n[0] + 1
-            Nr   = n[1]
-            NCol = n[1] + 1
-            NRow = n[0] + 2
-        #endregion ------------------------------------------------> Variables
-
-        #region -------------------------------------------> Remove from sizer
-        self.sSWMatrix.Clear(delete_windows=False)
-        #endregion ----------------------------------------> Remove from sizer
-
-        #region --------------------------------> Create/Destroy wx.StaticText
-        #------------------------------> Destroy
-        for k, v in self.rFSectStDict.items():
-            for j in range(0, len(v)):
-                v[-1].Destroy()
-                v.pop()
-        #------------------------------> Create
-        #--------------> Labels
-        for k, v in self.rLSectTcDict.items():
-            #--------------> New row
-            row = []
-            #--------------> Fill row
-            for j in v:
-                row.append(wx.StaticText(self.wSwMatrix, label=j.GetValue()))
-            #--------------> Assign
-            self.rFSectStDict[k] = row
-        #--------------> Control
-        self.rFSectStDict['Control'] = [
-            wx.StaticText(self.wSwMatrix, label=self.wControlN.wTc.GetValue())]
-        if control == self.cCtrlType['Ratio']:
-            self.rFSectStDict['Control'][0].Hide()
-        #endregion -----------------------------> Create/Destroy wx.StaticText
-
-        #region ----------------------------------> Create/Destroy wx.TextCtrl
-        #------------------------------> Widgets
-        for k in range(0, Nc):
-            #------------------------------> Get row
-            row = self.rFSectTcDict.get(k, [])
-            lRow = len(row)
-            #------------------------------> First row is especial
-            if k == 0 and control == self.cCtrlType['OC']:
-                if control == self.rControlVal:
-                    continue
-                #--------------> Destroy old widgets
-                for j in row:
-                    j.Destroy()
-                #--------------> New Row and wx.TextCtrl
-                row = []
-                row.append(
-                    wx.TextCtrl(
-                        self.wSwMatrix,
-                        size      = self.cSLabel,
-                        validator = self.cVColNumList,
-                    )
-                )
-                #--------------> Assign & Continue to next for step
-                self.rFSectTcDict[k] = row
-                continue
-            #------------------------------> Create destroy
-            if Nr > lRow:
-                #-------------->  Create
-                for j in range(lRow, Nr):
-                    row.append(
-                        wx.TextCtrl(
-                            self.wSwMatrix,
-                            size      = self.cSLabel,
-                            validator = self.cVColNumList,
-                        )
-                    )
-                #-------------->  Add to dict
-                self.rFSectTcDict[k] = row
-            else:
-                for j in range(Nr, lRow):
-                    #-------------->  Destroy
-                    row[-1].Destroy()
-                    #--------------> Remove from list
-                    row.pop()
-        #------------------------------> Drop keys and destroy from dict
-        dK = [x for x in self.rFSectTcDict]
-        for k in dK:
-            if k+1 > Nc:
-                #--------------> Destroy this widget
-                for j in self.rFSectTcDict[k]:
-                    j.Destroy()
-                #--------------> Remove key
-                del self.rFSectTcDict[k]
-        #------------------------------> Clear value if needed
-        if control != self.rControlVal:
-            for v in self.rFSectTcDict.values():
-                for j in v:
-                    j.SetValue('')
-        #endregion -------------------------------> Create/Destroy wx.TextCtrl
-
-        #region ------------------------------------------------> Setup Sizers
-        #------------------------------> Adjust size
-        self.sSWMatrix.SetCols(NCol)
-        self.sSWMatrix.SetRows(NRow)
-        #------------------------------> Add widgets
-        self.dAddWidget[control](NCol, NRow)
-        #------------------------------> Grow Columns
-        for k in range(1, NCol):
-            if not self.sSWMatrix.IsColGrowable(k):
-                self.sSWMatrix.AddGrowableCol(k, 1)
-        #------------------------------> Update sizer
-        self.sSWMatrix.Layout()
-        #endregion ---------------------------------------------> Setup Sizers
-
-        #region --------------------------------------------------> Set scroll
-        self.wSwMatrix.SetupScrolling()
-        #endregion -----------------------------------------------> Set scroll
-
-        #region -------------------------------------------> Update controlVal
-        self.rControlVal = control
-        #endregion ----------------------------------------> Update controlVal
-
-        return True
-    #---
-
-    def OnOK(self, export:bool=True) -> bool:
-        """Check wx.Dialog content and send values to topParent.
-
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> Variables
-        ctrlType = self.wCbControl.GetValue()
-        ctrl     = True
-        #endregion ------------------------------------------------> Variables
-
-        #region ---------------------------------------------------> Super
-        a, oText = super().OnOK(export=False)
-        if not a:
-            return False
-        #endregion ------------------------------------------------> Super
-
-        #region --------------------------------------------------> Check Ctrl
-        if ctrlType  == self.cCtrlType['OC']:
-            if self.rFSectTcDict[0][0].GetValue().strip() == '':
-                ctrl = False
-        elif ctrlType == self.cCtrlType['OCC']:
-            for w in self.rFSectTcDict[0]:
-                if w.GetValue().strip() == '':
-                    ctrl = False
-                    break
-        else:
-            for w in self.rFSectTcDict.values():
-                if w[0].GetValue().strip() == '':
-                    ctrl = False
-                    break
-        #------------------------------>
-        if not ctrl:
-            cWindow.Notification(
-                'errorF', msg=mConfig.core.mCtrlEmpty, parent=self)
-            return False
-        #endregion -----------------------------------------------> Check Ctrl
-
-        #region --------------------------------------------------->
-        self.Export2TopParent(oText)
-        #endregion ------------------------------------------------>
-
-        return True
+        return cMethod.OnGUIMethod(self.Control)
     #---
     #endregion ------------------------------------------------> Event Methods
 
@@ -1161,6 +1018,222 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
             for j in v:
                 self.sSWMatrix.Add(j, 0, wx.EXPAND|wx.ALL, 5)
         #endregion -----------------------------------------------> Other rows
+
+        return True
+    #---
+
+    def Create(self) -> bool:
+        """Create the widgets in the white panel.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------> Check input
+        if not (n := self.CheckLabel(True)):
+            return False
+        #endregion ----------------------------------------------> Check input
+
+        #region ---------------------------------------------------> Variables
+        control = self.wCbControl.GetValue()
+        #------------------------------>
+        if control == self.cCtrlType['OCR']:
+            Nc   = n[0]                                                         # Number of rows of tc needed
+            Nr   = n[1] + 1                                                     # Number of tc needed for each row
+            NCol = n[1] + 2                                                     # Number of columns in the sizer
+            NRow = n[0] + 1                                                     # Number of rows in the sizer
+        elif control == self.cCtrlType['Ratio']:
+            Nc   = n[0]
+            Nr   = n[1]
+            NCol = n[1] + 1
+            NRow = n[0] + 1
+        else:
+            Nc   = n[0] + 1
+            Nr   = n[1]
+            NCol = n[1] + 1
+            NRow = n[0] + 2
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------> Remove from sizer
+        self.sSWMatrix.Clear(delete_windows=False)
+        #endregion ----------------------------------------> Remove from sizer
+
+        #region --------------------------------> Create/Destroy wx.StaticText
+        #------------------------------> Destroy
+        for k, v in self.rFSectStDict.items():
+            for j in range(0, len(v)):
+                v[-1].Destroy()
+                v.pop()
+        #------------------------------> Create
+        #--------------> Labels
+        for k, v in self.rLSectTcDict.items():
+            #--------------> New row
+            row = []
+            #--------------> Fill row
+            for j in v:
+                row.append(wx.StaticText(self.wSwMatrix, label=j.GetValue()))
+            #--------------> Assign
+            self.rFSectStDict[k] = row
+        #--------------> Control
+        self.rFSectStDict['Control'] = [
+            wx.StaticText(self.wSwMatrix, label=self.wControlN.wTc.GetValue())]
+        if control == self.cCtrlType['Ratio']:
+            self.rFSectStDict['Control'][0].Hide()
+        #endregion -----------------------------> Create/Destroy wx.StaticText
+
+        #region ----------------------------------> Create/Destroy wx.TextCtrl
+        #------------------------------> Widgets
+        for k in range(0, Nc):
+            #------------------------------> Get row
+            row = self.rFSectTcDict.get(k, [])
+            lRow = len(row)
+            #------------------------------> First row is especial
+            if k == 0 and control == self.cCtrlType['OC']:
+                if control == self.rControlVal:
+                    continue
+                #--------------> Destroy old widgets
+                for j in row:
+                    j.Destroy()
+                #--------------> New Row and wx.TextCtrl
+                row = []
+                row.append(
+                    wx.TextCtrl(
+                        self.wSwMatrix,
+                        size      = self.cSLabel,
+                        validator = self.cVColNumList,
+                    )
+                )
+                #--------------> Assign & Continue to next for step
+                self.rFSectTcDict[k] = row
+                continue
+            #------------------------------> Create destroy
+            if Nr > lRow:
+                #-------------->  Create
+                for j in range(lRow, Nr):
+                    row.append(
+                        wx.TextCtrl(
+                            self.wSwMatrix,
+                            size      = self.cSLabel,
+                            validator = self.cVColNumList,
+                        )
+                    )
+                #-------------->  Add to dict
+                self.rFSectTcDict[k] = row
+            else:
+                for j in range(Nr, lRow):
+                    #-------------->  Destroy
+                    row[-1].Destroy()
+                    #--------------> Remove from list
+                    row.pop()
+        #------------------------------> Drop keys and destroy from dict
+        dK = [x for x in self.rFSectTcDict]
+        for k in dK:
+            if k+1 > Nc:
+                #--------------> Destroy this widget
+                for j in self.rFSectTcDict[k]:
+                    j.Destroy()
+                #--------------> Remove key
+                del self.rFSectTcDict[k]
+        #------------------------------> Clear value if needed
+        if control != self.rControlVal:
+            for v in self.rFSectTcDict.values():
+                for j in v:
+                    j.SetValue('')
+        #endregion -------------------------------> Create/Destroy wx.TextCtrl
+
+        #region ------------------------------------------------> Setup Sizers
+        #------------------------------> Adjust size
+        self.sSWMatrix.SetCols(NCol)
+        self.sSWMatrix.SetRows(NRow)
+        #------------------------------> Add widgets
+        self.dAddWidget[control](NCol, NRow)
+        #------------------------------> Grow Columns
+        for k in range(1, NCol):
+            if not self.sSWMatrix.IsColGrowable(k):
+                self.sSWMatrix.AddGrowableCol(k, 1)
+        #------------------------------> Update sizer
+        self.sSWMatrix.Layout()
+        #endregion ---------------------------------------------> Setup Sizers
+
+        #region --------------------------------------------------> Set scroll
+        self.wSwMatrix.SetupScrolling()
+        #endregion -----------------------------------------------> Set scroll
+
+        #region -------------------------------------------> Update controlVal
+        self.rControlVal = control
+        #endregion ----------------------------------------> Update controlVal
+
+        return True
+    #---
+
+    def CheckOK(self, export:bool=True) -> bool:
+        """Check wx.Dialog content and send values to topParent.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> Variables
+        ctrlType = self.wCbControl.GetValue()
+        ctrl     = True
+        #endregion ------------------------------------------------> Variables
+
+        #region ---------------------------------------------------> Super
+        if not super().CheckOK(export=False):
+            return False
+        #endregion ------------------------------------------------> Super
+
+        #region --------------------------------------------------> Check Ctrl
+        if ctrlType  == self.cCtrlType['OC']:
+            if self.rFSectTcDict[0][0].GetValue().strip() == '':
+                ctrl = False
+        elif ctrlType == self.cCtrlType['OCC']:
+            for w in self.rFSectTcDict[0]:
+                if w.GetValue().strip() == '':
+                    ctrl = False
+                    break
+        else:
+            for w in self.rFSectTcDict.values():
+                if w[0].GetValue().strip() == '':
+                    ctrl = False
+                    break
+        #------------------------------>
+        if not ctrl:
+            cWindow.Notification(
+                'errorF', msg=mConfig.core.mCtrlEmpty, parent=self)
+            return False
+        #endregion -----------------------------------------------> Check Ctrl
+
+        #region --------------------------------------------------->
+        self.Export2TopParent(self.rResCtrlText)
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+
+    def Control(self) -> bool:
+        """Enable/Disable the Control name when selecting control type.
+
+            Returns
+            -------
+            True
+        """
+        #region ---------------------------------------------------> Get value
+        control = self.wCbControl.GetValue()
+        #endregion ------------------------------------------------> Get value
+
+        #region ------------------------------------------------------> Action
+        if control == self.cCtrlType['Ratio']:
+            self.wControlN.wTc.SetValue('None')
+            self.wControlN.wTc.SetEditable(False)
+        else:
+            self.wControlN.wTc.SetEditable(True)
+        #endregion ---------------------------------------------------> Action
 
         return True
     #---

@@ -53,19 +53,19 @@ class Start(wx.Panel):
         self.wImg = wx.StaticBitmap(
             self,bitmap=wx.Bitmap(str(self.cImg), wx.BITMAP_TYPE_ANY))
         #------------------------------> Buttons
-        self.wBtnCorrA    = wx.Button(self, label=mConfig.corr.nUtil)
-        self.wBtnDataPrep = wx.Button(self, label=mConfig.data.nUtil)
-        self.wBtnLimProt  = wx.Button(self, label=mConfig.limp.nMod)
-        self.wBtnProtProf = wx.Button(self, label=mConfig.prot.nMod)
-        self.wBtnTarProt  = wx.Button(self, label=mConfig.tarp.nMod)
+        self.wBtnCorrA    = wx.Button(self, label=mConfig.corr.tUtil)
+        self.wBtnDataPrep = wx.Button(self, label=mConfig.data.tUtil)
+        self.wBtnLimProt  = wx.Button(self, label=mConfig.limp.tMod)
+        self.wBtnProtProf = wx.Button(self, label=mConfig.prot.tMod)
+        self.wBtnTarProt  = wx.Button(self, label=mConfig.tarp.tMod)
         #endregion --------------------------------------------------> Widgets
 
         #region ----------------------------------------------------> Tooltips
-        self.wBtnCorrA.SetToolTip(f'Start the utility {mConfig.corr.nUtil}')
-        self.wBtnDataPrep.SetToolTip(f'Start the utility {mConfig.data.nUtil}')
-        self.wBtnLimProt.SetToolTip (f'Start the module {mConfig.limp.nMod}')
-        self.wBtnProtProf.SetToolTip(f'Start the module {mConfig.prot.nMod}')
-        self.wBtnTarProt.SetToolTip (f'Start the module {mConfig.tarp.nMod}')
+        self.wBtnCorrA.SetToolTip(f'Start the utility {mConfig.corr.tUtil}')
+        self.wBtnDataPrep.SetToolTip(f'Start the utility {mConfig.data.tUtil}')
+        self.wBtnLimProt.SetToolTip (f'Start the module {mConfig.limp.tMod}')
+        self.wBtnProtProf.SetToolTip(f'Start the module {mConfig.prot.tMod}')
+        self.wBtnTarProt.SetToolTip (f'Start the module {mConfig.tarp.tMod}')
         #endregion -------------------------------------------------> Tooltips
 
         #region ------------------------------------------------------> Sizers
@@ -93,23 +93,23 @@ class Start(wx.Panel):
         #region --------------------------------------------------------> Bind
         self.wBtnCorrA.Bind(
             wx.EVT_BUTTON,
-            lambda event: mConfig.main.mainWin.CreateTab(mConfig.corr.nTab)     # type: ignore
+            lambda event: mConfig.main.mainWin.OnCreateTab(mConfig.corr.nTab)   # type: ignore
         )
         self.wBtnDataPrep.Bind(
             wx.EVT_BUTTON,
-            lambda event: mConfig.main.mainWin.CreateTab(mConfig.data.nTab)     # type: ignore
+            lambda event: mConfig.main.mainWin.OnCreateTab(mConfig.data.nTab)   # type: ignore
         )
         self.wBtnLimProt.Bind(
             wx.EVT_BUTTON,
-            lambda event: mConfig.main.mainWin.CreateTab(mConfig.limp.nTab)     # type: ignore
+            lambda event: mConfig.main.mainWin.OnCreateTab(mConfig.limp.nTab)   # type: ignore
         )
         self.wBtnProtProf.Bind(
             wx.EVT_BUTTON,
-            lambda event: mConfig.main.mainWin.CreateTab(mConfig.prot.nTab)     # type: ignore
+            lambda event: mConfig.main.mainWin.OnCreateTab(mConfig.prot.nTab)   # type: ignore
         )
         self.wBtnTarProt.Bind(
             wx.EVT_BUTTON,
-            lambda event: mConfig.main.mainWin.CreateTab(mConfig.tarp.nTab)     # type: ignore
+            lambda event: mConfig.main.mainWin.OnCreateTab(mConfig.tarp.nTab)   # type: ignore
         )
         #endregion -----------------------------------------------------> Bind
     #endregion -----------------------------------------------> Instance setup

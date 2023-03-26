@@ -40,8 +40,6 @@ class UmsapApp(wx.App):
         imgPath = '/RESOURCES/IMAGES/SPLASHSCREEN/splash.png'
         if os == 'Darwin':
             fileRoot = Path(__file__).parent.parent
-        elif os == 'Windows':
-            fileRoot = Path(__file__).parent
         else:
             fileRoot = Path(__file__).parent
         imgFullPath = f'{fileRoot}{imgPath}'
@@ -105,7 +103,6 @@ class SplashWindow(wx.adv.SplashScreen):
         #endregion---------------------------------------------------> Imports
 
         #region -------------------------------------------------------> Fonts
-        #------------------------------> Fonts
         fSeqAlignFont = wx.Font(
             14,
             wx.FONTFAMILY_ROMAN,

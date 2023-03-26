@@ -83,10 +83,10 @@ class DataPrep(cPane.BaseConfPanel):
     cName           = mConfig.data.nPane
     cURL            = f'{mConfig.core.urlTutorial}/data-preparation'
     cTTHelp         = mConfig.core.ttBtnHelp.format(cURL)
-    cSection        = mConfig.data.nUtil
-    cTitlePD        = f"Running {mConfig.data.nUtil} Analysis"
+    cSection        = mConfig.data.tUtil
+    cTitlePD        = f"Running {mConfig.data.tUtil} Analysis"
     cGaugePD        = 19
-    rAnalysisMethod = dataMethod.DataPreparation
+    rAnalysisMethod = dataMethod.RunDataPreparation
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -187,6 +187,30 @@ class DataPrep(cPane.BaseConfPanel):
         else:
             super().SetConfOptions()
         #endregion ----------------------------------------------> Fill Fields
+
+        #region --------------------------------------------------------> Test
+        if mConfig.core.development and dataI is None:
+            # pylint: disable=line-too-long
+            import getpass                                                      # pylint: disable=import-outside-toplevel
+            user = getpass.getuser()
+            if mConfig.core.os == "Darwin":
+                self.wUFile.wTc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
+                self.wIFile.wTc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt")
+            elif mConfig.core.os == 'Windows':
+                self.wUFile.wTc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
+                self.wIFile.wTc.SetValue(str(Path('C:/Users/bravo/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/PROTPROF/protprof-data-file.txt')))
+            else:
+                pass
+            self.wId.wTc.SetValue('Beta Test Dev')
+            self.wCeroB.wCb.SetValue('Yes')
+            self.wTransMethod.wCb.SetValue('Log2')
+            self.wNormMethod.wCb.SetValue('Median')
+            self.wImputationMethod.wCb.SetValue('Normal Distribution')
+            self.wColAnalysis.wTc.SetValue('130-135')
+            self.OnImpMethod('fEvent')
+            self.wShift.wTc.SetValue('1.8')
+            self.wWidth.wTc.SetValue('0.3')
+        #endregion -----------------------------------------------------> Test
 
         return True
     #---

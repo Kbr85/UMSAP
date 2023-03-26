@@ -69,7 +69,7 @@ class DataAnalysis():
 
 #region -------------------------------------------------------------> Methods
 #region ----------------------------------------------------> Data Preparation
-def DataPreparation(                                                            # pylint: disable=dangerous-default-value
+def RunDataPreparation(                                                            # pylint: disable=dangerous-default-value
     *args,                                                                      # pylint: disable=unused-argument
     df:pd.DataFrame          = pd.DataFrame(),
     rDO:cMethod.BaseUserData = cMethod.BaseUserData(),
@@ -116,75 +116,106 @@ def DataPreparation(                                                            
         *kwargs are ignored. They are needed for compatibility.
     """
     # Test in test.unit.data.test_method.DataPreparation
+    #region -------------------------------------------------------->
+    try:
+        return DataPreparation(
+            *args, df=df, rDO=rDO, resetIndex=resetIndex, **kwargs)
+    except Exception as e:
+        return ({}, str(e), e)
+    #endregion ----------------------------------------------------->
+#---
+
+
+def DataPreparation(                                                            # pylint: disable=dangerous-default-value
+    *args,                                                                      # pylint: disable=unused-argument
+    df:pd.DataFrame          = pd.DataFrame(),
+    rDO:cMethod.BaseUserData = cMethod.BaseUserData(),
+    resetIndex: bool         = True,
+    **kwargs
+    ) -> tuple[dict, str, Optional[Exception]]:
+    """Perform the data preparation steps.
+
+        Parameters
+        ----------
+        *args:
+            Ignore here but needed for compatibility.
+        df: pd.DataFrame
+            DataFrame read from CSV file.
+        rDO: dict
+            rDO dictionary from the PrepareRun step of the analysis.
+        resetIndex: bool
+            Reset index of dfS (True) or not (False). Default is True.
+        **kwargs:
+            Ignore here but needed for  compatibility.
+
+        Returns
+        -------
+        tuple:
+            -   (
+                    {
+                        'dfI' : pd.DataFrame,
+                        'dfF' : pd.DataFrame,
+                        'dfT' : pd.DataFrame,
+                        'dfN' : pd.DataFrame,
+                        'dfIm': pd.DataFrame,
+                        'dfTP': pd.DataFrame,
+                        'dfE' : pd.DataFrame,
+                        'dfS' : pd.DataFrame
+                    },
+                    '',
+                    None
+                )                                  when everything went fine.
+            -   ({}, 'Error message', Exception)   when something went wrong.
+
+        Notes
+        -----
+        *args are ignored. They are needed for compatibility.
+        *kwargs are ignored. They are needed for compatibility.
+    """
     #region ----------------------------------------> Run Data Preparation
     #------------------------------> dfI & dfF
-    try:
-        dfI, dfF = DataPrep_Float(
-            df,
-            rDO.cero,
-            rDO.ocColumn,
-            rDO.dfColumnR,
-            rDO.dfColumnF,
-        )
-    except Exception as e:
-        return ({}, 'Data Preparation failed', e)
+    dfI, dfF = DataPrep_Float(
+        df,
+        rDO.cero,
+        rDO.ocColumn,
+        rDO.dfColumnR,
+        rDO.dfColumnF,
+    )
     #------------------------------> Transformation
-    try:
-        dfT = DataTransformation(
-            dfF,
-            rDO.dfResCtrlFlat,
-            method = rDO.tran,
-            rep    = np.nan if rDO.cero else 0,
-        )
-    except Exception as e:
-        return ({}, 'Data Transformation failed.', e)
+    dfT = DataTransformation(
+        dfF,
+        rDO.dfResCtrlFlat,
+        method = rDO.tran,
+        rep    = np.nan if rDO.cero else 0,
+    )
     #------------------------------> Normalization
-    try:
-        dfN = DataNormalization(
-            dfT, rDO.dfResCtrlFlat, method=rDO.norm)
-    except Exception as e:
-        return ({}, 'Data Normalization failed.', e)
+    dfN = DataNormalization(
+        dfT, rDO.dfResCtrlFlat, method=rDO.norm)
     #------------------------------> Imputation
-    try:
-        dfIm = DataImputation(
-            dfN,
-            rDO.dfResCtrlFlat,
-            method = rDO.imp,
-            shift  = rDO.shift,
-            width  = rDO.width,
-        )
-    except Exception as e:
-        return ({}, 'Data Imputation failed.', e)
+    dfIm = DataImputation(
+        dfN,
+        rDO.dfResCtrlFlat,
+        method = rDO.imp,
+        shift  = rDO.shift,
+        width  = rDO.width,
+    )
     #------------------------------> Target Protein
-    try:
-        if rDO.targetProt:
-            dfTP = cMethod.DFFilterByColS(
-                dfIm, rDO.dfTargetProt, rDO.targetProt, 'e')
-        else:
-            dfTP = dfIm.copy()
-    except Exception as e:
-        msg = mConfig.core.mPDDataTargetProt.format(
-            rDO.targetProt, rDO.dfTargetProt)
-        return ({}, msg, e)
+    if rDO.targetProt:
+        dfTP = cMethod.DFFilterByColS(
+            dfIm, rDO.dfTargetProt, rDO.targetProt, 'e')
+    else:
+        dfTP = dfIm.copy()
     #------------------------------> Exclude
-    try:
-        if rDO.dfExcludeR:
-            dfE = cMethod.DFExclude(dfTP, rDO.dfExcludeR)
-        else:
-            dfE = dfTP.copy()
-    except Exception as e:
-        msg = mConfig.core.mPDDataExclude.format(rDO.dfExcludeR)
-        return ({}, msg, e)
+    if rDO.dfExcludeR:
+        dfE = cMethod.DFExclude(dfTP, rDO.dfExcludeR)
+    else:
+        dfE = dfTP.copy()
     #------------------------------> Score
-    try:
-        if rDO.dfScore > -1:
-            dfS = cMethod.DFFilterByColN(
-                dfE, [rDO.dfScore], rDO.scoreVal, 'ge')
-        else:
-            dfS = dfE.copy()
-    except Exception as e:
-        msg = mConfig.core.mPDDataScore.format(rDO.dfScore)
-        return ({}, msg, e)
+    if rDO.dfScore > -1:
+        dfS = cMethod.DFFilterByColN(
+            dfE, [rDO.dfScore], rDO.scoreVal, 'ge')
+    else:
+        dfS = dfE.copy()
     #------------------------------> Check not Empty
     if dfS.empty:
         return ({}, mConfig.core.mNoDataLeft, None)

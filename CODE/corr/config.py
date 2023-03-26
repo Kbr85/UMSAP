@@ -25,14 +25,14 @@ class Configuration():
     """Configuration for the core module"""
     #region ---------------------------------------------------------> Options
     #------------------------------> Name & Title
-    nUtil:str = 'Correlation Analysis'                                          # Name of the Utility
-    nwRes:str = 'CorrAPlot'                                                     # Name of the Result Window
-    nTab:str  = 'Tab Correlation AnalysisA'                                     # Name for the Tab
-    nPane:str = 'Pane Correlation Analysis'                                     # Name for Conf Pane
+    nwRes:str = 'CorrA CorrAPlot'                                               # Name of the Result Window
+    nTab:str  = 'CorrA Tab Correlation Analysis'                                # Name for the Tab
+    nPane:str = 'CorrA Pane Correlation Analysis'                               # Name for Conf Pane
+    tUtil:str = 'Correlation Analysis'                                          # Name of the Utility
     tTab:str  = 'CorrA'                                                         # Title of the Tab
     #------------------------------> Label
-    lmSelCol:str = 'Select Columns'                                             # lm: Label for wx.MenuItem
-    lmAllCol:str = 'All Columns'
+    lmSelCol:str = 'Show Selected Columns'                                      # lm: Label for wx.MenuItem
+    lmAllCol:str = 'Show All Columns'
     #------------------------------> Keywords for Menu
     kwCol:str    = 'ToolCorrA Select Column'
     kwColKey:str = 'col'                                                        # Methods keyword

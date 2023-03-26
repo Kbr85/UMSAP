@@ -246,7 +246,7 @@ class Test_DataPreparation(unittest.TestCase):
     """Test for dataprep.method.DataPreparation"""
     #region -----------------------------------------------------> Class Setup
     @classmethod
-    def setUp(cls):                                                             # pylint: disable=arguments-differ
+    def setUpClass(cls):                                                        # pylint: disable=arguments-differ
         """Set test"""
         cls.df    = cFile.ReadCSV2DF(fileA)
         cls.dict1 = dataMethod.UserData(
@@ -273,7 +273,7 @@ class Test_DataPreparation(unittest.TestCase):
         for a,b,c,d in tInput:
             with self.subTest(f"df={a}, rDO={b}, resetIndex={c}"):
                 #------------------------------>
-                result = dataMethod.DataPreparation(
+                result = dataMethod.RunDataPreparation(
                     df=a, rDO=b, resetIndex=c)[0]['dfS']
                 result = result.round(3)
                 result = result.iloc[range(0,20),:]

@@ -118,8 +118,8 @@ class TarProt(cPane.BaseConfPanelMod2):
     cValSample = 'Independent Samples'
     #------------------------------> Needed by BaseConfPanel
     cURL      = f"{mConfig.core.urlTutorial}/targeted-proteolysis"
-    cSection  = mConfig.tarp.nMod
-    cTitlePD  = f"Running {mConfig.tarp.nMod} Analysis"
+    cSection  = mConfig.tarp.tMod
+    cTitlePD  = f"Running {mConfig.tarp.tMod} Analysis"
     cGaugePD  = 35
     rMainData = '{}_{}-TargetedProteolysis-Data.txt'
     rAnalysisMethod = tarpMethod.TarProt
@@ -327,42 +327,7 @@ class TarProt(cPane.BaseConfPanelMod2):
             -------
             bool
         """
-        #region -------------------------------------------------------->
-        if self.wMethod.wCb.GetValue() == self.cOSampleReq:
-            self.sSbValueWid.Show(self.wSample.wSt)
-            self.sSbValueWid.Show(self.wSample.wCb)
-            self.wSample.wCb.SetValue('')
-        else:
-            self.sSbValueWid.Hide(self.wSample.wSt)
-            self.sSbValueWid.Hide(self.wSample.wCb)
-            self.wSample.wCb.SetValue(self.cValSample)
-        #------------------------------>
-        self.sSizer.Layout()
-        self.SetupScrolling()
-        #endregion ----------------------------------------------------->
-
-        return True
-    #---
-
-    def OnClear(self, event:wx.CommandEvent) -> bool:
-        """Clear all input, including the Imputation options.
-
-            Parameters
-            ----------
-            event: wx.CommandEvent
-                Information about the event.
-
-            Returns
-            -------
-            bool
-        """
-        #region -------------------------------------------------------->
-        super().OnClear(event)
-        #------------------------------>
-        self.OnMethod('fEvent')
-        #endregion ----------------------------------------------------->
-
-        return True
+        return cMethod.OnGUIMethod(self.Method)
     #---
     #endregion ------------------------------------------------> Event Methods
 
@@ -426,6 +391,94 @@ class TarProt(cPane.BaseConfPanelMod2):
             self.wCorrectP.wCb.SetValue(mConfig.tarp.correctP)
             self.wAAPos.wTc.SetValue(mConfig.tarp.aaPos)
             self.wHist.wTc.SetValue(mConfig.tarp.histWind)
+        #endregion ----------------------------------------------------->
+
+        #region --------------------------------------------------------> Test
+        if mConfig.core.development and dataI is None:
+            # pylint: disable=line-too-long
+            import getpass                                                      # pylint: disable=import-outside-toplevel
+            user = getpass.getuser()
+            if mConfig.core.os == "Darwin":
+                self.wUFile.wTc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
+                self.wIFile.wTc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
+                self.wSeqFile.wTc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-seq-both.txt")
+                # self.wSeqFile.tc.SetValue("/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-seq-rec.txt")
+            elif mConfig.core.os == 'Windows':
+                self.wUFile.wTc.SetValue("C:/Users/" + str(user) + "/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap")
+                self.wIFile.wTc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt")
+                self.wSeqFile.wTc.SetValue("C:/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-seq-both.txt")
+            else:
+                pass
+            self.wId.wTc.SetValue('Beta Test Dev')
+            self.wCeroB.wCb.SetValue('Yes')
+            self.wTransMethod.wCb.SetValue('Log2')
+            self.wNormMethod.wCb.SetValue('Median')
+            self.wImputationMethod.wCb.SetValue('Normal Distribution')
+            self.wMethod.wCb.SetValue('t-Test')
+            self.wTargetProt.wTc.SetValue('efeB')
+            self.wScoreVal.wTc.SetValue('200')
+            self.wCorrectP.wCb.SetValue('Holm - Sidak')
+            self.wAAPos.wTc.SetValue('5')
+            self.wHist.wTc.SetValue('25')
+            self.wAlpha.wTc.SetValue('0.05')
+            self.wSeqCol.wTc.SetValue('0')
+            self.wDetectedProt.wTc.SetValue('38')
+            self.wScore.wTc.SetValue('44')
+            self.wTcResults.SetValue('98-105; 109-111; 112 113 114; 115-117 120')
+            self.rLbDict = {
+                0        : ['Exp1', 'Exp2', 'Exp3'],
+                'Control': ['Ctrl'],
+            }
+            self.OnImpMethod('fEvent')
+            self.wShift.wTc.SetValue('1.8')
+            self.wWidth.wTc.SetValue('0.3')
+            self.OnMethod('fEvent')
+            self.wSample.wCb.SetValue('Independent Samples')
+        #endregion -----------------------------------------------------> Test
+
+        return True
+    #---
+
+    def Method(self) -> bool:
+        """Show/Hide Sample type options.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        if self.wMethod.wCb.GetValue() == self.cOSampleReq:
+            self.sSbValueWid.Show(self.wSample.wSt)
+            self.sSbValueWid.Show(self.wSample.wCb)
+            self.wSample.wCb.SetValue('')
+        else:
+            self.sSbValueWid.Hide(self.wSample.wSt)
+            self.sSbValueWid.Hide(self.wSample.wCb)
+            self.wSample.wCb.SetValue(self.cValSample)
+        #------------------------------>
+        self.sSizer.Layout()
+        self.SetupScrolling()
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
+    def Clear(self, event:wx.CommandEvent) -> bool:
+        """Clear all input, including the Imputation options.
+
+            Parameters
+            ----------
+            event: wx.CommandEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        super().Clear(event)
+        #------------------------------>
+        self.Method()
         #endregion ----------------------------------------------------->
 
         return True
@@ -790,7 +843,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Class methods
-    def OnCreate(self, event:wx.CommandEvent) -> bool:
+    def Create(self) -> bool:
         """Create the fields in the white panel.
 
             Parameters
@@ -900,21 +953,6 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         #endregion -----------------------------------------------> Set scroll
 
         return True
-    #---
-
-    def OnOK(self, export:bool=True) -> bool:
-        """Check wx.Dialog content and send values to topParent.
-
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> Super
-        if super().OnOK()[0]:
-            return True
-        #------------------------------>
-        return False
-        #endregion ------------------------------------------------> Super
     #---
     #endregion ------------------------------------------------> Class methods
 #---

@@ -21,6 +21,7 @@ from typing  import Union, Optional
 import wx
 
 from config.config import config as mConfig
+from core import method    as cMethod
 from core import pane      as cPane
 from core import widget    as cWidget
 from core import validator as cValidator
@@ -92,7 +93,7 @@ class CorrA(cPane.BaseConfPanel):
     #------------------------------> Needed by BaseConfPanel
     cName           = mConfig.corr.nPane
     cURL            = f'{mConfig.core.urlTutorial}/correlation-analysis'
-    cSection        = mConfig.corr.nUtil
+    cSection        = mConfig.corr.tUtil
     cTitlePD        = 'Calculating Correlation Coefficients'
     cGaugePD        = 20
     cTTHelp         = mConfig.core.ttBtnHelp.format(cURL)
@@ -245,9 +246,7 @@ class CorrA(cPane.BaseConfPanel):
             -------
             bool
         """
-        self.wLCtrlI.OnCopy('fEvent')
-        self.wLCtrlO.OnPaste('fEvent')
-        return True
+        return cMethod.OnGUIMethod(self.Add)
     #---
     #endregion ------------------------------------------------> Event Methods
 
@@ -304,6 +303,41 @@ class CorrA(cPane.BaseConfPanel):
             self.wCorrMethod.wCb.SetValue(mConfig.corr.corrMethod)
         #endregion -----------------------------------------------------> Add
 
+        #region --------------------------------------------------------> Test
+        if mConfig.core.development and dataI is None:
+            import getpass                                                      # pylint: disable=import-outside-toplevel
+            user = getpass.getuser()
+            if mConfig.core.os == "Darwin":
+                self.wUFile.wTc.SetValue("/Users/" + str(user) + "/TEMP-GUI/BORRAR-UMSAP/umsap-dev.umsap")
+                fDataTemp = "/Users/" + str(user) + "/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt"
+                self.wIFile.wTc.SetValue(fDataTemp)
+                self.IFileEnter(fDataTemp)
+            elif mConfig.core.os == 'Windows':
+                self.wUFile.wTc.SetValue(str(Path('C:/Users/bravo/Desktop/SharedFolders/BORRAR-UMSAP/umsap-dev.umsap')))
+                self.wIFile.wTc.SetValue(str(Path(f'C:/Users/{user}/Dropbox/SOFTWARE-DEVELOPMENT/APPS/UMSAP/LOCAL/DATA/UMSAP-TEST-DATA/TARPROT/tarprot-data-file.txt')))
+            self.wId.wTc.SetValue("Beta Version Dev")
+            self.wCeroB.wCb.SetValue("Yes")
+            self.wTransMethod.wCb.SetValue("Log2")
+            self.wNormMethod.wCb.SetValue("Median")
+            self.wImputationMethod.wCb.SetValue("Normal Distribution")
+            self.OnImpMethod('fEvent')
+            self.wShift.wTc.SetValue('1.8')
+            self.wWidth.wTc.SetValue('0.3')
+            self.wCorrMethod.wCb.SetValue("Pearson")
+        #endregion -----------------------------------------------------> Test
+
+        return True
+    #---
+
+    def Add(self) -> bool:
+        """Add columns to analyze using the button.
+
+            Returns
+            -------
+            bool
+        """
+        self.wLCtrlI.Copy()
+        self.wLCtrlO.Paste()
         return True
     #---
     #endregion ------------------------------------------------> Class Methods

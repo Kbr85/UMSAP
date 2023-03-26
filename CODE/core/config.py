@@ -47,22 +47,22 @@ class Configuration():
     #------------------------------> General Options
     cwd:Path         = Path(__file__)                                           # Config file path
     dictVersion:dict = field(default_factory=lambda: {                          # To write into output files
-        'Version': '2.3.0',
+        'Version': '2.3.1 (beta)',
     })
     dtFormat:str     = '%Y%m%d-%H%M%S'                                          # Date Time format
     fConfig:Path     = Path.home() / '.umsap_config.json'                       # Path to user configuration file
     os:str           = platform.system()                                        # Current operating system
     software:str     = 'UMSAP'                                                  # Software short name
     softwareF:str    = 'Utilities for Mass Spectrometry Analysis of Proteins'   # Software full name
-    version:str      = '2.3.0'                                                  # String to write in the output files
+    version:str      = '2.3.1 (beta)'                                           # String to write in the output files
     winNumber:dict   = field(default_factory=lambda: {})                        # Keys: Windows ID - Values: Total number of opened windows, except conf win
     #------------------------------> Name & Title
-    ndResCtrlExp:str      = 'Name Dialog Results & Control Experiments'         # Unique name for wx, not shown to user
-    npDef:str             = 'Name Pane Default'
-    npLCtrlSearchPlot:str = 'Name Pane ListCtrl Search Plot'
-    npNPlot:str           = 'Name Pane NPlot'
-    ntDef:str             = 'Name Tab Default'
-    nwDef:str             = 'Name Window Default'
+    ndResCtrlExp:str      = 'Core Results & Control Experiments'                # Unique name for wx, not shown to user
+    npDef:str             = 'Core Default'
+    npLCtrlSearchPlot:str = 'Core ListCtrl Search Plot'
+    npNPlot:str           = 'Core NPlot'
+    ntDef:str             = 'Core Tab Default'
+    nwDef:str             = 'Core Window Default'
     tpConf:str            = 'Configuration Options'                             # Titles, shown to user
     tpList:str            = 'Data File Content'
     ttDef:str             = 'Tab'
@@ -117,6 +117,8 @@ class Configuration():
     kwMain:str         = 'Main'
     kwSec:str          = 'Sec'
     kwPCorrected:str   = 'corrP'
+    kwPubErrorU:str    = 'pub.core.errorU'                                      # PubSub topic
+    kwPubLoadUmsap:str = 'pub.core.loadUmsap'
     #------------------------------> Sizes
     sLCtrlColI:list[int] = field(default_factory=lambda: [50, 150])             # Size for # Name columns in a wx.ListCtrl
     sTc:tuple[int,int]         = (50, 22)                                       # wx.TextCtrl
@@ -217,6 +219,7 @@ class Configuration():
     mColNumbers:str         = ('In addition, each value must be smaller than '
                                'the total number of columns in the Data file.')
     mCopyFailedW:str        = 'Copy operation failed. Try again.'
+    mCutFailedW:str         = 'Cut operation failed. Try again.'
     mCtrlEmpty:str          = 'None of the Control fields can be empty.'
     mEmpty:str              = 'The field value cannot be empty.'
     mFileBad:str            = "File: '{}'\ncannot be used as {} file."
@@ -266,6 +269,8 @@ class Configuration():
     mValueBad:str           = "Value '{}' cannot be accepted in {}.\n"
     mNoPCorr:str            = ('This analysis does not contain information '
                                'about corrected P values.')
+    mClearError:str         = ('It was not possible to clear the content of '
+                               'some or all the widgets.')
     #-->
     mOneRPlusNum:str    = f'{mValueBad}{mOneRPlusNumText}'
     mNZPlusNum:str      = f'{mValueBad}{mNZPlusNumText}'

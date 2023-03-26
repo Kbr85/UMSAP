@@ -79,7 +79,7 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
     """
     #region -----------------------------------------------------> Class setup
     cName    = mConfig.corr.nwRes
-    cSection = mConfig.corr.nUtil
+    cSection = mConfig.corr.tUtil
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -89,16 +89,13 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         self.rObj:'resFile.UMSAPFile'   = parent.rObj                           # UMSAP object
         self.rData:cMethod.BaseAnalysis = self.rObj.dConfigure[self.cSection]() # Data for CorrA in file
         #------------------------------> Check there is something to plot
-        try:
-            self.ReportPlotDataError()
-        except ValueError as e:
-            raise ValueError from e
+        self.ReportPlotDataError()                                              # Raise exception if nothing to plot
         #------------------------------>
         self.rDate, menuData = self.SetDateMenuDate()                           # List of ID and data for Tool menu
         self.rDateC:str = self.rDate[0]                                         # Currently selected date
         self.rDataC:corrMethod.CorrAnalysis = getattr(self.rData, self.rDateC)  # Data for currently selected date
-        self.rBar:bool = False                                                  # Show Color Bar (T)
-        self.rCol:bool = True                                                   # Show Column numbers (T) or names (F)
+        self.rBar:bool = mConfig.corr.showBar                                   # Show Color Bar (T)
+        self.rCol:bool = True if mConfig.corr.axisLabel == 'Names' else False   # Show Column numbers (F) or names (T)
         self.rNorm = mpl.colors.Normalize(vmin=-1, vmax=1)                      # Color Bar color
         self.rCmap = cMethod.MatplotLibCmap(                                    # Color map for corr coefficients
             N   = mConfig.corr.CMAP['N'],
@@ -125,19 +122,6 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
         #region --------------------------------> Menu & Configuration Options
         self.mBar = mMenu.MenuBarTool(self.cName, menuData=menuData)
         self.SetMenuBar(self.mBar)
-        #------------------------------> Configuration
-        if mConfig.corr.axisLabel == 'Numbers':
-            menu = self.mBar.GetMenu(self.mBar.FindMenu('Tools'))
-            col  = menu.FindItemById(menu.FindItem('Column Names'))
-            col.Check(check=False)
-            #------------------------------>
-            self.rCol = False
-        if mConfig.corr.showBar:
-            menu = self.mBar.GetMenu(self.mBar.FindMenu('Tools'))
-            barM  = menu.FindItemById(menu.FindItem('Show ColorBar'))
-            barM.Check(check=True)
-            #------------------------------>
-            self.rBar = True
         #endregion -----------------------------> Menu & Configuration Options
 
         #region ----------------------------------------------------> Position
@@ -149,8 +133,110 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
     #---
     #endregion -----------------------------------------------> Instance setup
 
-    #region ---------------------------------------------------> Event Methods
-    def OnUpdateStatusBar(self, event) -> bool:
+    #region ---------------------------------------------------> Class Methods
+    def WinPos(self) -> bool:
+        """Set the position on the screen and adjust the total number of
+            shown windows.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------------> Super
+        info = super().WinPos()
+        #endregion -----------------------------------------------------> Super
+
+        #region ------------------------------------------------> Set Position
+        self.SetPosition(pt=(
+            info['D']['w'] - (info['W']['N']*self.cSDeltaWin + info['W']['w']),
+            info['D']['yo'] + info['W']['N']*self.cSDeltaWin,
+        ))
+        #endregion ---------------------------------------------> Set Position
+
+        return True
+    #---
+
+    def SelectColumn(self, showAllCol:str) -> bool:
+        """Plot only selected columns.
+
+            Parameters
+            ----------
+            showAllCol: str
+                Show all columns or select columns to show.
+
+            Returns
+            -------
+            bool
+        """
+        #region ---------------------------------------------------> All
+        if showAllCol == mConfig.corr.lmAllCol:
+            self.SetColDetails()
+            self.Plot()
+            return True
+        #endregion ------------------------------------------------> All
+
+        #region -----------------------------------------------------> Options
+        allCol = []
+        #------------------------------>
+        for k,c in enumerate(self.rDataC.df.columns):
+            allCol.append([str(self.rDataC.numColList[k]), c])
+        #------------------------------>
+        selCol = []
+        for c in self.rSelColIdx:
+            selCol.append([str(self.rDataC.numColList[c]), self.rDataC.df.columns[c]])
+        #endregion --------------------------------------------------> Options
+
+        #region -------------------------------------------------> Get New Sel
+        #------------------------------> Create the window
+        dlg = cWindow.ListSelect(
+            allCol,
+            mConfig.core.lLCtrlColNameI,
+            mConfig.core.sLCtrlColI,
+            tSelOptions= selCol,
+            title      = 'Select the columns to show in the correlation plot',
+            tBtnLabel  = 'Add selection',
+            tStLabel   = ['Columns in the current results', 'Selected columns'],
+        )
+        #------------------------------> Get the selected values
+        if dlg.ShowModal():
+            self.rSelColNum  = [int(x) for x in dlg.wLCtrlO.GetColContent(0)]
+            self.rSelColIdx  = []
+            self.rSelColName = []
+            #------------------------------>
+            for k in self.rSelColNum:
+                tIDX = self.rDataC.numColList.index(k)
+                #------------------------------>
+                self.rSelColIdx.append(tIDX)
+                self.rSelColName.append(str(self.rDataC.df.columns[tIDX]))
+            #------------------------------>
+            self.Plot()
+        else:
+            dlg.Destroy()
+            return False
+        #endregion ----------------------------------------------> Get New Sel
+
+        dlg.Destroy()
+        return True
+    #---
+
+    def SetColDetails(self) -> bool:
+        """"Set the values of self.rSelColX to its default values, all values
+            in the analysis.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        self.rSelColName = self.rDataC.df.columns.values.tolist()
+        self.rSelColNum  = self.rDataC.numColList
+        self.rSelColIdx  = [x for x,_ in enumerate(self.rSelColNum)]
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
+    def UpdateStatusBar(self, event) -> bool:
         """Update the statusbar info.
 
             Parameters
@@ -191,49 +277,8 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
 
         return True
     #---
-    #endregion ------------------------------------------------> Event Methods
 
-    #region --------------------------------------------------> Manage Methods
-    def WinPos(self) -> bool:
-        """Set the position on the screen and adjust the total number of
-            shown windows.
-
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------------> Super
-        info = super().WinPos()
-        #endregion -----------------------------------------------------> Super
-
-        #region ------------------------------------------------> Set Position
-        self.SetPosition(pt=(
-            info['D']['w'] - (info['W']['N']*self.cSDeltaWin + info['W']['w']),
-            info['D']['yo'] + info['W']['N']*self.cSDeltaWin,
-        ))
-        #endregion ---------------------------------------------> Set Position
-
-        return True
-    #---
-
-    def SetColDetails(self) -> bool:
-        """"Set the values of self.rSelColX to its default values, all values
-            in the analysis.
-
-            Returns
-            -------
-            bool
-        """
-        #region -------------------------------------------------------->
-        self.rSelColName = self.rDataC.df.columns.values.tolist()
-        self.rSelColNum  = self.rDataC.numColList
-        self.rSelColIdx  = [x for x,_ in enumerate(self.rSelColNum)]
-        #endregion ----------------------------------------------------->
-
-        return True
-    #---
-
-    def UpdateResultWindow(
+    def UpdateResultWindow(                                                     # pylint: disable=arguments-differ
         self,
         tDate:str          = '',
         col:Optional[bool] = None,
@@ -368,66 +413,6 @@ class ResCorrA(cWindow.BaseWindowResultOnePlot):
 
         return True
     #---
-
-    def SelectColumn(self, showAllCol:str) -> bool:
-        """Plot only selected columns.
-
-            Parameters
-            ----------
-            showAllCol: str
-                Show all columns or select columns to show.
-
-            Returns
-            -------
-            bool
-        """
-        #region ---------------------------------------------------> All
-        if showAllCol == mConfig.corr.lmAllCol:
-            self.SetColDetails()
-            self.Plot()
-            return True
-        #endregion ------------------------------------------------> All
-
-        #region -----------------------------------------------------> Options
-        allCol = []
-        #------------------------------>
-        for k,c in enumerate(self.rDataC.df.columns):
-            allCol.append([str(self.rDataC.numColList[k]), c])
-        #------------------------------>
-        selCol = []
-        for c in self.rSelColIdx:
-            selCol.append([str(self.rDataC.numColList[c]), self.rDataC.df.columns[c]])
-        #endregion --------------------------------------------------> Options
-
-        #region -------------------------------------------------> Get New Sel
-        #------------------------------> Create the window
-        dlg = cWindow.ListSelect(
-            allCol,
-            mConfig.core.lLCtrlColNameI,
-            mConfig.core.sLCtrlColI,
-            tSelOptions = selCol,
-            title       = 'Select the columns to show in the correlation plot',
-            tBtnLabel   = 'Add selection',
-            tStLabel = ['Columns in the current results', 'Selected columns'],
-        )
-        #------------------------------> Get the selected values
-        if dlg.ShowModal():
-            self.rSelColNum  = [int(x) for x in dlg.wLCtrlO.GetColContent(0)]
-            self.rSelColIdx  = []
-            self.rSelColName = []
-            #------------------------------>
-            for k in self.rSelColNum:
-                tIDX = self.rDataC.numColList.index(k)
-                #------------------------------>
-                self.rSelColIdx.append(tIDX)
-                self.rSelColName.append(str(self.rDataC.df.columns[tIDX]))
-            #------------------------------>
-            self.Plot()
-        #endregion ----------------------------------------------> Get New Sel
-
-        dlg.Destroy()
-        return True
-    #---
-    #endregion -----------------------------------------------> Manage Methods
+    #endregion ------------------------------------------------> Class Methods
 #---
 #endregion ----------------------------------------------------------> Classes

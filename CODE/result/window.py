@@ -17,7 +17,7 @@
 #region -------------------------------------------------------------> Imports
 import shutil
 from pathlib import Path
-from typing  import Optional, Union
+from typing  import Optional
 
 import wx
 import wx.lib.agw.customtreectrl as wxCT
@@ -77,22 +77,22 @@ class UMSAPControl(cWindow.BaseWindow):
     cFileLabelCheck = ['Data']
     #------------------------------>
     dPlotMethod = {                                                             # Methods to create plot windows
-        mConfig.corr.nUtil: corrWindow.ResCorrA,
-        mConfig.data.nUtil: dataWindow.ResDataPrep,
-        mConfig.prot.nMod : protWindow.ResProtProf,
-        mConfig.limp.nMod : limpWindow.ResLimProt,
-        mConfig.tarp.nMod : tarpWindow.ResTarProt,
+        mConfig.corr.tUtil: corrWindow.ResCorrA,
+        mConfig.data.tUtil: dataWindow.ResDataPrep,
+        mConfig.prot.tMod : protWindow.ResProtProf,
+        mConfig.limp.tMod : limpWindow.ResLimProt,
+        mConfig.tarp.tMod : tarpWindow.ResTarProt,
     }
     #------------------------------>
     dSectionTab = {                                                             # Section name and Tab name correlation
-        mConfig.corr.nUtil: mConfig.corr.nTab,
-        mConfig.data.nUtil: mConfig.data.nTab,
-        mConfig.prot.nMod : mConfig.prot.nTab,
-        mConfig.limp.nMod : mConfig.limp.nTab,
-        mConfig.tarp.nMod : mConfig.tarp.nTab,
+        mConfig.corr.tUtil: mConfig.corr.nTab,
+        mConfig.data.tUtil: mConfig.data.nTab,
+        mConfig.prot.tMod : mConfig.prot.nTab,
+        mConfig.limp.tMod : mConfig.limp.nTab,
+        mConfig.tarp.tMod : mConfig.tarp.nTab,
     }
     #------------------------------>
-    cLSecSeqF = [mConfig.limp.nMod, mConfig.tarp.nMod]
+    cLSecSeqF = [mConfig.limp.tMod, mConfig.tarp.tMod]
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -161,27 +161,27 @@ class UMSAPControl(cWindow.BaseWindow):
             -------
             bool
         """
-        #region -------------------------------------------------------> DateI
-        dateI   = event.GetItem()
-        section = dateI.GetParent().GetText()
-        #endregion ----------------------------------------------------> DateI
-
-        #region -------------------------------------------------------> DataI
-        dataI = self.rObj.GetDataUser(section, dateI.GetText())                 # type: ignore
-        #endregion ----------------------------------------------------> DataI
-
-        #region --------------------------------------------------> Create Tab
-        #------------------------------>
-        if mConfig.main.mainWin is None:
-            mConfig.main.mainWin = mWindow.WindowMain()
-        #------------------------------>
-        mConfig.main.mainWin.CreateTab(self.dSectionTab[section], dataI)
-        #endregion -----------------------------------------------> Create Tab
-
-        return True
+        return cMethod.OnGUIMethod(self.HyperLink, event)
     #---
 
     def OnCheckItem(self, event:wxCT.TreeEvent) -> bool:
+        """Show window when section is checked.
+
+            Parameters
+            ----------
+            event: wxCT.TreeEvent
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.CheckItem, event)
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
+    #region ---------------------------------------------------> Class Methods
+    def CheckItem(self, event:wxCT.TreeEvent) -> bool:
         """Show window when section is checked.
 
             Parameters
@@ -212,48 +212,47 @@ class UMSAPControl(cWindow.BaseWindow):
         #endregion -------------------------------------------> Destroy window
 
         #region -----------------------------------------------> Create window
-        try:
-            self.rWindow[section] = {'Main':[], 'FA':[]}
-            self.rWindow[section]['Main'].append(
-                self.dPlotMethod[section](self))
-        except Exception as e:
-            cWindow.Notification('errorU', msg=str(e), tException=e)
-            return False
+        self.rWindow[section] = {'Main':[], 'FA':[]}
+        self.rWindow[section]['Main'].append(
+            self.dPlotMethod[section](self))
         #endregion --------------------------------------------> Create window
 
         event.Skip()
         return True
     #---
 
-    def OnClose(self, event:Union[wx.CloseEvent, str]) -> bool:
-        """Destroy window and remove reference from config.umsapW.
+    def HyperLink(self, event:wxCT.TreeEvent) -> bool:
+        """Setup analysis.
 
             Parameters
             ----------
-            event: wx.Event
+            event: wxCT.TreeEvent
                 Information about the event.
 
             Returns
             -------
             bool
         """
-        #region -----------------------------------> Update list of open files
-        del mConfig.res.winUMSAP[self.rObj.rFileP]
-        #endregion --------------------------------> Update list of open files
+        #region -------------------------------------------------------> DateI
+        dateI   = event.GetItem()
+        section = dateI.GetParent().GetText()
+        #endregion ----------------------------------------------------> DateI
 
-        #region ------------------------------------> Reduce number of windows
-        mConfig.core.winNumber[self.cName] -= 1
-        #endregion ---------------------------------> Reduce number of windows
+        #region -------------------------------------------------------> DataI
+        dataI = self.rObj.GetDataUser(section, dateI.GetText())                 # type: ignore
+        #endregion ----------------------------------------------------> DataI
 
-        #region -----------------------------------------------------> Destroy
-        self.Destroy()
-        #endregion --------------------------------------------------> Destroy
+        #region --------------------------------------------------> Create Tab
+        #------------------------------>
+        if mConfig.main.mainWin is None:
+            mConfig.main.mainWin = mWindow.WindowMain()
+        #------------------------------>
+        mConfig.main.mainWin.CreateTab(self.dSectionTab[section], dataI)
+        #endregion -----------------------------------------------> Create Tab
 
         return True
     #---
-    #endregion ------------------------------------------------> Event Methods
 
-    #region ---------------------------------------------------> Class Methods
     def AddDelExport(self, mode:str) -> bool:
         """Set variables to start the Add/Del/Export method.
 
@@ -287,11 +286,7 @@ class UMSAPControl(cWindow.BaseWindow):
                     cWindow.Notification('warning', msg=msg)
                     return False
                 #------------------------------>
-                try:
-                    objAdd = resFile.UMSAPFile(fileP)
-                except Exception as e:
-                    cWindow.Notification('errorF', tException=e)
-                    return False
+                objAdd = resFile.UMSAPFile(fileP)
             else:
                 dlg.Destroy()
                 return False
@@ -313,6 +308,68 @@ class UMSAPControl(cWindow.BaseWindow):
         #region --------------------------------------------------->
         return self.dKeyMethod[mode](selItem, objAdd)                           # type: ignore
         #endregion ------------------------------------------------>
+    #---
+
+    def UpdateFileContent(self) -> bool:
+        """Update the content of the file.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        tSectionChecked = self.GetCheckedSection()
+        #endregion ------------------------------------------------>
+
+        #region ---------------------------------------------------> Read file
+        self.rObj = resFile.UMSAPFile(self.rObj.rFileP)
+        #endregion ------------------------------------------------> Read file
+
+        #region --------------------------------------------------->
+        self.rSection = {}
+        #------------------------------>
+        self.wTrc.DeleteAllItems()
+        #------------------------------>
+        self.SetTree()
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------->
+        for s in tSectionChecked:
+            if self.rSection.get(s, False):
+                #------------------------------> Check
+                self.wTrc.SetItem3StateValue(
+                    self.rSection[s], wx.CHK_CHECKED)
+                #------------------------------> Win Menu
+                if (win := self.rWindow[s].get('Main', False)):
+                    for w in win:
+                        w.UpdateUMSAPData()
+            else:
+                [x.Destroy() for v in self.rWindow[s].values() for x in v]      # pylint: disable=expression-not-assigned
+        #endregion ------------------------------------------------>
+
+        return True
+    #---
+
+    def Close(self) -> bool:
+        """Destroy window and remove reference from config.umsapW.
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------> Update list of open files
+        del mConfig.res.winUMSAP[self.rObj.rFileP]
+        #endregion --------------------------------> Update list of open files
+
+        #region ------------------------------------> Reduce number of windows
+        mConfig.core.winNumber[self.cName] -= 1
+        #endregion ---------------------------------> Reduce number of windows
+
+        #region -----------------------------------------------------> Destroy
+        self.Destroy()
+        #endregion --------------------------------------------------> Destroy
+
+        return True
     #---
 
     def AddAnalysis(self, selItems:dict, objAdd:resFile.UMSAPFile) -> bool:
@@ -551,7 +608,7 @@ class UMSAPControl(cWindow.BaseWindow):
             except OSError:
                 pass
             #------------------------------>
-            self.OnClose('fEvent')
+            self.Close()
             return True
         #endregion ------------------------------------------------> Sections
 
@@ -694,50 +751,7 @@ class UMSAPControl(cWindow.BaseWindow):
         return True
         #endregion -----------------------------------------------> Update GUI
     #---
-
-    def UpdateFileContent(self) -> bool:
-        """Update the content of the file.
-
-            Returns
-            -------
-            bool
-        """
-        #region --------------------------------------------------->
-        tSectionChecked = self.GetCheckedSection()
-        #endregion ------------------------------------------------>
-
-        #region ---------------------------------------------------> Read file
-        try:
-            self.rObj = resFile.UMSAPFile(self.rObj.rFileP)
-        except Exception as e:
-            raise e
-        #endregion ------------------------------------------------> Read file
-
-        #region --------------------------------------------------->
-        self.rSection = {}
-        #------------------------------>
-        self.wTrc.DeleteAllItems()
-        #------------------------------>
-        self.SetTree()
-        #endregion ------------------------------------------------>
-
-        #region --------------------------------------------------->
-        for s in tSectionChecked:
-            if self.rSection.get(s, False):
-                #------------------------------> Check
-                self.wTrc.SetItem3StateValue(
-                    self.rSection[s], wx.CHK_CHECKED)
-                #------------------------------> Win Menu
-                if (win := self.rWindow[s].get('Main', False)):
-                    for w in win:
-                        w.UpdateUMSAPData()
-            else:
-                [x.Destroy() for v in self.rWindow[s].values() for x in v]      # pylint: disable=expression-not-assigned
-        #endregion ------------------------------------------------>
-
-        return True
-    #---
-    #endregion -----------------------------------------------> Manage Methods
+    #endregion ------------------------------------------------> Class Methods
 
     #region -----------------------------------------------------> Get Methods
     def GetCheckedSection(self) -> list[str]:
@@ -843,7 +857,7 @@ class UMSAPAddDelExport(cWindow.BaseDialogOkCancel):
     }
     cFAList = mConfig.tarp.faID                                                 # List of FA IDs in UMSAP file
     cFADict = {                                                                 # Key are section names & values List of FA IDs in UMSAP file
-        mConfig.tarp.nMod: mConfig.tarp.faID,
+        mConfig.tarp.tMod: mConfig.tarp.faID,
     }
     #endregion --------------------------------------------------> Class setup
 
@@ -854,7 +868,7 @@ class UMSAPAddDelExport(cWindow.BaseDialogOkCancel):
         self.rObj  = obj
         self.rMode = mode
         #------------------------------>
-        self.cLBtn = self.cLBtnOpt[mode]
+        self.cLBtn  = self.cLBtnOpt[mode]
         self.cTitle = f'{self.cLBtn} data from: {self.rObj.rFileP.name}'
         #------------------------------>
         super().__init__(title=self.cTitle, parent=None)
@@ -888,6 +902,23 @@ class UMSAPAddDelExport(cWindow.BaseDialogOkCancel):
 
     #region ---------------------------------------------------> Event Methods
     def OnCheckItem(self, event:wx.Event) -> bool:
+        """Adjust checked items.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.CheckItem, event)
+    #---
+    #endregion ------------------------------------------------> Event Methods
+
+    #region ---------------------------------------------------> Class Methods
+    def CheckItem(self, event:wx.Event) -> bool:
         """Adjust checked items.
 
             Parameters
@@ -937,13 +968,55 @@ class UMSAPAddDelExport(cWindow.BaseDialogOkCancel):
         return True
     #---
 
-    def OnOK(self, event:wx.CommandEvent) -> bool:
-        """Check Dialog input.
+    def SetTree(self) -> bool:
+        """Set the elements of the wx.TreeCtrl.
 
-            Parameters
-            ----------
-            event: wx.Event
-                Information about the event.
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            See data.file.UMSAPFile for the structure of obj.confTree.
+        """
+        #region ----------------------------------------------------> Add root
+        root = self.wTrc.AddRoot(self.rObj.rFileP.name, ct_type=1)
+        #endregion -------------------------------------------------> Add root
+
+        #region ------------------------------------------------> Add elements
+        for a, b in self.rObj.rData.items():                                    # Add section node
+            childa = self.wTrc.AppendItem(root, a, ct_type=1)
+            for c, d in b.items():                                              # Add date node
+                childb = self.wTrc.AppendItem(childa, c, ct_type=1)
+                #------------------------------>
+                z = self.rMode == mConfig.res.lmToolDel
+                y = any(x in self.cFAList for x in d.keys())
+                if z and y:                                                     # Further Analysis only for Deleting
+                    for x in self.cFADict[a]:
+                        for e in d[x].keys():
+                            self.wTrc.AppendItem(childb, f'{x} - {e}', ct_type=1, data=1)
+                #------------------------------>
+                if a in self.cFADict and z:
+                    childc = self.wTrc.AppendItem(childb, 'Analysis Details')
+                else:
+                    childc = childb
+                #------------------------------>
+                for g, h in d['I'].items():                                     # Add Analysis Details
+                    child = self.wTrc.AppendItem(childc, f"{g}: {h}")
+                    self.wTrc.SetItemFont(
+                        child, mConfig.core.fTreeItemDataFile)
+        #endregion ---------------------------------------------> Add elements
+
+        #region -------------------------------------------------> Expand root
+        self.wTrc.Expand(root)
+        [child.Expand() for child in root.GetChildren()]                        # pylint: disable=expression-not-assigned
+        #endregion ----------------------------------------------> Expand root
+
+        return True
+    #---
+
+    def OK(self) -> bool:
+        """Check Dialog input.
 
             Returns
             -------
@@ -994,55 +1067,6 @@ class UMSAPAddDelExport(cWindow.BaseDialogOkCancel):
         self.EndModal(1)
         self.Close()
         #endregion ------------------------------------------------>
-
-        return True
-    #---
-    #endregion ------------------------------------------------> Event Methods
-
-    #region ---------------------------------------------------> Class Methods
-    def SetTree(self) -> bool:
-        """Set the elements of the wx.TreeCtrl.
-
-            Returns
-            -------
-            bool
-
-            Notes
-            -----
-            See data.file.UMSAPFile for the structure of obj.confTree.
-        """
-        #region ----------------------------------------------------> Add root
-        root = self.wTrc.AddRoot(self.rObj.rFileP.name, ct_type=1)
-        #endregion -------------------------------------------------> Add root
-
-        #region ------------------------------------------------> Add elements
-        for a, b in self.rObj.rData.items():                                    # Add section node
-            childa = self.wTrc.AppendItem(root, a, ct_type=1)
-            for c, d in b.items():                                              # Add date node
-                childb = self.wTrc.AppendItem(childa, c, ct_type=1)
-                #------------------------------>
-                z = self.rMode == mConfig.res.lmToolDel
-                y = any(x in self.cFAList for x in d.keys())
-                if z and y:                                                     # Further Analysis only for Deleting
-                    for x in self.cFADict[a]:
-                        for e in d[x].keys():
-                            self.wTrc.AppendItem(childb, f'{x} - {e}', ct_type=1, data=1)
-                #------------------------------>
-                if a in self.cFADict and z:
-                    childc = self.wTrc.AppendItem(childb, 'Analysis Details')
-                else:
-                    childc = childb
-                #------------------------------>
-                for g, h in d['I'].items():                                     # Add Analysis Details
-                    child = self.wTrc.AppendItem(childc, f"{g}: {h}")
-                    self.wTrc.SetItemFont(
-                        child, mConfig.core.fTreeItemDataFile)
-        #endregion ---------------------------------------------> Add elements
-
-        #region -------------------------------------------------> Expand root
-        self.wTrc.Expand(root)
-        [child.Expand() for child in root.GetChildren()]                        # pylint: disable=expression-not-assigned
-        #endregion ----------------------------------------------> Expand root
 
         return True
     #---

@@ -79,7 +79,7 @@ def ReadCSV2DF(
         dataframe:
             Pandas dataframe with the data.
     """
-    # No test
+    # Test in test.unit.core.test_file.Test_ReadCSV2DF
     #region -------------------------------------------------------> Read file
     return pd.read_csv(
         str(fileP), sep=sep, index_col=index_col, header=header)
@@ -626,8 +626,8 @@ class PDBFile():
             for l in file:
                 if l[0:4] == 'ATOM':
                     lo = []
-                    lo.append(l[ 0: 6].strip())
-                    lo.append(int(l[ 6:11].strip()))
+                    lo.append(l[0:6].strip())
+                    lo.append(int(l[6:11].strip()))
                     lo.append(l[12:16].strip())
                     lo.append(l[16].strip())
                     lo.append(l[17:20].strip())

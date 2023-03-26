@@ -32,14 +32,15 @@ fileA  = folder / 'fasta-tarprot-seq-both.txt'
 class Test_FastaSequence(unittest.TestCase):
     """Test for core.generator.FastaSequence"""
     #region -----------------------------------------------------> Class Setup
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         """Create class instances"""
-        self.file    = fileA
-        self.header1 = '>sp|P31545|EFEB_ECOLI Recombinant'
-        self.seq1    = ('HHHHHHHHHHHHHHMKKTAIAIAVALAGFATVAQAASWSHPQFEKIEGRRDRG'
+        cls.file    = fileA
+        cls.header1 = '>sp|P31545|EFEB_ECOLI Recombinant'
+        cls.seq1    = ('HHHHHHHHHHHHHHMKKTAIAIAVALAGFATVAQAASWSHPQFEKIEGRRDRG'
                        'QKTQSAPFFALPGVKDANDYFGSALLRVMMMMMMMHHHHHHHHHH')
-        self.header2 = '>sp|P31545|EFEB_ECOLI Native'
-        self.seq2    = ('MKKTAIAIAVALAGFATVAQAASWSHPQFEKIEGRRDRGQKTQSAPFFALPGV'
+        cls.header2 = '>sp|P31545|EFEB_ECOLI Native'
+        cls.seq2    = ('MKKTAIAIAVALAGFATVAQAASWSHPQFEKIEGRRDRGQKTQSAPFFALPGV'
                        'KDANDYFGSALLRVM')
     #---
     #endregion --------------------------------------------------> Class Setup
