@@ -746,7 +746,7 @@ class ResTarProt(cWindow.BaseWindowResultListText2PlotFragments):
         #region ---------------------------------------------------> Run
         dfI = self.rDataC.df
         idx = pd.IndexSlice
-        dfI = dfI.loc[:,idx[['Sequence']+self.rDataC.labelA,['Sequence', 'P']]]          # type: ignore
+        dfI = dfI.loc[:,idx[['Sequence']+self.rDataC.labelA,['Sequence', 'P']]] # type: ignore
         dfO = tarpMethod.R2AA(
             dfI, self.rRecSeqC, self.rDataC.alpha, self.rDataC.protLength[0], pos=pos)
         #endregion ------------------------------------------------> Run
