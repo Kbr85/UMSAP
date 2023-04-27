@@ -140,6 +140,28 @@ class WindowMain(cWindow.BaseWindow):
         return cMethod.OnGUIMethod(self.TabClose)
         #endregion ------------------------------------------------>
     #---
+
+    def OnCreateTab(
+        self,
+        name:str,
+        dataI:Optional[cMethod.BaseUserData]=None,) -> bool:
+        """Create the Tabs from the button in Start.
+
+            Parameters
+            ----------
+            name: str
+                One of the values in section Names of config for tabs
+            dataI: cMethod.BaseUserData or None
+                Data class representation of user input. Default is None.
+
+            Returns
+            -------
+            bool
+        """
+        #region --------------------------------------------------->
+        return cMethod.OnGUIMethod(self.CreateTab, name, dataI=dataI)
+        #endregion ------------------------------------------------>
+    #---
     #endregion ------------------------------------------------> Event Methods
 
     #region ---------------------------------------------------> Class Methods

@@ -15,6 +15,7 @@
 
 
 #region -------------------------------------------------------------> Imports
+import shutil
 from pathlib import Path
 from typing  import Union
 
@@ -108,10 +109,21 @@ class UMSAPFile():
             -------
             bool
         """
+        #region -----------------------------------------------> Security Copy
+        tempF = self.rFileP.with_name('.kbr-temp.umsap')
+        shutil.copy(self.rFileP, tempF)
+        #endregion --------------------------------------------> Security Copy
+
         #region --------------------------------------------------->
         oPath = tPath if tPath is not None else self.rFileP
         #------------------------------>
-        cFile.WriteJSON(oPath, self.rData)
+        try:
+            cFile.WriteJSON(oPath, self.rData)
+        except Exception as e:
+            shutil.copy(tempF, self.rFileP)
+            raise e
+        finally:
+            tempF.unlink()
         #endregion ------------------------------------------------>
 
         return True
