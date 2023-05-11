@@ -217,11 +217,13 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         self.rLog2FC      = float(mConfig.prot.fc)
         self.rColor       = 'Hyperbolic Curve Color'
         self.rLockScale   = mConfig.prot.lock
-        self.rVXRange     = []
+        self.rVXRange     = []                                                  # Axis length
         self.rVYRange     = []
         self.rFcXRange    = []
         self.rFcYRange    = []
-        self.rFcXLabel    = []
+        self.rFcXLabel    = []                                                  # X Label for FC
+        self.rFcYMax      = []                                                  # Max and Min line for FC
+        self.rFcYMin      = []
         self.rProtLine    = []
         self.rFilterList  = []
         self.rLabelProt   = []
@@ -368,7 +370,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #endregion ------------------------------------------------> Check Sel
 
         #region ------------------------------------------------> Volcano Plot
-        self.DrawGreenPoint()
+        self.DrawGreenPoint(draw=True)
         #endregion ---------------------------------------------> Volcano Plot
 
         #region ------------------------------------------------> FC Evolution
@@ -528,8 +530,10 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             #------------------------------>
             df = self.rDataC.df.loc[:,idx[:,c,'FC']]                            # type: ignore
             #------------------------------>
-            ymax.append(df.max().max())
-            ymin.append(df.min().min())
+            tMin, tMax = cStatistic.DataRange(df)
+            #------------------------------>
+            ymax.append(tMax)
+            ymin.append(tMin)
         #endregion ------------------------------------------------> Fill List
 
         return [ymax, ymin]
@@ -580,25 +584,40 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #------------------------------>
         for l in self.rVolLines:
             self.dKeyMethod[l]()                                                # type: ignore
-        #------------------------------> Lock Scale or Set it manually
+        #endregion -----------------------------------------------------> Plot
+
+        #region -------------------------------------> Update selected protein
+        self.DrawGreenPoint(draw=False)
+        #endregion ----------------------------------> Update selected protein
+
+        #region --------------------------------------------------->
+        self.AddProtLabel(draw=False)
+        #endregion ------------------------------------------------>
+
+        #region --------------------------------------------------> Lock Scale
         if self.rVXRange and self.rVYRange:
             self.wPlot.dPlot['Vol'].rAxes.set_xlim(*self.rVXRange)
             self.wPlot.dPlot['Vol'].rAxes.set_ylim(*self.rVYRange)
         else:
-            self.VolXYRange(x.squeeze(), y.squeeze())
-        #------------------------------> Zoom level
-        self.wPlot.dPlot['Vol'].ZoomResetSetValues()
-        #------------------------------> Show
+            if not x.isnull().all(axis=None):
+                #------------------------------> X
+                xRange = cStatistic.DataRange(
+                    x, symm=True, margin=mConfig.core.MatPlotMargin)
+                yRange = cStatistic.DataRange(
+                    y, margin=mConfig.core.MatPlotMargin)
+                #------------------------------> Y
+                self.wPlot.dPlot['Vol'].rAxes.set_xlim(*xRange)
+                self.wPlot.dPlot['Vol'].rAxes.set_ylim(*yRange)
+            else:
+                self.wPlot.dPlot['Vol'].rAxes.set_xlim(-1, 1)
+                self.wPlot.dPlot['Vol'].rAxes.set_ylim(0, 1)
+        #endregion -----------------------------------------------> Lock Scale
+
+        #region --------------------------------------------------------> Last
         self.wPlot.dPlot['Vol'].rCanvas.draw()
-        #endregion -----------------------------------------------------> Plot
-
-        #region -------------------------------------> Update selected protein
-        self.DrawGreenPoint()
-        #endregion ----------------------------------> Update selected protein
-
-        #region --------------------------------------------------->
-        self.AddProtLabel()
-        #endregion ------------------------------------------------>
+        #------------------------------>
+        self.wPlot.dPlot['Vol'].ZoomResetSetValues()
+        #endregion -----------------------------------------------------> Last
 
         return True
     #---
@@ -625,9 +644,14 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         return True
     #---
 
-    def DrawGreenPoint(self) -> bool:
+    def DrawGreenPoint(self, draw:bool=False) -> bool:
         """Draw the green dot in the Volcano plot after selecting a protein in
             the wx.ListCtrl.
+
+            Parameters
+            ----------
+            draw: bool
+                Update canvas. Default is False.
 
             Returns
             -------
@@ -665,13 +689,14 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             color     = self.rCVolSel,
         )
         #------------------------------> Draw
-        self.wPlot.dPlot['Vol'].rCanvas.draw()
+        if draw:
+            self.wPlot.dPlot['Vol'].rCanvas.draw()
         #endregion ---------------------------------------------> Volcano Plot
 
         return True
     #---
 
-    def AddProtLabel(self, draw:bool=False, checkKey:bool=False) -> bool:
+    def AddProtLabel(self, draw:bool=True, checkKey:bool=False) -> bool:
         """Add the protein label in the Volcano plot.
 
             Parameters
@@ -689,6 +714,8 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         if not self.rLabelProt:
             if draw:
                 self.wPlot.dPlot['Vol'].rCanvas.draw()
+                #------------------------------>
+                self.wPlot.dPlot['Vol'].ZoomResetSetValues()
             #------------------------------>
             return True
         #endregion ------------------------------------------------>
@@ -731,7 +758,10 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
                 self.rLabelProtD[tKey] = self.wPlot.dPlot['Vol'].rAxes.text(
                     x-dX,y-dY, prot[1], ha='right',va='top')
         #------------------------------>
-        self.wPlot.dPlot['Vol'].rCanvas.draw()
+        if draw:
+            self.wPlot.dPlot['Vol'].rCanvas.draw()
+            #------------------------------>
+            self.wPlot.dPlot['Vol'].ZoomResetSetValues()
         #endregion ------------------------------------------------>
 
         return True
@@ -749,7 +779,6 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #endregion -----------------------------------------------------> Axis
 
         #region ----------------------------------------------------> Plot All
-        #------------------------------>
         if self.rShowAll:
             #------------------------------>
             color = self.rCFCAll
@@ -760,23 +789,25 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             #------------------------------>
             self.wPlot.dPlot['FC'].rAxes.fill_between(
                 x, self.rFcYMax, self.rFcYMin, color=color, alpha=0.2)
-        #------------------------------> Lock Scale
+        #endregion -------------------------------------------------> Plot All
+
+        #region ----------------------------------------------> Plot Prot Line
+        self.DrawProtLine(draw=False)
+        #endregion -------------------------------------------> Plot Prot Line
+
+        #region --------------------------------------------------> Lock Scale
         if self.rFcXRange and self.rFcYRange:
             self.wPlot.dPlot['FC'].rAxes.set_xlim(*self.rFcXRange)
             self.wPlot.dPlot['FC'].rAxes.set_ylim(*self.rFcYRange)
         else:
-            xRange, yRange = self.GetFcXYRange(self.rDateC)
-            self.wPlot.dPlot['FC'].rAxes.set_xlim(*xRange)
-            self.wPlot.dPlot['FC'].rAxes.set_ylim(*yRange)
-        #------------------------------> Zoom level
-        self.wPlot.dPlot['FC'].ZoomResetSetValues()
-        #------------------------------>
-        self.wPlot.dPlot['FC'].rCanvas.draw()
-        #endregion -------------------------------------------------> Plot All
+            self.wPlot.dPlot['FC'].rAxes.autoscale(axis='y')
+        #endregion -----------------------------------------------> Lock Scale
 
-        #region ----------------------------------------------> Plot Prot Line
-        self.DrawProtLine()
-        #endregion -------------------------------------------> Plot Prot Line
+        #region --------------------------------------------------> Last Steps
+        self.wPlot.dPlot['FC'].rCanvas.draw()
+        #------------------------------>
+        self.wPlot.dPlot['FC'].ZoomResetSetValues()
+        #endregion -----------------------------------------------> Last Steps
 
         return True
     #---
@@ -809,9 +840,14 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         return True
     #---
 
-    def DrawProtLine(self) -> bool:
+    def DrawProtLine(self, draw=True) -> bool:
         """Draw the protein line in the FC plot after selecting a protein in the
             wx.ListCtrl.
+
+            Parameters
+            ----------
+            draw: bool
+                Draw the canvas or not. Default True.
 
             Returns
             -------
@@ -820,22 +856,20 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #region -------------------------------------------------------> Index
         if (idxL := self.wLC.wLCS.wLC.GetFirstSelected()) < 0:
             #------------------------------>
-            if self.rProtLine:
-                for k in self.rProtLine:
-                    k[0].remove()
-                #------------------------------>
-                self.rProtLine = []
+            for k in self.rProtLine:
+                k.remove()
+            #------------------------------>
+            self.rProtLine = []
             #------------------------------>
             return False
         #endregion ----------------------------------------------------> Index
 
         #region --------------------------------------------> Remove Old Lines
-        #------------------------------>
         for k in self.rProtLine:
             k.remove()
         #------------------------------>
         self.rProtLine = []
-        legend = []
+        legend         = []
         #endregion -----------------------------------------> Remove Old Lines
 
         #region -----------------------------------------------------> FC Plot
@@ -871,7 +905,14 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #endregion ---------------------------------------------------> Legend
 
         #region --------------------------------------------------------> Draw
-        self.wPlot.dPlot['FC'].rCanvas.draw()
+        if draw:
+            if self.rLockScale == 'No':
+                self.wPlot.dPlot['FC'].rAxes.relim()
+                self.wPlot.dPlot['FC'].rAxes.autoscale(enable=True, axis='y')
+            #------------------------------>
+            self.wPlot.dPlot['FC'].rCanvas.draw()
+            #------------------------------>
+            self.wPlot.dPlot['FC'].ZoomResetSetValues()
         #endregion -----------------------------------------------------> Draw
 
         return True
@@ -1287,32 +1328,14 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             y = data.df.loc[:, idx[:,:,'P']]
         #------------------------------>
         y = -np.log10(y)
-        #------------------------------>
-        xRange = []
-        yRange = []
         #endregion ------------------------------------------------> Variables
 
         #region ---------------------------------------------------> Get Range
         #------------------------------> X
-        xmin = abs(x.min().min())
-        xmax = abs(x.max().max())
-        #-------------->  To make it symmetric
-        if xmin >= xmax:
-            lim = xmin
-        else:
-            lim = xmax
-        #-------------->
-        dm = 2 * lim * mConfig.core.MatPlotMargin
-        #-------------->
-        xRange.append(-lim - dm)
-        xRange.append(lim + dm)
+        xRange = cStatistic.DataRange(
+            x, symm=True, margin=mConfig.core.MatPlotMargin)
         #------------------------------> Y
-        ymax = y.max().max()
-        #-------------->
-        dm = 2 * ymax * mConfig.core.MatPlotMargin
-        #-------------->
-        yRange.append(0 - dm)
-        yRange.append(ymax + dm)
+        yRange = cStatistic.DataRange(y, margin=mConfig.core.MatPlotMargin)
         #endregion ------------------------------------------------> Get Range
 
         return [xRange, yRange]
@@ -1342,13 +1365,11 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #region ---------------------------------------------------> Get Range
         #------------------------------> X
         dm = len(self.rDataC.labelB) * mConfig.core.MatPlotMargin
-        #-------------->
         xRange = [-dm, len(self.rDataC.labelB) + dm]
         #------------------------------> Y
         #-------------->
-        yMax  = y.max().max()
-        yMin  = y.min().min()
-        ciMax = yCI.max().max()
+        yMin, yMax = cStatistic.DataRange(y)
+        _, ciMax   = cStatistic.DataRange(yCI)
         #-------------->
         yminLim = yMin - ciMax
         ymaxLim = yMax + ciMax
@@ -1359,50 +1380,6 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         #endregion ------------------------------------------------> Get Range
 
         return [xRange, yRange]
-    #---
-
-    def VolXYRange(
-        self,
-        x:Union[list, pd.Series, np.ndarray],
-        y:Union[list, pd.Series, np.ndarray],
-        ) -> bool:
-        """Get the XY range for the volcano plot based on the x,y values.
-
-            Parameters
-            ----------
-            x: pd.Series or list
-                Values for x.
-            y: pd.Series or list
-                Values for y.
-
-            Returns
-            -------
-            bool
-        """
-        #region -------------------------------------------------> Check input
-        if isinstance(x, pd.Series):
-            if x.empty:
-                x = [-1, 1]
-                y = [-1, 1]
-            elif x.shape[0] == 1:
-                x = [-x.iloc[0], x.iloc[0]]
-                y = [-y.iloc[0], y.iloc[0]]                                     # type: ignore
-        else:
-            x = [-x, x]                                                         # type: ignore
-            y = [-y, y]                                                         # type: ignore
-        #endregion ----------------------------------------------> Check input
-
-        #region ---------------------------------------------------> Get Range
-        xR = cStatistic.DataRange(x, margin=mConfig.core.MatPlotMargin)
-        yR = cStatistic.DataRange(y, margin=mConfig.core.MatPlotMargin)
-        #endregion ------------------------------------------------> Get Range
-
-        #region ---------------------------------------------------> Set Range
-        self.wPlot.dPlot['Vol'].rAxes.set_xlim(*xR)
-        self.wPlot.dPlot['Vol'].rAxes.set_ylim(*yR)
-        #endregion ------------------------------------------------> Set Range
-
-        return True
     #---
 
     def DrawLinesHypCurve(self) -> bool:
@@ -1761,25 +1738,11 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         self.dKeyMethod[f'{mode} Set']()                                        # type: ignore
         #endregion ------------------------------------------------> Get Range
 
-        #region ---------------------------------------------------> Set Range
+        #region -------------------------------------------------> Update Plot
         if updatePlot:
-            #------------------------------> Vol
-            #-------------->
-            self.wPlot.dPlot['Vol'].rAxes.set_xlim(*self.rVXRange)
-            self.wPlot.dPlot['Vol'].rAxes.set_ylim(*self.rVYRange)
-            #-------------->
-            self.wPlot.dPlot['Vol'].rCanvas.draw()
-            #-------------->
-            self.wPlot.dPlot['Vol'].ZoomResetSetValues()
-            #------------------------------> FC
-            #-------------->
-            self.wPlot.dPlot['FC'].rAxes.set_xlim(*self.rFcXRange)
-            self.wPlot.dPlot['FC'].rAxes.set_ylim(*self.rFcYRange)
-            #-------------->
-            self.wPlot.dPlot['FC'].rCanvas.draw()
-            #-------------->
-            self.wPlot.dPlot['FC'].ZoomResetSetValues()
-        #endregion ------------------------------------------------> Set Range
+            self.VolDraw()
+            self.FCDraw()
+        #endregion ----------------------------------------------> Update plot
 
         return True
     #---
