@@ -323,7 +323,7 @@ def ProtProf(                                                                   
                     dfLogI.iloc[:,colC], dfLogI.iloc[:,colD], rDO.alpha
                 ).loc[:,'CI'].to_numpy()
             else:
-                val = dfLogI.iloc[:,colC] - dfLogI.iloc[:,colD]
+                val = dfLogI.iloc[:,colC] - dfLogI.iloc[:,colD].values
                 dfR.loc[:,(cN,tN,'CI')] = cStatistic.CI_Sample(                 # type: ignore
                     val, rDO.alpha
                 ).loc[:,'CI'].to_numpy()
