@@ -27,6 +27,7 @@ from scipy import stats
 def DataRange(
     x:Union[pd.DataFrame, pd.Series, np.ndarray, list, tuple],
     margin:float = 0,
+    symm:bool    = False
     ) -> list[float]:
     """Return the range of x with an optional margin applied.
         Useful to set the axes limit in a matplotlib plot.
@@ -38,6 +39,8 @@ def DataRange(
         margin: float
             Expand the range by (max(x) - min(x)) * margin. Default is 0,
             meaning that no expansion of the max(x) and min(x) is done.
+        symm: bool
+            Make output symmetric around 0.
 
         Returns
         -------
@@ -112,6 +115,17 @@ def DataRange(
     tType = type(x)
     #------------------------------>
     tMin, tMax = dictM[tType]()
+    #------------------------------>
+    if symm:
+        tMin = abs(tMin)
+        tMax = abs(tMax)
+        #------------------------------>
+        if tMin >= tMax:
+            tMin = -tMin
+            tMax = tMin
+        else:
+            tMin = -tMax
+    #------------------------------>
     dm = (tMax - tMin) * margin
     #endregion --------------------------------------------------> Check Input
 
