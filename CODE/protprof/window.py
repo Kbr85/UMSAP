@@ -1665,7 +1665,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
 
         #region --------------------------------------------------> Lock Scale
         if self.rLockScale:
-            self.LockScale(self.rLockScale)
+            self.LockScale(self.rLockScale, updatePlot=False)
         #endregion -----------------------------------------------> Lock Scale
 
         #region ---------------------------------------------------------> Vol
