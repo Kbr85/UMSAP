@@ -746,7 +746,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
                 continue
             #------------------------------>
             try:
-                x,y  = self.rDf.loc[tIdx,[fc,p]].to_numpy().tolist()
+                x,y  = self.rDf.loc[tIdx,[fc,p]].to_numpy().tolist()            # type: ignore
             except KeyError:
                 continue
             y = -np.log10(y)
@@ -1543,7 +1543,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         for k in ind:
             idx = self.rDf.index[k]
             idxS = str(idx)
-            row = [idxS]+self.rDf.loc[idx,col].to_numpy().tolist()
+            row = [idxS]+self.rDf.loc[idx,col].to_numpy().tolist()              # type: ignore
             if row in self.rLabelProt:
                 self.rLabelProtD[idxS].remove()
                 self.rLabelProtD.pop(idxS)
@@ -1581,7 +1581,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
             #------------------------------> sort ind
             ind = sorted(ind, key=int)
             #------------------------------>
-            msg = ('The selected point is an overlap of several proteins.')
+            msg = 'The selected point is an overlap of several proteins.'
             tException = (
                 f'The numbers of the proteins included in the selected '
                 f'point are:\n {str(ind)[1:-1]}')
@@ -1635,6 +1635,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
         """
         #region --------------------------------------------> Update variables
         self.rDateC      = tDate if tDate else self.rDateC
+        self.rDataC      = getattr(self.rData, self.rDateC)
         self.rCondC      = cond if cond else self.rCondC
         self.rRpC        = rp if rp else self.rRpC
         self.rCorrP      = corrP if corrP is not None else self.rCorrP
@@ -1665,7 +1666,7 @@ class ResProtProf(cWindow.BaseWindowResultListTextNPlot):
 
         #region --------------------------------------------------> Lock Scale
         if self.rLockScale:
-            self.LockScale(self.rLockScale)
+            self.LockScale(self.rLockScale, updatePlot=False)
         #endregion -----------------------------------------------> Lock Scale
 
         #region ---------------------------------------------------------> Vol
