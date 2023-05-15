@@ -2015,17 +2015,20 @@ class ResControl():
         ----------
         parent : wx widget
             Parent of the widgets.
+        label: str
+            Label for the widget. Default is '' which result in core.lStResCtrl
+            being used.
     """
     #region -----------------------------------------------------> Class setup
-    cLResControl     = mConfig.core.lStResCtrl
     cLBtnTypeResCtrl = mConfig.core.lBtnTypeResCtrl
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent:wx.Window) -> None:
+    def __init__(self, parent:wx.Window, label:str='') -> None:
         """ """
         #region -------------------------------------------------------->
-        self.cParent = parent.GetParent()
+        self.cParent      = parent.GetParent()
+        self.cLResControl = label if label else mConfig.core.lStResCtrl
         #endregion ----------------------------------------------------->
 
         #region -----------------------------------------------------> Widgets

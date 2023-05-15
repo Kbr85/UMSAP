@@ -92,6 +92,7 @@ class Configuration():
     lStProtein:str      = 'Proteins'
     lStResCtrl:str      = 'Results - Control experiments'
     lStResCtrlS:str     = 'Results - Control'
+    lStResCtrlGroup:str = 'Groups of Samples'
     lStS0:str           = 's0'
     lStSample:str       = 'Sample'
     lStScoreCol:str     = 'Score'

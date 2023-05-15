@@ -16,12 +16,11 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from typing  import Union, Optional
+from typing  import Optional
 
 import wx
 
 from config.config import config as mConfig
-from core import method    as cMethod
 from core import pane      as cPane
 from core import widget    as cWidget
 from core import validator as cValidator
@@ -105,7 +104,7 @@ class CorrA(cPane.BaseConfPanel):
     def __init__(self, parent:wx.Window) -> None:
         """"""
         #region -----------------------------------------------> Initial setup
-        super().__init__(parent)
+        super().__init__(parent, label=mConfig.core.lStResCtrlGroup)
         #endregion --------------------------------------------> Initial setup
 
         #region -----------------------------------------------------> Widgets
@@ -115,36 +114,10 @@ class CorrA(cPane.BaseConfPanel):
             choices   = mConfig.corr.oCorrMethod,
             validator = cValidator.IsNotEmpty(),
         )
-        self.wStListI = wx.StaticText(
-            self.wSbColumn, label=f'Columns in the {self.cLiFile}')
-        self.wStListO = wx.StaticText(
-            self.wSbColumn, label=f'{self.cLColAnalysis}')
-        self.wLCtrlI = cWidget.MyListCtrlZebra(self.wSbColumn,
-            colLabel        = self.cLNumName,
-            colSize         = self.cSNumName,
-            copyFullContent = True,
-        )
-        self.wLCtrlO = cWidget.MyListCtrlZebra(self.wSbColumn,
-            colLabel        = self.cLNumName,
-            colSize         = self.cSNumName,
-            canPaste        = True,
-            canCut          = True,
-            copyFullContent = True,
-        )
-        self.rLCtrlL = [self.wLCtrlI, self.wLCtrlO]
-        self.wAddCol = wx.Button(self.wSbColumn, label='Add columns')
-        self.wAddCol.SetBitmap(
-            wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD), dir = wx.RIGHT)
         #endregion --------------------------------------------------> Widgets
 
         #region -----------------------------------------------------> Tooltip
-        self.wStListI.SetToolTip(mConfig.core.ttLCtrlCopyNoMod)
-        self.wStListO.SetToolTip(mConfig.core.ttLCtrlPasteMod)
-        self.wAddCol.SetToolTip(
-            'Add selected Columns in the Data File to '
-            'the table of Columns to Analyze. New columns will be added after '
-            'the last selected element in Columns to Analyze. Duplicate '
-            'columns are discarded.')
+
         #endregion --------------------------------------------------> Tooltip
 
         #region ------------------------------------------------------> Sizers
@@ -177,51 +150,21 @@ class CorrA(cPane.BaseConfPanel):
         self.sSbValueWid.AddGrowableCol(3, 1)
         #------------------------------> Columns
         self.sSbColumnWid.Add(
-            self.wStListI,
+            self.sRes,
             pos    = (0,0),
-            flag   = wx.ALIGN_CENTRE|wx.ALL,
-            border = 5
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND,
+            border = 0,
+            span   = (0,6),
         )
-        self.sSbColumnWid.Add(
-            self.wStListO,
-            pos    = (0,2),
-            flag   = wx.ALIGN_CENTRE|wx.ALL,
-            border = 5
-        )
-        self.sSbColumnWid.Add(
-            self.wLCtrlI,
-            pos    = (1,0),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 20
-        )
-        self.sSbColumnWid.Add(
-            self.wAddCol,
-            pos    = (1,1),
-            flag   = wx.ALIGN_CENTER|wx.ALL,
-            border = 20
-        )
-        self.sSbColumnWid.Add(
-            self.wLCtrlO,
-            pos    = (1,2),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 20
-        )
-        self.sSbColumnWid.AddGrowableCol(0, 1)
-        self.sSbColumnWid.AddGrowableCol(2, 1)
-        self.sSbColumnWid.AddGrowableRow(1, 1)
+        self.sSbColumnWid.AddGrowableCol(1,1)
         #------------------------------> Main Sizer
-        #-------------->  Expand Column section
-        item = self.sSizer.GetItem(self.sSbColumn)
-        item.Proportion = 1
-        item = self.sSbColumn.GetItem(self.sSbColumnWid)
-        item.Proportion = 1
         self.SetSizer(self.sSizer)
         self.sSizer.Fit(self)
         self.SetupScrolling()
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
-        self.wAddCol.Bind(wx.EVT_BUTTON, self.OnAdd)
+
         #endregion -----------------------------------------------------> Bind
 
         #region ----------------------------------------------> checkUserInput
@@ -234,20 +177,7 @@ class CorrA(cPane.BaseConfPanel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnAdd(self, event:Union[wx.Event, str]) -> bool:                        # pylint: disable=unused-argument
-        """Add columns to analyze using the button.
 
-            Parameters
-            ----------
-            event: wx.Event
-                Event information.
-
-            Returns
-            -------
-            bool
-        """
-        return cMethod.OnGUIMethod(self.Add)
-    #---
     #endregion ------------------------------------------------> Event Methods
 
     #region ---------------------------------------------------> Class Methods
@@ -276,25 +206,7 @@ class CorrA(cPane.BaseConfPanel):
             self.wShift.wTc.SetValue(str(dataI.shift))
             self.wWidth.wTc.SetValue(str(dataI.width))
             #------------------------------>
-            if dataI.iFile.is_file() and dataI.iFile.exists:
-                #------------------------------> Add columns with the same order
-                l = []
-                for k in dataI.ocResCtrlFlat:
-                    if len(l) == 0:
-                        l.append(k)
-                        continue
-                    #------------------------------>
-                    if k > l[-1]:
-                        l.append(k)
-                        continue
-                    #------------------------------>
-                    self.wLCtrlI.SelectList(l)
-                    self.OnAdd('fEvent')
-                    #------------------------------>
-                    l = [k]
-                #------------------------------> Last past
-                self.wLCtrlI.SelectList(l)
-                self.OnAdd('fEvent')
+
             #------------------------------>
             self.OnImpMethod('fEvent')
         else:
@@ -328,18 +240,6 @@ class CorrA(cPane.BaseConfPanel):
 
         return True
     #---
-
-    def Add(self) -> bool:
-        """Add columns to analyze using the button.
-
-            Returns
-            -------
-            bool
-        """
-        self.wLCtrlI.Copy()
-        self.wLCtrlO.Paste()
-        return True
-    #---
     #endregion ------------------------------------------------> Class Methods
 
     #region ---------------------------------------------------> Run Analysis
@@ -356,13 +256,7 @@ class CorrA(cPane.BaseConfPanel):
         #endregion ----------------------------------------------------> Super
 
         #region -------------------------------------------> Individual Fields
-        #region -------------------------------------------> ListCtrl
-        msgStep = self.cLPdCheck +  self.cLColAnalysis
-        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        if not self.wLCtrlO.GetItemCount() > 1:
-            self.rMsgError = mConfig.core.mRowsInLCtrl.format(2, self.cLColAnalysis)
-            return False
-        #endregion ----------------------------------------> ListCtrl
+
         #endregion ----------------------------------------> Individual Fields
 
         return True
@@ -379,7 +273,7 @@ class CorrA(cPane.BaseConfPanel):
         msgStep = self.cLPdPrepare + 'User input, reading'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------> Read
-        col  = [int(x) for x in self.wLCtrlO.GetColContent(0)]
+        col  = []
         colF = list(range(0, len(col)))
         impMethod = self.wImputationMethod.wCb.GetValue()
         dI = {

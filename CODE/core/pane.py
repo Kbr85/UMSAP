@@ -41,7 +41,8 @@ from core import window    as cWindow
 class BaseConfPanel(
     scrolled.ScrolledPanel,
     cWidget.StaticBoxes,
-    cWidget.ButtonOnlineHelpClearAllRun
+    cWidget.ButtonOnlineHelpClearAllRun,
+    cWidget.ResControl
     ):
     """Creates the skeleton of a configuration panel. This includes the
         wx.StaticBox, the bottom Buttons, the statusbar and some widgets.
@@ -52,6 +53,9 @@ class BaseConfPanel(
             Parent of the widgets.
         rightDelete: Boolean
             Enables clearing wx.StaticBox input with right click.
+        label: str
+            Label for the Result - Control experiments. Default is '' which
+            result in mConfig.core.lStResCtrl being used.
 
         Attributes
         ----------
@@ -113,7 +117,12 @@ class BaseConfPanel(
             Object to work with the sequences of the proteins.
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent:wx.Window, rightDelete:bool=True) -> None:
+    def __init__(
+        self,
+        parent:wx.Window,
+        rightDelete:bool = True,
+        label:str        = '',
+        ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cParent = parent
@@ -269,6 +278,8 @@ class BaseConfPanel(
             labelC      = self.cLColumnBox,
             rightDelete = rightDelete,
         )
+
+        cWidget.ResControl.__init__(self, self.wSbColumn, label=label)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -1200,7 +1211,7 @@ class BaseConfPanel(
 #---
 
 
-class BaseConfPanelMod(BaseConfPanel, cWidget.ResControl):
+class BaseConfPanelMod(BaseConfPanel):
     """Base configuration for a panel of a module.
 
         Parameters
@@ -1246,9 +1257,7 @@ class BaseConfPanelMod(BaseConfPanel, cWidget.ResControl):
         self.cTTSample   = getattr(self, 'cTTSample', mConfig.core.ttStSample)
         self.cTTCorrectP = getattr(self, 'cTTCorrectP', mConfig.core.ttStCorrectP)
         #------------------------------> Parent class init
-        BaseConfPanel.__init__(self, parent, rightDelete=rightDelete)
-
-        cWidget.ResControl.__init__(self, self.wSbColumn)
+        super().__init__(parent, rightDelete=rightDelete)
         #------------------------------>
         self.rLbDict = {}
         #endregion --------------------------------------------> Initial Setup
