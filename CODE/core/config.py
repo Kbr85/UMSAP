@@ -48,14 +48,14 @@ class Configuration():
     cwd:Path         = Path(__file__)                                           # Config file path
     development:bool = True                                                     # Development (True) or Production (False)
     dictVersion:dict = field(default_factory=lambda: {                          # To write into output files
-        'Version': '2.3.2 (beta)',
+        'Version': '2.3.3 (beta)',
     })
     dtFormat:str     = '%Y%m%d-%H%M%S'                                          # Date Time format
     fConfig:Path     = Path.home() / '.umsap_config.json'                       # Path to user configuration file
     os:str           = platform.system()                                        # Current operating system
     software:str     = 'UMSAP'                                                  # Software short name
     softwareF:str    = 'Utilities for Mass Spectrometry Analysis of Proteins'   # Software full name
-    version:str      = '2.3.2 (beta)'                                           # String to write in the output files
+    version:str      = '2.3.3 (beta)'                                           # String to write in the output files
     winNumber:dict   = field(default_factory=lambda: {})                        # Keys: Windows ID - Values: Total number of opened windows, except conf win
     #------------------------------> Name & Title
     ndResCtrlExp:str      = 'Core Results & Control Experiments'                # Unique name for wx, not shown to user
