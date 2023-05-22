@@ -2796,4 +2796,150 @@ class ListCtrlSearch():
     #---
     #endregion -----------------------------------------------> Instance setup
 #---
+
+
+class TextCtrlMinRep():
+    """Class to setup two wx.TextCtrl to define the column number of the group
+        or experiment and the minimum number of valid replicates.
+
+        Parameters
+        ----------
+        parent: wx.Window
+            Parent of the widgets.
+        sep: str
+            column number separator in wx.TextCtrl
+        setSizer: boolean
+            Set (True) or not (False) a sizer for the widgets.
+        tcHint: tuple[str]
+            Hint for the wx.TextCtrl. Default is ('', '').
+        tcName: tuple(str)
+            Name for the wx.TextCtrl. Default is ('', '').
+        tcSize: tuple[tuple[int,int], tuple[int,int]]
+            Size for the wx.TextCtrl. Default is (60,22), (60,22)).
+        tcStyle: tuple[wxPython style]
+            Style for the wx.TextCtrl.
+        validator: wx.Validator
+            To validate input of the wx.TexCtrl holding the column numbers.
+
+        Attributes
+        ----------
+        rSep: str
+            Column separator.
+    """
+    #region -----------------------------------------------------> Class setup
+    cVColNum = cValidator.NumberList(sep=' ', opt=True, nN=1, vMin=2)
+    cErrorMsg = ('The number of minimum valid replicates cannot be bigger than '
+                 'the total number of columns.')
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(
+        self,
+        parent:wx.Window,
+        validator:cValidator.NumberList,
+        sep:str,
+        setSizer:bool                                = True,
+        tcSize:tuple[tuple[int,int], tuple[int,int]] = ((60,22), (60,22)),
+        tcHint:tuple[str, str]                       = ('', ''),
+        tcStyle:tuple[int, int]                      =  (0, 0),
+        tcName:tuple[str,str]                        = ('', ''),
+        ):
+        """ """
+        #region ----------------------------------------------> Instance Setup
+        self.rSep = sep
+        #endregion -------------------------------------------> Instance Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wTcCol = wx.TextCtrl(
+            parent    = parent,
+            name      = tcName[0],
+            value     = "",
+            size      = tcSize[0],
+            style     = tcStyle[0],
+            validator = validator,
+        )
+        self.wTcCol.SetHint(tcHint[0])
+
+        self.wTcRep = wx.TextCtrl(
+            parent    = parent,
+            name      = tcName[1],
+            value     = "",
+            size      = tcSize[1],
+            style     = tcStyle[1],
+            validator = self.cVColNum,
+        )
+        self.wTcRep.SetHint(tcHint[0])
+        #endregion --------------------------------------------------> Widgets
+
+        #region ------------------------------------------------------> Sizers
+        self.sSizer = None
+        if setSizer:
+            self.sSizer = wx.BoxSizer(wx.HORIZONTAL)
+            self.sSizer.Add(self.wTcCol, 1, wx.EXPAND|wx.ALL, 5)
+            self.sSizer.Add(self.wTcRep, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        #endregion ---------------------------------------------------> Sizers
+        #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def Destroy(self) -> bool:
+        """Destroy the widgets.
+
+            Returns
+            -------
+            bool
+        """
+        #region -----------------------------------------------------> Destroy
+        self.wTcCol.Destroy()
+        self.wTcRep.Destroy()
+        #endregion --------------------------------------------------> Destroy
+
+        return True
+    #---
+
+    def SetSizer(self) -> bool:
+        """Set the wx.BoxSizer.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------> Sizer
+        self.sSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.sSizer.Add(self.wTcCol, 1, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.wTcRep, 0, wx.ALIGN_CENTER|wx.ALL, 5)
+        #endregion ----------------------------------------------------> Sizer
+
+        return True
+    #---
+
+    def Validate(self) -> tuple[bool, Optional[tuple[str, Optional[str], str]]]:
+        """Validate that the number of valid replicates is not bigger than the
+            number of columns.
+
+            Returns
+            -------
+            tuple[bool, Optional[tuple[str, Optional[str], str]]]
+
+            Notes
+            -----
+            Expected to be call after checking wTcCol and wTcRep
+        """
+        #region ---------------------> Validate Min Rep < Total Column Numbers
+        #------------------------------> Variables
+        tCol   = len(self.wTcCol.GetValue().strip().split(self.rSep))
+        if (minRep := self.wTcRep.GetValue()) != '':
+            minRep = int(minRep)
+        else:
+            return (True, None)
+        #------------------------------> Validate
+        if tCol < minRep:
+            msg = f'{self.cErrorMsg}\n{minRep} > {tCol}'
+            return (False, ('MinRep', f'{minRep}', msg))
+        #endregion ------------------> Validate Min Rep < Total Column Numbers
+
+        return (True, None)
+    #---
+    #endregion ------------------------------------------------> Class methods
+#---
 #endregion ----------------------------------------------------------> Classes

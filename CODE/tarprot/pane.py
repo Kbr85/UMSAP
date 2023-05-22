@@ -654,7 +654,7 @@ class TarProt(cPane.BaseConfPanelMod2):
         idx = pd.IndexSlice
 
         #region ----------------------------------------------------> Cleavage
-        msgStep = (f'{self.cLPdRun} Cleavage per Residue')
+        msgStep = f'{self.cLPdRun} Cleavage per Residue'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------>
         a = self.cLDFFirst[2:] + self.rDO.labelA
@@ -674,7 +674,7 @@ class TarProt(cPane.BaseConfPanelMod2):
         #endregion -------------------------------------------------> Cleavage
 
         #region ---------------------------------------------------> CutEvo
-        msgStep = (f'{self.cLPdRun} Cleavage Evolution')
+        msgStep = f'{self.cLPdRun} Cleavage Evolution'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------>
         a    = self.cLDFFirst[2:] + self.rDO.labelA
@@ -696,7 +696,7 @@ class TarProt(cPane.BaseConfPanelMod2):
         #region ----------------------------------------------------------> AA
         if self.rDO.posAA is not None:
             #------------------------------>
-            msgStep = (f'{self.cLPdRun} AA Distribution')
+            msgStep = f'{self.cLPdRun} AA Distribution'
             wx.CallAfter(self.rDlg.UpdateStG, msgStep)
             #------------------------------>
             tIdx = idx[['Sequence']+self.rDO.labelA,['Sequence', 'P']]
@@ -717,7 +717,7 @@ class TarProt(cPane.BaseConfPanelMod2):
         #region --------------------------------------------------------> Hist
         if self.rDO.winHist is not None:
             #------------------------------>
-            msgStep = (f'{self.cLPdRun} Histograms')
+            msgStep = f'{self.cLPdRun} Histograms'
             wx.CallAfter(self.rDlg.UpdateStG, msgStep)
             #------------------------------>
             try:

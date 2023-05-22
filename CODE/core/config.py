@@ -57,13 +57,15 @@ class Configuration():
     softwareF:str    = 'Utilities for Mass Spectrometry Analysis of Proteins'   # Software full name
     version:str      = '2.3.2 (beta)'                                           # String to write in the output files
     winNumber:dict   = field(default_factory=lambda: {})                        # Keys: Windows ID - Values: Total number of opened windows, except conf win
+    numListSep:str   = ' '
     #------------------------------> Name & Title
     ndResCtrlExp:str      = 'Core Results & Control Experiments'                # Unique name for wx, not shown to user
+    nwDef:str             = 'Core Window Default'
+    ntDef:str             = 'Core Tab Default'
     npDef:str             = 'Core Default'
     npLCtrlSearchPlot:str = 'Core ListCtrl Search Plot'
     npNPlot:str           = 'Core NPlot'
-    ntDef:str             = 'Core Tab Default'
-    nwDef:str             = 'Core Window Default'
+    npResCtrlGroup:str    = 'Result & Control Experiments with Groups'
     tpConf:str            = 'Configuration Options'                             # Titles, shown to user
     tpList:str            = 'Data File Content'
     ttDef:str             = 'Tab'
@@ -101,6 +103,7 @@ class Configuration():
     lStTheta:str        = 'θ Value'
     lStThetaMax:str     = 'θ Max Value'
     lStZScore:str       = 'Z Score'
+    lStGroup:str        = 'Groups'
     #------------------------------> wx.ListCtrl Column names
     lLCtrlColNameI:list[str] = field(default_factory=lambda: ['#', 'Name'])
     #------------------------------> Keywords for Menu
@@ -287,6 +290,8 @@ class Configuration():
                           f'correct input.')
     mResCtrlWin:str     = ("Value '{}' cannot be accepted as input.\n"
                           f"{mNZPlusNumText}")
+    mMinRep:str         = ("Value '{}' cannot be accepted as input.\n"
+                          f"{mOneZPlusNumText}")
     #------------------------------> Tooltips
     ttBtnHelp:str           = 'Read tutorial at {}.'
     ttSectionRightClick:str = ('The content of the Section can be deleted with '
