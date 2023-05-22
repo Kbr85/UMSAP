@@ -1592,6 +1592,7 @@ class BaseResControlExpConf(wx.Panel):
             self, 'mLabelEmpty', 'All labels and control name must be defined.')
         #------------------------------>
         self.rResCtrlText = ''
+        self.rMinRep      = ''
         #------------------------------> super()
         super().__init__(parent, name=name, size=(700,700))
         #endregion --------------------------------------------> Initial Setup
@@ -1840,8 +1841,9 @@ class BaseResControlExpConf(wx.Panel):
         """
         #region -------------------------------------------------> Check input
         #------------------------------> Variables
-        tcList = []
-        oText  = ''
+        tcList   = []
+        oText    = ''
+        oTextRep = ''
         #------------------------------> Individual fields and list of tc
         for v in self.rFSectTcDict.values():
             #--------------> Check values
@@ -1874,9 +1876,11 @@ class BaseResControlExpConf(wx.Panel):
                     return False
                 #--------------> Add to lists
                 tcList.append(j.wTcCol)
-                oText = f"{oText}{j.wTcCol.GetValue()}, "
+                oText    = f"{oText}{j.wTcCol.GetValue()}, "
+                oTextRep = f"{oTextRep}{j.wTcRep.GetValue()}, "
             #--------------> Add row delimiter
-            oText = f"{oText[0:-2]}; "
+            oText    = f"{oText[0:-2]}; "
+            oTextRep = f"{oTextRep[0:-2]}; "
         #------------------------------> All cannot be empty
         a, b = cCheck.AllTcEmpty(tcList)
         if a:
@@ -1898,21 +1902,24 @@ class BaseResControlExpConf(wx.Panel):
 
         #region ---------------------------------------------------> Export
         self.rResCtrlText = oText                                               # Save the value for export later.
+        self.rMinRep      = oTextRep
         #------------------------------>
         if export:
-            self.Export2TopParent(oText)
+            self.Export2TopParent(oText, oTextRep)
         #endregion ------------------------------------------------> Export
 
         return True
     #---
 
-    def Export2TopParent(self, oText:str) -> bool:
+    def Export2TopParent(self, oText:str, oTextRep:str) -> bool:
         """Export the data to the top parent.
 
             Parameters
             ----------
             oText: str
                 String to show in Result - Control.
+            oTextRep: str
+                String for the minimum valid replicate numbers.
 
             Returns
             -------
@@ -1931,26 +1938,27 @@ class BaseResControlExpConf(wx.Panel):
                 N             : [values], # N row of labels
                 'Control'     : 'Name',
                 'ControlType' : Control type,
+                'MinRep'      : List of list similar to Results and Control,
             }
-            And topParent.controlType will be also set to the corresponding
-            value.
         """
         #region ----------------------------------------> Set parent variables
+        rLbDict = {}
         #------------------------------> Labels
-        self.cTopParent.rLbDict = {}                                            # type: ignore
         for k, v in self.rLSectTcDict.items():
-            self.cTopParent.rLbDict[k] = []                                     # type: ignore
+            rLbDict[k] = []
             for j in v:
-                self.cTopParent.rLbDict[k].append(j.GetValue())                 # type: ignore
+                rLbDict[k].append(j.GetValue())
         #------------------------------> Control Name
-        self.cTopParent.rLbDict['Control'] = [self.wControlN.wTc.GetValue()]    # type: ignore
-        #------------------------------> Control type if needed
-        if self.rPName == mConfig.prot.nPane :
-            self.cTopParent.rLbDict['ControlType'] = self.rControlVal           # type: ignore
+        rLbDict['Control'] = [self.wControlN.wTc.GetValue()]
+        #------------------------------> Control Type
+        rLbDict['ControlType'] = self.rControlVal
+        #------------------------------>
+        rLbDict['MinRep'] = f"{oTextRep[0:-2]}"
         #endregion -------------------------------------> Set parent variables
 
         #region -----------------------------------------------> Set tcResults
         self.cTopParent.wTcResults.SetValue(f"{oText[0:-2]}")                   # type: ignore
+        self.cTopParent.rLbDict = rLbDict                                       # type: ignore
         #endregion --------------------------------------------> Set tcResults
 
         return True
@@ -1964,20 +1972,25 @@ class BaseResControlExpConf(wx.Panel):
             bool
         """
         #region -------------------------------------------------> Check input
-        if not (tcFieldsVal := self.cTopParent.wTcResults.GetValue()) != '':    # type: ignore
+        if not (tcFieldVal := self.cTopParent.wTcResults.GetValue()) != '':     # type: ignore
             return False
         #endregion ----------------------------------------------> Check input
 
+        #region ---------------------------------------------------> Variables
+        rLbDict = self.cTopParent.rLbDict                                       # type: ignore
+        tcFieldValMinRep = rLbDict['MinRep']
+        #endregion ------------------------------------------------> Variables
+
         #region --------------------------------------------------> Add Labels
         #------------------------------> Set the label numbers
-        for k, v in self.cTopParent.rLbDict.items():                            # type: ignore
-            if k not in ['Control', 'ControlType']:
+        for k, v in rLbDict.items():
+            if k not in ['Control', 'ControlType', 'MinRep']:
                 self.rLSectWidget[k].wTc.SetValue(str(len(v)))
         #------------------------------> Create labels fields
         self.LabelNumber('test')
         #------------------------------> Fill. 2 iterations needed. Improve
-        for k, v in self.cTopParent.rLbDict.items():                            # type: ignore
-            if k not in ['Control', 'ControlType']:
+        for k, v in rLbDict.items():
+            if k not in ['Control', 'ControlType', 'MinRep']:
                 for j, t in enumerate(v):
                     self.rLSectTcDict[k][j].SetValue(t)
             elif k == 'Control':
@@ -1987,7 +2000,7 @@ class BaseResControlExpConf(wx.Panel):
         #region -------------------------------------------------> Set Control
         if self.rPName == mConfig.prot.nPane:
             #------------------------------>
-            cT = self.cTopParent.rLbDict['ControlType']                         # type: ignore
+            cT = rLbDict['ControlType']
             self.wCbControl.SetValue(cT)                                        # type: ignore
             #------------------------------>
             if cT == mConfig.prot.oControlType['Ratio']:
@@ -1999,11 +2012,14 @@ class BaseResControlExpConf(wx.Panel):
         #endregion ------------------------------------------> Create tcFields
 
         #region --------------------------------------------> Add Field Values
-        row = tcFieldsVal.split(";")
+        row = tcFieldVal.split(";")
+        rowMinRep = tcFieldValMinRep.split(";")
         for k, r in enumerate(row):
             fields = r.split(",")
+            fieldsMinRep = rowMinRep[k].split(",")
             for j, f in enumerate(fields):
-                self.rFSectTcDict[k][j].SetValue(f)
+                self.rFSectTcDict[k][j].wTcCol.SetValue(f)
+                self.rFSectTcDict[k][j].wTcRep.SetValue(fieldsMinRep[j])
         #endregion -----------------------------------------> Add Field Values
 
         return True
