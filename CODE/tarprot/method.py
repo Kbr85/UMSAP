@@ -292,7 +292,7 @@ def TarProt(
                 #------------------------------> P value
                 dfR.loc[k,idx] = cStatistic.Test_slope(dfAncova, nGroups)       # type: ignore
             except Exception as e:
-                msg = (f'P value calculation failed for peptide {row[0]}.')
+                msg = f'P value calculation failed for peptide {row[0]}.'
                 return (False, msg, e)
             k = k + 1
         #endregion ----------------------------------------------------->

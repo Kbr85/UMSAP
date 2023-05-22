@@ -235,6 +235,7 @@ class BaseConfPanel(
         #--------------> pd.DataFrames for:
         self.dfI     = pd.DataFrame()                                           # Initial and
         self.dfF     = pd.DataFrame()                                           # Data as float and 0 and '' values as np.nan
+        self.dfMR    = pd.DataFrame()                                           # Data after removing rows with less than valid number of replicates
         self.dfT     = pd.DataFrame()                                           # Transformed values
         self.dfN     = pd.DataFrame()                                           # Normalized Values
         self.dfIm    = pd.DataFrame()                                           # Imputed values
@@ -257,6 +258,8 @@ class BaseConfPanel(
         # #--------------> Obj for files
         self.rIFileObj:Optional[cFile.CSVFile]      = None
         self.rSeqFileObj: Optional[cFile.FastaFile] = None
+        #------------------------------> To store labels and minimum replicates
+        self.rLbDict = {}
         #------------------------------> Parent init
         scrolled.ScrolledPanel.__init__(self, parent, name=self.cName)
 
@@ -1258,8 +1261,6 @@ class BaseConfPanelMod(BaseConfPanel):
         self.cTTCorrectP = getattr(self, 'cTTCorrectP', mConfig.core.ttStCorrectP)
         #------------------------------> Parent class init
         super().__init__(parent, rightDelete=rightDelete)
-        #------------------------------>
-        self.rLbDict = {}
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets

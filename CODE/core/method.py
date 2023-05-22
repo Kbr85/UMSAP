@@ -87,11 +87,13 @@ class BaseUserData():
     thetaM:Optional[float]    = None                                            # Equivalence Test maximum possible difference
     theta:Optional[float]     = None                                            # Equivalence Test threshold. None implies calculate a value based on Control experiments
     correctedP:LIT_CorrectedP = ''                                              # Method to correct P values for multiple test
-    #------------------------------> Result - Control
+    #------------------------------> Labels, Control & Min Valid Rep
     labelA:list[str] = field(default_factory=list)
     labelB:list[str] = field(default_factory=list)
     ctrlType:str     = ''
     ctrlName:str     = ''
+    minRep:str       =  ''                                                      # Minimum number of valid replicates. The list has the same structure as ResCtrl
+    minRepList:list  = field(default_factory=list)                              # Minimum number of valid replicates. The list has the same structure as ResCtrl
     #------------------------------> Correlation Analysis
     corr:LIT_Corr = ''                                                          # Correlation method
     #------------------------------> Further Analysis

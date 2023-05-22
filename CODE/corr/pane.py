@@ -21,6 +21,7 @@ from typing  import Optional
 import wx
 
 from config.config import config as mConfig
+from core import method    as cMethod
 from core import pane      as cPane
 from core import widget    as cWidget
 from core import validator as cValidator
@@ -116,10 +117,6 @@ class CorrA(cPane.BaseConfPanel):
         )
         #endregion --------------------------------------------------> Widgets
 
-        #region -----------------------------------------------------> Tooltip
-
-        #endregion --------------------------------------------------> Tooltip
-
         #region ------------------------------------------------------> Sizers
         #------------------------------> Values
         self.sSbValueWid.Add(
@@ -170,6 +167,7 @@ class CorrA(cPane.BaseConfPanel):
         #region ----------------------------------------------> checkUserInput
         rCheckUserInput = {
             self.cLCorrMethod : [self.wCorrMethod.wCb, mConfig.core.mOptionBad, False],
+            self.cLResControl : [self.wTcResults,      mConfig.core.mResCtrl,   False],
         }
         self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #endregion -------------------------------------------> checkUserInput
@@ -205,8 +203,14 @@ class CorrA(cPane.BaseConfPanel):
             self.wCorrMethod.wCb.SetValue(dataI.corr)
             self.wShift.wTc.SetValue(str(dataI.shift))
             self.wWidth.wTc.SetValue(str(dataI.width))
-            #------------------------------>
-
+            self.wTcResults.SetValue(dataI.resCtrl)
+            self.rLbDict = {
+                0            : dataI.labelA,
+                'MinRep'     : dataI.minRep,
+                'Control'    : [''],
+                'ControlType': '',
+            }
+            print(self.rLbDict)
             #------------------------------>
             self.OnImpMethod('fEvent')
         else:
@@ -236,6 +240,13 @@ class CorrA(cPane.BaseConfPanel):
             self.wShift.wTc.SetValue('1.8')
             self.wWidth.wTc.SetValue('0.3')
             self.wCorrMethod.wCb.SetValue("Pearson")
+            self.wTcResults.SetValue('98 99 100; 101 102 103; 104 105 106')
+            self.rLbDict = {
+                0             : ['Group - 1', 'Group - 2', 'Group - 3'],
+                'Control'     : [''],
+                'ControlType' : '',
+                'MinRep'      : '2; 3; 3',
+            }
         #endregion -----------------------------------------------------> Test
 
         return True
@@ -255,10 +266,6 @@ class CorrA(cPane.BaseConfPanel):
             return False
         #endregion ----------------------------------------------------> Super
 
-        #region -------------------------------------------> Individual Fields
-
-        #endregion ----------------------------------------> Individual Fields
-
         return True
     #---
 
@@ -273,8 +280,11 @@ class CorrA(cPane.BaseConfPanel):
         msgStep = self.cLPdPrepare + 'User input, reading'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------> Read
-        col  = []
-        colF = list(range(0, len(col)))
+        minRepList    = cMethod.ResControl2ListNumber(self.rLbDict['MinRep'])
+        resCtrl       = cMethod.ResControl2ListNumber(self.wTcResults.GetValue())
+        resCtrlFlat   = cMethod.ResControl2Flat(resCtrl)
+        resCtrlDF     = cMethod.ResControl2DF(resCtrl, 0)
+        resCtrlDFFlat = cMethod.ResControl2Flat(resCtrlDF)
         impMethod = self.wImputationMethod.wCb.GetValue()
         dI = {
             'iFileN'       : self.cLiFile,
@@ -286,7 +296,8 @@ class CorrA(cPane.BaseConfPanel):
             'shift'        : self.cLShift,
             'width'        : self.cLWidth,
             'corr'         : self.cLCorrMethod,
-            'resCtrl'      : 'Selected Columns',
+            'resCtrl'      : mConfig.core.lStResCtrlGroup,
+            'minRep'       : 'Valid Replicates',
         }
         if impMethod != mConfig.data.lONormDist:
             dI.pop('shift')
@@ -306,12 +317,16 @@ class CorrA(cPane.BaseConfPanel):
             shift         = float(self.wShift.wTc.GetValue()),
             width         = float(self.wWidth.wTc.GetValue()),
             corr          = self.wCorrMethod.wCb.GetValue(),
-            resCtrl       = ', '.join(map(str,col)),
-            ocColumn      = col,
-            ocResCtrlFlat = col,
-            dfColumnR     = colF,
-            dfColumnF     = colF,
-            dfResCtrlFlat = colF,
+            labelA        = self.rLbDict[0],
+            minRep        = self.rLbDict['MinRep'],
+            minRepList    = minRepList,
+            resCtrl       = self.wTcResults.GetValue(),
+            ocResCtrl     = resCtrl,
+            ocResCtrlFlat = resCtrlFlat,
+            ocColumn      = resCtrlFlat,
+            dfColumnR     = resCtrlDFFlat,
+            dfColumnF     = resCtrlDFFlat,
+            dfResCtrlFlat = resCtrlDFFlat,
             dI            = dI,
         )
         #endregion ----------------------------------------------------> Input
@@ -337,12 +352,13 @@ class CorrA(cPane.BaseConfPanel):
         stepDict['Files'] = {
             mConfig.core.fnInitial.format(self.rDate, '01'): self.dfI,
             mConfig.core.fnFloat.format(self.rDate, '02')  : self.dfF,
-            mConfig.core.fnTrans.format(self.rDate, '03')  : self.dfT,
-            mConfig.core.fnNorm.format(self.rDate, '04')   : self.dfN,
-            mConfig.core.fnImp.format(self.rDate, '05')    : self.dfIm,
-            self.rMainData.format(self.rDate, '06')        : self.dfR,
+            mConfig.core.fnMinRep.format(self.rDate, '03') : self.dfMR,
+            mConfig.core.fnTrans.format(self.rDate, '04')  : self.dfT,
+            mConfig.core.fnNorm.format(self.rDate, '05')   : self.dfN,
+            mConfig.core.fnImp.format(self.rDate, '06')    : self.dfIm,
+            self.rMainData.format(self.rDate, '07')        : self.dfR,
         }
-        stepDict['R'] = self.rMainData.format(self.rDate, '06')
+        stepDict['R'] = self.rMainData.format(self.rDate, '07')
         #endregion -----------------------------------------------> Data Steps
 
         return self.WriteOutputData(stepDict)

@@ -2021,6 +2021,12 @@ class ResControl():
     """
     #region -----------------------------------------------------> Class setup
     cLBtnTypeResCtrl = mConfig.core.lBtnTypeResCtrl
+    cTTDict = {
+        '' : ('Set the column numbers containing the control and experiment '
+              'results.'),
+        mConfig.core.lStResCtrlGroup : ('Set the column numbers for the data '
+                                        'groups to be analyzed.'),
+    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -2079,9 +2085,7 @@ class ResControl():
         #region -----------------------------------------------------> Tooltip
         self.wBtnResultsW.SetToolTip(
             'Type the column numbers in a helper window.')
-        self.wStResults.SetToolTip(
-            'Set the column numbers containing the control and experiment '
-            'results.')
+        self.wStResults.SetToolTip(self.cTTDict[label])
         #endregion --------------------------------------------------> Tooltip
 
         #region --------------------------------------------------------> Bind

@@ -209,6 +209,7 @@ class Configuration():
     #------------------------------> Names for output folder and files
     fnInitial:str    = '{}_{}-Initial-Data.txt'
     fnFloat:str      = '{}_{}-Floated-Data.txt'
+    fnMinRep:str     = '{}_{}-Valid-Replicates.txt'
     fnTrans:str      = '{}_{}-Transformed-Data.txt'
     fnNorm:str       = '{}_{}-Normalized-Data.txt'
     fnImp:str        = '{}_{}-Imputed-Data.txt'
