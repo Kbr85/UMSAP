@@ -2932,7 +2932,7 @@ class TextCtrlMinRep():
         #region ---------------------> Validate Min Rep < Total Column Numbers
         #------------------------------> Variables
         tCol   = len(self.wTcCol.GetValue().strip().split(self.rSep))
-        if (minRep := self.wTcRep.GetValue()) != '':
+        if (minRep := self.wTcRep.GetValue().strip()) != '':
             minRep = int(minRep)
         else:
             return (True, None)

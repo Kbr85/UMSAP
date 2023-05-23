@@ -2019,8 +2019,8 @@ class BaseResControlExpConf(wx.Panel):
             fields = r.split(",")
             fieldsMinRep = rowMinRep[k].split(",")
             for j, f in enumerate(fields):
-                self.rFSectTcDict[k][j].wTcCol.SetValue(f)
-                self.rFSectTcDict[k][j].wTcRep.SetValue(fieldsMinRep[j])
+                self.rFSectTcDict[k][j].wTcCol.SetValue(f.strip())
+                self.rFSectTcDict[k][j].wTcRep.SetValue(fieldsMinRep[j].strip())
         #endregion -----------------------------------------> Add Field Values
 
         return True

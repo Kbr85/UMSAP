@@ -164,6 +164,9 @@ class BaseUserData():
             if k == 'method':
                 val = PrintMethod(val)
             #------------------------------>
+            if k == 'minRep':
+                val = PrintMinRep(val)
+            #------------------------------>
             dictO[label] = str(val)
         #endregion ------------------------------------------------>
 
@@ -1064,6 +1067,29 @@ def PrintMethod(val) -> str:
     #endregion ----------------------------------------------------->
 
     return valO
+#---
+
+
+def PrintMinRep(val:str) -> str:
+    """Pretty Print Minimum Number of Valid Replicates.
+
+        Parameters
+        ----------
+        val: str
+            Like ResCtrl
+
+        Returns
+        -------
+        str
+            Value to print in the UMSAP File
+    """
+    #region -------------------------------------------------------->
+    valO = val.replace(";", '').replace(",", '').strip()
+    if not valO:
+        return 'N/A'
+    #endregion ----------------------------------------------------->
+
+    return val
 #---
 
 

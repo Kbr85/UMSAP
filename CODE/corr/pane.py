@@ -210,7 +210,6 @@ class CorrA(cPane.BaseConfPanel):
                 'Control'    : [''],
                 'ControlType': '',
             }
-            print(self.rLbDict)
             #------------------------------>
             self.OnImpMethod('fEvent')
         else:
@@ -240,12 +239,12 @@ class CorrA(cPane.BaseConfPanel):
             self.wShift.wTc.SetValue('1.8')
             self.wWidth.wTc.SetValue('0.3')
             self.wCorrMethod.wCb.SetValue("Pearson")
-            self.wTcResults.SetValue('98 99 100; 101 102 103; 104 105 106')
+            self.wTcResults.SetValue('98 99 100 101 102; 103 104 105 106 107; 108 109 110 111 112')
             self.rLbDict = {
                 0             : ['Group - 1', 'Group - 2', 'Group - 3'],
                 'Control'     : [''],
                 'ControlType' : '',
-                'MinRep'      : '2; 3; 3',
+                'MinRep'      : '3; 3; 3',
             }
         #endregion -----------------------------------------------------> Test
 
@@ -326,16 +325,17 @@ class CorrA(cPane.BaseConfPanel):
             ocColumn      = resCtrlFlat,
             dfColumnR     = resCtrlDFFlat,
             dfColumnF     = resCtrlDFFlat,
+            dfResCtrl     = resCtrlDF,
             dfResCtrlFlat = resCtrlDFFlat,
             dI            = dI,
         )
         #endregion ----------------------------------------------------> Input
 
-        #region ---------------------------------------------------> Super
+        #region -------------------------------------------------------> Super
         if not super().PrepareRun():
             self.rMsgError = 'Something went wrong when preparing the analysis.'
             return False
-        #endregion ------------------------------------------------> Super
+        #endregion ----------------------------------------------------> Super
 
         return True
     #---

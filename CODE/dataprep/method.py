@@ -98,6 +98,7 @@ def RunDataPreparation(                                                         
                     {
                         'dfI' : pd.DataFrame,
                         'dfF' : pd.DataFrame,
+                        'dfMR': pd.DataFrame,
                         'dfT' : pd.DataFrame,
                         'dfN' : pd.DataFrame,
                         'dfIm': pd.DataFrame,
@@ -155,6 +156,7 @@ def DataPreparation(                                                            
                     {
                         'dfI' : pd.DataFrame,
                         'dfF' : pd.DataFrame,
+                        'dfMR': pd.DataFrame,
                         'dfT' : pd.DataFrame,
                         'dfN' : pd.DataFrame,
                         'dfIm': pd.DataFrame,
@@ -181,16 +183,17 @@ def DataPreparation(                                                            
         rDO.dfColumnR,
         rDO.dfColumnF,
     )
+    #------------------------------> Minimum Number of Valid Replicates
+    dfMR = DataPrep_MinRep(dfF, rDO.dfResCtrl, rDO.minRepList)
     #------------------------------> Transformation
     dfT = DataTransformation(
-        dfF,
+        dfMR,
         rDO.dfResCtrlFlat,
         method = rDO.tran,
         rep    = np.nan if rDO.cero else 0,
     )
     #------------------------------> Normalization
-    dfN = DataNormalization(
-        dfT, rDO.dfResCtrlFlat, method=rDO.norm)
+    dfN = DataNormalization(dfT, rDO.dfResCtrlFlat, method=rDO.norm)
     #------------------------------> Imputation
     dfIm = DataImputation(
         dfN,
@@ -230,6 +233,7 @@ def DataPreparation(                                                            
     dictO = {
         'dfI' : dfI,
         'dfF' : dfF,
+        'dfMR': dfMR,
         'dfT' : dfT,
         'dfN' : dfN,
         'dfIm': dfIm,
@@ -284,12 +288,59 @@ def DataPrep_Float(
 
     return [dfI, dfF]
 #---
+
+
+def DataPrep_MinRep(
+    df:pd.DataFrame,
+    resCtrl:list,
+    minRep:list
+    ) -> pd.DataFrame:
+    """Eliminate rows in which at least one group does not posses the minimum
+        number of valid replicates.
+
+        Attributes
+        ----------
+        df: pd.DataFrame
+            DataFrame with all the initial data.
+        resCtrl: list
+            List of groups including controls.
+        minRep: list
+            List with the minimum number of valid replicates for each group.
+
+        Returns
+        -------
+        pd.DataFrame
+
+        Notes
+        -----
+        resCtrl and minRep have the same structure.
+    """
+    # CREATE TEST. TEST NEEDED!!!!!!
+    #region -------------------------------------------------------->
+    dfO = df.copy()
+    #------------------------------>
+    for k,a in enumerate(minRep):
+        for j,b in enumerate(a):
+            for c in b:
+                #------------------------------> Skip if no min rep
+                if not c:
+                    continue
+                #------------------------------> Columns
+                col = [dfO.columns[x] for x in resCtrl[k][j]]
+                #------------------------------> Drop
+                dfO = dfO.dropna(subset=col, thresh=c)
+    #------------------------------> Index
+    dfO = dfO.reset_index(drop=True)
+    #endregion ----------------------------------------------------->
+
+    return dfO
+#---
 #endregion -------------------------------------------------> Data Preparation
 
 
 #region -------------------------------------------------> Data Transformation
 def _DataTransformation_None(
-    df:pd.DataFrame,                                                         # pylint: disable=unused-argument
+    df:pd.DataFrame,                                                            # pylint: disable=unused-argument
     *args,
     **kwargs,
     ) -> pd.DataFrame:
@@ -560,9 +611,9 @@ def _DataImputation_NormalDistribution(                                         
     #region ----------------------------------> Normal Distribution imputation
     for c in col:
         #------------------------------>
-        std = df[c].std(skipna=True)
+        std    = df[c].std(skipna=True)
         median = df[c].median(skipna=True)
-        tIDX = np.where(df[c].isna())[0]
+        tIDX   = np.where(df[c].isna())[0]
         #------------------------------>
         df.loc[tIDX, c] = np.random.default_rng().normal(                       # type: ignore
             median-std*shift, std*width, len(tIDX))                             # type: ignore
