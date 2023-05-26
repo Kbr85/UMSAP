@@ -296,7 +296,7 @@ class CorrA(cPane.BaseConfPanel):
             'width'        : self.cLWidth,
             'corr'         : self.cLCorrMethod,
             'resCtrl'      : mConfig.core.lStResCtrlGroup,
-            'minRep'       : 'Valid Replicates',
+            'minRep'       : mConfig.core.lStValRep,
         }
         if impMethod != mConfig.data.lONormDist:
             dI.pop('shift')
@@ -350,13 +350,13 @@ class CorrA(cPane.BaseConfPanel):
         #region --------------------------------------------------> Data Steps
         stepDict = self.SetStepDictDP()
         stepDict['Files'] = {
-            mConfig.core.fnInitial.format(self.rDate, '01'): self.dfI,
-            mConfig.core.fnFloat.format(self.rDate, '02')  : self.dfF,
-            mConfig.core.fnMinRep.format(self.rDate, '03') : self.dfMR,
-            mConfig.core.fnTrans.format(self.rDate, '04')  : self.dfT,
-            mConfig.core.fnNorm.format(self.rDate, '05')   : self.dfN,
-            mConfig.core.fnImp.format(self.rDate, '06')    : self.dfIm,
-            self.rMainData.format(self.rDate, '07')        : self.dfR,
+            mConfig.core.fnInitial.format(self.rDate, '01') : self.dfI,
+            mConfig.core.fnFloat.format(self.rDate,   '02') : self.dfF,
+            mConfig.core.fnMinRep.format(self.rDate,  '03') : self.dfMR,
+            mConfig.core.fnTrans.format(self.rDate,   '04') : self.dfT,
+            mConfig.core.fnNorm.format(self.rDate,    '05') : self.dfN,
+            mConfig.core.fnImp.format(self.rDate,     '06') : self.dfIm,
+            self.rMainData.format(self.rDate,         '07') : self.dfR,
         }
         stepDict['R'] = self.rMainData.format(self.rDate, '07')
         #endregion -----------------------------------------------> Data Steps

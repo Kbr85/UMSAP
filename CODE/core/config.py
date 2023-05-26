@@ -104,6 +104,7 @@ class Configuration():
     lStThetaMax:str     = 'θ Max Value'
     lStZScore:str       = 'Z Score'
     lStGroup:str        = 'Groups'
+    lStValRep:str       = 'Valid Replicates'
     #------------------------------> wx.ListCtrl Column names
     lLCtrlColNameI:list[str] = field(default_factory=lambda: ['#', 'Name'])
     #------------------------------> Keywords for Menu
@@ -157,7 +158,7 @@ class Configuration():
     dfcolSeqNC:list[str]      = field(default_factory=lambda:                   # Column names in result dataframe
         ['Sequence', 'Nterm', 'Cterm', 'NtermF', 'CtermF'])
     ltDPKeys:list[str]        = field(default_factory=lambda:                   # ID of Data Prep data frames
-        ['dfF', 'dfT', 'dfN', 'dfIm'])
+        ['dfF', 'dfMP', 'dfT', 'dfN', 'dfIm'])
     lAA1:list[str]            = field(default_factory=lambda:                   # AA one letter codes
         ['A', 'I', 'L', 'V', 'M', 'F', 'W', 'Y', 'R', 'K', 'D', 'E', 'C', 'Q',
         'H', 'S', 'T', 'N', 'G', 'P'])

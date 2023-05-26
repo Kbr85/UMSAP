@@ -38,8 +38,9 @@ class UserData(cMethod.BaseUserData):
     #region ---------------------------------------------------------> Options
     dO:list = field(default_factory=lambda:                                     # Attr printed to UMSAP file
         ['iFileN', 'ID', 'cero', 'tran', 'norm', 'imp', 'shift',
-         'width', 'ocResCtrlFlat', 'ocColumn', 'dfColumnR', 'dfColumnF',
-         'dfResCtrlFlat',
+         'width', 'labelA', 'resCtrl', 'ocResCtrlFlat', 'ocColumn',
+         'dfColumnR', 'dfColumnF', 'dfResCtrl', 'dfResCtrlFlat',
+         'minRep', 'minRepList',
         ])
     longestKey:int = 20                                                         # Length of the longest Key in dI
     #endregion ------------------------------------------------------> Options
@@ -49,10 +50,11 @@ class UserData(cMethod.BaseUserData):
 class DataSteps():
     """Data class to hold the pd.DataFrames for the Data Preparation steps"""
     #region ---------------------------------------------------------> Options
-    dfF:pd.DataFrame  = pd.DataFrame()                                          # Floated data
-    dfT:pd.DataFrame  = pd.DataFrame()                                          # Transformed data
-    dfN:pd.DataFrame  = pd.DataFrame()                                          # Normalized data
-    dfIm:pd.DataFrame = pd.DataFrame()                                          # Imputed data
+    dfF:pd.DataFrame            = pd.DataFrame()                                # Floated data
+    dfT:pd.DataFrame            = pd.DataFrame()                                # Transformed data
+    dfN:pd.DataFrame            = pd.DataFrame()                                # Normalized data
+    dfIm:pd.DataFrame           = pd.DataFrame()                                # Imputed data
+    dfMP:Optional[pd.DataFrame] = None                                          # Valid Replicates, missing in older versions
     #endregion ------------------------------------------------------> Options
 #---
 

@@ -180,6 +180,7 @@ class ResControlExp(wx.Panel):
 
     dWidget = {
         mConfig.corr.nPane : cPane.ResControlExpConfGroups,
+        mConfig.data.nPane : cPane.ResControlExpConfGroups,
         mConfig.prot.nPane : protPane.ResControlExpConf,
         mConfig.limp.nPane : limpPane.ResControlExpConf,
         mConfig.tarp.nPane : tarpPane.ResControlExpConf,

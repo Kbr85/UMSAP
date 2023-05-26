@@ -701,9 +701,10 @@ class BaseConfPanel(
         stepDict = {
             'DP': {
                 mConfig.core.ltDPKeys[0] : mConfig.core.fnFloat.format(self.rDate, '02'),
-                mConfig.core.ltDPKeys[1] : mConfig.core.fnTrans.format(self.rDate, '03'),
-                mConfig.core.ltDPKeys[2] : mConfig.core.fnNorm.format(self.rDate, '04'),
-                mConfig.core.ltDPKeys[3] : mConfig.core.fnImp.format(self.rDate, '05'),
+                mConfig.core.ltDPKeys[1] : mConfig.core.fnMinRep.format(self.rDate,'03'),
+                mConfig.core.ltDPKeys[2] : mConfig.core.fnTrans.format(self.rDate, '04'),
+                mConfig.core.ltDPKeys[3] : mConfig.core.fnNorm.format(self.rDate,  '05'),
+                mConfig.core.ltDPKeys[4] : mConfig.core.fnImp.format(self.rDate,   '06'),
             },
         }
         #endregion ------------------------------------------------>
@@ -726,17 +727,18 @@ class BaseConfPanel(
         #region --------------------------------------------------->
         resDict = {
             'Files' : {
-                mConfig.core.fnInitial.format(self.rDate, '01')   : self.dfI,
-                mConfig.core.fnFloat.format(self.rDate, '02')     : self.dfF,
-                mConfig.core.fnTrans.format(self.rDate, '03')     : self.dfT,
-                mConfig.core.fnNorm.format(self.rDate, '04')      : self.dfN,
-                mConfig.core.fnImp.format(self.rDate, '05')       : self.dfIm,
-                mConfig.core.fnTargetProt.format(self.rDate, '06'): self.dfTP,
-                mConfig.core.fnExclude.format(self.rDate, '07')   : self.dfE,
-                mConfig.core.fnScore.format(self.rDate, '08')     : self.dfS,
-                self.rMainData.format(self.rDate, '09')           : self.dfR,
+                mConfig.core.fnInitial.format(self.rDate,    '01') : self.dfI,
+                mConfig.core.fnFloat.format(self.rDate,      '02') : self.dfF,
+                mConfig.core.fnMinRep.format(self.rDate,     '03') : self.dfMR,
+                mConfig.core.fnTrans.format(self.rDate,      '04') : self.dfT,
+                mConfig.core.fnNorm.format(self.rDate,       '05') : self.dfN,
+                mConfig.core.fnImp.format(self.rDate,        '06') : self.dfIm,
+                mConfig.core.fnTargetProt.format(self.rDate, '07') : self.dfTP,
+                mConfig.core.fnExclude.format(self.rDate,    '08') : self.dfE,
+                mConfig.core.fnScore.format(self.rDate,      '09') : self.dfS,
+                self.rMainData.format(self.rDate,            '10') : self.dfR,
             },
-            'R' : self.rMainData.format(self.rDate, '09'),
+            'R' : self.rMainData.format(self.rDate, '10'),
         }
         #endregion ------------------------------------------------>
 
@@ -889,12 +891,7 @@ class BaseConfPanel(
                 'V' : mConfig.core.dictVersion,
                 'I' : self.rDO.PrintDI(),
                 'CI': self.rDO.PrintDO(),
-                'DP': {
-                    mConfig.core.ltDPKeys[0] : stepDict['DP'][mConfig.core.ltDPKeys[0]],
-                    mConfig.core.ltDPKeys[1] : stepDict['DP'][mConfig.core.ltDPKeys[1]],
-                    mConfig.core.ltDPKeys[2] : stepDict['DP'][mConfig.core.ltDPKeys[2]],
-                    mConfig.core.ltDPKeys[3] : stepDict['DP'][mConfig.core.ltDPKeys[3]],
-                },
+                'DP': stepDict['DP'],
             }
         }
         #--------------> DataPrep Util does not have dfR
