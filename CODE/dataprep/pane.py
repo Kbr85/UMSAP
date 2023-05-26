@@ -59,10 +59,11 @@ class DataPrep(cPane.BaseConfPanel):
                     'I' : Dict with User Input as given. Keys are label like in the Tab GUI,
                     'CI': Dict with Processed User Input. Keys are attributes of UserData,
                     'DP': {
-                        'dfF' : Name of the file with initial data as float,
-                        'dfT' : Name of the file with transformed data,
-                        'dfN' : Name of the file with normalized data,
-                        'dfIm': Name of the file with imputed data,
+                        'dfF' : Name of file with initial data as float
+                        'dfMP': Name of file with minimum valid replicate filter
+                        'dfT' : Name of file with transformed data.
+                        'dfN' : Name of file with normalized data.
+                        'dfIm': Name of file with imputed data.
                     },
                 }
             }

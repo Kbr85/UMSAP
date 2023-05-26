@@ -43,9 +43,11 @@ class LimProt(cPane.BaseConfPanelMod2):
         rLbDict: dict
             Contains information about the Res - Ctrl e.g.
             {
-                0        : ['L1', 'L2'],
-                1        : ['B1', 'B2'],
-                'Control': ['TheControl'],
+                0            : ['L1', 'L2'],
+                1            : ['B1', 'B2'],
+                'Control'    : ['TheControl'],
+                'ControlType': '',
+                'MinRep'     : String like ResCtrl,
             }
         See Parent classes for more attributes.
 
@@ -74,11 +76,11 @@ class LimProt(cPane.BaseConfPanelMod2):
                     'I' : Dict with User Input as given. Keys are label like in the Tab GUI,
                     'CI': Dict with Processed User Input. Keys are attributes of UserData,
                     'DP': {
-                        'dfS' : pd.DataFrame with initial data as float and
-                                after discarding values by score.
-                        'dfT' : pd.DataFrame with transformed data.
-                        'dfN' : pd.DataFrame with normalized data.
-                        'dfIm': pd.DataFrame with imputed data.
+                        'dfF' : Name of file with initial data as float
+                        'dfMP': Name of file with minimum valid replicate filter
+                        'dfT' : Name of file with transformed data.
+                        'dfN' : Name of file with normalized data.
+                        'dfIm': Name of file with imputed data.
                     }
                     'R' : Path to file with the analysis results.
                 }
@@ -683,8 +685,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         self.sSWLabelControl = wx.FlexGridSizer(1,2,5,5)
         self.sSWLabelControl.Add(
             self.wControlN.wSt, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-        self.sSWLabelControl.Add(
-            self.wControlN.wTc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sSWLabelControl.Add(self.wControlN.wTc, 0, wx.EXPAND|wx.ALL, 5)
         self.sSWLabelControl.AddGrowableCol(1,1)
         #------------------------------>
         self.sSWLabelMain.Add(

@@ -57,7 +57,8 @@ class UserData(cMethod.BaseUserData):
          'width', 'method', 'indSample', 'targetProt', 'scoreVal', 'alpha',
          'correctedP', 'posAA', 'winHist', 'ocSeq', 'ocTargetProt', 'ocScore',
          'ocColumn', 'resCtrl', 'labelA', 'ctrlName', 'dfSeq', 'dfTargetProt',
-         'dfScore', 'dfResCtrl', 'protLength', 'protLoc', 'protDelta',
+         'dfScore', 'dfResCtrl', 'protLength', 'protLoc', 'protDelta', 'minRep',
+         'minRepList',
         ])
     longestKey:int = 17                                                         # Length of the longest Key in dI
     #endregion ------------------------------------------------------> Options

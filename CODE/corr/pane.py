@@ -63,6 +63,7 @@ class CorrA(cPane.BaseConfPanel):
                     'CI': Dict with Processed User Input. Keys are attributes of UserData,
                     'DP': {
                         'dfF' : Name of file with initial data as float
+                        'dfMP': Name of file with minimum valid replicate filter
                         'dfT' : Name of file with transformed data.
                         'dfN' : Name of file with normalized data.
                         'dfIm': Name of file with imputed data.
