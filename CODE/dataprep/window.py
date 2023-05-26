@@ -128,13 +128,6 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
     cLDFData = ['Floated', 'Valid Replicates', 'Transformed', 'Normalized', 'Imputed']
     cLdfCol  = [
         'Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
-    #------------------------------> Other
-    cImgName = {
-        cLNPlot[0] : '{}-01-Floated-{}.{}',
-        cLNPlot[1] : '{}-02-Transformed-{}.{}',
-        cLNPlot[2] : '{}-03-Normalized-{}.{}',
-        cLNPlot[3] : '{}-04-Imputed-{}.{}',
-    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -149,6 +142,12 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         #region -----------------------------------------------> Initial Setup
         self.rObj:'resFile.UMSAPFile' = parent.rObj
         self.cTitle   = title
+        self.cImgName = {
+            self.cLNPlot[0] : '{}-01-Floated-{}.{}',
+            self.cLNPlot[1] : '{}-02-Transformed-{}.{}',
+            self.cLNPlot[2] : '{}-03-Normalized-{}.{}',
+            self.cLNPlot[3] : '{}-04-Imputed-{}.{}',
+        }
         self.tSection = tSection if tSection else self.cSection
         self.tDate    = tDate
         self.SetWindow(parent, tSection, tDate)
@@ -639,6 +638,8 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             self.rDataC = getattr(self.rData, self.rDateC)
         #------------------------------>
         self.rDataPlot:dataMethod.DataSteps = self.rDataC.dp
+        if self.rDataPlot.dfMP is not None:
+            self.cImgName[self.cLNPlot[0]] = '{}-01-Valid-Replicates-{}.{}'
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> wx.ListCtrl
