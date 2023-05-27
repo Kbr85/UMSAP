@@ -826,7 +826,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
     cStLabel   = [f"{mConfig.tarp.lStExp}"]
     cLabelText = ['Exp']
     #------------------------------> Size
-    cSSWLabel = (670,100)
+    cSSWLabel = (670,130)
     #------------------------------> Tooltips
     cTTTotalField = [f'Set the number of {mConfig.tarp.lStExp}.']
     #endregion --------------------------------------------------> Class setup
@@ -851,6 +851,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         #endregion ---------------------------------------------------> Sizers
 
         #region -----------------------------------------------> Initial State
+        self.AddWidgetValidReplicates()
         self.SetInitialState()
         #endregion --------------------------------------------> Initial State
     #---

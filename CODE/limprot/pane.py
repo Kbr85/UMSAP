@@ -693,6 +693,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         #endregion ---------------------------------------------------> Sizers
 
         #region -----------------------------------------------> Initial State
+        self.AddWidgetValidReplicates()
         self.SetInitialState()
         #endregion --------------------------------------------> Initial State
     #---

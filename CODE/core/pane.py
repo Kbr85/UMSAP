@@ -1567,7 +1567,7 @@ class BaseResControlExpConf(wx.Panel):
         self.cHTotalField = getattr(self, 'cHTotalField', '#')
         #------------------------------> Size
         self.cSLabel      = getattr(self, 'cSLabel',      (60,22))
-        self.cSSWLabel    = getattr(self, 'cSSWLabel',    (670,135))
+        self.cSSWLabel    = getattr(self, 'cSSWLabel',    (670,165))
         self.cSSWMatrix   = getattr(self, 'cSSWMatrix',   (670,670))
         self.cSTotalField = getattr(self, 'cSTotalField', (35,22))
         #------------------------------> Tooltip
@@ -1682,6 +1682,21 @@ class BaseResControlExpConf(wx.Panel):
             bool
         """
         return cMethod.OnGUIMethod(self.LabelNumber, event)
+    #---
+
+    def OnValidReplicates(self, event:Union[wx.Event, str]) -> bool:
+        """Add the Valid Replicates values.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.AddValuesValidReplicates)
     #---
 
     def OnClear(self, event:wx.Event) -> bool:                                  # pylint: disable=unused-argument
@@ -2108,6 +2123,68 @@ class BaseResControlExpConf(wx.Panel):
         return True
     #---
 
+    def AddWidgetValidReplicates(self) -> bool:
+        """Add the valid replicates widget.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Meant to be called from child class.
+        """
+        #region -------------------------------------------------------->
+        self.wMinRep = cWidget.StaticTextCtrl(
+            self.wSwLabel,
+            setSizer  = True,
+            stLabel   = 'Valid Replicates',
+            stTooltip = ('Minimum number of valid replicates that must be '
+                         'present in a group of samples. If the minimum is not '
+                         'met for any given group the entire row in the data '
+                         'file is discarded.'),
+            tcHint    = '2',
+            tcSize    = (60,22),
+            validator = cValidator.NumberList(sep=' ', opt=True, nN=1, vMin=2),
+        )
+        #------------------------------>
+        self.wMinRep.wTc.Bind(wx.EVT_KILL_FOCUS, self.OnValidReplicates)
+        #endregion ----------------------------------------------------->
+
+        #region -------------------------------------------------------->
+        self.sSWLabelMain.Add(
+            self.wMinRep.Sizer, 0, wx.EXPAND|wx.LEFT|wx.RIGHT, 5)
+        self.sSizer.Fit(self)
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
+    def AddValuesValidReplicates(self) -> bool:
+        """Add the Valid Replicates values to all fields.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        a,_ = self.wMinRep.wTc.GetValidator().Validate()
+        if not a:
+            self.wMinRep.wTc.SetFocus()
+            return False
+        #------------------------------>
+        minRep = self.wMinRep.wTc.GetValue()
+        #endregion ----------------------------------------------------->
+
+        #region -------------------------------------------------------->
+        for k in self.rFSectTcDict.values():
+            for w in k:
+                w.wTcRep.SetValue(minRep)
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
     def CheckLabel(self, ctrl:bool=True, ctrlT:bool=False) -> list[int]:
         """Check the input in the Label section before creating the fields
             for column numbers.
@@ -2316,7 +2393,7 @@ class ResControlExpConfGroups(BaseResControlExpConf):
     #------------------------------> Tooltips
     cTTTotalField = [f'Set the number of {mConfig.core.lStGroup}.']
     #------------------------------> Size
-    cSSWLabel = (670, 60)
+    cSSWLabel = (670, 90)
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -2335,6 +2412,7 @@ class ResControlExpConfGroups(BaseResControlExpConf):
         #endregion --------------------------------------------------> Widgets
 
         #region -----------------------------------------------> Initial State
+        self.AddWidgetValidReplicates()
         self.SetInitialState()
         #endregion --------------------------------------------> Initial State
     #---

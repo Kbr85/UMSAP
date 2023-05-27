@@ -817,6 +817,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         #endregion -----------------------------------------------------> Bind
 
         #region -----------------------------------------------> Initial State
+        self.AddWidgetValidReplicates()
         self.SetInitialState()
         #endregion --------------------------------------------> Initial State
     #---
