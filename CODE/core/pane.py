@@ -1684,7 +1684,7 @@ class BaseResControlExpConf(wx.Panel):
         return cMethod.OnGUIMethod(self.LabelNumber, event)
     #---
 
-    def OnValidReplicates(self, event:Union[wx.Event, str]) -> bool:
+    def OnValidReplicates(self, event:wx.CommandEvent) -> bool:
         """Add the Valid Replicates values.
 
             Parameters
@@ -1696,7 +1696,7 @@ class BaseResControlExpConf(wx.Panel):
             -------
             bool
         """
-        return cMethod.OnGUIMethod(self.AddValuesValidReplicates)
+        return cMethod.OnGUIMethod(self.AddValuesValidReplicates, event)
     #---
 
     def OnClear(self, event:wx.Event) -> bool:                                  # pylint: disable=unused-argument
@@ -2160,8 +2160,13 @@ class BaseResControlExpConf(wx.Panel):
         return True
     #---
 
-    def AddValuesValidReplicates(self) -> bool:
+    def AddValuesValidReplicates(self, event:wx.CommandEvent) -> bool:
         """Add the Valid Replicates values to all fields.
+
+            Parameters
+            ----------
+            event: wx.CommandEvent
+                Information about the event.
 
             Returns
             -------
@@ -2180,6 +2185,10 @@ class BaseResControlExpConf(wx.Panel):
         for k in self.rFSectTcDict.values():
             for w in k:
                 w.wTcRep.SetValue(minRep)
+        #endregion ----------------------------------------------------->
+
+        #region -------------------------------------------------------->
+        event.Skip()                                                            # Needed in Windows
         #endregion ----------------------------------------------------->
 
         return True
