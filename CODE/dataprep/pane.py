@@ -92,7 +92,7 @@ class DataPrep(cPane.BaseConfPanel):
     def __init__(self, parent:wx.Window) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        super().__init__(parent)
+        super().__init__(parent, label=mConfig.core.lStResCtrlGroup)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
