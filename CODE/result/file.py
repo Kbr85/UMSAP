@@ -171,7 +171,7 @@ class UMSAPFile():
             setattr(data, k, corrMethod.CorrAnalysis(
                 df         = df,
                 numCol     = numCol,
-                numColList = numColList
+                numColList = numColList,
             ))
             data.date.append(k)
         #endregion ----------------------------------------------> Plot & Menu

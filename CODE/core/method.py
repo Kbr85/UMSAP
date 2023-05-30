@@ -87,11 +87,13 @@ class BaseUserData():
     thetaM:Optional[float]    = None                                            # Equivalence Test maximum possible difference
     theta:Optional[float]     = None                                            # Equivalence Test threshold. None implies calculate a value based on Control experiments
     correctedP:LIT_CorrectedP = ''                                              # Method to correct P values for multiple test
-    #------------------------------> Result - Control
+    #------------------------------> Labels, Control & Min Valid Rep
     labelA:list[str] = field(default_factory=list)
     labelB:list[str] = field(default_factory=list)
     ctrlType:str     = ''
     ctrlName:str     = ''
+    minRep:str       =  ''                                                      # Minimum number of valid replicates. The list has the same structure as ResCtrl
+    minRepList:list  = field(default_factory=list)                              # Minimum number of valid replicates. The list has the same structure as ResCtrl
     #------------------------------> Correlation Analysis
     corr:LIT_Corr = ''                                                          # Correlation method
     #------------------------------> Further Analysis
@@ -161,6 +163,9 @@ class BaseUserData():
             #------------------------------>
             if k == 'method':
                 val = PrintMethod(val)
+            #------------------------------>
+            if k == 'minRep':
+                val = PrintMinRep(val)
             #------------------------------>
             dictO[label] = str(val)
         #endregion ------------------------------------------------>
@@ -1062,6 +1067,29 @@ def PrintMethod(val) -> str:
     #endregion ----------------------------------------------------->
 
     return valO
+#---
+
+
+def PrintMinRep(val:str) -> str:
+    """Pretty Print Minimum Number of Valid Replicates.
+
+        Parameters
+        ----------
+        val: str
+            Like ResCtrl
+
+        Returns
+        -------
+        str
+            Value to print in the UMSAP File
+    """
+    #region -------------------------------------------------------->
+    valO = val.replace(";", '').replace(",", '').strip()
+    if not valO:
+        return 'N/A'
+    #endregion ----------------------------------------------------->
+
+    return val
 #---
 
 

@@ -21,7 +21,7 @@ from core import tab as cTab
 
 
 #region -------------------------------------------------------------> Classes
-class CorrA(cTab.BaseConfTab):
+class CorrA(cTab.BaseConfListTab):
     """Creates the Tab to setup a Correlation Analysis"""
     #region -----------------------------------------------------> Class Setup
     cName  = mConfig.corr.nTab

@@ -2318,7 +2318,7 @@ class ResControlExp(BaseDialogOkCancel):
             This is the pane calling the dialog.
     """
     #region -----------------------------------------------------> Class setup
-    cName = mConfig.core.ndResCtrlExp
+    cName  = mConfig.core.ndResCtrlExp
     cTitle = mConfig.core.twResCtrl
     #------------------------------>
     cSize = (900, 580)
@@ -2330,13 +2330,13 @@ class ResControlExp(BaseDialogOkCancel):
     def __init__(self, parent:wx.Window) -> None:
         """ """
         #region -------------------------------------------------> Check Input
-        if (iFile := parent.wIFile.wTc.GetValue())  == '': # type: ignore
+        if (iFile := parent.wIFile.wTc.GetValue())  == '':                      # type: ignore
             #------------------------------>
             dlg = FileSelect('openO', mConfig.core.elData, parent=parent)
             #------------------------------>
             if dlg.ShowModal() == wx.ID_OK:
                 iFile = dlg.GetPath()
-                parent.wIFile.wTc.SetValue(iFile) # type: ignore
+                parent.wIFile.wTc.SetValue(iFile)                               # type: ignore
                 dlg.Destroy()
             else:
                 dlg.Destroy()

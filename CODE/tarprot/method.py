@@ -57,7 +57,8 @@ class UserData(cMethod.BaseUserData):
          'width', 'method', 'indSample', 'targetProt', 'scoreVal', 'alpha',
          'correctedP', 'posAA', 'winHist', 'ocSeq', 'ocTargetProt', 'ocScore',
          'ocColumn', 'resCtrl', 'labelA', 'ctrlName', 'dfSeq', 'dfTargetProt',
-         'dfScore', 'dfResCtrl', 'protLength', 'protLoc', 'protDelta',
+         'dfScore', 'dfResCtrl', 'protLength', 'protLoc', 'protDelta', 'minRep',
+         'minRepList',
         ])
     longestKey:int = 17                                                         # Length of the longest Key in dI
     #endregion ------------------------------------------------------> Options
@@ -292,7 +293,7 @@ def TarProt(
                 #------------------------------> P value
                 dfR.loc[k,idx] = cStatistic.Test_slope(dfAncova, nGroups)       # type: ignore
             except Exception as e:
-                msg = (f'P value calculation failed for peptide {row[0]}.')
+                msg = f'P value calculation failed for peptide {row[0]}.'
                 return (False, msg, e)
             k = k + 1
         #endregion ----------------------------------------------------->
