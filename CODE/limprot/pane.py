@@ -43,9 +43,11 @@ class LimProt(cPane.BaseConfPanelMod2):
         rLbDict: dict
             Contains information about the Res - Ctrl e.g.
             {
-                0        : ['L1', 'L2'],
-                1        : ['B1', 'B2'],
-                'Control': ['TheControl'],
+                0            : ['L1', 'L2'],
+                1            : ['B1', 'B2'],
+                'Control'    : ['TheControl'],
+                'ControlType': '',
+                'MinRep'     : String like ResCtrl,
             }
         See Parent classes for more attributes.
 
@@ -74,11 +76,11 @@ class LimProt(cPane.BaseConfPanelMod2):
                     'I' : Dict with User Input as given. Keys are label like in the Tab GUI,
                     'CI': Dict with Processed User Input. Keys are attributes of UserData,
                     'DP': {
-                        'dfS' : pd.DataFrame with initial data as float and
-                                after discarding values by score.
-                        'dfT' : pd.DataFrame with transformed data.
-                        'dfN' : pd.DataFrame with normalized data.
-                        'dfIm': pd.DataFrame with imputed data.
+                        'dfF' : Name of file with initial data as float
+                        'dfMP': Name of file with minimum valid replicate filter
+                        'dfT' : Name of file with transformed data.
+                        'dfN' : Name of file with normalized data.
+                        'dfIm': Name of file with imputed data.
                     }
                     'R' : Path to file with the analysis results.
                 }
@@ -462,6 +464,7 @@ class LimProt(cPane.BaseConfPanelMod2):
         resCtrlFlat   = cMethod.ResControl2Flat(resCtrl)
         resCtrlDF     = cMethod.ResControl2DF(resCtrl, 3)
         resCtrlDFFlat = cMethod.ResControl2Flat(resCtrlDF)
+        minRepList    = cMethod.ResControl2ListNumber(self.rLbDict['MinRep'])
         #--------------> dI
         dI = {
             'iFileN'       : self.cLiFile,
@@ -486,6 +489,7 @@ class LimProt(cPane.BaseConfPanelMod2):
             'ocTargetProt' : self.cLDetectedProt,
             'ocScore'      : self.cLScoreCol,
             'resCtrl'      : mConfig.core.lStResCtrlS,
+            'minRep'       : mConfig.core.lStValRep,
             'labelA'       : self.cLLane,
             'labelB'       : self.cLBand,
             'ctrlName'     : f'Control {self.cLCtrlName}',
@@ -527,6 +531,8 @@ class LimProt(cPane.BaseConfPanelMod2):
             ocScore       = scoreCol,
             resCtrl       = self.wTcResults.GetValue(),
             ocResCtrl     = resCtrl,
+            minRep        = self.rLbDict['MinRep'],
+            minRepList    = minRepList,
             ocColumn      = [seqCol, detectedProt, scoreCol] + resCtrlFlat,
             dfSeq         = 0,
             dfTargetProt  = 1,
@@ -569,16 +575,17 @@ class LimProt(cPane.BaseConfPanelMod2):
         #region --------------------------------------------------> Data Steps
         stepDict = self.SetStepDictDP()
         stepDict['Files'] = {
-            mConfig.core.fnInitial.format(self.rDate, '01')   : self.dfI,
-            mConfig.core.fnFloat.format(self.rDate, '02')     : self.dfF,
-            mConfig.core.fnTrans.format(self.rDate, '03')     : self.dfT,
-            mConfig.core.fnNorm.format(self.rDate, '04')      : self.dfN,
-            mConfig.core.fnImp.format(self.rDate, '05')       : self.dfIm,
-            mConfig.core.fnTargetProt.format(self.rDate, '06'): self.dfTP,
-            mConfig.core.fnScore.format(self.rDate, '07')     : self.dfS,
-            self.rMainData.format(self.rDate, '08')           : self.dfR,
+            mConfig.core.fnInitial.format(self.rDate,    '01') : self.dfI,
+            mConfig.core.fnFloat.format(self.rDate,      '02') : self.dfF,
+            mConfig.core.fnMinRep.format(self.rDate,     '03') : self.dfMR,
+            mConfig.core.fnTrans.format(self.rDate,      '04') : self.dfT,
+            mConfig.core.fnNorm.format(self.rDate,       '05') : self.dfN,
+            mConfig.core.fnImp.format(self.rDate,        '06') : self.dfIm,
+            mConfig.core.fnTargetProt.format(self.rDate, '07') : self.dfTP,
+            mConfig.core.fnScore.format(self.rDate,      '08') : self.dfS,
+            self.rMainData.format(self.rDate,            '09') : self.dfR,
         }
-        stepDict['R'] = self.rMainData.format(self.rDate, '08')
+        stepDict['R'] = self.rMainData.format(self.rDate, '09')
         #endregion -----------------------------------------------> Data Steps
 
         return self.WriteOutputData(stepDict)
@@ -633,8 +640,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         self.sSWLabelControl = wx.FlexGridSizer(1,2,5,5)
         self.sSWLabelControl.Add(
             self.wControlN.wSt, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-        self.sSWLabelControl.Add(
-            self.wControlN.wTc, 0, wx.EXPAND|wx.ALL, 5)
+        self.sSWLabelControl.Add(self.wControlN.wTc, 0, wx.EXPAND|wx.ALL, 5)
         self.sSWLabelControl.AddGrowableCol(1,1)
         #------------------------------>
         self.sSWLabelMain.Add(
@@ -642,6 +648,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         #endregion ---------------------------------------------------> Sizers
 
         #region -----------------------------------------------> Initial State
+        self.AddWidgetValidReplicates()
         self.SetInitialState()
         #endregion --------------------------------------------> Initial State
     #---
@@ -703,10 +710,8 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
                 if lRow:
                     continue
                 #------------------------------>
-                row.append(wx.TextCtrl(
-                    self.wSwMatrix,
-                    size      = self.cSLabel,
-                    validator = self.cVColNumList,
+                row.append(cWidget.TextCtrlMinRep(
+                    self.wSwMatrix, self.cVColNumList, self.cColNumSep,
                 ))
                 #------------------------------>
                 self.rFSectTcDict[k] = row
@@ -717,10 +722,8 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
                 #------------------------------> Create new fields
                 for j in range(lRow, Nl):
                     #------------------------------>
-                    row.append(wx.TextCtrl(
-                        self.wSwMatrix,
-                        size      = self.cSLabel,
-                        validator = self.cVColNumList,
+                    row.append(cWidget.TextCtrlMinRep(
+                        self.wSwMatrix, self.cVColNumList, self.cColNumSep,
                     ))
                     #------------------------------>
                     self.rFSectTcDict[k] = row
@@ -754,7 +757,9 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
             wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
             5
         )
-        self.sSWMatrix.Add(self.rFSectTcDict[0][0], 0, wx.EXPAND|wx.ALL, 5)
+        w = self.rFSectTcDict[0][0]
+        w.SetSizer()
+        self.sSWMatrix.Add(w.sSizer, 0, wx.EXPAND|wx.ALL, 5)
         #------------------------------>
         for k in range(2, NCol):
             self.sSWMatrix.AddSpacer(1)
@@ -769,7 +774,8 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
                 l, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
             #-------------->
             for btc in self.rFSectTcDict[r]:
-                self.sSWMatrix.Add(btc, 0, wx.EXPAND|wx.ALL, 5)
+                btc.SetSizer()                                                    # wx. Destroy child sizers
+                self.sSWMatrix.Add(btc.sSizer, 0, wx.EXPAND|wx.ALL, 5)
         #------------------------------> Grow Columns
         for k in range(1, NCol):
             if not self.sSWMatrix.IsColGrowable(k):

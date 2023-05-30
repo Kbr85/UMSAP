@@ -703,7 +703,7 @@ myText = """UMSAP: Fast post-processing of mass spectrometry data
 
 -- Modules and Python version --
 
-UMSAP 2.3.2 is written in Python 3.9.15 and uses the following modules:
+UMSAP 2.3.3 is written in Python 3.9.15 and uses the following modules:
 
 Biopython 1.79
 Matplotlib 3.5.1

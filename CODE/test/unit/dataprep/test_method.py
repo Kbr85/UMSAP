@@ -56,6 +56,45 @@ DF_DataPrep_Float_False = pd.DataFrame({
     'F' : [nan, 128, 64,  0,  16,  8,   4],
 })
 
+DF_DataPrep_MINREP = pd.DataFrame({
+    'A' : [1   ,2, nan,   4,  5, nan,   7,   8,   9,  10],
+    'B' : [nan ,2,   3,   4,  5,   6, nan,   8,   9,  10],
+    'C' : [1   ,2, nan,   4,  5,   6,   7,   8,   9, nan],
+    'D' : [nan ,2,   3,   4,  5,   6, nan,   8,   9,  10],
+    'E' : [1   ,2, nan,   4,  5,   6, nan,   8,   9, nan],
+    'F' : [1   ,2,   3, nan,  5,   6,   7,   8,   9, nan],
+    'G' : [1   ,2,   3, nan,  5,   6,   7,   8, nan,  10],
+    'H' : [1   ,2,   3,   4,  5,   6,   7, nan, nan,  10],
+    'I' : [1   ,2,   3,   4,  5,   6,   7,   8, nan, nan],
+    'J' : [1   ,2,   3,   4,  5,   6, nan,   8,   9,  10],
+})
+
+DF_DataPrep_MINREP_ABC3 = pd.DataFrame({
+    'A' : [2,   4,  5,   8,   9],
+    'B' : [2,   4,  5,   8,   9],
+    'C' : [2,   4,  5,   8,   9],
+    'D' : [2,   4,  5,   8,   9],
+    'E' : [2,   4,  5,   8,   9],
+    'F' : [2, nan,  5,   8,   9],
+    'G' : [2, nan,  5,   8, nan],
+    'H' : [2,   4,  5, nan, nan],
+    'I' : [2,   4,  5,   8, nan],
+    'J' : [2,   4,  5,   8,   9],
+})
+
+DF_DataPrep_MINREP_ABC_HIJ_32 = pd.DataFrame({
+    'A' : [2,   4,  5,   8],
+    'B' : [2,   4,  5,   8],
+    'C' : [2,   4,  5,   8],
+    'D' : [2,   4,  5,   8],
+    'E' : [2,   4,  5,   8],
+    'F' : [2, nan,  5,   8],
+    'G' : [2, nan,  5,   8],
+    'H' : [2,   4,  5, nan],
+    'I' : [2,   4,  5,   8],
+    'J' : [2,   4,  5,   8],
+})
+
 DF_Log2 = pd.DataFrame({
     'A' : [  2,   4,  8, 16,  0, 32,  64],
     'B' : [  4,   8, 16,  0, 32, 64, 128],
@@ -138,7 +177,6 @@ DF_DataPrep_1 = pd.DataFrame({
 #endregion -----------------------------------------------------> pd.DataFrame
 
 
-
 #region -------------------------------------------------------------> Classes
 class Test_DataPrep_Float(unittest.TestCase):
     """Test for dataprep.method.DataPrep_Float"""
@@ -160,6 +198,31 @@ class Test_DataPrep_Float(unittest.TestCase):
                 # pylint: disable=protected-access
                 pd._testing.assert_frame_equal(dfI, f)                          # type: ignore
                 pd._testing.assert_frame_equal(dfF, g)                          # type: ignore
+    #---
+    #endregion ----------------------------------------------> Expected Output
+#---
+
+
+class Test_DataPrep_MinRep(unittest.TestCase):
+    """Test for dataprep.method.DataPrep_MinRep"""
+    #region -------------------------------------------------> Expected Output
+    def test_expected_output(self):
+        """Test for expected output"""
+        #------------------------------>
+        tInput = [
+            (DF_DataPrep_MINREP, [[[0,1,2]]]           , [[[3]]]       , DF_DataPrep_MINREP_ABC3),
+            (DF_DataPrep_MINREP, [[[0,1,2]], [[7,8,9]]], [[[3]], [[2]]], DF_DataPrep_MINREP_ABC_HIJ_32),
+            (DF_DataPrep_MINREP, [[[0,1,2], [7,8,9]]]  , [[[3], [2]]]  , DF_DataPrep_MINREP_ABC_HIJ_32),
+        ]
+        #------------------------------>
+        for a,b,c,d in tInput:
+            with self.subTest(
+                f'df={a}, resCtrl={b}, minRep={c}'):
+                #------------------------------>
+                dfO = dataMethod.DataPrep_MinRep(a, b, c)
+                #------------------------------>
+                # pylint: disable=protected-access
+                pd._testing.assert_frame_equal(dfO, d.astype('float64'))        # type: ignore
     #---
     #endregion ----------------------------------------------> Expected Output
 #---

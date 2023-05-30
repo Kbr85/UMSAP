@@ -16,7 +16,7 @@
 
 #region -------------------------------------------------------------> Imports
 from pathlib import Path
-from typing  import Union, Optional
+from typing  import Optional
 
 import wx
 
@@ -63,6 +63,7 @@ class CorrA(cPane.BaseConfPanel):
                     'CI': Dict with Processed User Input. Keys are attributes of UserData,
                     'DP': {
                         'dfF' : Name of file with initial data as float
+                        'dfMP': Name of file with minimum valid replicate filter
                         'dfT' : Name of file with transformed data.
                         'dfN' : Name of file with normalized data.
                         'dfIm': Name of file with imputed data.
@@ -105,7 +106,7 @@ class CorrA(cPane.BaseConfPanel):
     def __init__(self, parent:wx.Window) -> None:
         """"""
         #region -----------------------------------------------> Initial setup
-        super().__init__(parent)
+        super().__init__(parent, label=mConfig.core.lStResCtrlGroup)
         #endregion --------------------------------------------> Initial setup
 
         #region -----------------------------------------------------> Widgets
@@ -115,37 +116,7 @@ class CorrA(cPane.BaseConfPanel):
             choices   = mConfig.corr.oCorrMethod,
             validator = cValidator.IsNotEmpty(),
         )
-        self.wStListI = wx.StaticText(
-            self.wSbColumn, label=f'Columns in the {self.cLiFile}')
-        self.wStListO = wx.StaticText(
-            self.wSbColumn, label=f'{self.cLColAnalysis}')
-        self.wLCtrlI = cWidget.MyListCtrlZebra(self.wSbColumn,
-            colLabel        = self.cLNumName,
-            colSize         = self.cSNumName,
-            copyFullContent = True,
-        )
-        self.wLCtrlO = cWidget.MyListCtrlZebra(self.wSbColumn,
-            colLabel        = self.cLNumName,
-            colSize         = self.cSNumName,
-            canPaste        = True,
-            canCut          = True,
-            copyFullContent = True,
-        )
-        self.rLCtrlL = [self.wLCtrlI, self.wLCtrlO]
-        self.wAddCol = wx.Button(self.wSbColumn, label='Add columns')
-        self.wAddCol.SetBitmap(
-            wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD), dir = wx.RIGHT)
         #endregion --------------------------------------------------> Widgets
-
-        #region -----------------------------------------------------> Tooltip
-        self.wStListI.SetToolTip(mConfig.core.ttLCtrlCopyNoMod)
-        self.wStListO.SetToolTip(mConfig.core.ttLCtrlPasteMod)
-        self.wAddCol.SetToolTip(
-            'Add selected Columns in the Data File to '
-            'the table of Columns to Analyze. New columns will be added after '
-            'the last selected element in Columns to Analyze. Duplicate '
-            'columns are discarded.')
-        #endregion --------------------------------------------------> Tooltip
 
         #region ------------------------------------------------------> Sizers
         #------------------------------> Values
@@ -177,56 +148,27 @@ class CorrA(cPane.BaseConfPanel):
         self.sSbValueWid.AddGrowableCol(3, 1)
         #------------------------------> Columns
         self.sSbColumnWid.Add(
-            self.wStListI,
+            self.sRes,
             pos    = (0,0),
-            flag   = wx.ALIGN_CENTRE|wx.ALL,
-            border = 5
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND,
+            border = 0,
+            span   = (0,6),
         )
-        self.sSbColumnWid.Add(
-            self.wStListO,
-            pos    = (0,2),
-            flag   = wx.ALIGN_CENTRE|wx.ALL,
-            border = 5
-        )
-        self.sSbColumnWid.Add(
-            self.wLCtrlI,
-            pos    = (1,0),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 20
-        )
-        self.sSbColumnWid.Add(
-            self.wAddCol,
-            pos    = (1,1),
-            flag   = wx.ALIGN_CENTER|wx.ALL,
-            border = 20
-        )
-        self.sSbColumnWid.Add(
-            self.wLCtrlO,
-            pos    = (1,2),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 20
-        )
-        self.sSbColumnWid.AddGrowableCol(0, 1)
-        self.sSbColumnWid.AddGrowableCol(2, 1)
-        self.sSbColumnWid.AddGrowableRow(1, 1)
+        self.sSbColumnWid.AddGrowableCol(1,1)
         #------------------------------> Main Sizer
-        #-------------->  Expand Column section
-        item = self.sSizer.GetItem(self.sSbColumn)
-        item.Proportion = 1
-        item = self.sSbColumn.GetItem(self.sSbColumnWid)
-        item.Proportion = 1
         self.SetSizer(self.sSizer)
         self.sSizer.Fit(self)
         self.SetupScrolling()
         #endregion ---------------------------------------------------> Sizers
 
         #region --------------------------------------------------------> Bind
-        self.wAddCol.Bind(wx.EVT_BUTTON, self.OnAdd)
+
         #endregion -----------------------------------------------------> Bind
 
         #region ----------------------------------------------> checkUserInput
         rCheckUserInput = {
             self.cLCorrMethod : [self.wCorrMethod.wCb, mConfig.core.mOptionBad, False],
+            self.cLResControl : [self.wTcResults,      mConfig.core.mResCtrl,   False],
         }
         self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #endregion -------------------------------------------> checkUserInput
@@ -234,20 +176,7 @@ class CorrA(cPane.BaseConfPanel):
     #endregion -----------------------------------------------> Instance setup
 
     #region ---------------------------------------------------> Event Methods
-    def OnAdd(self, event:Union[wx.Event, str]) -> bool:                        # pylint: disable=unused-argument
-        """Add columns to analyze using the button.
 
-            Parameters
-            ----------
-            event: wx.Event
-                Event information.
-
-            Returns
-            -------
-            bool
-        """
-        return cMethod.OnGUIMethod(self.Add)
-    #---
     #endregion ------------------------------------------------> Event Methods
 
     #region ---------------------------------------------------> Class Methods
@@ -275,26 +204,13 @@ class CorrA(cPane.BaseConfPanel):
             self.wCorrMethod.wCb.SetValue(dataI.corr)
             self.wShift.wTc.SetValue(str(dataI.shift))
             self.wWidth.wTc.SetValue(str(dataI.width))
-            #------------------------------>
-            if dataI.iFile.is_file() and dataI.iFile.exists:
-                #------------------------------> Add columns with the same order
-                l = []
-                for k in dataI.ocResCtrlFlat:
-                    if len(l) == 0:
-                        l.append(k)
-                        continue
-                    #------------------------------>
-                    if k > l[-1]:
-                        l.append(k)
-                        continue
-                    #------------------------------>
-                    self.wLCtrlI.SelectList(l)
-                    self.OnAdd('fEvent')
-                    #------------------------------>
-                    l = [k]
-                #------------------------------> Last past
-                self.wLCtrlI.SelectList(l)
-                self.OnAdd('fEvent')
+            self.wTcResults.SetValue(dataI.resCtrl)
+            self.rLbDict = {
+                0            : dataI.labelA,
+                'MinRep'     : dataI.minRep,
+                'Control'    : [''],
+                'ControlType': '',
+            }
             #------------------------------>
             self.OnImpMethod('fEvent')
         else:
@@ -303,18 +219,6 @@ class CorrA(cPane.BaseConfPanel):
             self.wCorrMethod.wCb.SetValue(mConfig.corr.corrMethod)
         #endregion -----------------------------------------------------> Add
 
-        return True
-    #---
-
-    def Add(self) -> bool:
-        """Add columns to analyze using the button.
-
-            Returns
-            -------
-            bool
-        """
-        self.wLCtrlI.Copy()
-        self.wLCtrlO.Paste()
         return True
     #---
     #endregion ------------------------------------------------> Class Methods
@@ -332,16 +236,6 @@ class CorrA(cPane.BaseConfPanel):
             return False
         #endregion ----------------------------------------------------> Super
 
-        #region -------------------------------------------> Individual Fields
-        #region -------------------------------------------> ListCtrl
-        msgStep = self.cLPdCheck +  self.cLColAnalysis
-        wx.CallAfter(self.rDlg.UpdateStG, msgStep)
-        if not self.wLCtrlO.GetItemCount() > 1:
-            self.rMsgError = mConfig.core.mRowsInLCtrl.format(2, self.cLColAnalysis)
-            return False
-        #endregion ----------------------------------------> ListCtrl
-        #endregion ----------------------------------------> Individual Fields
-
         return True
     #---
 
@@ -356,8 +250,11 @@ class CorrA(cPane.BaseConfPanel):
         msgStep = self.cLPdPrepare + 'User input, reading'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------> Read
-        col  = [int(x) for x in self.wLCtrlO.GetColContent(0)]
-        colF = list(range(0, len(col)))
+        minRepList    = cMethod.ResControl2ListNumber(self.rLbDict['MinRep'])
+        resCtrl       = cMethod.ResControl2ListNumber(self.wTcResults.GetValue())
+        resCtrlFlat   = cMethod.ResControl2Flat(resCtrl)
+        resCtrlDF     = cMethod.ResControl2DF(resCtrl, 0)
+        resCtrlDFFlat = cMethod.ResControl2Flat(resCtrlDF)
         impMethod = self.wImputationMethod.wCb.GetValue()
         dI = {
             'iFileN'       : self.cLiFile,
@@ -369,7 +266,8 @@ class CorrA(cPane.BaseConfPanel):
             'shift'        : self.cLShift,
             'width'        : self.cLWidth,
             'corr'         : self.cLCorrMethod,
-            'resCtrl'      : 'Selected Columns',
+            'resCtrl'      : mConfig.core.lStResCtrlGroup,
+            'minRep'       : mConfig.core.lStValRep,
         }
         if impMethod != mConfig.data.lONormDist:
             dI.pop('shift')
@@ -389,21 +287,26 @@ class CorrA(cPane.BaseConfPanel):
             shift         = float(self.wShift.wTc.GetValue()),
             width         = float(self.wWidth.wTc.GetValue()),
             corr          = self.wCorrMethod.wCb.GetValue(),
-            resCtrl       = ', '.join(map(str,col)),
-            ocColumn      = col,
-            ocResCtrlFlat = col,
-            dfColumnR     = colF,
-            dfColumnF     = colF,
-            dfResCtrlFlat = colF,
+            labelA        = self.rLbDict[0],
+            minRep        = self.rLbDict['MinRep'],
+            minRepList    = minRepList,
+            resCtrl       = self.wTcResults.GetValue(),
+            ocResCtrl     = resCtrl,
+            ocResCtrlFlat = resCtrlFlat,
+            ocColumn      = resCtrlFlat,
+            dfColumnR     = resCtrlDFFlat,
+            dfColumnF     = resCtrlDFFlat,
+            dfResCtrl     = resCtrlDF,
+            dfResCtrlFlat = resCtrlDFFlat,
             dI            = dI,
         )
         #endregion ----------------------------------------------------> Input
 
-        #region ---------------------------------------------------> Super
+        #region -------------------------------------------------------> Super
         if not super().PrepareRun():
             self.rMsgError = 'Something went wrong when preparing the analysis.'
             return False
-        #endregion ------------------------------------------------> Super
+        #endregion ----------------------------------------------------> Super
 
         return True
     #---
@@ -418,14 +321,15 @@ class CorrA(cPane.BaseConfPanel):
         #region --------------------------------------------------> Data Steps
         stepDict = self.SetStepDictDP()
         stepDict['Files'] = {
-            mConfig.core.fnInitial.format(self.rDate, '01'): self.dfI,
-            mConfig.core.fnFloat.format(self.rDate, '02')  : self.dfF,
-            mConfig.core.fnTrans.format(self.rDate, '03')  : self.dfT,
-            mConfig.core.fnNorm.format(self.rDate, '04')   : self.dfN,
-            mConfig.core.fnImp.format(self.rDate, '05')    : self.dfIm,
-            self.rMainData.format(self.rDate, '06')        : self.dfR,
+            mConfig.core.fnInitial.format(self.rDate, '01') : self.dfI,
+            mConfig.core.fnFloat.format(self.rDate,   '02') : self.dfF,
+            mConfig.core.fnMinRep.format(self.rDate,  '03') : self.dfMR,
+            mConfig.core.fnTrans.format(self.rDate,   '04') : self.dfT,
+            mConfig.core.fnNorm.format(self.rDate,    '05') : self.dfN,
+            mConfig.core.fnImp.format(self.rDate,     '06') : self.dfIm,
+            self.rMainData.format(self.rDate,         '07') : self.dfR,
         }
-        stepDict['R'] = self.rMainData.format(self.rDate, '06')
+        stepDict['R'] = self.rMainData.format(self.rDate, '07')
         #endregion -----------------------------------------------> Data Steps
 
         return self.WriteOutputData(stepDict)
