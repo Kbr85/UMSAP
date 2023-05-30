@@ -23,6 +23,7 @@ from wx import aui
 
 from config.config import config as mConfig
 from core     import method as cMethod
+from core     import pane   as cPane
 from core     import widget as cWidget
 from corr     import pane   as corrPane
 from dataprep import pane   as dataPane
@@ -178,6 +179,8 @@ class ResControlExp(wx.Panel):
     cName = 'ResControlExpPane'
 
     dWidget = {
+        mConfig.corr.nPane : cPane.ResControlExpConfGroups,
+        mConfig.data.nPane : cPane.ResControlExpConfGroups,
         mConfig.prot.nPane : protPane.ResControlExpConf,
         mConfig.limp.nPane : limpPane.ResControlExpConf,
         mConfig.tarp.nPane : tarpPane.ResControlExpConf,

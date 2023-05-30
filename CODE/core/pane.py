@@ -41,7 +41,8 @@ from core import window    as cWindow
 class BaseConfPanel(
     scrolled.ScrolledPanel,
     cWidget.StaticBoxes,
-    cWidget.ButtonOnlineHelpClearAllRun
+    cWidget.ButtonOnlineHelpClearAllRun,
+    cWidget.ResControl
     ):
     """Creates the skeleton of a configuration panel. This includes the
         wx.StaticBox, the bottom Buttons, the statusbar and some widgets.
@@ -52,6 +53,9 @@ class BaseConfPanel(
             Parent of the widgets.
         rightDelete: Boolean
             Enables clearing wx.StaticBox input with right click.
+        label: str
+            Label for the Result - Control experiments. Default is '' which
+            result in mConfig.core.lStResCtrl being used.
 
         Attributes
         ----------
@@ -113,7 +117,12 @@ class BaseConfPanel(
             Object to work with the sequences of the proteins.
     """
     #region --------------------------------------------------> Instance setup
-    def __init__(self, parent:wx.Window, rightDelete:bool=True) -> None:
+    def __init__(
+        self,
+        parent:wx.Window,
+        rightDelete:bool = True,
+        label:str        = '',
+        ) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
         self.cParent = parent
@@ -226,6 +235,7 @@ class BaseConfPanel(
         #--------------> pd.DataFrames for:
         self.dfI     = pd.DataFrame()                                           # Initial and
         self.dfF     = pd.DataFrame()                                           # Data as float and 0 and '' values as np.nan
+        self.dfMR    = pd.DataFrame()                                           # Data after removing rows with less than valid number of replicates
         self.dfT     = pd.DataFrame()                                           # Transformed values
         self.dfN     = pd.DataFrame()                                           # Normalized Values
         self.dfIm    = pd.DataFrame()                                           # Imputed values
@@ -248,6 +258,8 @@ class BaseConfPanel(
         # #--------------> Obj for files
         self.rIFileObj:Optional[cFile.CSVFile]      = None
         self.rSeqFileObj: Optional[cFile.FastaFile] = None
+        #------------------------------> To store labels and minimum replicates
+        self.rLbDict = {}
         #------------------------------> Parent init
         scrolled.ScrolledPanel.__init__(self, parent, name=self.cName)
 
@@ -269,6 +281,8 @@ class BaseConfPanel(
             labelC      = self.cLColumnBox,
             rightDelete = rightDelete,
         )
+
+        cWidget.ResControl.__init__(self, self.wSbColumn, label=label)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -687,9 +701,10 @@ class BaseConfPanel(
         stepDict = {
             'DP': {
                 mConfig.core.ltDPKeys[0] : mConfig.core.fnFloat.format(self.rDate, '02'),
-                mConfig.core.ltDPKeys[1] : mConfig.core.fnTrans.format(self.rDate, '03'),
-                mConfig.core.ltDPKeys[2] : mConfig.core.fnNorm.format(self.rDate, '04'),
-                mConfig.core.ltDPKeys[3] : mConfig.core.fnImp.format(self.rDate, '05'),
+                mConfig.core.ltDPKeys[1] : mConfig.core.fnMinRep.format(self.rDate,'03'),
+                mConfig.core.ltDPKeys[2] : mConfig.core.fnTrans.format(self.rDate, '04'),
+                mConfig.core.ltDPKeys[3] : mConfig.core.fnNorm.format(self.rDate,  '05'),
+                mConfig.core.ltDPKeys[4] : mConfig.core.fnImp.format(self.rDate,   '06'),
             },
         }
         #endregion ------------------------------------------------>
@@ -712,17 +727,18 @@ class BaseConfPanel(
         #region --------------------------------------------------->
         resDict = {
             'Files' : {
-                mConfig.core.fnInitial.format(self.rDate, '01')   : self.dfI,
-                mConfig.core.fnFloat.format(self.rDate, '02')     : self.dfF,
-                mConfig.core.fnTrans.format(self.rDate, '03')     : self.dfT,
-                mConfig.core.fnNorm.format(self.rDate, '04')      : self.dfN,
-                mConfig.core.fnImp.format(self.rDate, '05')       : self.dfIm,
-                mConfig.core.fnTargetProt.format(self.rDate, '06'): self.dfTP,
-                mConfig.core.fnExclude.format(self.rDate, '07')   : self.dfE,
-                mConfig.core.fnScore.format(self.rDate, '08')     : self.dfS,
-                self.rMainData.format(self.rDate, '09')           : self.dfR,
+                mConfig.core.fnInitial.format(self.rDate,    '01') : self.dfI,
+                mConfig.core.fnFloat.format(self.rDate,      '02') : self.dfF,
+                mConfig.core.fnMinRep.format(self.rDate,     '03') : self.dfMR,
+                mConfig.core.fnTrans.format(self.rDate,      '04') : self.dfT,
+                mConfig.core.fnNorm.format(self.rDate,       '05') : self.dfN,
+                mConfig.core.fnImp.format(self.rDate,        '06') : self.dfIm,
+                mConfig.core.fnTargetProt.format(self.rDate, '07') : self.dfTP,
+                mConfig.core.fnExclude.format(self.rDate,    '08') : self.dfE,
+                mConfig.core.fnScore.format(self.rDate,      '09') : self.dfS,
+                self.rMainData.format(self.rDate,            '10') : self.dfR,
             },
-            'R' : self.rMainData.format(self.rDate, '09'),
+            'R' : self.rMainData.format(self.rDate, '10'),
         }
         #endregion ------------------------------------------------>
 
@@ -875,12 +891,7 @@ class BaseConfPanel(
                 'V' : mConfig.core.dictVersion,
                 'I' : self.rDO.PrintDI(),
                 'CI': self.rDO.PrintDO(),
-                'DP': {
-                    mConfig.core.ltDPKeys[0] : stepDict['DP'][mConfig.core.ltDPKeys[0]],
-                    mConfig.core.ltDPKeys[1] : stepDict['DP'][mConfig.core.ltDPKeys[1]],
-                    mConfig.core.ltDPKeys[2] : stepDict['DP'][mConfig.core.ltDPKeys[2]],
-                    mConfig.core.ltDPKeys[3] : stepDict['DP'][mConfig.core.ltDPKeys[3]],
-                },
+                'DP': stepDict['DP'],
             }
         }
         #--------------> DataPrep Util does not have dfR
@@ -1200,7 +1211,7 @@ class BaseConfPanel(
 #---
 
 
-class BaseConfPanelMod(BaseConfPanel, cWidget.ResControl):
+class BaseConfPanelMod(BaseConfPanel):
     """Base configuration for a panel of a module.
 
         Parameters
@@ -1246,11 +1257,7 @@ class BaseConfPanelMod(BaseConfPanel, cWidget.ResControl):
         self.cTTSample   = getattr(self, 'cTTSample', mConfig.core.ttStSample)
         self.cTTCorrectP = getattr(self, 'cTTCorrectP', mConfig.core.ttStCorrectP)
         #------------------------------> Parent class init
-        BaseConfPanel.__init__(self, parent, rightDelete=rightDelete)
-
-        cWidget.ResControl.__init__(self, self.wSbColumn)
-        #------------------------------>
-        self.rLbDict = {}
+        super().__init__(parent, rightDelete=rightDelete)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
@@ -1560,7 +1567,7 @@ class BaseResControlExpConf(wx.Panel):
         self.cHTotalField = getattr(self, 'cHTotalField', '#')
         #------------------------------> Size
         self.cSLabel      = getattr(self, 'cSLabel',      (60,22))
-        self.cSSWLabel    = getattr(self, 'cSSWLabel',    (670,135))
+        self.cSSWLabel    = getattr(self, 'cSSWLabel',    (670,165))
         self.cSSWMatrix   = getattr(self, 'cSSWMatrix',   (670,670))
         self.cSTotalField = getattr(self, 'cSTotalField', (35,22))
         #------------------------------> Tooltip
@@ -1573,8 +1580,9 @@ class BaseResControlExpConf(wx.Panel):
                                                 'to type the column numbers.'))
         self.cTTTotalField = getattr(self, 'cTTTotalField', [])
         #------------------------------> Validator
-        self.cVColNumList = cValidator.NumberList(
-            sep=' ', opt=True, vMin=0, vMax=self.rNColF)
+        self.cColNumSep = getattr(self, 'cColNumSep', mConfig.core.numListSep)
+        self.cVColNumList = getattr(self, 'cVColNumList', cValidator.NumberList(
+            sep=self.cColNumSep, opt=True, vMin=0, vMax=self.rNColF))
         #------------------------------> Messages
         self.mNoControlT = getattr(
             self, 'mNoControl', 'The Control Type must defined.')
@@ -1582,6 +1590,7 @@ class BaseResControlExpConf(wx.Panel):
             self, 'mLabelEmpty', 'All labels and control name must be defined.')
         #------------------------------>
         self.rResCtrlText = ''
+        self.rMinRep      = ''
         #------------------------------> super()
         super().__init__(parent, name=name, size=(700,700))
         #endregion --------------------------------------------> Initial Setup
@@ -1630,8 +1639,8 @@ class BaseResControlExpConf(wx.Panel):
         self.wSwMatrix.SetSizer(self.sSWMatrix)
         #------------------------------> All in Sizer
         self.sSizer = wx.BoxSizer(wx.VERTICAL)
-        self.sSizer.Add(self.wSwLabel, 0, wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP, 5)
-        self.sSizer.Add(self.sSetup, 0, wx.EXPAND|wx.LEFT|wx.RIGHT|wx.BOTTOM, 5)
+        self.sSizer.Add(self.wSwLabel,  0, wx.EXPAND|wx.ALL, 5)
+        self.sSizer.Add(self.sSetup,    0, wx.EXPAND|wx.ALL, 5)
         self.sSizer.Add(self.wSwMatrix, 1, wx.EXPAND|wx.ALL, 5)
         self.SetSizer(self.sSizer)
         #endregion ---------------------------------------------------> Sizers
@@ -1673,6 +1682,21 @@ class BaseResControlExpConf(wx.Panel):
             bool
         """
         return cMethod.OnGUIMethod(self.LabelNumber, event)
+    #---
+
+    def OnValidReplicates(self, event:Union[wx.Event, str]) -> bool:
+        """Add the Valid Replicates values.
+
+            Parameters
+            ----------
+            event: wx.Event
+                Information about the event.
+
+            Returns
+            -------
+            bool
+        """
+        return cMethod.OnGUIMethod(self.AddValuesValidReplicates)
     #---
 
     def OnClear(self, event:wx.Event) -> bool:                                  # pylint: disable=unused-argument
@@ -1830,26 +1854,46 @@ class BaseResControlExpConf(wx.Panel):
         """
         #region -------------------------------------------------> Check input
         #------------------------------> Variables
-        tcList = []
-        oText  = ''
+        tcList   = []
+        oText    = ''
+        oTextRep = ''
         #------------------------------> Individual fields and list of tc
         for v in self.rFSectTcDict.values():
             #--------------> Check values
             for j in v:
-                #--------------> Add to lists
-                tcList.append(j)
-                oText = f"{oText}{j.GetValue()}, "
-                #--------------> Check
-                a, b = j.GetValidator().Validate()
+                #--------------> Check Col Num
+                a, b = j.wTcCol.GetValidator().Validate()
                 if not a:
                     msg = mConfig.core.mResCtrlWin.format(b[1])
                     e = RuntimeError(b[2])
                     cWindow.Notification(
                         'errorF', msg=msg, parent=self, tException=e)
-                    j.SetFocus()
+                    j.wTcCol.SetFocus()
                     return False
+                #--------------> Check Min Rep
+                a, b = j.wTcRep.GetValidator().Validate()
+                if not a:
+                    msg = mConfig.core.mMinRep.format(b[1])
+                    e = RuntimeError(b[2])
+                    cWindow.Notification(
+                        'errorF', msg=msg, parent=self, tException=e)
+                    j.wTcRep.SetFocus()
+                    return False
+                #--------------> Check MinRep <= Total Col Number
+                a, b = j.Validate()
+                if not a:
+                    e = RuntimeError(b[2])
+                    cWindow.Notification(
+                        'errorF', msg=b[2], parent=self, tException=e)
+                    j.wTcRep.SetFocus()
+                    return False
+                #--------------> Add to lists
+                tcList.append(j.wTcCol)
+                oText    = f"{oText}{j.wTcCol.GetValue()}, "
+                oTextRep = f"{oTextRep}{j.wTcRep.GetValue()}, "
             #--------------> Add row delimiter
-            oText = f"{oText[0:-2]}; "
+            oText    = f"{oText[0:-2]}; "
+            oTextRep = f"{oTextRep[0:-2]}; "
         #------------------------------> All cannot be empty
         a, b = cCheck.AllTcEmpty(tcList)
         if a:
@@ -1859,7 +1903,7 @@ class BaseResControlExpConf(wx.Panel):
         #------------------------------> All unique
         a, b = cCheck.TcUniqueColNumbers(tcList)
         if not a:
-            e = RuntimeError(b[2]) # type: ignore
+            e = RuntimeError(b[2])                                              # type: ignore
             cWindow.Notification(
                 'errorF',
                 msg        = mConfig.core.mRepeatColNum,
@@ -1871,21 +1915,24 @@ class BaseResControlExpConf(wx.Panel):
 
         #region ---------------------------------------------------> Export
         self.rResCtrlText = oText                                               # Save the value for export later.
+        self.rMinRep      = oTextRep
         #------------------------------>
         if export:
-            self.Export2TopParent(oText)
+            self.Export2TopParent(oText, oTextRep)
         #endregion ------------------------------------------------> Export
 
         return True
     #---
 
-    def Export2TopParent(self, oText:str) -> bool:
+    def Export2TopParent(self, oText:str, oTextRep:str) -> bool:
         """Export the data to the top parent.
 
             Parameters
             ----------
             oText: str
                 String to show in Result - Control.
+            oTextRep: str
+                String for the minimum valid replicate numbers.
 
             Returns
             -------
@@ -1904,26 +1951,27 @@ class BaseResControlExpConf(wx.Panel):
                 N             : [values], # N row of labels
                 'Control'     : 'Name',
                 'ControlType' : Control type,
+                'MinRep'      : List of list similar to Results and Control,
             }
-            And topParent.controlType will be also set to the corresponding
-            value.
         """
         #region ----------------------------------------> Set parent variables
+        rLbDict = {}
         #------------------------------> Labels
-        self.cTopParent.rLbDict = {}                                            # type: ignore
         for k, v in self.rLSectTcDict.items():
-            self.cTopParent.rLbDict[k] = []                                     # type: ignore
+            rLbDict[k] = []
             for j in v:
-                self.cTopParent.rLbDict[k].append(j.GetValue())                 # type: ignore
+                rLbDict[k].append(j.GetValue())
         #------------------------------> Control Name
-        self.cTopParent.rLbDict['Control'] = [self.wControlN.wTc.GetValue()]    # type: ignore
-        #------------------------------> Control type if needed
-        if self.rPName == mConfig.prot.nPane :
-            self.cTopParent.rLbDict['ControlType'] = self.rControlVal           # type: ignore
+        rLbDict['Control'] = [self.wControlN.wTc.GetValue()]
+        #------------------------------> Control Type
+        rLbDict['ControlType'] = self.rControlVal
+        #------------------------------>
+        rLbDict['MinRep'] = f"{oTextRep[0:-2]}"
         #endregion -------------------------------------> Set parent variables
 
         #region -----------------------------------------------> Set tcResults
         self.cTopParent.wTcResults.SetValue(f"{oText[0:-2]}")                   # type: ignore
+        self.cTopParent.rLbDict = rLbDict                                       # type: ignore
         #endregion --------------------------------------------> Set tcResults
 
         return True
@@ -1937,20 +1985,25 @@ class BaseResControlExpConf(wx.Panel):
             bool
         """
         #region -------------------------------------------------> Check input
-        if not (tcFieldsVal := self.cTopParent.wTcResults.GetValue()) != '':    # type: ignore
+        if not (tcFieldVal := self.cTopParent.wTcResults.GetValue()) != '':     # type: ignore
             return False
         #endregion ----------------------------------------------> Check input
 
+        #region ---------------------------------------------------> Variables
+        rLbDict = self.cTopParent.rLbDict                                       # type: ignore
+        tcFieldValMinRep = rLbDict['MinRep']
+        #endregion ------------------------------------------------> Variables
+
         #region --------------------------------------------------> Add Labels
         #------------------------------> Set the label numbers
-        for k, v in self.cTopParent.rLbDict.items():                            # type: ignore
-            if k not in ['Control', 'ControlType']:
+        for k, v in rLbDict.items():
+            if k not in ['Control', 'ControlType', 'MinRep']:
                 self.rLSectWidget[k].wTc.SetValue(str(len(v)))
         #------------------------------> Create labels fields
         self.LabelNumber('test')
         #------------------------------> Fill. 2 iterations needed. Improve
-        for k, v in self.cTopParent.rLbDict.items():                            # type: ignore
-            if k not in ['Control', 'ControlType']:
+        for k, v in rLbDict.items():
+            if k not in ['Control', 'ControlType', 'MinRep']:
                 for j, t in enumerate(v):
                     self.rLSectTcDict[k][j].SetValue(t)
             elif k == 'Control':
@@ -1960,8 +2013,8 @@ class BaseResControlExpConf(wx.Panel):
         #region -------------------------------------------------> Set Control
         if self.rPName == mConfig.prot.nPane:
             #------------------------------>
-            cT = self.cTopParent.rLbDict['ControlType'] # type: ignore
-            self.wCbControl.SetValue(cT) # type: ignore
+            cT = rLbDict['ControlType']
+            self.wCbControl.SetValue(cT)                                        # type: ignore
             #------------------------------>
             if cT == mConfig.prot.oControlType['Ratio']:
                 self.wControlN.wTc.SetEditable(False)
@@ -1972,11 +2025,14 @@ class BaseResControlExpConf(wx.Panel):
         #endregion ------------------------------------------> Create tcFields
 
         #region --------------------------------------------> Add Field Values
-        row = tcFieldsVal.split(";")
+        row = tcFieldVal.split(";")
+        rowMinRep = tcFieldValMinRep.split(";")
         for k, r in enumerate(row):
             fields = r.split(",")
+            fieldsMinRep = rowMinRep[k].split(",")
             for j, f in enumerate(fields):
-                self.rFSectTcDict[k][j].SetValue(f)
+                self.rFSectTcDict[k][j].wTcCol.SetValue(f.strip())
+                self.rFSectTcDict[k][j].wTcRep.SetValue(fieldsMinRep[j].strip())
         #endregion -----------------------------------------> Add Field Values
 
         return True
@@ -2067,14 +2123,78 @@ class BaseResControlExpConf(wx.Panel):
         return True
     #---
 
-    def CheckLabel(self, ctrlT: bool) -> list[int]:
+    def AddWidgetValidReplicates(self) -> bool:
+        """Add the valid replicates widget.
+
+            Returns
+            -------
+            bool
+
+            Notes
+            -----
+            Meant to be called from child class.
+        """
+        #region -------------------------------------------------------->
+        self.wMinRep = cWidget.StaticTextCtrl(
+            self.wSwLabel,
+            setSizer  = True,
+            stLabel   = 'Valid Replicates',
+            stTooltip = ('Minimum number of valid replicates that must be '
+                         'present in a group of samples. If the minimum is not '
+                         'met for any given group the entire row in the data '
+                         'file is discarded.'),
+            tcHint    = '2',
+            tcSize    = (60,22),
+            validator = cValidator.NumberList(sep=' ', opt=True, nN=1, vMin=2),
+        )
+        #------------------------------>
+        self.wMinRep.wTc.Bind(wx.EVT_KILL_FOCUS, self.OnValidReplicates)
+        #endregion ----------------------------------------------------->
+
+        #region -------------------------------------------------------->
+        self.sSWLabelMain.Add(
+            self.wMinRep.Sizer, 0, wx.EXPAND|wx.LEFT|wx.RIGHT, 5)
+        self.sSizer.Fit(self)
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
+    def AddValuesValidReplicates(self) -> bool:
+        """Add the Valid Replicates values to all fields.
+
+            Returns
+            -------
+            bool
+        """
+        #region -------------------------------------------------------->
+        a,_ = self.wMinRep.wTc.GetValidator().Validate()
+        if not a:
+            self.wMinRep.wTc.SetFocus()
+            return False
+        #------------------------------>
+        minRep = self.wMinRep.wTc.GetValue()
+        #endregion ----------------------------------------------------->
+
+        #region -------------------------------------------------------->
+        for k in self.rFSectTcDict.values():
+            for w in k:
+                w.wTcRep.SetValue(minRep)
+        #endregion ----------------------------------------------------->
+
+        return True
+    #---
+
+    def CheckLabel(self, ctrl:bool=True, ctrlT:bool=False) -> list[int]:
         """Check the input in the Label section before creating the fields
             for column numbers.
 
             Parameters
             ----------
+            ctrl: bool
+                Check (True) or not (False) the control label.
             ctrlT: bool
-                Check (True) or not (False) the control options.
+                Check (True) or not (False) the control type options.
 
             Returns
             -------
@@ -2099,13 +2219,14 @@ class BaseResControlExpConf(wx.Panel):
         #endregion -------------------------------------> Label numbers & Text
 
         #region ---------------------------------------------------> Control
-        if self.wControlN.wTc.GetValue() == '':
-            cWindow.Notification(
-                'errorF', msg=self.mLabelEmpty, parent=self)
-            return []
+        if ctrl:
+            if self.wControlN.wTc.GetValue() == '':
+                cWindow.Notification(
+                    'errorF', msg=self.mLabelEmpty, parent=self)
+                return []
         #------------------------------> Control Type
         if ctrlT:
-            if not self.wCbControl.GetValidator().Validate()[0]:# type: ignore
+            if not self.wCbControl.GetValidator().Validate()[0]:                # type: ignore
                 cWindow.Notification(
                     'errorF', msg=self.mNoControlT, parent=self)
                 return []
@@ -2248,5 +2369,155 @@ class NPlots(wx.Panel):
         #endregion --------------------------------------------------> Widgets
     #---
     #endregion -----------------------------------------------> Instance setup
+#---
+
+
+class ResControlExpConfGroups(BaseResControlExpConf):
+    """Creates the configuration panel for the Results - Control Experiments
+        dialog when called from the CorrA and DataPrep utilities.
+
+        Parameters
+        ----------
+        parent: wx.Window
+            Parent of the panel
+        topParent: wx.Window
+            Top parent window
+        NColF: int
+            Total number of columns present in the Data File
+    """
+    #region -----------------------------------------------------> Class setup
+    cName = mConfig.core.npResCtrlGroup
+    #------------------------------> Needed by ResControlExpConfBase
+    cStLabel   = [f"{mConfig.core.lStGroup}"]
+    cLabelText = ['Group']
+    #------------------------------> Tooltips
+    cTTTotalField = [f'Set the number of {mConfig.core.lStGroup}.']
+    #------------------------------> Size
+    cSSWLabel = (670, 90)
+    #endregion --------------------------------------------------> Class setup
+
+    #region --------------------------------------------------> Instance setup
+    def __init__(self, parent, topParent, NColF):
+        """ """
+        #region -----------------------------------------------> Initial Setup
+        self.cVColNumList = cValidator.NumberList(
+            sep=mConfig.core.numListSep, opt=False, vMin=0, vMax=NColF)
+        #------------------------------>
+        super().__init__(parent, self.cName, topParent, NColF)
+        #endregion --------------------------------------------> Initial Setup
+
+        #region -----------------------------------------------------> Widgets
+        self.wControlN.wSt.Hide()
+        self.wControlN.wTc.Hide()
+        #endregion --------------------------------------------------> Widgets
+
+        #region -----------------------------------------------> Initial State
+        self.AddWidgetValidReplicates()
+        self.SetInitialState()
+        #endregion --------------------------------------------> Initial State
+    #---
+    #endregion -----------------------------------------------> Instance setup
+
+    #region ---------------------------------------------------> Class methods
+    def Create(self) -> bool:
+        """Create the fields in the white panel.
+
+            Parameters
+            ----------
+            event : wx.Event
+                Information about the event.
+
+            Return
+            ------
+            bool
+        """
+        #region -------------------------------------------------> Check input
+        if not (n := self.CheckLabel(ctrl=False)):
+            return False
+        #endregion ----------------------------------------------> Check input
+
+        #region ---------------------------------------------------> Variables
+        NCol = 2
+        NRow = n[0]
+        NExp = n[0]
+        #endregion ------------------------------------------------> Variables
+
+        #region -------------------------------------------> Remove from sizer
+        self.sSWMatrix.Clear(delete_windows=False)
+        #endregion ----------------------------------------> Remove from sizer
+
+        #region --------------------------------> Create/Destroy wx.StaticText
+        #------------------------------> Destroy
+        for k, v in self.rFSectStDict.items():
+            for j in range(0, len(v)):
+                v[-1].Destroy()
+                v.pop()
+        #------------------------------> Create
+        for k, v in self.rLSectTcDict.items():
+            #--------------> New row
+            row = []
+            #--------------> Fill row
+            for j in v:
+                row.append(wx.StaticText(self.wSwMatrix, label=j.GetValue()))
+            #--------------> Assign
+            self.rFSectStDict[k] = row
+        #endregion -----------------------------> Create/Destroy wx.StaticText
+
+        #region ----------------------------------> Create/Destroy wx.TextCtrl
+        #------------------------------> Add new fields
+        for k in range(0, NExp):
+            #------------------------------>
+            row = self.rFSectTcDict.get(k, [])
+            #------------------------------>
+            if row:
+                continue
+            #------------------------------> Column numbers and Min Rep
+            row.append(cWidget.TextCtrlMinRep(
+                self.wSwMatrix, self.cVColNumList, self.cColNumSep,
+            ))
+            #------------------------------>
+            self.rFSectTcDict[k] = row
+            #------------------------------>
+            continue
+        #------------------------------> Destroy not needed old field
+        for k in range(NExp, len(self.rFSectTcDict.keys())):
+            row = self.rFSectTcDict.get(k, [])
+            if row:
+                #------------------------------> Destroy widget
+                _ = [x.Destroy() for x in row]
+                #------------------------------> Remove key - value
+                self.rFSectTcDict.pop(k)
+        #endregion -------------------------------> Create/Destroy wx.TextCtrl
+
+        #region ------------------------------------------------> Setup Sizers
+        #------------------------------> Adjust size
+        self.sSWMatrix.SetCols(NCol)
+        self.sSWMatrix.SetRows(NRow)
+        #------------------------------> Add widgets
+        #--------------> Experiments
+        for r, l in enumerate(self.rFSectStDict[0], 0):
+            #-------------->
+            self.sSWMatrix.Add(
+                l, 0, wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
+            for w in self.rFSectTcDict[r]:
+                w.SetSizer()                                                    # wx. Destroy child sizers
+                self.sSWMatrix.Add(w.sSizer, 0, wx.EXPAND|wx.ALL, 5)
+        #------------------------------> Grow Columns
+        for k in range(1, NCol):
+            if not self.sSWMatrix.IsColGrowable(k):
+                self.sSWMatrix.AddGrowableCol(k, 1)
+            else:
+                pass
+        #------------------------------> Update sizer
+        self.sSWMatrix.Layout()
+        #endregion ---------------------------------------------> Setup Sizers
+
+        #region --------------------------------------------------> Set scroll
+        self.wSwMatrix.SetupScrolling()
+        #endregion -----------------------------------------------> Set scroll
+
+        return True
+    #---
+    #endregion ------------------------------------------------> Class methods
 #---
 #endregion ----------------------------------------------------------> Classes

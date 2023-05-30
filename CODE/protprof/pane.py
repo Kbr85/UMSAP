@@ -54,6 +54,7 @@ class ProtProf(cPane.BaseConfPanelMod):
                 1            : ['RP1', 'RP2'],
                 'Control'    : ['TheControl'],
                 'ControlType': 'One Control per Column',
+                'MinRep'     : Similar to ResCtrl,
             }
         See Parent classes for more attributes.
 
@@ -84,6 +85,7 @@ class ProtProf(cPane.BaseConfPanelMod):
                     'DP': {
                         'dfI' : Name of the file with initial data as float.
                         'dfT' : Name of the file with transformed data.
+                        'dfMR': Name of the file with the minimum valid replicates.
                         'dfN' : Name of the file with normalized data.
                         'dfIm': Name of the file with imputed data.
                     }
@@ -352,10 +354,13 @@ class ProtProf(cPane.BaseConfPanelMod):
             self.wScore.wTc.SetValue(str(dataI.ocScore))
             self.wExcludeProt.wTc.SetValue(" ".join(map(str, dataI.ocExcludeR)))
             self.wTcResults.SetValue(dataI.resCtrl)
-            self.rLbDict[0] = dataI.labelA
-            self.rLbDict[1] = dataI.labelB
-            self.rLbDict['ControlType'] = dataI.ctrlType
-            self.rLbDict['Control'] = dataI.ctrlName
+            self.rLbDict = {
+                0            : dataI.labelA,
+                1            : dataI.labelB,
+                'Control'    : dataI.ctrlName,
+                'ControlType': dataI.ctrlType,
+                'MinRep'     : dataI.minRep,
+            }
             #------------------------------>
             self.IFileEnter(dataI.iFile)
             self.OnImpMethod('fEvent')
@@ -417,6 +422,7 @@ class ProtProf(cPane.BaseConfPanelMod):
                 1            : ['RP1', 'RP2'],
                 'Control'    : ['1Control'],
                 'ControlType': 'One Control',
+                'MinRep'     : '2;2,2;2,2'
             }
             #--> Ratio 2 Cond and 2 TP
             # self.wTcResults.SetValue('106 116 126, 101 111 121; 108 118 128, 103 113 123')
@@ -630,6 +636,7 @@ class ProtProf(cPane.BaseConfPanelMod):
         resCtrlFlat   = cMethod.ResControl2Flat(resCtrl)
         resCtrlDF     = cMethod.ResControl2DF(resCtrl, 2+len(excludeProt)+1)
         resCtrlDFFlat = cMethod.ResControl2Flat(resCtrlDF)
+        minRepList    = cMethod.ResControl2ListNumber(self.rLbDict['MinRep'])
         ocColumn      = [geneName, detectedProt, scoreCol] + excludeProt + resCtrlFlat
         dI = {
             'iFileN'      : self.cLiFile,
@@ -648,11 +655,12 @@ class ProtProf(cPane.BaseConfPanelMod):
             'ocGene'      : self.cLGene,
             'ocScore'     : self.cLScoreCol,
             'ocExcludeR'  : self.cLExcludeProt,
+            'resCtrl'     : mConfig.core.lStResCtrlS,
+            'minRep'      : mConfig.core.lStValRep,
             'labelA'      : self.cLCond,
             'labelB'      : self.cLRP,
             'ctrlType'    : f"Control {self.cLCtrlType}",
             'ctrlName'    : f"Control {self.cLCtrlName}",
-            'resCtrl'     : mConfig.core.lStResCtrlS,
         }
         if impMethod != mConfig.data.lONormDist:
             dI.pop('shift')
@@ -683,6 +691,8 @@ class ProtProf(cPane.BaseConfPanelMod):
             ocColumn      = ocColumn,                                            # type: ignore
             ocResCtrl     = resCtrl,
             resCtrl       = self.wTcResults.GetValue(),
+            minRep        = self.rLbDict['MinRep'],
+            minRepList    = minRepList,
             labelA        = self.rLbDict[0],
             labelB        = self.rLbDict[1],
             ctrlType      = self.rLbDict['ControlType'],
@@ -807,6 +817,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         #endregion -----------------------------------------------------> Bind
 
         #region -----------------------------------------------> Initial State
+        self.AddWidgetValidReplicates()
         self.SetInitialState()
         #endregion --------------------------------------------> Initial State
     #---
@@ -851,7 +862,9 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
             wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
             5
         )
-        self.sSWMatrix.Add(self.rFSectTcDict[0][0], 0, wx.EXPAND|wx.ALL, 5)
+        w = self.rFSectTcDict[0][0]
+        w.SetSizer()
+        self.sSWMatrix.Add(w.sSizer, 0, wx.EXPAND|wx.ALL, 5)
         #------------------------------>
         for k in range(2, NCol):
             self.sSWMatrix.AddSpacer(1)
@@ -877,7 +890,8 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
             )
             #--------------> Add tc
             for j in self.rFSectTcDict[K]:
-                self.sSWMatrix.Add(j, 0, wx.EXPAND|wx.ALL, 5)
+                j.SetSizer()
+                self.sSWMatrix.Add(j.sSizer, 0, wx.EXPAND|wx.ALL, 5)
             K += 1
         #endregion ---------------------------------------------> Other fields
 
@@ -914,11 +928,9 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         )
         #------------------------------>
         for k in self.rFSectTcDict[0]:
+            k.SetSizer()
             self.sSWMatrix.Add(
-                k,
-                0,
-                wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL,
-                5
+                k.sSizer, 0, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5
             )
         #endregion ----------------------------------------------> Control Row
 
@@ -936,8 +948,9 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
             )
             #------------------------------> Add wx.TextCtrl
             for j in v:
+                j.SetSizer()
                 self.sSWMatrix.Add(
-                    j, 0, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL,5)
+                    j.sSizer, 0, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|wx.ALL,5)
         #endregion -----------------------------------------------> Other Rows
 
         return True
@@ -978,7 +991,8 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
             )
             #------------------------------>
             for j in v:
-                self.sSWMatrix.Add(j, 0, wx.EXPAND|wx.ALL, 5)
+                j.SetSizer()
+                self.sSWMatrix.Add(j.sSizer, 0, wx.EXPAND|wx.ALL, 5)
         #endregion -----------------------------------------------> Other rows
 
         return True
@@ -1016,7 +1030,8 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
             )
             #------------------------------>
             for j in v:
-                self.sSWMatrix.Add(j, 0, wx.EXPAND|wx.ALL, 5)
+                j.SetSizer()
+                self.sSWMatrix.Add(j.sSizer, 0, wx.EXPAND|wx.ALL, 5)
         #endregion -----------------------------------------------> Other rows
 
         return True
@@ -1101,13 +1116,9 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
                     j.Destroy()
                 #--------------> New Row and wx.TextCtrl
                 row = []
-                row.append(
-                    wx.TextCtrl(
-                        self.wSwMatrix,
-                        size      = self.cSLabel,
-                        validator = self.cVColNumList,
-                    )
-                )
+                row.append(cWidget.TextCtrlMinRep(
+                    self.wSwMatrix, self.cVColNumList, self.cColNumSep,
+                ))
                 #--------------> Assign & Continue to next for step
                 self.rFSectTcDict[k] = row
                 continue
@@ -1115,13 +1126,9 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
             if Nr > lRow:
                 #-------------->  Create
                 for j in range(lRow, Nr):
-                    row.append(
-                        wx.TextCtrl(
-                            self.wSwMatrix,
-                            size      = self.cSLabel,
-                            validator = self.cVColNumList,
-                        )
-                    )
+                    row.append(cWidget.TextCtrlMinRep(
+                        self.wSwMatrix, self.cVColNumList, self.cColNumSep,
+                    ))
                 #-------------->  Add to dict
                 self.rFSectTcDict[k] = row
             else:
@@ -1143,7 +1150,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         if control != self.rControlVal:
             for v in self.rFSectTcDict.values():
                 for j in v:
-                    j.SetValue('')
+                    j.wTcCol.SetValue('')
         #endregion -------------------------------> Create/Destroy wx.TextCtrl
 
         #region ------------------------------------------------> Setup Sizers
@@ -1190,16 +1197,16 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
 
         #region --------------------------------------------------> Check Ctrl
         if ctrlType  == self.cCtrlType['OC']:
-            if self.rFSectTcDict[0][0].GetValue().strip() == '':
+            if self.rFSectTcDict[0][0].wTcCol.GetValue().strip() == '':
                 ctrl = False
         elif ctrlType == self.cCtrlType['OCC']:
             for w in self.rFSectTcDict[0]:
-                if w.GetValue().strip() == '':
+                if w.wTcCol.GetValue().strip() == '':
                     ctrl = False
                     break
         else:
             for w in self.rFSectTcDict.values():
-                if w[0].GetValue().strip() == '':
+                if w[0].wTcCol.GetValue().strip() == '':
                     ctrl = False
                     break
         #------------------------------>
@@ -1210,7 +1217,7 @@ class ResControlExpConf(cPane.BaseResControlExpConf):
         #endregion -----------------------------------------------> Check Ctrl
 
         #region --------------------------------------------------->
-        self.Export2TopParent(self.rResCtrlText)
+        self.Export2TopParent(self.rResCtrlText, self.rMinRep)
         #endregion ------------------------------------------------>
 
         return True

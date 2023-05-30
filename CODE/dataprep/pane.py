@@ -23,8 +23,6 @@ import wx
 from config.config import config as mConfig
 from core     import method    as cMethod
 from core     import pane      as cPane
-from core     import validator as cValidator
-from core     import widget    as cWidget
 from dataprep import method    as dataMethod
 #endregion ----------------------------------------------------------> Imports
 
@@ -61,10 +59,11 @@ class DataPrep(cPane.BaseConfPanel):
                     'I' : Dict with User Input as given. Keys are label like in the Tab GUI,
                     'CI': Dict with Processed User Input. Keys are attributes of UserData,
                     'DP': {
-                        'dfF' : Name of the file with initial data as float,
-                        'dfT' : Name of the file with transformed data,
-                        'dfN' : Name of the file with normalized data,
-                        'dfIm': Name of the file with imputed data,
+                        'dfF' : Name of file with initial data as float
+                        'dfMP': Name of file with minimum valid replicate filter
+                        'dfT' : Name of file with transformed data.
+                        'dfN' : Name of file with normalized data.
+                        'dfIm': Name of file with imputed data.
                     },
                 }
             }
@@ -93,54 +92,23 @@ class DataPrep(cPane.BaseConfPanel):
     def __init__(self, parent:wx.Window) -> None:
         """ """
         #region -----------------------------------------------> Initial Setup
-        super().__init__(parent)
+        super().__init__(parent, label=mConfig.core.lStResCtrlGroup)
         #endregion --------------------------------------------> Initial Setup
 
         #region -----------------------------------------------------> Widgets
         self.wSbValue.Hide()
-
-        self.wColAnalysis = cWidget.StaticTextCtrl(
-            self.wSbColumn,
-            stLabel   = self.cLColAnalysis,
-            stTooltip = self.cTTColAnalysis,
-            tcSize    = self.cSTc,
-            tcHint    = 'e.g. 130-135',
-            validator = cValidator.NumberList(numType='int', sep=' ', vMin=0),
-        )
         #endregion --------------------------------------------------> Widgets
 
         #region ------------------------------------------------------> Sizers
         #------------------------------> Sizer Columns
         self.sSbColumnWid.Add(
-            1, 1,
+            self.sRes,
             pos    = (0,0),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
+            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.EXPAND,
+            border = 0,
+            span   = (0,6),
         )
-        self.sSbColumnWid.Add(
-            self.wColAnalysis.wSt,
-            pos    = (0,1),
-            flag   = wx.ALL|wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT,
-            border = 5,
-            span   = (0,2),
-        )
-        self.sSbColumnWid.Add(
-            self.wColAnalysis.wTc,
-            pos    = (1,1),
-            flag   = wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.ALL,
-            border = 5,
-            span   = (0,4),
-        )
-        self.sSbColumnWid.Add(
-            1, 1,
-            pos    = (0,5),
-            flag   = wx.EXPAND|wx.ALL,
-            border = 5,
-        )
-        self.sSbColumnWid.AddGrowableCol(0,1)
-        self.sSbColumnWid.AddGrowableCol(2,1)
-        self.sSbColumnWid.AddGrowableCol(4,2)
-        self.sSbColumnWid.AddGrowableCol(5,1)
+        self.sSbColumnWid.AddGrowableCol(1,1)
         #------------------------------> Main Sizer
         self.SetSizer(self.sSizer)
         self.sSizer.Fit(self)
@@ -149,7 +117,7 @@ class DataPrep(cPane.BaseConfPanel):
 
         #region ----------------------------------------------> checkUserInput
         rCheckUserInput = {
-            self.cLColAnalysis: [self.wColAnalysis.wTc, mConfig.core.mNZPlusNumCol, True ],
+            self.cLResControl : [self.wTcResults, mConfig.core.mResCtrl, False],
         }
         self.rCheckUserInput = self.rCheckUserInput | rCheckUserInput
         #endregion -------------------------------------------> checkUserInput
@@ -180,9 +148,14 @@ class DataPrep(cPane.BaseConfPanel):
             self.wImputationMethod.wCb.SetValue(dataI.imp)
             self.wShift.wTc.SetValue(str(dataI.shift))
             self.wWidth.wTc.SetValue(str(dataI.width))
-            self.wColAnalysis.wTc.SetValue(" ".join(map(str, dataI.ocResCtrlFlat)))
+            self.wTcResults.SetValue(dataI.resCtrl)
+            self.rLbDict = {
+                0            : dataI.labelA,
+                'MinRep'     : dataI.minRep,
+                'Control'    : [''],
+                'ControlType': '',
+            }
             #------------------------------>
-            self.IFileEnter(dataI.iFile)
             self.OnImpMethod('fEvent')
         else:
             super().SetConfOptions()
@@ -206,10 +179,16 @@ class DataPrep(cPane.BaseConfPanel):
             self.wTransMethod.wCb.SetValue('Log2')
             self.wNormMethod.wCb.SetValue('Median')
             self.wImputationMethod.wCb.SetValue('Normal Distribution')
-            self.wColAnalysis.wTc.SetValue('130-135')
             self.OnImpMethod('fEvent')
             self.wShift.wTc.SetValue('1.8')
             self.wWidth.wTc.SetValue('0.3')
+            self.wTcResults.SetValue('130 131 132 133 134; 135 136 137 138 139; 140 141 142 143 144')
+            self.rLbDict = {
+                0             : ['Group - 1', 'Group - 2', 'Group - 3'],
+                'Control'     : [''],
+                'ControlType' : '',
+                'MinRep'      : '3; 3; 3',
+            }
         #endregion -----------------------------------------------------> Test
 
         return True
@@ -255,11 +234,13 @@ class DataPrep(cPane.BaseConfPanel):
         msgStep = self.cLPdPrepare + 'User input, reading'
         wx.CallAfter(self.rDlg.UpdateStG, msgStep)
         #------------------------------> Variables
-        impMethod   = self.wImputationMethod.wCb.GetValue()
-        colAnalysis = cMethod.Str2ListNumber(
-            self.wColAnalysis.wTc.GetValue(), numType='int', sep=' ')
-        resCtrlFlat = [x for x in range(0, len(colAnalysis))]
-        dI = {
+        impMethod     = self.wImputationMethod.wCb.GetValue()
+        minRepList    = cMethod.ResControl2ListNumber(self.rLbDict['MinRep'])
+        resCtrl       = cMethod.ResControl2ListNumber(self.wTcResults.GetValue())
+        resCtrlFlat   = cMethod.ResControl2Flat(resCtrl)
+        resCtrlDF     = cMethod.ResControl2DF(resCtrl, 0)
+        resCtrlDFFlat = cMethod.ResControl2Flat(resCtrlDF)
+        dI            = {
             'iFileN'       : self.cLiFile,
             'ID'           : self.cLId,
             'cero'         : self.cLCeroTreatD,
@@ -268,7 +249,8 @@ class DataPrep(cPane.BaseConfPanel):
             'imp'          : self.cLImputation,
             'shift'        : self.cLShift,
             'width'        : self.cLWidth,
-            'resCtrl'      : self.cLColAnalysis,
+            'resCtrl'      : mConfig.core.lStResCtrlGroup,
+            'minRep'       : mConfig.core.lStValRep,
         }
         if impMethod != mConfig.data.lONormDist:
             dI.pop('shift')
@@ -287,12 +269,17 @@ class DataPrep(cPane.BaseConfPanel):
             imp           = impMethod,
             shift         = float(self.wShift.wTc.GetValue()),
             width         = float(self.wWidth.wTc.GetValue()),
-            resCtrl       = ', '.join(map(str, colAnalysis)),
-            ocColumn      = colAnalysis,                                        # type: ignore
-            ocResCtrlFlat = colAnalysis,                                        # type: ignore
-            dfColumnR     = resCtrlFlat,
-            dfColumnF     = resCtrlFlat,
-            dfResCtrlFlat = resCtrlFlat,
+            labelA        = self.rLbDict[0],
+            minRep        = self.rLbDict['MinRep'],
+            minRepList    = minRepList,
+            resCtrl       = self.wTcResults.GetValue(),
+            ocResCtrl     = resCtrl,
+            ocResCtrlFlat = resCtrlFlat,
+            ocColumn      = resCtrlFlat,
+            dfColumnR     = resCtrlDFFlat,
+            dfColumnF     = resCtrlDFFlat,
+            dfResCtrl     = resCtrlDF,
+            dfResCtrlFlat = resCtrlDFFlat,
             dI            = dI,
         )
         #endregion ----------------------------------------------------> Input
@@ -316,11 +303,12 @@ class DataPrep(cPane.BaseConfPanel):
         #region --------------------------------------------------> Data Steps
         stepDict = self.SetStepDictDP()
         stepDict['Files'] = {
-            mConfig.core.fnInitial.format(self.rDate, '01'): self.dfI,
-            mConfig.core.fnFloat.format(self.rDate, '02')  : self.dfF,
-            mConfig.core.fnTrans.format(self.rDate, '03')  : self.dfT,
-            mConfig.core.fnNorm.format(self.rDate, '04')   : self.dfN,
-            mConfig.core.fnImp.format(self.rDate, '05')    : self.dfIm,
+            mConfig.core.fnInitial.format(self.rDate, '01') : self.dfI,
+            mConfig.core.fnFloat.format(self.rDate,   '02') : self.dfF,
+            mConfig.core.fnMinRep.format(self.rDate,  '03') : self.dfMR,
+            mConfig.core.fnTrans.format(self.rDate,   '04') : self.dfT,
+            mConfig.core.fnNorm.format(self.rDate,    '05') : self.dfN,
+            mConfig.core.fnImp.format(self.rDate,     '06') : self.dfIm,
         }
         #endregion -----------------------------------------------> Data Steps
 

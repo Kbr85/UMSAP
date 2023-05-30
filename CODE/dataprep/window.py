@@ -118,29 +118,16 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
     cTText   = 'Statistic Information'
     #------------------------------>
     cLNPlot   = ['Init', 'Transf', 'Norm', 'Imp']
-    cLAttr    = ['dfF', 'dfT', 'dfN', 'dfIm']
+    cLAttr    = mConfig.core.ltDPKeys
     cNPlotCol = 2
     #------------------------------>
     cSWindow = (1000,900)
     #------------------------------>
     cLCStyle = wx.LC_REPORT|wx.LC_SINGLE_SEL|wx.LC_VIRTUAL
     #------------------------------> Label
-    cLDFData = ['Floated', 'Transformed', 'Normalized', 'Imputed']
+    cLDFData = ['Floated', 'Valid Replicates', 'Transformed', 'Normalized', 'Imputed']
     cLdfCol  = [
         'Data', 'N', 'NaN', 'Mean', 'Median', 'SD', 'Kurtosis', 'Skewness']
-    #------------------------------> Other
-    cFileName = {
-        mConfig.core.ltDPKeys[0] : '{}-01-Floated-{}.{}',
-        mConfig.core.ltDPKeys[1] : '{}-02-Transformed-{}.{}',
-        mConfig.core.ltDPKeys[2] : '{}-03-Normalized-{}.{}',
-        mConfig.core.ltDPKeys[3] : '{}-04-Imputed-{}.{}',
-    }
-    cImgName = {
-        cLNPlot[0] : '{}-01-Floated-{}.{}',
-        cLNPlot[1] : '{}-02-Transformed-{}.{}',
-        cLNPlot[2] : '{}-03-Normalized-{}.{}',
-        cLNPlot[3] : '{}-04-Imputed-{}.{}',
-    }
     #endregion --------------------------------------------------> Class setup
 
     #region --------------------------------------------------> Instance setup
@@ -155,6 +142,12 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         #region -----------------------------------------------> Initial Setup
         self.rObj:'resFile.UMSAPFile' = parent.rObj
         self.cTitle   = title
+        self.cImgName = {
+            self.cLNPlot[0] : '{}-01-Floated-{}.{}',
+            self.cLNPlot[1] : '{}-02-Transformed-{}.{}',
+            self.cLNPlot[2] : '{}-03-Normalized-{}.{}',
+            self.cLNPlot[3] : '{}-04-Imputed-{}.{}',
+        }
         self.tSection = tSection if tSection else self.cSection
         self.tDate    = tDate
         self.SetWindow(parent, tSection, tDate)
@@ -272,7 +265,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
 
             Notes
             -----
-            If self.cTitle is None the window is invoked from the main Data
+            If self.cTitle is '' the window is invoked from the main Data
             Preparation section of a UMSAP File window
         """
         #region -----------------------------------------------> Set Variables
@@ -388,7 +381,12 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region ---------------------------------------------------> Variables
-        x = self.rDataPlot.dfF.iloc[:,col]
+        if self.rDataPlot.dfMP is not None:
+            x     = self.rDataPlot.dfMP.iloc[:,col]
+            title = 'Valid Replicates'
+        else:
+            x     = self.rDataPlot.dfF.iloc[:,col]
+            title = 'Floated'
         x = x[np.isfinite(x)]
         #------------------------------>
         nBin = cStatistic.HistBin(x)[0]
@@ -398,7 +396,7 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
         #------------------------------>
         self.wPlot.dPlot['Init'].rAxes.clear()
         #------------------------------> title
-        self.wPlot.dPlot['Init'].rAxes.set_title("Floated")
+        self.wPlot.dPlot['Init'].rAxes.set_title(title)
         #------------------------------>
         a = self.wPlot.dPlot['Init'].rAxes.hist(
             x, bins=nBin, density=False, color=self.rCBar)
@@ -543,7 +541,10 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             a[0], margin=mConfig.core.MatPlotMargin))
         self.wPlot.dPlot['Imp'].ZoomResetSetValues()
         #------------------------------>
-        idx = np.where(self.rDataPlot.dfF.iloc[:,col].isna())[0]
+        if self.rDataPlot.dfMP is not None:
+            idx = np.where(self.rDataPlot.dfMP.iloc[:,col].isna())[0]
+        else:
+            idx = np.where(self.rDataPlot.dfF.iloc[:,col].isna())[0]
         if len(idx) > 0:
             y = self.rDataPlot.dfIm.iloc[idx,col]
             if y.count() > 0:
@@ -576,13 +577,21 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             -------
             bool
         """
+        #region -------------------------------------------------------> Lists
+        tAttr    = self.cLAttr
+        rowNames = self.cLDFData
+        if self.rDataPlot.dfMP is None:
+            tAttr.remove('dfMP')
+            rowNames.remove('Valid Replicates')
+        #endregion ----------------------------------------------------> Lists
+
         #region ----------------------------------------------------> Empty DF
         df = pd.DataFrame(columns=self.cLdfCol)
-        df['Data'] = self.cLDFData
+        df['Data'] = rowNames
         #endregion -------------------------------------------------> Empty DF
 
         #region --------------------------------------------> Calculate values
-        for r,k in enumerate(self.cLAttr):
+        for r,k in enumerate(tAttr):
             #------------------------------> N
             df.iat[r,1] = getattr(self.rDataPlot, k).shape[0]
             #------------------------------> NA
@@ -629,6 +638,8 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             self.rDataC = getattr(self.rData, self.rDateC)
         #------------------------------>
         self.rDataPlot:dataMethod.DataSteps = self.rDataC.dp
+        if self.rDataPlot.dfMP is not None:
+            self.cImgName[self.cLNPlot[0]] = '{}-01-Valid-Replicates-{}.{}'
         #endregion ------------------------------------------------> Variables
 
         #region -------------------------------------------------> wx.ListCtrl

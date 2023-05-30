@@ -57,13 +57,15 @@ class Configuration():
     softwareF:str    = 'Utilities for Mass Spectrometry Analysis of Proteins'   # Software full name
     version:str      = '2.3.3 (beta)'                                           # String to write in the output files
     winNumber:dict   = field(default_factory=lambda: {})                        # Keys: Windows ID - Values: Total number of opened windows, except conf win
+    numListSep:str   = ' '
     #------------------------------> Name & Title
     ndResCtrlExp:str      = 'Core Results & Control Experiments'                # Unique name for wx, not shown to user
+    nwDef:str             = 'Core Window Default'
+    ntDef:str             = 'Core Tab Default'
     npDef:str             = 'Core Default'
     npLCtrlSearchPlot:str = 'Core ListCtrl Search Plot'
     npNPlot:str           = 'Core NPlot'
-    ntDef:str             = 'Core Tab Default'
-    nwDef:str             = 'Core Window Default'
+    npResCtrlGroup:str    = 'Result & Control Experiments with Groups'
     tpConf:str            = 'Configuration Options'                             # Titles, shown to user
     tpList:str            = 'Data File Content'
     ttDef:str             = 'Tab'
@@ -92,6 +94,7 @@ class Configuration():
     lStProtein:str      = 'Proteins'
     lStResCtrl:str      = 'Results - Control experiments'
     lStResCtrlS:str     = 'Results - Control'
+    lStResCtrlGroup:str = 'Groups of Samples'
     lStS0:str           = 's0'
     lStSample:str       = 'Sample'
     lStScoreCol:str     = 'Score'
@@ -100,6 +103,8 @@ class Configuration():
     lStTheta:str        = 'θ Value'
     lStThetaMax:str     = 'θ Max Value'
     lStZScore:str       = 'Z Score'
+    lStGroup:str        = 'Groups'
+    lStValRep:str       = 'Valid Replicates'
     #------------------------------> wx.ListCtrl Column names
     lLCtrlColNameI:list[str] = field(default_factory=lambda: ['#', 'Name'])
     #------------------------------> Keywords for Menu
@@ -153,7 +158,7 @@ class Configuration():
     dfcolSeqNC:list[str]      = field(default_factory=lambda:                   # Column names in result dataframe
         ['Sequence', 'Nterm', 'Cterm', 'NtermF', 'CtermF'])
     ltDPKeys:list[str]        = field(default_factory=lambda:                   # ID of Data Prep data frames
-        ['dfF', 'dfT', 'dfN', 'dfIm'])
+        ['dfF', 'dfMP', 'dfT', 'dfN', 'dfIm'])
     lAA1:list[str]            = field(default_factory=lambda:                   # AA one letter codes
         ['A', 'I', 'L', 'V', 'M', 'F', 'W', 'Y', 'R', 'K', 'D', 'E', 'C', 'Q',
         'H', 'S', 'T', 'N', 'G', 'P'])
@@ -205,6 +210,7 @@ class Configuration():
     #------------------------------> Names for output folder and files
     fnInitial:str    = '{}_{}-Initial-Data.txt'
     fnFloat:str      = '{}_{}-Floated-Data.txt'
+    fnMinRep:str     = '{}_{}-Valid-Replicates.txt'
     fnTrans:str      = '{}_{}-Transformed-Data.txt'
     fnNorm:str       = '{}_{}-Normalized-Data.txt'
     fnImp:str        = '{}_{}-Imputed-Data.txt'
@@ -286,6 +292,8 @@ class Configuration():
                           f'correct input.')
     mResCtrlWin:str     = ("Value '{}' cannot be accepted as input.\n"
                           f"{mNZPlusNumText}")
+    mMinRep:str         = ("Value '{}' cannot be accepted as input.\n"
+                          f"{mOneZPlusNumText}")
     #------------------------------> Tooltips
     ttBtnHelp:str           = 'Read tutorial at {}.'
     ttSectionRightClick:str = ('The content of the Section can be deleted with '
