@@ -578,8 +578,8 @@ class ResDataPrep(cWindow.BaseWindowResultListTextNPlot):
             bool
         """
         #region -------------------------------------------------------> Lists
-        tAttr    = self.cLAttr
-        rowNames = self.cLDFData
+        tAttr    = list(self.cLAttr)
+        rowNames = list(self.cLDFData)
         if self.rDataPlot.dfMP is None:
             tAttr.remove('dfMP')
             rowNames.remove('Valid Replicates')
